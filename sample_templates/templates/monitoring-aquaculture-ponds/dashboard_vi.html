@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giám sát ao nuôi</title>
+  <link rel="stylesheet" href="../../dashboard-themes.css?v=2026.04.18" />
+  <link rel="stylesheet" href="/sample_dashboards/monitoring-aquaculture-ponds/dashboard.css?v=2026.04.28.7" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+      } catch (error) { }
+    })();
+  </script>
+</head>
+
+<body>
+
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="page-shell">
+    <section class="hero">
+      <div>
+        <h1 id="hero-title">Giám sát ao nuôi</h1>
+      </div>
+      <div class="hero-tools">
+        <select class="range-select" id="global-range" aria-label="Khoảng thời gian biểu đồ">
+          <option value="30m">30m</option>
+          <option value="1h">1h</option>
+          <option value="6h" selected>6h</option>
+          <option value="24h">24h</option>
+          <option value="7d">7d</option>
+        </select>
+        <button class="toolbar-button" type="button" id="history-refresh">Tải lại lịch sử</button>
+        <div class="hero-chip" id="pond-count-chip">0 ao</div>
+      </div>
+    </section>
+
+    <section class="history-card" id="history-card">
+      <div class="section-head history-head" id="history-toggle" role="button" tabindex="0" aria-expanded="false"
+        onclick="(function(card){var content=card&&card.querySelector('#history-content');var toggle=card&&card.querySelector('#history-toggle');if(!content)return;var collapsed=!content.hidden;content.hidden=collapsed;if(toggle)toggle.setAttribute('aria-expanded',collapsed?'false':'true');if(card)card.setAttribute('data-collapsed',collapsed?'true':'false');})(this.closest('#history-card'))">
+        <div class="section-toggle history-toggle">
+          <span class="history-title"><h2>Lịch sử</h2></span>
+          <span class="section-toggle-indicator">&#9662;</span>
+        </div>
+        <div class="section-toolbar">
+          <div class="hero-chip" id="history-source-chip" onclick="event.stopPropagation()">Nguồn lịch sử</div>
+        </div>
+      </div>
+      <div class="table-wrap" id="history-content" hidden>
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Thời gian</th>
+              <th>Ao</th>
+              <th>Loại</th>
+              <th>Nội dung</th>
+              <th>Người thực hiện</th>
+            </tr>
+          </thead>
+          <tbody id="history-body">
+            <tr>
+              <td colspan="5" class="empty-state">Đang chờ dữ liệu lịch sử.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="pond-grid" id="pond-grid"></section>
+  </main>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="modal" id="threshold-modal" aria-hidden="true">
+    <div class="modal-card modal-card-wide">
+      <div class="modal-head">
+        <div>
+          <h2 id="threshold-modal-title">Cài đặt ao nuôi</h2>
+          <p id="threshold-modal-description">Thiết lập ngưỡng và số điện thoại báo động cho ao này.</p>
+        </div>
+        <button type="button" class="icon-button" id="threshold-modal-close"
+          aria-label="Đóng hộp thoại">&times;</button>
+      </div>
+      <form id="threshold-form" class="form-grid">
+        <div class="settings-pump-tabs" role="tablist" aria-label="Cài đặt bơm">
+          <button type="button" class="settings-pump-tab is-active" id="settings-pump1-tab" data-settings-pump-tab="contactor1"
+            role="tab" aria-selected="true" aria-controls="settings-pump1-group">Mô tơ 1</button>
+          <button type="button" class="settings-pump-tab" id="settings-pump2-tab" data-settings-pump-tab="contactor2"
+            role="tab" aria-selected="false" aria-controls="settings-pump2-group">Mô tơ 2</button>
+        </div>
+        <div class="settings-pump-grid" id="settings-pump-grid">
+          <section class="settings-group settings-pump-group is-active" id="settings-pump1-group" role="tabpanel"
+            aria-labelledby="settings-pump1-tab" data-settings-pump-panel="contactor1">
+            <h3 id="settings-pump1-title">Mô tơ 1</h3>
+            <div class="settings-subgroup">
+              <h4 id="settings-pump1-current-title">Ngưỡng dòng điện</h4>
+              <div class="field-row">
+                <div class="field-block">
+                  <label for="settings-pump1-current-low">Ngưỡng thấp</label>
+                  <input id="settings-pump1-current-low" name="pump1CurrentLow" class="threshold-input" type="number"
+                    step="0.1" inputmode="decimal" />
+                </div>
+                <div class="field-block">
+                  <label for="settings-pump1-current-high">Ngưỡng cao</label>
+                  <input id="settings-pump1-current-high" name="pump1CurrentHigh" class="threshold-input" type="number"
+                    step="0.1" inputmode="decimal" />
+                </div>
+              </div>
+            </div>
+            <div class="settings-subgroup">
+              <h4 id="settings-pump1-run-window-title">Khung giờ chạy</h4>
+              <div class="field-row">
+                <div class="field-block">
+                  <label for="settings-pump1-run-window-start">Bắt đầu</label>
+                  <input id="settings-pump1-run-window-start" name="pump1RunWindowStart" class="threshold-input"
+                    type="text" inputmode="numeric" maxlength="4" />
+                </div>
+                <div class="field-block">
+                  <label for="settings-pump1-run-window-end">Kết thúc</label>
+                  <input id="settings-pump1-run-window-end" name="pump1RunWindowEnd" class="threshold-input" type="text"
+                    inputmode="numeric" maxlength="4" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="settings-group settings-pump-group" id="settings-pump2-group" role="tabpanel"
+            aria-labelledby="settings-pump2-tab" data-settings-pump-panel="contactor2" hidden>
+            <h3 id="settings-pump2-title">Mô tơ 2</h3>
+            <div class="settings-subgroup">
+              <h4 id="settings-pump2-current-title">Ngưỡng dòng điện</h4>
+              <div class="field-row">
+                <div class="field-block">
+                  <label for="settings-pump2-current-low">Ngưỡng thấp</label>
+                  <input id="settings-pump2-current-low" name="pump2CurrentLow" class="threshold-input" type="number"
+                    step="0.1" inputmode="decimal" />
+                </div>
+                <div class="field-block">
+                  <label for="settings-pump2-current-high">Ngưỡng cao</label>
+                  <input id="settings-pump2-current-high" name="pump2CurrentHigh" class="threshold-input" type="number"
+                    step="0.1" inputmode="decimal" />
+                </div>
+              </div>
+            </div>
+            <div class="settings-subgroup">
+              <h4 id="settings-pump2-run-window-title">Khung giờ chạy</h4>
+              <div class="field-row">
+                <div class="field-block">
+                  <label for="settings-pump2-run-window-start">Bắt đầu</label>
+                  <input id="settings-pump2-run-window-start" name="pump2RunWindowStart" class="threshold-input"
+                    type="text" inputmode="numeric" maxlength="4" />
+                </div>
+                <div class="field-block">
+                  <label for="settings-pump2-run-window-end">Kết thúc</label>
+                  <input id="settings-pump2-run-window-end" name="pump2RunWindowEnd" class="threshold-input" type="text"
+                    inputmode="numeric" maxlength="4" />
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="settings-common-grid">
+          <section class="settings-group" id="settings-phone-group">
+            <h3 id="settings-phone-title">Số điện thoại báo động</h3>
+            <div class="field-block settings-phone-field">
+              <input id="settings-alarm-phone" name="alarmPhone" class="threshold-input" type="text" inputmode="tel"
+                autocomplete="tel" aria-label="Số điện thoại báo động" />
+            </div>
+          </section>
+          <section class="settings-group" id="settings-update-group">
+            <div class="settings-toggle-row">
+              <div class="field-block">
+                <label id="settings-update-label">Cập nhật thông tin</label>
+              </div>
+              <button type="button" class="settings-inline-toggle" id="settings-update-toggle" data-enabled="false"
+                aria-pressed="false">
+                <span class="settings-inline-toggle-label" data-side="on">ON</span>
+                <span class="settings-inline-toggle-label" data-side="off">OFF</span>
+              </button>
+            </div>
+          </section>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="modal-button" id="threshold-modal-cancel">Hủy</button>
+          <button type="submit" class="modal-button primary" id="threshold-modal-submit">Lưu cài đặt</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="meter-modal" aria-hidden="true">
+    <div class="modal-card modal-card-meter">
+      <div class="modal-head">
+        <div>
+          <h2 id="meter-modal-title">Điện kế riêng</h2>
+          <p id="meter-modal-description">Điện áp, dòng điện, nhiệt độ và điện năng tiêu thụ của công tắt này.</p>
+        </div>
+        <button type="button" class="icon-button" id="meter-modal-close" aria-label="Đóng hộp thoại">&times;</button>
+      </div>
+      <div class="meter-grid">
+        <section class="metric-card meter-energy-card">
+          <strong id="meter-energy-title">Điện năng tiêu thụ</strong>
+          <div class="metric-value" id="meter-energy-value">--</div>
+        </section>
+        <section class="chart-card meter-chart-card" id="meter-voltage-card">
+          <div class="chart-head">
+            <strong id="meter-voltage-title">Điện áp</strong>
+            <div class="chart-legend">
+              <span class="chart-legend-item"><span class="chart-legend-dot"
+                  style="--dot-color: var(--theme-series-1);"></span><span class="chart-live-value"
+                  id="meter-voltage-inline">--</span></span>
+            </div>
+          </div>
+          <div class="chart-shell" id="meter-voltage-shell">
+            <div class="chart-y-label" data-align="max" id="meter-voltage-max">0</div>
+            <div class="chart-y-label" data-align="min" id="meter-voltage-min">0</div>
+            <svg class="chart-svg" viewBox="0 0 360 240" preserveAspectRatio="none">
+              <g class="chart-grid" id="meter-voltage-grid"></g>
+              <g class="chart-axis">
+                <line x1="46" y1="16" x2="46" y2="198"></line>
+                <line x1="46" y1="198" x2="340" y2="198"></line>
+              </g>
+              <path class="chart-empty" id="meter-voltage-empty" d="M46 106 H340"></path>
+              <path class="chart-path" id="meter-voltage-path" style="--line-color: var(--theme-series-1);" d=""></path>
+              <line class="chart-hover-line" id="meter-voltage-hover-line" x1="0" y1="16" x2="0" y2="198"></line>
+              <circle class="chart-hover-point" id="meter-voltage-point" style="--line-color: var(--theme-series-1);"
+                r="5"></circle>
+              <rect class="chart-hitbox" id="meter-voltage-hitbox" x="46" y="16" width="294" height="182"></rect>
+            </svg>
+            <div class="chart-tooltip" id="meter-voltage-tooltip"></div>
+          </div>
+        </section>
+        <section class="chart-card meter-chart-card" id="meter-current-card">
+          <div class="chart-head">
+            <strong id="meter-current-title">Dòng điện</strong>
+            <div class="chart-legend">
+              <span class="chart-legend-item"><span class="chart-legend-dot"
+                  style="--dot-color: var(--theme-series-3);"></span><span class="chart-live-value"
+                  id="meter-current1-inline">--</span></span>
+              <span class="chart-legend-item"><span class="chart-legend-dot"
+                  style="--dot-color: var(--theme-series-4);"></span><span class="chart-live-value"
+                  id="meter-current2-inline">--</span></span>
+              <span class="chart-legend-item"><span class="chart-legend-dot"
+                  style="--dot-color: var(--theme-series-5);"></span><span class="chart-live-value"
+                  id="meter-current3-inline">--</span></span>
+            </div>
+          </div>
+          <div class="chart-shell" id="meter-current-shell">
+            <div class="chart-y-label" data-align="max" id="meter-current-max">0</div>
+            <div class="chart-y-label" data-align="min" id="meter-current-min">0</div>
+            <svg class="chart-svg" viewBox="0 0 360 240" preserveAspectRatio="none">
+              <g class="chart-grid" id="meter-current-grid"></g>
+              <g class="chart-axis">
+                <line x1="46" y1="16" x2="46" y2="198"></line>
+                <line x1="46" y1="198" x2="340" y2="198"></line>
+              </g>
+              <path class="chart-empty" id="meter-current-empty" d="M46 106 H340"></path>
+              <line class="chart-threshold-line" id="meter-current-threshold-low" data-mode="low" x1="46" y1="0"
+                x2="340" y2="0"></line>
+              <line class="chart-threshold-line" id="meter-current-threshold-high" data-mode="high" x1="46" y1="0"
+                x2="340" y2="0"></line>
+              <path class="chart-path" id="meter-current-path-1" style="--line-color: var(--theme-series-3);" d="">
+              </path>
+              <path class="chart-path" id="meter-current-path-2" style="--line-color: var(--theme-series-4);" d="">
+              </path>
+              <path class="chart-path" id="meter-current-path-3" style="--line-color: var(--theme-series-5);" d="">
+              </path>
+              <line class="chart-hover-line" id="meter-current-hover-line" x1="0" y1="16" x2="0" y2="198"></line>
+              <circle class="chart-hover-point" id="meter-current-point-1" style="--line-color: var(--theme-series-3);"
+                r="5"></circle>
+              <circle class="chart-hover-point" id="meter-current-point-2" style="--line-color: var(--theme-series-4);"
+                r="5"></circle>
+              <circle class="chart-hover-point" id="meter-current-point-3" style="--line-color: var(--theme-series-5);"
+                r="5"></circle>
+              <rect class="chart-hitbox" id="meter-current-hitbox" x="46" y="16" width="294" height="182"></rect>
+            </svg>
+            <div class="chart-tooltip" id="meter-current-tooltip"></div>
+          </div>
+        </section>
+        <section class="chart-card meter-chart-card" id="meter-temperature-card">
+          <div class="chart-head">
+            <strong id="meter-temperature-title">Nhiệt độ</strong>
+            <div class="chart-legend">
+              <span class="chart-legend-item"><span class="chart-legend-dot"
+                  style="--dot-color: var(--theme-series-5);"></span><span class="chart-live-value"
+                  id="meter-temperature-inline">--</span></span>
+            </div>
+          </div>
+          <div class="chart-shell" id="meter-temperature-shell">
+            <div class="chart-y-label" data-align="max" id="meter-temperature-max">0</div>
+            <div class="chart-y-label" data-align="min" id="meter-temperature-min">0</div>
+            <svg class="chart-svg" viewBox="0 0 360 240" preserveAspectRatio="none">
+              <g class="chart-grid" id="meter-temperature-grid"></g>
+              <g class="chart-axis">
+                <line x1="46" y1="16" x2="46" y2="198"></line>
+                <line x1="46" y1="198" x2="340" y2="198"></line>
+              </g>
+              <path class="chart-empty" id="meter-temperature-empty" d="M46 106 H340"></path>
+              <line class="chart-threshold-line" id="meter-temperature-threshold-low" data-mode="low" x1="46" y1="0"
+                x2="340" y2="0"></line>
+              <line class="chart-threshold-line" id="meter-temperature-threshold-high" data-mode="high" x1="46" y1="0"
+                x2="340" y2="0"></line>
+              <path class="chart-path" id="meter-temperature-path" style="--line-color: var(--theme-series-5);" d="">
+              </path>
+              <line class="chart-hover-line" id="meter-temperature-hover-line" x1="0" y1="16" x2="0" y2="198"></line>
+              <circle class="chart-hover-point" id="meter-temperature-point"
+                style="--line-color: var(--theme-series-5);" r="5"></circle>
+              <rect class="chart-hitbox" id="meter-temperature-hitbox" x="46" y="16" width="294" height="182"></rect>
+            </svg>
+            <div class="chart-tooltip" id="meter-temperature-tooltip"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Chọn giao diện"
+      aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Tùy chọn giao diện">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism"
+        role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora
+        UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern
+        Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism"
+        role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk"
+        role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo
+        Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento
+        Grid</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script id="monitoring-aquaculture-ponds-config" type="application/json">
+{
+    "title": "Giám sát ao nuôi",
+    "description": "",
+    "syncId": "<<syncid>>",
+    "history": {
+        "sessionId": "<<sessionid>>",
+        "syncId": "<<syncid>>",
+        "macro": "pond-event-history",
+        "pageSize": 100
+    },
+    "sessions": [
+        {
+            "title": "Tủ ao nuôi 1",
+            "sessionId": "<<sessionid>>",
+            "description": "",
+            "fields": {
+                "contactor1": "O101",
+                "contactor2": "O102",
+                "contactor3": "",
+                "alarm": "alarm1",
+                "currentThreshold": "#1011",
+                "alarmPhone": "#1002.1",
+                "runWindow": "#1005",
+                "updateEnabled": "#1003.1"
+            },
+            "commands": {
+                "contactor1On": "N3,1,1,\"ON\",\"<<username>>\"",
+                "contactor1Off": "N3,1,1,\"OFF\",\"<<username>>\"",
+                "contactor2On": "N3,1,2,\"ON\",\"<<username>>\"",
+                "contactor2Off": "N3,1,2,\"OFF\",\"<<username>>\"",
+                "contactor3On": "N3,1,3,\"ON\",\"<<username>>\"",
+                "contactor3Off": "N3,1,3,\"OFF\",\"<<username>>\"",
+                "alarmOff": "N4,\"<<username>>\",1"
+            },
+            "scheduleFields": [
+                "#1021",
+                "#1022",
+                "#1023",
+                "#1024"
+            ],
+            "meters": {
+                "contactor1": {
+                    "title": "Mô tơ 1",
+                    "voltage": "Voltage11_V",
+                    "current1": "Current11_A1",
+                    "current2": "Current11_A2",
+                    "current3": "Current11_A3",
+                    "temperature": "Temper11",
+                    "energy": "Energy11_Wh"
+                },
+                "contactor2": {
+                    "title": "Mô tơ 2",
+                    "voltage": "Voltage12_V",
+                    "current1": "Current12_A1",
+                    "current2": "Current12_A2",
+                    "current3": "Current12_A3",
+                    "temperature": "Temper12",
+                    "energy": "Energy12_Wh"
+                }
+            }
+        },
+        {
+            "title": "Tủ ao nuôi 2",
+            "sessionId": "<<sessionid>>",
+            "description": "",
+            "fields": {
+                "contactor1": "O103",
+                "contactor2": "O104",
+                "contactor3": "",
+                "alarm": "alarm2",
+                "currentThreshold": "#1012",
+                "alarmPhone": "#1002.2",
+                "runWindow": "#1006",
+                "updateEnabled": "#1003.2"
+            },
+            "commands": {
+                "contactor1On": "N3,2,1,\"ON\",\"<<username>>\"",
+                "contactor1Off": "N3,2,1,\"OFF\",\"<<username>>\"",
+                "contactor2On": "N3,2,2,\"ON\",\"<<username>>\"",
+                "contactor2Off": "N3,2,2,\"OFF\",\"<<username>>\"",
+                "contactor3On": "N3,2,3,\"ON\",\"<<username>>\"",
+                "contactor3Off": "N3,2,3,\"OFF\",\"<<username>>\"",
+                "alarmOff": "N4,\"<<username>>\",2"
+            },
+            "scheduleFields": [
+                "#1025",
+                "#1026",
+                "#1027",
+                "#1028"
+            ],
+            "meters": {
+                "contactor1": {
+                    "title": "Mô tơ 1",
+                    "voltage": "Voltage21_V",
+                    "current1": "Current21_A1",
+                    "current2": "Current21_A2",
+                    "current3": "Current21_A3",
+                    "temperature": "Temper21",
+                    "energy": "Energy21_Wh"
+                },
+                "contactor2": {
+                    "title": "Mô tơ 2",
+                    "voltage": "Voltage22_V",
+                    "current1": "Current22_A1",
+                    "current2": "Current22_A2",
+                    "current3": "Current22_A3",
+                    "temperature": "Temper22",
+                    "energy": "Energy22_Wh"
+                }
+            }
+        },
+        {
+            "title": "Tủ ao nuôi 3",
+            "sessionId": "<<sessionid>>",
+            "description": "",
+            "fields": {
+                "contactor1": "O105",
+                "contactor2": "O106",
+                "contactor3": "",
+                "alarm": "alarm3",
+                "currentThreshold": "#1013",
+                "alarmPhone": "#1002.3",
+                "runWindow": "#1007",
+                "updateEnabled": "#1003.3"
+            },
+            "commands": {
+                "contactor1On": "N3,3,1,\"ON\",\"<<username>>\"",
+                "contactor1Off": "N3,3,1,\"OFF\",\"<<username>>\"",
+                "contactor2On": "N3,3,2,\"ON\",\"<<username>>\"",
+                "contactor2Off": "N3,3,2,\"OFF\",\"<<username>>\"",
+                "contactor3On": "N3,3,3,\"ON\",\"<<username>>\"",
+                "contactor3Off": "N3,3,3,\"OFF\",\"<<username>>\"",
+                "alarmOff": "N4,\"<<username>>\",3"
+            },
+            "scheduleFields": [
+                "#1029",
+                "#1030",
+                "#1031",
+                "#1032"
+            ],
+            "meters": {
+                "contactor1": {
+                    "title": "Mô tơ 1",
+                    "voltage": "Voltage31_V",
+                    "current1": "Current31_A1",
+                    "current2": "Current31_A2",
+                    "current3": "Current31_A3",
+                    "temperature": "Temper31",
+                    "energy": "Energy31_Wh"
+                },
+                "contactor2": {
+                    "title": "Mô tơ 2",
+                    "voltage": "Voltage32_V",
+                    "current1": "Current32_A1",
+                    "current2": "Current32_A2",
+                    "current3": "Current32_A3",
+                    "temperature": "Temper32",
+                    "energy": "Energy32_Wh"
+                }
+            }
+        },
+        {
+            "title": "Tủ ao nuôi 4",
+            "sessionId": "<<sessionid>>",
+            "description": "",
+            "fields": {
+                "contactor1": "O107",
+                "contactor2": "O108",
+                "contactor3": "",
+                "alarm": "alarm4",
+                "currentThreshold": "#1014",
+                "alarmPhone": "#1002.4",
+                "runWindow": "#1008",
+                "updateEnabled": "#1003.4"
+            },
+            "commands": {
+                "contactor1On": "N3,4,1,\"ON\",\"<<username>>\"",
+                "contactor1Off": "N3,4,1,\"OFF\",\"<<username>>\"",
+                "contactor2On": "N3,4,2,\"ON\",\"<<username>>\"",
+                "contactor2Off": "N3,4,2,\"OFF\",\"<<username>>\"",
+                "contactor3On": "N3,4,3,\"ON\",\"<<username>>\"",
+                "contactor3Off": "N3,4,3,\"OFF\",\"<<username>>\"",
+                "alarmOff": "N4,\"<<username>>\",4"
+            },
+            "scheduleFields": [
+                "#1033",
+                "#1034",
+                "#1035",
+                "#1036"
+            ],
+            "meters": {
+                "contactor1": {
+                    "title": "Mô tơ 1",
+                    "voltage": "Voltage41_V",
+                    "current1": "Current41_A1",
+                    "current2": "Current41_A2",
+                    "current3": "Current41_A3",
+                    "temperature": "Temper41",
+                    "energy": "Energy41_Wh"
+                },
+                "contactor2": {
+                    "title": "Mô tơ 2",
+                    "voltage": "Voltage42_V",
+                    "current1": "Current42_A1",
+                    "current2": "Current42_A2",
+                    "current3": "Current42_A3",
+                    "temperature": "Temper42",
+                    "energy": "Energy42_Wh"
+                }
+            }
+        }
+    ],
+    "ui": {
+        "hero": {
+            "rangeAriaLabel": "Khoảng thời gian biểu đồ",
+            "refreshHistory": "Tải lại lịch sử",
+            "pondCountSingular": "ao",
+            "pondCountPlural": "ao"
+        },
+        "history": {
+            "title": "Lịch sử",
+            "sourceLabel": "Nguồn lịch sử",
+            "sourceValue": "Nguồn {ioid}",
+            "waiting": "Đang chờ dữ liệu lịch sử.",
+            "empty": "Không có bản ghi lịch sử.",
+            "eventTypes": {
+                "shaftBreak": "Gãy trục",
+                "overload": "Quá tải",
+                "offTime": "OFF sai giờ",
+                "onTime": "ON sai giờ",
+                "alarmOff": "Tắt báo động",
+                "disconnect": "Mất kết nối"
+            },
+            "loadFailed": "Không thể tải lịch sử sự kiện.",
+            "columns": {
+                "time": "Thời gian",
+                "pond": "Ao",
+                "type": "Loại",
+                "content": "Nội dung",
+                "email": "Email"
+            }
+        },
+        "settingsModal": {
+            "idleTitle": "Cài đặt ao nuôi",
+            "title": "Cài đặt ao nuôi | {title}",
+            "description": "Thiết lập ngưỡng và số điện thoại báo động cho ao này.",
+            "pump1Title": "Mô tơ 1",
+            "pump2Title": "Mô tơ 2",
+            "currentTitle": "Ngưỡng dòng điện",
+            "lowLabel": "Ngưỡng thấp",
+            "highLabel": "Ngưỡng cao",
+            "phoneTitle": "Số điện thoại báo động",
+            "runWindowTitle": "Khung giờ chạy",
+            "startLabel": "Bắt đầu",
+            "endLabel": "Kết thúc",
+            "updateLabel": "Cập nhật thông tin",
+            "updateEnabled": "Đã bật cập nhật thông tin.",
+            "updateDisabled": "Đã tắt cập nhật thông tin.",
+            "updateFailed": "Không thể cập nhật chế độ làm mới.",
+            "updateToggleAria": "Bật tắt cập nhật thông tin cho {title}",
+            "phoneLabel": "Số điện thoại báo động",
+            "cancel": "Hủy",
+            "submit": "Lưu cài đặt",
+            "closeAriaLabel": "Đóng hộp thoại"
+        },
+        "theme": {
+            "toggleAriaLabel": "Chọn giao diện",
+            "menuAriaLabel": "Tùy chọn giao diện",
+            "options": {
+                "neumorphism": "Neumorphism",
+                "aurora-ui": "Aurora UI",
+                "modern-flat": "Modern Flat",
+                "glassmorphism": "Glassmorphism",
+                "cyberpunk": "Cyberpunk",
+                "neo-brutalism": "Neo Brutalism",
+                "bento-grid": "Bento Grid"
+            }
+        },
+        "pond": {
+            "unknown": "Không rõ",
+            "fallbackTitle": "Ao {index}",
+            "deviceDescription": "Thiết bị: {ioid}",
+            "connecting": "Đang kết nối",
+            "reconnecting": "Đang kết nối lại",
+            "settingsButton": "Cài đặt",
+            "settingsButtonAria": "Mở cài đặt ao cho {title}",
+            "live": "Live",
+            "stale": "Stale",
+            "offline": "Offline",
+            "billingBlocked": "Cần nạp tiền"
+        },
+        "contactor": {
+            "labels": {
+                "contactor1": "Mô tơ 1",
+                "contactor2": "Mô tơ 2",
+                "contactor3": "Mô tơ 3"
+            },
+            "off": "OFF",
+            "offline": "OFFLINE",
+            "error": "ERROR",
+            "turnOnAria": "Bật {label}",
+            "turnOffAria": "Tắt {label}",
+            "turningOn": "Đang bật",
+            "turningOff": "Đang tắt",
+            "meterAria": "Mở điện kế riêng của {label}"
+        },
+        "charts": {
+            "voltageTitle": "Điện áp",
+            "currentTitle": "Dòng điện",
+            "temperatureTitle": "Nhiệt độ",
+            "temperatureLegend": "Nhiệt độ",
+            "energyTitle": "Tổng điện năng",
+            "temperatureMissing": "Chưa cấu hình telemetry nhiệt độ cho ao này.",
+            "seriesLabels": {
+                "voltage1": "Voltage1_V",
+                "voltage2": "Voltage2_V",
+                "voltage3": "Voltage3_V",
+                "current1": "Current1_A",
+                "current2": "Current2_A",
+                "current3": "Current3_A",
+                "temperature": "temperature"
+            }
+        },
+        "schedule": {
+            "title": "Cài đặt hẹn giờ",
+            "save": "Lưu",
+            "saving": "Đang lưu...",
+            "selectPlaceholder": "Chọn",
+            "outputLabels": {
+                "out1": "CT 1",
+                "out2": "CT 2",
+                "out12": "CT 1&2"
+            },
+            "actionOn": "ON",
+            "actionOff": "OFF",
+            "enableAriaLabel": "Bật hẹn giờ {index}",
+            "toggleActionAriaLabel": "Đổi trạng thái hẹn giờ {index}",
+            "commandFailed": "Lệnh hẹn giờ thất bại.",
+            "updateFailed": "Cập nhật hẹn giờ thất bại.",
+            "updated": "Đã cập nhật hẹn giờ.",
+            "empty": "Hẹn giờ đang trống.",
+            "stateUpdateFailed": "Cập nhật trạng thái hẹn giờ thất bại.",
+            "enabled": "Đã bật hẹn giờ.",
+            "disabled": "Đã tắt hẹn giờ.",
+            "columns": {
+                "enable": "Bật",
+                "time": "Giờ",
+                "contactor": "Ra",
+                "action": "Tác vụ"
+            }
+        },
+        "thresholds": {
+            "none": "Chưa có ngưỡng",
+            "missingContext": "Thiếu ngữ cảnh lệnh để cập nhật cài đặt.",
+            "bothRequired": "Cần nhập đủ ngưỡng thấp và ngưỡng cao.",
+            "timeWindowBothRequired": "Cần nhập đủ giờ bắt đầu và giờ kết thúc.",
+            "timeWindowInvalid": "Giờ phải có 4 chữ số theo định dạng HHMM.",
+            "invalidRange": "Ngưỡng thấp phải nhỏ hơn hoặc bằng ngưỡng cao.",
+            "updateFailed": "Cập nhật cài đặt thất bại.",
+            "updated": "Đã cập nhật cài đặt.",
+            "placeholders": {
+                "currentLow": "0.5",
+                "currentHigh": "3.5",
+                "alarmPhone": "+84901234567",
+                "runWindowStart": "0700",
+                "runWindowEnd": "2359"
+            }
+        },
+        "alerts": {
+            "overcurrent": "Quá dòng",
+            "lowLoad": "Yếu tải",
+            "tooHot": "Quá nóng",
+            "tooCold": "Quá lạnh"
+        },
+        "commands": {
+            "sent": "Đã gửi lệnh.",
+            "failed": "Gửi lệnh thất bại.",
+            "alarmOff": "Tắt báo động",
+            "alarmOffAria": "Tắt báo động cho {title}",
+            "alarmOffSent": "Đã gửi lệnh tắt báo động.",
+            "alarmOffFailed": "Tắt báo động thất bại."
+        },
+        "network": {
+            "requestFailed": "Yêu cầu thất bại.",
+            "requestFailedWithStatus": "Yêu cầu thất bại với mã {status}",
+            "unexpectedIoDataResponse": "Phản hồi IoData không hợp lệ."
+        },
+        "alarmCard": {
+            "empty": "Không có báo động"
+        },
+        "meterModal": {
+            "idleTitle": "Điện kế riêng",
+            "title": "Điện kế riêng | {label}",
+            "description": "Điện áp, dòng điện, nhiệt độ và điện năng tiêu thụ của {label}.",
+            "closeAriaLabel": "Đóng hộp thoại",
+            "energyTitle": "Điện năng tiêu thụ",
+            "voltageTitle": "Điện áp",
+            "currentTitle": "Dòng điện",
+            "temperatureTitle": "Nhiệt độ",
+            "unavailable": "Chưa cấu hình điện kế cho công tắt này.",
+            "seriesLabels": {
+                "voltage": "Điện áp",
+                "current1": "I1",
+                "current2": "I2",
+                "current3": "I3",
+                "temperature": "Nhiệt độ"
+            }
+        }
+    },
+    "locale": "vi"
+}
+</script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script src="/sample_dashboards/monitoring-aquaculture-ponds/dashboard-runtime-v2.js?v=2026.05.28.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+
+</html>

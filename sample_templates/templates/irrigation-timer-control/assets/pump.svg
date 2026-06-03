@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-label="Water pump">
+  <defs>
+    <linearGradient id="body" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="0.54" stop-color="#0ea5e9"/>
+      <stop offset="1" stop-color="#0369a1"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" x2="1">
+      <stop offset="0" stop-color="#dbeafe"/>
+      <stop offset="0.52" stop-color="#94a3b8"/>
+      <stop offset="1" stop-color="#475569"/>
+    </linearGradient>
+    <linearGradient id="pipe" x1="0" x2="1">
+      <stop offset="0" stop-color="#0f766e"/>
+      <stop offset="1" stop-color="#14b8a6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+  <rect x="26" y="172" width="270" height="20" rx="10" fill="#334155" opacity="0.22"/>
+  <g filter="url(#shadow)">
+    <path d="M72 158h156c20 0 36-16 36-36V91c0-24-20-44-44-44H96c-24 0-44 20-44 44v47c0 11 9 20 20 20z" fill="url(#body)"/>
+    <path d="M78 67h132c20 0 36 16 36 36v5H52V93c0-14 11-26 26-26z" fill="#7dd3fc" opacity="0.32"/>
+    <circle cx="104" cy="112" r="43" fill="#e0f2fe"/>
+    <circle cx="104" cy="112" r="31" fill="url(#metal)"/>
+    <circle cx="104" cy="112" r="12" fill="#0f172a" opacity="0.42"/>
+    <path d="M206 72h54c11 0 20 9 20 20v23h-40V99h-34z" fill="url(#pipe)"/>
+    <path d="M240 115h54c9 0 16 7 16 16v16h-70z" fill="url(#pipe)"/>
+    <path d="M63 148h210v20c0 8-6 14-14 14H77c-8 0-14-6-14-14z" fill="#0f172a" opacity="0.28"/>
+    <rect x="78" y="170" width="42" height="20" rx="8" fill="#1e293b"/>
+    <rect x="210" y="170" width="42" height="20" rx="8" fill="#1e293b"/>
+    <path d="M145 42h50c8 0 14 6 14 14v20h-78V56c0-8 6-14 14-14z" fill="#0284c7"/>
+    <path d="M151 50h38c5 0 9 4 9 9v8h-56v-8c0-5 4-9 9-9z" fill="#bae6fd" opacity="0.38"/>
+  </g>
+</svg>

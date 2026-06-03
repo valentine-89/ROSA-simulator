@@ -1,0 +1,17 @@
+{
+  "name": "rosa-simulator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-only simulator for ROSA sample dashboard templates.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "validate": "node scripts/validate.js",
+    "check": "node --check server.js && node --check src/store.js && node --check src/dashboardEditableSections.js && node --check scripts/validate.js",
+    "package:win": "bash scripts/package-windows.sh",
+    "package:win:powershell": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/package-windows.ps1"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.10.0"
+  }
+}

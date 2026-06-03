@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitoring Aquaculture Ponds</title>
+  <link rel="stylesheet" href="../../dashboard-themes.css?v=2026.04.18" />
+  <link rel="stylesheet" href="/sample_dashboards/monitoring-aquaculture-ponds/dashboard.css?v=2026.04.28.7" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+      } catch (error) { }
+    })();
+  </script>
+</head>
+
+<body>
+
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="page-shell">
+    <section class="hero">
+      <div>
+        <h1 id="hero-title">Monitoring Aquaculture Ponds</h1>
+      </div>
+      <div class="hero-tools">
+        <select class="range-select" id="global-range" aria-label="Chart time range">
+          <option value="30m">30m</option>
+          <option value="1h">1h</option>
+          <option value="6h" selected>6h</option>
+          <option value="24h">24h</option>
+          <option value="7d">7d</option>
+        </select>
+        <button class="toolbar-button" type="button" id="history-refresh">Refresh history</button>
+        <div class="hero-chip" id="pond-count-chip">0 ponds</div>
+      </div>
+    </section>
+
+    <section class="history-card" id="history-card">
+      <div class="section-head history-head" id="history-toggle" role="button" tabindex="0" aria-expanded="false"
+        onclick="(function(card){var content=card&&card.querySelector('#history-content');var toggle=card&&card.querySelector('#history-toggle');if(!content)return;var collapsed=!content.hidden;content.hidden=collapsed;if(toggle)toggle.setAttribute('aria-expanded',collapsed?'false':'true');if(card)card.setAttribute('data-collapsed',collapsed?'true':'false');})(this.closest('#history-card'))">
+        <div class="section-toggle history-toggle">
+          <span class="history-title"><h2>History</h2></span>
+          <span class="section-toggle-indicator">&#9662;</span>
+        </div>
+        <div class="section-toolbar">
+          <div class="hero-chip" id="history-source-chip" onclick="event.stopPropagation()">History source</div>
+        </div>
+      </div>
+      <div class="table-wrap" id="history-content" hidden>
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Pond</th>
+              <th>Type</th>
+              <th>Content</th>
+              <th>User</th>
+            </tr>
+          </thead>
+          <tbody id="history-body">
+            <tr>
+              <td colspan="5" class="empty-state">Waiting for history data.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="pond-grid" id="pond-grid"></section>
+  </main>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="modal" id="threshold-modal" aria-hidden="true">
+    <div class="modal-card modal-card-wide">
+      <div class="modal-head">
+        <div>
+          <h2 id="threshold-modal-title">Pond settings</h2>
+          <p id="threshold-modal-description">Configure thresholds and the alarm phone number for this pond.</p>
+        </div>
+        <button type="button" class="icon-button" id="threshold-modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <form id="threshold-form" class="form-grid">
+        <div class="settings-pump-tabs" role="tablist" aria-label="Pump settings">
+          <button type="button" class="settings-pump-tab is-active" id="settings-pump1-tab" data-settings-pump-tab="contactor1"
+            role="tab" aria-selected="true" aria-controls="settings-pump1-group">Pump 1</button>
+          <button type="button" class="settings-pump-tab" id="settings-pump2-tab" data-settings-pump-tab="contactor2"
+            role="tab" aria-selected="false" aria-controls="settings-pump2-group">Pump 2</button>
+        </div>
+        <div class="settings-pump-grid" id="settings-pump-grid">
+          <section class="settings-group settings-pump-group is-active" id="settings-pump1-group" role="tabpanel"
+            aria-labelledby="settings-pump1-tab" data-settings-pump-panel="contactor1">
+            <h3 id="settings-pump1-title">Pump 1</h3>
+            <div class="settings-subgroup">
+              <h4 id="settings-pump1-current-title">Current threshold</h4>
+              <div class="field-row">
+                <div class="field-block">
+                  <label for="settings-pump1-current-low">Low threshold</label>
+                  <input id="settings-pump1-current-low" name="pump1CurrentLow" class="threshold-input" type="number"
+                    step="0.1" inputmode="decimal" />
+                </div>
+                <div class="field-block">
+                  <label for="settings-pump1-current-high">High threshold</label>
+                  <input id="settings-pump1-current-high" name="pump1CurrentHigh" class="threshold-input" type="number"
+                    step="0.1" inputmode="decimal" />
+                </div>
+              </div>
+            </div>
+            <div class="settings-subgroup">
+              <h4 id="settings-pump1-run-window-title">Run window</h4>
+              <div class="field-row">
+                <div class="field-block">
+                  <label for="settings-pump1-run-window-start">Start</label>
+                  <input id="settings-pump1-run-window-start" name="pump1RunWindowStart" class="threshold-input"
+                    type="text" inputmode="numeric" maxlength="4" />
+                </div>
+                <div class="field-block">
+                  <label for="settings-pump1-run-window-end">End</label>
+                  <input id="settings-pump1-run-window-end" name="pump1RunWindowEnd" class="threshold-input" type="text"
+                    inputmode="numeric" maxlength="4" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="settings-group settings-pump-group" id="settings-pump2-group" role="tabpanel"
+            aria-labelledby="settings-pump2-tab" data-settings-pump-panel="contactor2" hidden>
+            <h3 id="settings-pump2-title">Pump 2</h3>
+            <div class="settings-subgroup">
+              <h4 id="settings-pump2-current-title">Current threshold</h4>
+              <div class="field-row">
+                <div class="field-block">
+                  <label for="settings-pump2-current-low">Low threshold</label>
+                  <input id="settings-pump2-current-low" name="pump2CurrentLow" class="threshold-input" type="number"
+                    step="0.1" inputmode="decimal" />
+                </div>
+                <div class="field-block">
+                  <label for="settings-pump2-current-high">High threshold</label>
+                  <input id="settings-pump2-current-high" name="pump2CurrentHigh" class="threshold-input" type="number"
+                    step="0.1" inputmode="decimal" />
+                </div>
+              </div>
+            </div>
+            <div class="settings-subgroup">
+              <h4 id="settings-pump2-run-window-title">Run window</h4>
+              <div class="field-row">
+                <div class="field-block">
+                  <label for="settings-pump2-run-window-start">Start</label>
+                  <input id="settings-pump2-run-window-start" name="pump2RunWindowStart" class="threshold-input"
+                    type="text" inputmode="numeric" maxlength="4" />
+                </div>
+                <div class="field-block">
+                  <label for="settings-pump2-run-window-end">End</label>
+                  <input id="settings-pump2-run-window-end" name="pump2RunWindowEnd" class="threshold-input" type="text"
+                    inputmode="numeric" maxlength="4" />
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="settings-common-grid">
+          <section class="settings-group" id="settings-phone-group">
+            <h3 id="settings-phone-title">Alarm phone number</h3>
+            <div class="field-block settings-phone-field">
+              <input id="settings-alarm-phone" name="alarmPhone" class="threshold-input" type="text" inputmode="tel"
+                autocomplete="tel" aria-label="Alarm phone number" />
+            </div>
+          </section>
+          <section class="settings-group" id="settings-update-group">
+            <div class="settings-toggle-row">
+              <div class="field-block">
+                <label id="settings-update-label">Update information</label>
+              </div>
+              <button type="button" class="settings-inline-toggle" id="settings-update-toggle" data-enabled="false"
+                aria-pressed="false">
+                <span class="settings-inline-toggle-label" data-side="on">ON</span>
+                <span class="settings-inline-toggle-label" data-side="off">OFF</span>
+              </button>
+            </div>
+          </section>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="modal-button" id="threshold-modal-cancel">Cancel</button>
+          <button type="submit" class="modal-button primary" id="threshold-modal-submit">Save settings</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="meter-modal" aria-hidden="true">
+    <div class="modal-card modal-card-meter">
+      <div class="modal-head">
+        <div>
+          <h2 id="meter-modal-title">Electrical meter</h2>
+          <p id="meter-modal-description">Voltage, current, temperature and energy for this contactor.</p>
+        </div>
+        <button type="button" class="icon-button" id="meter-modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="meter-grid">
+        <section class="metric-card meter-energy-card">
+          <strong id="meter-energy-title">Energy consumption</strong>
+          <div class="metric-value" id="meter-energy-value">--</div>
+        </section>
+        <section class="chart-card meter-chart-card" id="meter-voltage-card">
+          <div class="chart-head">
+            <strong id="meter-voltage-title">Voltage</strong>
+            <div class="chart-legend">
+              <span class="chart-legend-item"><span class="chart-legend-dot"
+                  style="--dot-color: var(--theme-series-1);"></span><span class="chart-live-value"
+                  id="meter-voltage-inline">--</span></span>
+            </div>
+          </div>
+          <div class="chart-shell" id="meter-voltage-shell">
+            <div class="chart-y-label" data-align="max" id="meter-voltage-max">0</div>
+            <div class="chart-y-label" data-align="min" id="meter-voltage-min">0</div>
+            <svg class="chart-svg" viewBox="0 0 360 240" preserveAspectRatio="none">
+              <g class="chart-grid" id="meter-voltage-grid"></g>
+              <g class="chart-axis">
+                <line x1="46" y1="16" x2="46" y2="198"></line>
+                <line x1="46" y1="198" x2="340" y2="198"></line>
+              </g>
+              <path class="chart-empty" id="meter-voltage-empty" d="M46 106 H340"></path>
+              <path class="chart-path" id="meter-voltage-path" style="--line-color: var(--theme-series-1);" d=""></path>
+              <line class="chart-hover-line" id="meter-voltage-hover-line" x1="0" y1="16" x2="0" y2="198"></line>
+              <circle class="chart-hover-point" id="meter-voltage-point" style="--line-color: var(--theme-series-1);"
+                r="5"></circle>
+              <rect class="chart-hitbox" id="meter-voltage-hitbox" x="46" y="16" width="294" height="182"></rect>
+            </svg>
+            <div class="chart-tooltip" id="meter-voltage-tooltip"></div>
+          </div>
+        </section>
+        <section class="chart-card meter-chart-card" id="meter-current-card">
+          <div class="chart-head">
+            <strong id="meter-current-title">Current</strong>
+            <div class="chart-legend">
+              <span class="chart-legend-item"><span class="chart-legend-dot"
+                  style="--dot-color: var(--theme-series-3);"></span><span class="chart-live-value"
+                  id="meter-current1-inline">--</span></span>
+              <span class="chart-legend-item"><span class="chart-legend-dot"
+                  style="--dot-color: var(--theme-series-4);"></span><span class="chart-live-value"
+                  id="meter-current2-inline">--</span></span>
+              <span class="chart-legend-item"><span class="chart-legend-dot"
+                  style="--dot-color: var(--theme-series-5);"></span><span class="chart-live-value"
+                  id="meter-current3-inline">--</span></span>
+            </div>
+          </div>
+          <div class="chart-shell" id="meter-current-shell">
+            <div class="chart-y-label" data-align="max" id="meter-current-max">0</div>
+            <div class="chart-y-label" data-align="min" id="meter-current-min">0</div>
+            <svg class="chart-svg" viewBox="0 0 360 240" preserveAspectRatio="none">
+              <g class="chart-grid" id="meter-current-grid"></g>
+              <g class="chart-axis">
+                <line x1="46" y1="16" x2="46" y2="198"></line>
+                <line x1="46" y1="198" x2="340" y2="198"></line>
+              </g>
+              <path class="chart-empty" id="meter-current-empty" d="M46 106 H340"></path>
+              <line class="chart-threshold-line" id="meter-current-threshold-low" data-mode="low" x1="46" y1="0"
+                x2="340" y2="0"></line>
+              <line class="chart-threshold-line" id="meter-current-threshold-high" data-mode="high" x1="46" y1="0"
+                x2="340" y2="0"></line>
+              <path class="chart-path" id="meter-current-path-1" style="--line-color: var(--theme-series-3);" d="">
+              </path>
+              <path class="chart-path" id="meter-current-path-2" style="--line-color: var(--theme-series-4);" d="">
+              </path>
+              <path class="chart-path" id="meter-current-path-3" style="--line-color: var(--theme-series-5);" d="">
+              </path>
+              <line class="chart-hover-line" id="meter-current-hover-line" x1="0" y1="16" x2="0" y2="198"></line>
+              <circle class="chart-hover-point" id="meter-current-point-1" style="--line-color: var(--theme-series-3);"
+                r="5"></circle>
+              <circle class="chart-hover-point" id="meter-current-point-2" style="--line-color: var(--theme-series-4);"
+                r="5"></circle>
+              <circle class="chart-hover-point" id="meter-current-point-3" style="--line-color: var(--theme-series-5);"
+                r="5"></circle>
+              <rect class="chart-hitbox" id="meter-current-hitbox" x="46" y="16" width="294" height="182"></rect>
+            </svg>
+            <div class="chart-tooltip" id="meter-current-tooltip"></div>
+          </div>
+        </section>
+        <section class="chart-card meter-chart-card" id="meter-temperature-card">
+          <div class="chart-head">
+            <strong id="meter-temperature-title">Temperature</strong>
+            <div class="chart-legend">
+              <span class="chart-legend-item"><span class="chart-legend-dot"
+                  style="--dot-color: var(--theme-series-5);"></span><span class="chart-live-value"
+                  id="meter-temperature-inline">--</span></span>
+            </div>
+          </div>
+          <div class="chart-shell" id="meter-temperature-shell">
+            <div class="chart-y-label" data-align="max" id="meter-temperature-max">0</div>
+            <div class="chart-y-label" data-align="min" id="meter-temperature-min">0</div>
+            <svg class="chart-svg" viewBox="0 0 360 240" preserveAspectRatio="none">
+              <g class="chart-grid" id="meter-temperature-grid"></g>
+              <g class="chart-axis">
+                <line x1="46" y1="16" x2="46" y2="198"></line>
+                <line x1="46" y1="198" x2="340" y2="198"></line>
+              </g>
+              <path class="chart-empty" id="meter-temperature-empty" d="M46 106 H340"></path>
+              <line class="chart-threshold-line" id="meter-temperature-threshold-low" data-mode="low" x1="46" y1="0"
+                x2="340" y2="0"></line>
+              <line class="chart-threshold-line" id="meter-temperature-threshold-high" data-mode="high" x1="46" y1="0"
+                x2="340" y2="0"></line>
+              <path class="chart-path" id="meter-temperature-path" style="--line-color: var(--theme-series-5);" d="">
+              </path>
+              <line class="chart-hover-line" id="meter-temperature-hover-line" x1="0" y1="16" x2="0" y2="198"></line>
+              <circle class="chart-hover-point" id="meter-temperature-point"
+                style="--line-color: var(--theme-series-5);" r="5"></circle>
+              <rect class="chart-hitbox" id="meter-temperature-hitbox" x="46" y="16" width="294" height="182"></rect>
+            </svg>
+            <div class="chart-tooltip" id="meter-temperature-tooltip"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Choose theme"
+      aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Theme options">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism"
+        role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora
+        UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern
+        Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism"
+        role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk"
+        role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo
+        Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento
+        Grid</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script id="monitoring-aquaculture-ponds-config" type="application/json">
+{
+    "title": "Monitoring Aquaculture Ponds",
+    "description": "",
+    "syncId": "<<syncid>>",
+    "history": {
+        "sessionId": "<<sessionid>>",
+        "syncId": "<<syncid>>",
+        "macro": "pond-event-history",
+        "pageSize": 100
+    },
+    "sessions": [
+        {
+            "title": "Pond cabinet 1",
+            "sessionId": "<<sessionid>>",
+            "description": "",
+            "fields": {
+                "contactor1": "O101",
+                "contactor2": "O102",
+                "contactor3": "",
+                "alarm": "alarm1",
+                "currentThreshold": "#1011",
+                "alarmPhone": "#1002.1",
+                "runWindow": "#1005",
+                "updateEnabled": "#1003.1"
+            },
+            "commands": {
+                "contactor1On": "N3,1,1,\"ON\",\"<<username>>\"",
+                "contactor1Off": "N3,1,1,\"OFF\",\"<<username>>\"",
+                "contactor2On": "N3,1,2,\"ON\",\"<<username>>\"",
+                "contactor2Off": "N3,1,2,\"OFF\",\"<<username>>\"",
+                "contactor3On": "N3,1,3,\"ON\",\"<<username>>\"",
+                "contactor3Off": "N3,1,3,\"OFF\",\"<<username>>\"",
+                "alarmOff": "N4,\"<<username>>\",1"
+            },
+            "scheduleFields": [
+                "#1021",
+                "#1022",
+                "#1023",
+                "#1024"
+            ],
+            "meters": {
+                "contactor1": {
+                    "title": "Pump 1",
+                    "voltage": "Voltage11_V",
+                    "current1": "Current11_A1",
+                    "current2": "Current11_A2",
+                    "current3": "Current11_A3",
+                    "temperature": "Temper11",
+                    "energy": "Energy11_Wh"
+                },
+                "contactor2": {
+                    "title": "Pump 2",
+                    "voltage": "Voltage12_V",
+                    "current1": "Current12_A1",
+                    "current2": "Current12_A2",
+                    "current3": "Current12_A3",
+                    "temperature": "Temper12",
+                    "energy": "Energy12_Wh"
+                }
+            }
+        },
+        {
+            "title": "Pond cabinet 2",
+            "sessionId": "<<sessionid>>",
+            "description": "",
+            "fields": {
+                "contactor1": "O103",
+                "contactor2": "O104",
+                "contactor3": "",
+                "alarm": "alarm2",
+                "currentThreshold": "#1012",
+                "alarmPhone": "#1002.2",
+                "runWindow": "#1006",
+                "updateEnabled": "#1003.2"
+            },
+            "commands": {
+                "contactor1On": "N3,2,1,\"ON\",\"<<username>>\"",
+                "contactor1Off": "N3,2,1,\"OFF\",\"<<username>>\"",
+                "contactor2On": "N3,2,2,\"ON\",\"<<username>>\"",
+                "contactor2Off": "N3,2,2,\"OFF\",\"<<username>>\"",
+                "contactor3On": "N3,2,3,\"ON\",\"<<username>>\"",
+                "contactor3Off": "N3,2,3,\"OFF\",\"<<username>>\"",
+                "alarmOff": "N4,\"<<username>>\",2"
+            },
+            "scheduleFields": [
+                "#1025",
+                "#1026",
+                "#1027",
+                "#1028"
+            ],
+            "meters": {
+                "contactor1": {
+                    "title": "Pump 1",
+                    "voltage": "Voltage21_V",
+                    "current1": "Current21_A1",
+                    "current2": "Current21_A2",
+                    "current3": "Current21_A3",
+                    "temperature": "Temper21",
+                    "energy": "Energy21_Wh"
+                },
+                "contactor2": {
+                    "title": "Pump 2",
+                    "voltage": "Voltage22_V",
+                    "current1": "Current22_A1",
+                    "current2": "Current22_A2",
+                    "current3": "Current22_A3",
+                    "temperature": "Temper22",
+                    "energy": "Energy22_Wh"
+                }
+            }
+        },
+        {
+            "title": "Pond cabinet 3",
+            "sessionId": "<<sessionid>>",
+            "description": "",
+            "fields": {
+                "contactor1": "O105",
+                "contactor2": "O106",
+                "contactor3": "",
+                "alarm": "alarm3",
+                "currentThreshold": "#1013",
+                "alarmPhone": "#1002.3",
+                "runWindow": "#1007",
+                "updateEnabled": "#1003.3"
+            },
+            "commands": {
+                "contactor1On": "N3,3,1,\"ON\",\"<<username>>\"",
+                "contactor1Off": "N3,3,1,\"OFF\",\"<<username>>\"",
+                "contactor2On": "N3,3,2,\"ON\",\"<<username>>\"",
+                "contactor2Off": "N3,3,2,\"OFF\",\"<<username>>\"",
+                "contactor3On": "N3,3,3,\"ON\",\"<<username>>\"",
+                "contactor3Off": "N3,3,3,\"OFF\",\"<<username>>\"",
+                "alarmOff": "N4,\"<<username>>\",3"
+            },
+            "scheduleFields": [
+                "#1029",
+                "#1030",
+                "#1031",
+                "#1032"
+            ],
+            "meters": {
+                "contactor1": {
+                    "title": "Pump 1",
+                    "voltage": "Voltage31_V",
+                    "current1": "Current31_A1",
+                    "current2": "Current31_A2",
+                    "current3": "Current31_A3",
+                    "temperature": "Temper31",
+                    "energy": "Energy31_Wh"
+                },
+                "contactor2": {
+                    "title": "Pump 2",
+                    "voltage": "Voltage32_V",
+                    "current1": "Current32_A1",
+                    "current2": "Current32_A2",
+                    "current3": "Current32_A3",
+                    "temperature": "Temper32",
+                    "energy": "Energy32_Wh"
+                }
+            }
+        },
+        {
+            "title": "Pond cabinet 4",
+            "sessionId": "<<sessionid>>",
+            "description": "",
+            "fields": {
+                "contactor1": "O107",
+                "contactor2": "O108",
+                "contactor3": "",
+                "alarm": "alarm4",
+                "currentThreshold": "#1014",
+                "alarmPhone": "#1002.4",
+                "runWindow": "#1008",
+                "updateEnabled": "#1003.4"
+            },
+            "commands": {
+                "contactor1On": "N3,4,1,\"ON\",\"<<username>>\"",
+                "contactor1Off": "N3,4,1,\"OFF\",\"<<username>>\"",
+                "contactor2On": "N3,4,2,\"ON\",\"<<username>>\"",
+                "contactor2Off": "N3,4,2,\"OFF\",\"<<username>>\"",
+                "contactor3On": "N3,4,3,\"ON\",\"<<username>>\"",
+                "contactor3Off": "N3,4,3,\"OFF\",\"<<username>>\"",
+                "alarmOff": "N4,\"<<username>>\",4"
+            },
+            "scheduleFields": [
+                "#1033",
+                "#1034",
+                "#1035",
+                "#1036"
+            ],
+            "meters": {
+                "contactor1": {
+                    "title": "Pump 1",
+                    "voltage": "Voltage41_V",
+                    "current1": "Current41_A1",
+                    "current2": "Current41_A2",
+                    "current3": "Current41_A3",
+                    "temperature": "Temper41",
+                    "energy": "Energy41_Wh"
+                },
+                "contactor2": {
+                    "title": "Pump 2",
+                    "voltage": "Voltage42_V",
+                    "current1": "Current42_A1",
+                    "current2": "Current42_A2",
+                    "current3": "Current42_A3",
+                    "temperature": "Temper42",
+                    "energy": "Energy42_Wh"
+                }
+            }
+        }
+    ],
+    "ui": {
+        "hero": {
+            "rangeAriaLabel": "Chart time range",
+            "refreshHistory": "Refresh history",
+            "pondCountSingular": "pond",
+            "pondCountPlural": "ponds"
+        },
+        "history": {
+            "title": "History",
+            "sourceLabel": "History source",
+            "sourceValue": "Source {ioid}",
+            "waiting": "Waiting for history data.",
+            "empty": "No history rows available.",
+            "eventTypes": {
+                "shaftBreak": "Shaft break",
+                "overload": "Overload",
+                "offTime": "OFF at wrong time",
+                "onTime": "ON at wrong time",
+                "alarmOff": "Alarm turned off",
+                "disconnect": "Disconnect"
+            },
+            "loadFailed": "Unable to load event history.",
+            "columns": {
+                "time": "Time",
+                "pond": "Pond",
+                "type": "Type",
+                "content": "Content",
+                "email": "Email"
+            }
+        },
+        "settingsModal": {
+            "idleTitle": "Pond settings",
+            "title": "Pond settings | {title}",
+            "description": "Configure thresholds and the alarm phone number for this pond.",
+            "pump1Title": "Pump 1",
+            "pump2Title": "Pump 2",
+            "currentTitle": "Current threshold",
+            "lowLabel": "Low threshold",
+            "highLabel": "High threshold",
+            "phoneTitle": "Alarm phone number",
+            "runWindowTitle": "Run window",
+            "startLabel": "Start",
+            "endLabel": "End",
+            "updateLabel": "Update information",
+            "updateEnabled": "Updates enabled.",
+            "updateDisabled": "Updates disabled.",
+            "updateFailed": "Unable to update refresh mode.",
+            "updateToggleAria": "Toggle update information for {title}",
+            "phoneLabel": "Alarm phone number",
+            "cancel": "Cancel",
+            "submit": "Save settings",
+            "closeAriaLabel": "Close dialog"
+        },
+        "theme": {
+            "toggleAriaLabel": "Choose theme",
+            "menuAriaLabel": "Theme options",
+            "options": {
+                "neumorphism": "Neumorphism",
+                "aurora-ui": "Aurora UI",
+                "modern-flat": "Modern Flat",
+                "glassmorphism": "Glassmorphism",
+                "cyberpunk": "Cyberpunk",
+                "neo-brutalism": "Neo Brutalism",
+                "bento-grid": "Bento Grid"
+            }
+        },
+        "pond": {
+            "unknown": "Unknown",
+            "fallbackTitle": "Pond {index}",
+            "deviceDescription": "Device: {ioid}",
+            "connecting": "Connecting",
+            "reconnecting": "Reconnecting",
+            "settingsButton": "Settings",
+            "settingsButtonAria": "Open pond settings for {title}",
+            "live": "Live",
+            "stale": "Stale",
+            "offline": "Offline",
+            "billingBlocked": "Top up needed"
+        },
+        "contactor": {
+            "labels": {
+                "contactor1": "Pump 1",
+                "contactor2": "Pump 2",
+                "contactor3": "Pump 3"
+            },
+            "off": "OFF",
+            "offline": "OFFLINE",
+            "error": "ERROR",
+            "turnOnAria": "Turn {label} on",
+            "turnOffAria": "Turn {label} off",
+            "turningOn": "Turning on",
+            "turningOff": "Turning off",
+            "meterAria": "Open electrical meter for {label}"
+        },
+        "charts": {
+            "voltageTitle": "Voltage",
+            "currentTitle": "Current",
+            "temperatureTitle": "Temperature",
+            "temperatureLegend": "Temp",
+            "energyTitle": "Total energy",
+            "temperatureMissing": "Temperature telemetry is not configured for this pond.",
+            "seriesLabels": {
+                "voltage1": "Voltage1_V",
+                "voltage2": "Voltage2_V",
+                "voltage3": "Voltage3_V",
+                "current1": "Current1_A",
+                "current2": "Current2_A",
+                "current3": "Current3_A",
+                "temperature": "temperature"
+            }
+        },
+        "schedule": {
+            "title": "Schedule setup",
+            "save": "Save",
+            "saving": "Saving...",
+            "selectPlaceholder": "Select",
+            "outputLabels": {
+                "out1": "Out 1",
+                "out2": "Out 2",
+                "out12": "Out 1&2"
+            },
+            "actionOn": "ON",
+            "actionOff": "OFF",
+            "enableAriaLabel": "Enable schedule {index}",
+            "toggleActionAriaLabel": "Toggle schedule action {index}",
+            "commandFailed": "Schedule command failed.",
+            "updateFailed": "Schedule update failed.",
+            "updated": "Schedule updated.",
+            "empty": "Schedule is empty.",
+            "stateUpdateFailed": "Schedule state update failed.",
+            "enabled": "Schedule enabled.",
+            "disabled": "Schedule disabled.",
+            "columns": {
+                "enable": "Enable",
+                "time": "Time",
+                "contactor": "Out",
+                "action": "Action"
+            }
+        },
+        "thresholds": {
+            "none": "No threshold",
+            "missingContext": "Missing command context for settings update.",
+            "bothRequired": "Both low and high thresholds are required.",
+            "timeWindowBothRequired": "Both start and end times are required.",
+            "timeWindowInvalid": "Time must use 4 digits in HHMM format.",
+            "invalidRange": "Low threshold must be less than or equal to high threshold.",
+            "updateFailed": "Settings update failed.",
+            "updated": "Settings updated.",
+            "placeholders": {
+                "currentLow": "0.5",
+                "currentHigh": "3.5",
+                "alarmPhone": "+84901234567",
+                "runWindowStart": "0700",
+                "runWindowEnd": "2359"
+            }
+        },
+        "alerts": {
+            "overcurrent": "Overcurrent",
+            "lowLoad": "Low load",
+            "tooHot": "Too hot",
+            "tooCold": "Too cold"
+        },
+        "commands": {
+            "sent": "Command sent.",
+            "failed": "Command failed.",
+            "alarmOff": "Turn off alarm",
+            "alarmOffAria": "Turn off alarm for {title}",
+            "alarmOffSent": "Alarm off command sent.",
+            "alarmOffFailed": "Alarm off failed."
+        },
+        "network": {
+            "requestFailed": "Request failed.",
+            "requestFailedWithStatus": "Request failed with status {status}",
+            "unexpectedIoDataResponse": "Unexpected IoData response."
+        },
+        "alarmCard": {
+            "empty": "No active alarm"
+        },
+        "meterModal": {
+            "idleTitle": "Electrical meter",
+            "title": "Electrical meter | {label}",
+            "description": "Voltage, current, temperature and energy for {label}.",
+            "closeAriaLabel": "Close dialog",
+            "energyTitle": "Energy consumption",
+            "voltageTitle": "Voltage",
+            "currentTitle": "Current",
+            "temperatureTitle": "Temperature",
+            "unavailable": "Meter data is not configured for this contactor.",
+            "seriesLabels": {
+                "voltage": "Voltage",
+                "current1": "I1",
+                "current2": "I2",
+                "current3": "I3",
+                "temperature": "Temp"
+            }
+        }
+    },
+    "locale": "en"
+}
+</script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script src="/sample_dashboards/monitoring-aquaculture-ponds/dashboard-runtime-v2.js?v=2026.05.28.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+
+</html>

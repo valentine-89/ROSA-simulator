@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 220" role="img" aria-label="Solar irrigation valve">
+  <defs>
+    <linearGradient id="panel" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#1e3a8a"/>
+      <stop offset="0.52" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="valve" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#34d399"/>
+      <stop offset="0.5" stop-color="#10b981"/>
+      <stop offset="1" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" x2="1">
+      <stop offset="0" stop-color="#e2e8f0"/>
+      <stop offset="0.55" stop-color="#94a3b8"/>
+      <stop offset="1" stop-color="#475569"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <rect x="24" y="178" width="192" height="16" rx="8" fill="#334155" opacity="0.2"/>
+  <g filter="url(#shadow)">
+    <rect x="55" y="25" width="130" height="72" rx="12" fill="url(#panel)"/>
+    <path d="M68 39h104M68 59h104M68 79h104M86 31v60M120 31v60M154 31v60" fill="none" stroke="#93c5fd" stroke-width="3" opacity="0.7"/>
+    <rect x="112" y="96" width="16" height="34" rx="7" fill="#64748b"/>
+    <path d="M43 144h48l18-22h22l18 22h48v30H43z" fill="url(#metal)"/>
+    <circle cx="120" cy="146" r="39" fill="url(#valve)"/>
+    <circle cx="120" cy="146" r="24" fill="#ecfeff" opacity="0.95"/>
+    <path d="M103 146h34M120 129v34" stroke="#047857" stroke-width="9" stroke-linecap="round"/>
+    <rect x="27" y="139" width="54" height="38" rx="18" fill="#0f766e"/>
+    <rect x="159" y="139" width="54" height="38" rx="18" fill="#0f766e"/>
+    <circle cx="48" cy="158" r="5" fill="#a7f3d0"/>
+    <circle cx="192" cy="158" r="5" fill="#a7f3d0"/>
+  </g>
+</svg>

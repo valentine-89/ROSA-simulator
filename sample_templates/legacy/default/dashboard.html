@@ -1,0 +1,3310 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sample IoT Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../dashboard-themes.css" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) {
+          document.documentElement.setAttribute("data-theme", savedTheme);
+        }
+      } catch (error) {
+        // Ignore localStorage access issues and fall back to the default theme.
+      }
+    })();
+  </script>
+  <style type="text/tailwindcss">
+    @layer base {
+      body {
+        background: var(--theme-bg);
+        color: var(--theme-text);
+        transition: all 0.3s ease;
+        min-height: 100vh;
+        font-family: "Segoe UI Variable Text", "Segoe UI", Tahoma, Geneva, Verdana, Arial, sans-serif;
+        @apply p-2 md:p-6;
+      }
+      
+      .panel, .section-card, .light-card, .sensor-stat, .data-surface, .data-kpi-card, .media-shell, .widget-card {
+        background: var(--theme-card) !important;
+        border: var(--theme-border) !important;
+        box-shadow: var(--theme-shadow) !important;
+        border-radius: var(--theme-radius) !important;
+        @apply p-5 transition-all duration-300;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+      }
+      
+      .btn, .toolbar-button, .program-action-button {
+        background: var(--theme-btn-bg) !important;
+        color: var(--theme-btn-text) !important;
+        border: var(--theme-border) !important;
+        box-shadow: var(--theme-shadow) !important;
+        border-radius: var(--theme-radius) !important;
+        @apply px-4 py-3 font-bold cursor-pointer transition-all duration-150 flex items-center justify-center;
+      }
+      
+      .btn:active, .toolbar-button:active, .program-action-button:active {
+        transform: translate(2px, 2px);
+        box-shadow: none !important;
+      }
+      
+      .input, .textarea, .select {
+        background: var(--theme-card);
+        color: var(--theme-text);
+        border: var(--theme-border);
+        border-radius: var(--theme-radius);
+        @apply w-full px-4 py-3 outline-none;
+      }
+      
+      /* Specific utility maps using config and variables */
+      .shell { @apply max-w-7xl mx-auto flex flex-col gap-6 w-full; }
+      #app-shell {
+        @apply flex flex-col gap-6;
+      }
+      #app-shell > [data-layout-key] {
+        min-width: 0;
+      }
+      #app-shell > [data-layout-key="controlView"] {
+        position: sticky;
+        top: 0.75rem;
+        z-index: 20;
+        max-height: min(35vh, calc(100vh - 1.5rem));
+        overflow: auto;
+      }
+      @media (min-width: 1280px) {
+        #app-shell {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          align-items: start;
+          gap: 1.5rem;
+        }
+        #app-shell > [data-layout-key="controlView"] {
+          top: 1rem;
+          max-height: min(35vh, calc(100vh - 2rem));
+        }
+        #app-shell > [data-layout-key="controlView"],
+        #app-shell > [data-layout-key="businessReports"] {
+          grid-column: 1 / -1;
+        }
+      }
+      @media (min-width: 1800px) {
+        #app-shell {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+      .grid-two { @apply grid grid-cols-1 xl:grid-cols-2 gap-6; }
+      h1 { @apply text-4xl md:text-5xl font-black mb-2; }
+      h2 { @apply text-2xl font-bold; }
+      h3 { @apply text-xl font-bold; }
+      p { @apply opacity-80; }
+      
+      .heading-row { @apply flex justify-between items-end gap-4 mb-4 flex-wrap; }
+      .section-head-sticky {
+        position: sticky;
+        top: 0;
+        z-index: 4;
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.75rem;
+        background: linear-gradient(180deg, color-mix(in srgb, var(--theme-bg) 90%, transparent), color-mix(in srgb, var(--theme-bg) 72%, transparent));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .chip, .meta-chip, .state-pill { 
+        border: var(--theme-border);
+        border-radius: var(--theme-radius);
+        background: var(--theme-card);
+        @apply inline-flex items-center gap-2 px-3 py-1 text-sm font-bold; 
+      }
+      
+      .stack-button { @apply flex flex-col items-start gap-1 justify-center leading-tight; }
+      .stack-button small { @apply text-[11px] font-bold opacity-80; }
+      .button-grid-3 { @apply grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4; }
+      .actions, .light-actions { @apply mt-4 grid grid-cols-2 gap-3; }
+      .section-stack { @apply flex flex-col gap-5; }
+      .section-stack-sticky { @apply gap-3; }
+      
+      .lights { @apply grid grid-cols-2 2xl:grid-cols-4 gap-4 mt-4; }
+      .card-top { @apply flex justify-between items-start gap-3; }
+      .icon-refresh-btn { 
+        @apply bg-transparent text-2xl leading-none cursor-pointer w-10 h-10 flex items-center justify-center transition-all opacity-80 hover:opacity-100;
+        color: var(--theme-text);
+      }
+      .program-icon {
+        @apply relative flex items-center justify-center mr-3;
+        font-size: 1.15rem;
+        font-weight: 900;
+        line-height: 1;
+        color: inherit;
+      }
+      .program-action-label { @apply text-sm leading-tight mt-2; opacity: 1 !important; color: inherit; }
+      
+      .sensor-grid { @apply grid grid-cols-1 md:grid-cols-2 gap-4; }
+      .sensor-controls {
+        @apply flex items-center justify-end gap-3 flex-wrap;
+      }
+      .sensor-stat-head { @apply flex items-start justify-between gap-3 mb-2; }
+      .sensor-stat-title { @apply text-[11px] uppercase tracking-wider font-bold opacity-70; }
+      .sensor-stat-value { @apply text-xl font-black leading-none text-right; color: var(--theme-text); }
+      .sensor-chart { @apply mt-4 relative h-40 rounded opacity-80 p-3 overflow-hidden border border-current; border-radius: min(var(--theme-radius), 20px); }
+      .sensor-chart-svg { @apply w-full h-full block; }
+      .sensor-foot { @apply flex items-center justify-between gap-3 text-[11px] font-bold tracking-wider uppercase mt-3 opacity-70; }
+      .select-inline { @apply w-auto px-3 py-1 text-xs; }
+      .sensor-range { @apply flex items-center gap-3 flex-wrap; }
+      
+      .data-report-grid { @apply grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-5; }
+      .data-surface { @apply col-span-1 md:col-span-3 lg:col-span-2; }
+      .data-kpi-card small, .data-surface small { @apply text-xs font-bold tracking-widest uppercase opacity-70; }
+      .data-kpi-card strong { @apply text-3xl font-black; }
+      .data-kpi-grid { @apply grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4; }
+      .factory-report-shell { @apply flex flex-col gap-5 mt-4; min-width: 0; }
+      .factory-report-toolbar { @apply flex items-center gap-3 flex-wrap justify-between; }
+      .factory-report-tools { @apply flex items-center gap-3 flex-wrap; }
+      .factory-report-kpis { @apply grid gap-4; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+      .factory-report-kpi { @apply p-4; border: var(--theme-border); border-radius: var(--theme-radius); background: color-mix(in srgb, var(--theme-card) 92%, transparent); box-shadow: var(--theme-shadow); }
+      .factory-report-kpi-label { @apply text-xs font-bold uppercase tracking-wider opacity-70; }
+      .factory-report-kpi-value { @apply mt-3 text-3xl lg:text-5xl font-black tracking-tight leading-none text-center; }
+      .factory-report-kpi-note { @apply mt-3 text-xs font-bold opacity-60 text-center; }
+      .factory-report-machine-list { @apply grid gap-4; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); min-width: 0; }
+      .factory-report-machine-card { @apply p-4 flex flex-col gap-4; min-width: 0; border: var(--theme-border); border-radius: var(--theme-radius); background: color-mix(in srgb, var(--theme-card) 94%, transparent); box-shadow: var(--theme-shadow); transition: border-color .16s ease, background .16s ease; }
+      .factory-report-machine-card.is-warning { background: color-mix(in srgb, #ef4444 12%, var(--theme-card)); border-color: color-mix(in srgb, #ef4444 34%, transparent); }
+      .factory-report-machine-top { @apply flex items-start justify-between gap-3; }
+      .factory-report-machine-title strong { @apply block text-lg font-black tracking-tight; }
+      .factory-report-machine-title span { @apply block mt-1 text-sm font-bold opacity-70; }
+      .factory-report-legend { @apply flex flex-wrap gap-3 items-center; }
+      .factory-report-legend-chip { @apply inline-flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-full; border: 1px solid color-mix(in srgb, var(--theme-text) 8%, transparent); background: color-mix(in srgb, var(--theme-primary) 7%, transparent); color: color-mix(in srgb, var(--theme-text) 84%, transparent); }
+      .factory-report-legend-chip em { @apply not-italic opacity-70; }
+      .factory-report-swatch { @apply inline-block w-2.5 h-2.5 rounded-full; }
+      .factory-report-swatch.output { background: var(--theme-series-2); }
+      .factory-report-swatch.efficiency { background: var(--theme-series-5); }
+      .factory-report-swatch.material { background: var(--theme-series-3); }
+      .factory-report-trend-shell { @apply relative p-3 overflow-hidden; min-width: 0; width: 100%; border-radius: min(var(--theme-radius), 22px); border: 1px solid color-mix(in srgb, var(--theme-text) 8%, transparent); background: color-mix(in srgb, var(--theme-primary) 5%, transparent); }
+      .factory-report-trend-shell.is-warning { background: color-mix(in srgb, #ef4444 10%, transparent); border-color: color-mix(in srgb, #ef4444 28%, transparent); }
+      .factory-report-trend-svg { display: block; width: 100%; height: auto; }
+      .factory-report-trend-grid { stroke: color-mix(in srgb, var(--theme-text) 12%, transparent); stroke-width: 1; }
+      .factory-report-trend-axis { stroke: color-mix(in srgb, var(--theme-text) 18%, transparent); stroke-width: 1; }
+      .factory-report-trend-label { fill: color-mix(in srgb, var(--theme-text) 72%, transparent); font-size: 11px; font-weight: 800; }
+      .factory-report-trend-pane-title { fill: color-mix(in srgb, var(--theme-text) 88%, transparent); font-size: 11px; font-weight: 900; }
+      .factory-report-trend-bar { fill: var(--theme-series-2); opacity: 0.82; }
+      .factory-report-trend-line { fill: none; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+      .factory-report-trend-line.efficiency { stroke: var(--theme-series-5); }
+      .factory-report-trend-line.material { stroke: var(--theme-series-3); }
+      .factory-report-trend-area { fill: color-mix(in srgb, var(--theme-series-3) 18%, transparent); stroke: none; }
+      .factory-report-trend-hover-line { stroke: color-mix(in srgb, var(--theme-text) 22%, transparent); stroke-width: 2; opacity: 0; }
+      .factory-report-trend-dot { opacity: 0; stroke: var(--theme-card); stroke-width: 3; }
+      .factory-report-trend-dot.efficiency { fill: var(--theme-series-5); }
+      .factory-report-trend-dot.material { fill: var(--theme-series-3); }
+      .factory-report-trend-hitbox { fill: transparent; cursor: crosshair; }
+      .factory-report-tooltip { position: absolute; left: 12px; top: 12px; min-width: 210px; padding: 10px 12px; border-radius: min(var(--theme-radius), 18px); background: color-mix(in srgb, var(--theme-card) 96%, transparent); border: var(--theme-border); box-shadow: var(--theme-shadow); opacity: 0; pointer-events: none; transform: translate3d(0, 8px, 0); transition: opacity 0.14s ease, transform 0.14s ease; font-size: 0.8rem; line-height: 1.5; }
+      .factory-report-tooltip strong { @apply block mb-1; }
+      .factory-report-meta { @apply grid gap-3 text-sm font-bold opacity-80; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .factory-report-meta b { color: var(--theme-text); }
+      .factory-report-warn-chip { @apply inline-flex items-center gap-2 px-3 py-2 text-[11px] font-black uppercase tracking-widest rounded-full; background: rgba(239, 68, 68, 0.14); color: #b91c1c; border: 1px solid rgba(239, 68, 68, 0.28); }
+      .factory-report-warn-chip::before { content: ""; @apply inline-block w-2 h-2 rounded-full; background: currentColor; }
+      .factory-report-table-wrap { @apply overflow-auto mt-3; width: 100%; max-width: 100%; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--theme-text) 8%, transparent); }
+      .factory-report-table-wrap table { @apply w-full border-collapse; min-width: 1320px; }
+      .factory-report-table-wrap th, .factory-report-table-wrap td { @apply px-4 py-3 text-left text-sm whitespace-nowrap; }
+      .factory-report-table-wrap thead th { @apply text-[11px] font-black uppercase tracking-widest sticky top-0; background: color-mix(in srgb, var(--theme-card) 94%, transparent); color: color-mix(in srgb, var(--theme-text) 74%, transparent); }
+      .factory-report-table-wrap tbody tr + tr td { border-top: 1px solid color-mix(in srgb, var(--theme-text) 8%, transparent); }
+      .factory-report-table-wrap tbody tr.warn-row td { background: color-mix(in srgb, #ef4444 8%, transparent); }
+      .factory-report-pager { @apply flex items-center justify-end gap-3 flex-wrap mt-4; }
+      .factory-report-pager-info { @apply text-sm font-bold opacity-70; }
+      .factory-report-empty { @apply p-6 text-center font-bold opacity-70 border border-dashed border-current rounded-2xl; }
+      .factory-report-modal { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; padding: 18px; background: rgba(12, 18, 28, 0.48); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+      .factory-report-modal.is-open { display: flex; }
+      .factory-report-modal-card { @apply w-full max-w-2xl p-6 flex flex-col gap-5; border: var(--theme-border); border-radius: var(--theme-radius); background: var(--theme-card); box-shadow: var(--theme-shadow); }
+      .factory-report-modal-head { @apply flex justify-between items-start gap-3; }
+      .factory-report-form { @apply grid gap-4; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .factory-report-field { @apply grid gap-2; }
+      .factory-report-field span { @apply text-sm font-bold; }
+      .factory-report-field input { @apply w-full px-4 py-3 outline-none; border: var(--theme-border); border-radius: var(--theme-radius); background: var(--theme-btn-bg); color: var(--theme-btn-text); box-shadow: var(--theme-shadow); }
+      .factory-report-field input[readonly] { opacity: 0.82; cursor: default; }
+      .factory-report-actions { @apply flex justify-end gap-3; }
+      @media (max-width: 900px) {
+        .factory-report-toolbar, .factory-report-tools, .factory-report-pager { @apply justify-start; }
+        .factory-report-form, .factory-report-meta { grid-template-columns: 1fr; }
+      }
+
+      .widget-grid { @apply grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4; }
+      .widget-chart-y-label, .sensor-chart-y-label { color: var(--theme-text); @apply absolute left-3 text-[10px] font-bold tracking-wider opacity-70 pointer-events-none leading-none; }
+      .widget-chart-y-label[data-align="max"], .sensor-chart-y-label[data-align="max"] { top: 0.5rem; }
+      .widget-chart-y-label[data-align="min"], .sensor-chart-y-label[data-align="min"] { bottom: 1rem; }
+      .widget-chart-axis line, .sensor-chart-axis line { stroke: var(--theme-text); @apply stroke-[1.2px] opacity-40; }
+      .widget-chart-grid line, .sensor-chart-grid line { stroke: var(--theme-text); @apply stroke-[1px] opacity-20; }
+      .widget-chart-path { stroke: var(--series-color, var(--theme-primary)); @apply fill-none stroke-[3px] opacity-90; }
+      .sensor-chart-path { stroke: var(--theme-primary); @apply fill-none stroke-[3px] opacity-90; }
+      .sensor-chart-area { fill: var(--theme-primary); @apply opacity-20; }
+      
+      .modal-overlay { @apply hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 items-center justify-center p-4; }
+      .modal-card { @apply w-full max-w-sm; }
+      .modal-head { @apply flex justify-between items-center mb-6; }
+      .icon-button { @apply w-9 h-9 flex items-center justify-center rounded-full opacity-80 hover:opacity-100 text-xl font-light; background: transparent; color: var(--theme-text); border: var(--theme-border); }
+      .is-open { @apply flex; }
+      .is-hidden { @apply hidden !important; }
+      .media-root { @apply w-full h-full flex items-start justify-center; }
+      #control-view-section {
+        @apply p-3 md:p-5;
+      }
+      .media-shell {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-height: 30vh;
+        overflow: auto;
+        scroll-padding-top: 1rem;
+      }
+      .media-image-feed { @apply w-full h-auto object-contain mx-auto; max-height: 30vh; border-radius: var(--theme-radius); }
+      .media-feed { @apply block w-full border-0; }
+      .media-stage { @apply origin-top-left transform-gpu; }
+      
+      .toast-stack { @apply fixed left-1/2 bottom-10 -translate-x-1/2 z-50 flex flex-col gap-3 w-[min(calc(100vw-28px),380px)] pointer-events-none; }
+      .toast { background: var(--theme-card); color: var(--theme-text); border: var(--theme-border); box-shadow: var(--theme-shadow); border-radius: var(--theme-radius); @apply px-4 py-3 font-bold; }
+      .toast.success { border-bottom-color: #10b981; border-bottom-width: 4px; }
+      .toast.error { border-bottom-color: #f43f5e; border-bottom-width: 4px; }
+
+      /* Subhead logic for colors */
+      .subhead { @apply block mb-2 text-[11px] uppercase tracking-wider font-bold; }
+      .status-dot { @apply w-2 h-2 rounded-full bg-slate-400; }
+      .status-dot.ok { @apply bg-green-500 shadow-[0_0_8px_#22c55e]; }
+      
+      /* Result boxes */
+      .result-label { @apply self-start p-3 text-sm font-bold opacity-90; }
+      .error-box { @apply bg-rose-500/20 text-rose-500 border border-rose-500 font-bold p-4 mt-4; border-radius: var(--theme-radius); }
+      .empty-box { @apply bg-black/5 text-current font-bold p-4 mt-4 opacity-70 border border-dashed border-current; border-radius: var(--theme-radius); }
+      .result-box { @apply p-4 mt-4 overflow-hidden; border: var(--theme-border); border-radius: var(--theme-radius); }
+      .result-box header { @apply pb-2 mb-2 font-bold opacity-80 border-b border-current; }
+      .result-box pre { @apply overflow-auto text-sm font-mono opacity-90; }
+      
+      .range-row { @apply mt-4 p-4 opacity-90; background: var(--theme-card); border: var(--theme-border); border-radius: var(--theme-radius); }
+      .range-head { @apply flex items-center justify-between text-sm font-bold opacity-80; }
+      .range { @apply mt-3 w-full bg-transparent; }
+
+      .widget-chart-shell { @apply mt-4 relative min-h-[220px] p-4; }
+      .widget-chart-head { @apply flex items-end justify-between gap-3 mb-3; }
+      .widget-chart-svg { @apply w-full h-[200px]; }
+      .widget-legend { @apply flex flex-wrap gap-3; }
+      .widget-legend-item { @apply inline-flex items-center gap-2 text-xs font-bold opacity-80; }
+      .widget-legend-dot { @apply w-2.5 h-2.5 rounded-full; background: var(--series-color, var(--theme-primary)); }
+      .widget-chart-hover-point, .sensor-chart-hover-point { fill: var(--theme-card); stroke: var(--series-color, var(--theme-primary)); stroke-width: 3; }
+      .widget-chart-tooltip-swatch { @apply inline-block w-2.5 h-2.5 rounded-full mr-2; background: var(--series-color, var(--theme-primary)); }
+      .widget-chart-empty, .sensor-chart-empty { stroke: var(--theme-text); @apply opacity-20 fill-none stroke-[2px]; }
+      .widget-chart-hover-line, .sensor-chart-hover-line { stroke: var(--theme-text); @apply opacity-30 stroke-[1.5px]; }
+      .widget-chart-hitbox, .sensor-chart-hitbox { @apply fill-transparent cursor-pointer; }
+      [data-series-index="0"] { --series-color: var(--theme-series-1); }
+      [data-series-index="1"] { --series-color: var(--theme-series-2); }
+      [data-series-index="2"] { --series-color: var(--theme-series-3); }
+      [data-series-index="3"] { --series-color: var(--theme-series-4); }
+      [data-series-index="4"] { --series-color: var(--theme-series-5); }
+      [data-series-index="5"] { --series-color: var(--theme-series-6); }
+      .data-chart-bar { fill: var(--theme-primary); opacity: 0.88; }
+      .data-chart-line { stroke: var(--theme-primary); fill: none; opacity: 0.92; }
+      .data-chart-area { fill: var(--theme-primary); opacity: 0.16; }
+      .data-chart-point { fill: var(--theme-card); stroke: var(--theme-primary); stroke-width: 3; }
+      
+      .data-table-shell { @apply overflow-auto mt-4; border: var(--theme-border); border-radius: var(--theme-radius); }
+      .data-table-shell table { @apply w-full border-collapse min-w-[420px]; }
+      .data-table-shell th, .data-table-shell td { @apply p-3 text-left opacity-90 border-b border-current; }
+      .data-table-shell th { @apply text-xs font-bold uppercase tracking-wider bg-black/5; }
+      .data-table-shell td { @apply text-sm font-bold whitespace-nowrap; }
+
+      .light-card { @apply relative; }
+      .light-card[data-state="off"] {
+        background: color-mix(in srgb, var(--theme-card) 92%, transparent) !important;
+      }
+      .light-card[data-state="on"] {
+        background: color-mix(in srgb, var(--theme-series-4) 14%, var(--theme-card)) !important;
+        box-shadow: var(--theme-shadow), 0 0 0 1px color-mix(in srgb, var(--theme-series-3) 26%, transparent);
+      }
+      .light-card[data-state="pending"] {
+        background: color-mix(in srgb, var(--theme-series-2) 12%, var(--theme-card)) !important;
+        box-shadow: var(--theme-shadow), 0 0 0 1px color-mix(in srgb, var(--theme-series-4) 26%, transparent);
+      }
+      .light-action-button {
+        @apply transition-all duration-150;
+        min-width: 0;
+      }
+      .light-actions .btn {
+        @apply px-2 py-2 text-sm;
+      }
+      .light-action-button[aria-pressed="true"] {
+        box-shadow: var(--theme-shadow), 0 0 0 2px currentColor;
+      }
+      .light-card[data-state="on"] [data-slot="on-button"],
+      .light-card[data-state="off"] [data-slot="off-button"],
+      .light-card[data-state="pending"] [data-slot="refresh"] {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+      }
+
+      .widget-toggle { @apply relative mx-auto w-full max-w-[190px] p-3; border: var(--theme-border); border-radius: var(--theme-radius); }
+      .widget-toggle-track { @apply relative h-[240px] overflow-hidden; border-radius: max(0px, calc(var(--theme-radius) - 6px)); background: rgba(0,0,0,0.05); }
+      .widget-toggle-zone { @apply absolute left-0 right-0 h-1/2 bg-transparent text-xs font-black uppercase tracking-widest z-10 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity; color: var(--theme-text); border:none; }
+      .widget-toggle-zone.top { @apply top-0; }
+      .widget-toggle-zone.bottom { @apply bottom-0; }
+      .widget-toggle-lever { @apply absolute left-3 right-3 h-[calc(50%-12px)] flex items-center justify-center z-0 transition-all duration-300; border: var(--theme-border); border-radius: max(0px, calc(var(--theme-radius) - 6px)); background: var(--theme-card); box-shadow: var(--theme-shadow); }
+      .widget-toggle[data-state="on"] .widget-toggle-lever { @apply top-3; border-color: currentColor; }
+      .widget-toggle[data-state="off"] .widget-toggle-lever { @apply bottom-3; border-color: currentColor; }
+      .widget-toggle[data-state="pending"] .widget-toggle-lever { top: calc(50% - 48px); border-color: currentColor; }
+      .widget-toggle-lever::before { content: ""; @apply block w-14 h-14 rounded-full border-2 border-current opacity-40; }
+
+      .widget-dial-wrap { @apply grid place-items-center mt-2; }
+      .widget-dial { @apply w-36 h-36 rounded-full relative grid place-items-center; background: conic-gradient(from -210deg, var(--theme-primary) var(--gauge-angle), rgba(0,0,0,0.1) 0); }
+      .widget-dial::before { content: ""; @apply absolute inset-3 rounded-full; background: var(--theme-card); border: var(--theme-border); }
+      .widget-dial-inner { @apply relative z-10 text-center; }
+      .widget-dial-inner strong { @apply text-2xl font-black block leading-none; color: var(--theme-text); }
+      .widget-dial-inner span { @apply text-xs font-bold opacity-70 mt-1 block; }
+      
+      .widget-value-display { @apply text-4xl lg:text-5xl font-black tracking-tight leading-none mt-2; }
+      
+      #widget-series-tooltip, .sensor-chart-tooltip {
+        @apply absolute min-w-[120px] max-w-[200px] p-3 z-10 pointer-events-none opacity-0 transition-opacity;
+        background: var(--theme-card); color: var(--theme-text); border: var(--theme-border); border-radius: var(--theme-radius); box-shadow: var(--theme-shadow);
+      }
+      
+      .busy-lock { @apply pointer-events-none select-none opacity-70 saturate-50; }
+      
+      /* Fix layout shifts for the form gap */
+      .field-grid { @apply grid gap-3 mt-3; }
+      .field-label-spaced { @apply mt-4 block font-bold; }
+      .tall-textarea { @apply min-h-[100px]; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="theme-picker">
+    <button class="theme-picker-toggle" id="theme-picker-toggle" type="button" aria-label="Choose theme" aria-haspopup="true" aria-expanded="false" title="Choose theme">&#x1F3A8;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Theme menu">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism" role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism" role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk" role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo-Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento Grid</button>
+    </div>
+  </div>
+
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <div class="shell" id="app-shell">
+    <section class="panel panel-pad" data-layout-key="controlView" id="control-view-section"></section>
+
+      <section class="panel panel-pad" data-layout-key="actionPanel" id="action-panel-section"></section>
+
+      <section data-layout-key="outputs" id="outputs-section"></section>
+
+      <section class="widget-host-stack" data-layout-key="sliderControls" id="slider-widget-root"></section>
+
+      <section class="widget-host-stack" data-layout-key="formControls" id="form-widget-root"></section>
+
+    <section data-layout-key="sensors" id="sensor-section"></section>
+
+    
+
+      <section class="panel panel-pad" data-layout-key="surfacePanel" id="surface-section"></section>
+
+    <section class="panel panel-pad" data-layout-key="businessReports" id="business-report-section"></section>
+
+  </div>
+  <div hidden aria-hidden="true">
+    <div class="result-label" id="result-meta">No command yet</div>
+    <div class="result-wrap">
+      <div class="error-box is-hidden" id="error-box"></div>
+      <div class="empty-box" id="empty-box">No response yet.</div>
+      <div class="result-box is-hidden" id="result-box">
+        <header id="result-command"></header>
+        <pre id="result-json"></pre>
+      </div>
+    </div>
+  </div>
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <div id="action-modal" class="modal-overlay">
+    <div class="panel panel-pad modal-card">
+      <div class="modal-head">
+        <h2 id="action-modal-title" class="modal-title">Action</h2>
+        <button id="action-modal-close" class="icon-button">&times;</button>
+      </div>
+      <div class="field-grid" id="action-modal-fields"></div>
+      <button class="btn full modal-submit" id="action-modal-submit" data-ai-session-index="0">Run action</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script id="ai-bridge-dashboard-config" type="application/json">
+    {
+      "streamBaseUrl": "https://rosa.technology",
+      "dataSyncId": "2p6anenxen6yyj6ff2fnta",
+      "dataRefreshMs": 0,
+        "widgetManifests": {
+          "layout": ["controlView", "actionPanel", "outputs", "sliderControls", "formControls", "sensors", "surfacePanel", "businessReports"],
+          "businessReports": {
+            "defaults": ["0", "data"],
+            "kpis": [
+              ["Total units today", "production_totals_today", "total_units", "integer", "Create production_totals_today to show the total number of molded household plastic units produced today."],
+              ["Total energy today (kWh)", "production_totals_today", "total_energy_kwh", "decimal", "Create production_totals_today to show the total kWh used by today's plastic molding output."],
+              ["Avg energy per unit (kWh/unit)", "production_totals_today", "avg_kwh_per_unit", "decimal", "Create production_totals_today to show average kWh per finished plastic unit today."],
+              ["Top worker today", "production_totals_today", "top_worker_name", "", "Create production_totals_today to show the worker with the highest unit output today."]
+            ],
+            "widgets": [
+              ["chart", "Units by worker", "production_units_by_worker", "worker_name", "total_units", "bar", "integer", "Create production_units_by_worker with worker_name and total_units columns for workers such as Nguyen Van Nam, Tran Thi Hoa, and Le Quoc Duy."],
+              ["chart", "Total energy by product", "production_energy_by_product", "product_name", "total_energy_kwh", "bar", "decimal", "Create production_energy_by_product with product_name and total_energy_kwh columns for products such as Chau nhua 32cm, Ro da nang, and Hop dung do 18L."],
+              ["chart", "Energy per unit by product", "production_energy_per_unit_by_product", "product_name", "kwh_per_unit", "bar", "decimal", "Create production_energy_per_unit_by_product with product_name and kwh_per_unit columns for molded household plastic products."],
+              ["table", "Worker production summary", "production_worker_summary", "worker_name,product_name,total_units,total_energy_kwh,kwh_per_unit", "12", "", "", "Create production_worker_summary with worker_name, product_name, total_units, total_energy_kwh, and kwh_per_unit columns."],
+              ["table", "Recent production logs", "recent_production_logs", "produced_at,worker_name,product_name,quantity,energy_kwh_used", "10", "", "", "No production rows are recorded yet. Call the log_production macro from the device to record batches from workers such as Nguyen Van Nam molding Chau nhua 32cm or Tran Thi Hoa molding Ro da nang."]
+            ]
+          },
+        "lights": {
+          "sessionIndex": "0",
+          "outputs": ["O2", "O3", "O4", "O5", "O6", "O7", "O8", "O9"]
+        },
+        "sensors": {
+          "sessionIndex": "0",
+          "sensors": [
+            ["Temperature", "I103", "C"],
+            ["Humidity", "I104", "%"]
+          ]
+        },
+        "commandUi": {
+          "sessionIndex": "0",
+          "widgets": [
+            ["iframe", "Control view", "https://democam.ioeasy.com/Streaming/channels/102/httpPreview", { "width": 640, "height": 360 }],
+            ["actions", "Program Control", "panel", [
+              ["quick", "Chase lights", "N5", "⟳"],
+              ["quick", "Test motor", "N6", "⚙"],
+              ["params", "Send SMS", "N9,#1402,\"{phone}\",\"{message}\"", "✉", [
+                ["phone", "Phone Number", "tel", "e.g. 090..."],
+                ["message", "Message Content", "textarea", "Message body..."]
+              ]]
+            ]],
+            ["actions", "Command center", "toolbar", [
+              ["quick", "Read all lights", "O2;O3;O4;O5;O6;O7;O8;O9", "↻"]
+            ]],
+            ["slider", "Motor control", {
+              "sessionIndex": "0",
+              "toolbar": [
+                ["quick", "Read status", "O1", "↻"]
+              ],
+              "control": ["Target angle", "deg", "100", "0", "360", "D1O1'{angle}'", "O1"]
+            }],
+            ["form", "LCD panel", {
+              "sessionIndex": "0",
+              "fields": [
+                ["row", "select", "1", "LCD row 1", [["1", "LCD row 1"], ["2", "LCD row 2"], ["3", "LCD row 3"], ["4", "LCD row 4"]]],
+                ["text", "text", "HELLO", "Type LCD text"]
+              ],
+              "submit": ["Show text", "D4O101,\"R{row}={text}\""],
+              "actions": [
+                ["quick", "LCD on", "D1O101", "◉"],
+                ["quick", "LCD off", "D2O101", "○"]
+              ]
+            }]
+          ]
+        },
+          "surfacePanel": {
+          "sessionIndex": "1",
+          "widgets": [
+            ["switch", "Switch control", "Incoming breaker", {
+              "field": "O101.1",
+              "commands": ["D1O101.1", "D2O101.1"],
+              "labels": ["ON", "OFF"]
+            }],
+            ["multi-line", "Multi-line sensor", "3-phase voltage", {
+              "unit": "V",
+              "series": [
+                ["Voltage1_V", "L1"],
+                ["Voltage2_V", "L2"],
+                ["Voltage3_V", "L3"]
+              ]
+            }],
+            ["focus", "Focus card", "Current meter", {
+              "field": "Current1_A",
+              "unit": "A",
+              "caption": "Live current",
+              "max": 100
+            }],
+            ["card", "Data card", "Energy meter", {
+              "field": "Energy_KWh",
+              "unit": "kWh",
+              "decimals": 2
+            }]
+          ]
+        }
+      },
+      "sessions": [
+        {
+          "sessionId": "IO2552Hif@hR54H37kUmwE2FnDwSTLAnupfTzmMhea",
+          "peripherals": ["O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "O9", "O101", "I103", "I104"]
+        },
+        {
+          "sessionId": "IO2622hBf@dJeHMSDiTHQ9tkFzoktxQWOfXuAVZH2a",
+          "peripherals": ["Voltage1_V", "Voltage2_V", "Voltage3_V", "Current1_A", "Energy_KWh", "O101.1"]
+        }
+      ]
+    }
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+  <!-- AI-BRIDGE-LOCKED WIDGET TEMPLATES: START -->
+  <template id="ai-bridge-template-data-kpi-card">
+    <article class="data-kpi-card" data-ai-data-kpi>
+      <small>--</small>
+      <strong>--</strong>
+    </article>
+  </template>
+  <template id="ai-bridge-template-data-surface">
+    <article class="data-surface">
+      <div class="card-top">
+        <div>
+          <h3>--</h3>
+        </div>
+      </div>
+      <div class="data-widget-slot"></div>
+    </article>
+  </template>
+  <template id="ai-bridge-template-light-card">
+    <article class="light-card" data-state="off">
+      <div class="card-top">
+        <h3 data-slot="title">Light</h3>
+        <button class="icon-refresh-btn" data-slot="refresh" aria-label="Read status" title="Read status">&#x21bb;</button>
+      </div>
+      <div class="light-actions">
+        <button class="btn mini-btn light-action-button" data-slot="on-button">On</button>
+        <button class="btn mini-btn light-action-button" data-slot="off-button">Off</button>
+      </div>
+    </article>
+  </template>
+  <template id="ai-bridge-template-sensor-stat">
+      <div class="sensor-stat">
+        <div class="sensor-stat-head">
+          <small class="sensor-stat-title" data-slot="title">Sensor</small>
+          <strong class="sensor-stat-value" data-slot="value">--</strong>
+        </div>
+        <div class="sensor-chart" data-slot="chart">
+          <div class="sensor-chart-y-label" data-align="max" data-slot="max-label">0</div>
+          <div class="sensor-chart-y-label" data-align="min">0</div>
+          <svg class="sensor-chart-svg" viewBox="0 0 340 156" preserveAspectRatio="none" aria-hidden="true">
+          <g class="sensor-chart-grid" data-slot="grid"></g>
+          <g class="sensor-chart-axis">
+            <line x1="46" y1="14" x2="46" y2="122"></line>
+            <line x1="46" y1="122" x2="324" y2="122"></line>
+          </g>
+          <path class="sensor-chart-empty" data-slot="empty-path" d="M46 68 H324"></path>
+          <path class="sensor-chart-area" data-slot="area-path" d=""></path>
+          <path class="sensor-chart-path" data-slot="line-path" d="M46 68 H324"></path>
+          <line class="sensor-chart-hover-line" data-slot="hover-line" x1="0" y1="14" x2="0" y2="122"></line>
+          <circle class="sensor-chart-hover-point" data-slot="hover-point" r="5" cx="0" cy="0"></circle>
+          <rect class="sensor-chart-hitbox" data-slot="hitbox" x="46" y="14" width="278" height="108"></rect>
+        </svg>
+        <div class="sensor-chart-tooltip" data-slot="tooltip">
+          <strong>--</strong>
+          <small>No data</small>
+        </div>
+        </div>
+        <div class="sensor-foot">
+          <div data-slot="foot-left"></div>
+        </div>
+      </div>
+  </template>
+  <template id="ai-bridge-template-widget-switch-card">
+    <article class="widget-card widget-toggle-card">
+      <div class="widget-state-row">
+        <div class="widget-state-copy">
+          <strong data-slot="title">Incoming breaker</strong>
+        </div>
+        <div class="state-pill" id="widget-toggle-state" data-state="offline">Offline</div>
+      </div>
+
+      <div class="widget-toggle" id="widget-toggle-control" data-state="offline">
+        <div class="widget-toggle-track">
+          <button class="widget-toggle-zone top" type="button" id="widget-toggle-on" data-ai-session-index="1">
+            <span>ON</span>
+          </button>
+          <button class="widget-toggle-zone bottom" type="button" id="widget-toggle-off" data-ai-session-index="1">
+            <span>OFF</span>
+          </button>
+          <div class="widget-toggle-lever" aria-hidden="true"></div>
+        </div>
+      </div>
+    </article>
+  </template>
+  <template id="ai-bridge-template-widget-multi-line-card">
+    <article class="widget-card widget-surface-card">
+      <div class="widget-chart-head">
+        <div>
+          <strong data-slot="title">3-phase voltage</strong>
+        </div>
+        <div class="widget-legend" id="widget-series-legend">
+        </div>
+      </div>
+      <div class="widget-chart-shell">
+        <div class="widget-chart-y-label" data-align="max" id="widget-series-max-label">0V</div>
+        <div class="widget-chart-y-label" data-align="min" id="widget-series-min-label">0V</div>
+        <svg class="widget-chart-svg" viewBox="0 0 360 240" preserveAspectRatio="none" aria-hidden="true">
+          <g class="widget-chart-grid" id="widget-series-grid"></g>
+          <g class="widget-chart-axis">
+            <line x1="46" y1="16" x2="46" y2="198"></line>
+            <line x1="46" y1="198" x2="340" y2="198"></line>
+          </g>
+          <path class="widget-chart-empty" id="widget-series-empty" d="M46 106 H340"></path>
+          <g id="widget-series-paths"></g>
+          <line class="widget-chart-hover-line" id="widget-series-hover-line" x1="0" y1="16" x2="0" y2="198"></line>
+          <g id="widget-series-hover-points"></g>
+          <rect class="widget-chart-hitbox" id="widget-series-hitbox" x="46" y="16" width="294" height="182"></rect>
+        </svg>
+        <div class="widget-chart-tooltip" id="widget-series-tooltip">
+          <strong>--</strong>
+        </div>
+      </div>
+    </article>
+  </template>
+  <template id="ai-bridge-template-widget-focus-card">
+    <article class="widget-card widget-meter-card">
+      <div>
+        <strong id="widget-focus-title" data-slot="title">Current meter</strong>
+      </div>
+      <div class="widget-dial-wrap">
+        <div class="widget-dial" id="widget-focus-gauge">
+          <div class="widget-dial-inner">
+            <strong id="widget-focus-value">--</strong>
+            <span id="widget-focus-range">Current</span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </template>
+  <template id="ai-bridge-template-widget-value-card">
+    <article class="widget-card widget-value-card">
+      <div>
+        <strong id="widget-value-title" data-slot="title">Energy meter</strong>
+      </div>
+      <div class="widget-value-display" id="widget-value-primary">--</div>
+    </article>
+  </template>
+  <template id="ai-bridge-template-program-action">
+    <button class="btn program-action-button" data-slot="button">
+      <span class="program-icon" data-slot="icon" aria-hidden="true"></span>
+      <span class="program-action-label" data-slot="title">Program</span>
+    </button>
+  </template>
+  <template id="ai-bridge-template-command-toolbar-button">
+    <button class="btn toolbar-button" data-slot="button">Action</button>
+  </template>
+  <template id="ai-bridge-template-slider-control-panel">
+    <section class="section-card section-stack">
+      <div class="heading-row">
+        <h2 id="slider-control-title">Motor control</h2>
+        <div class="toolbar-inline" id="slider-control-toolbar"></div>
+      </div>
+
+      <div class="range-row">
+        <div class="range-head">
+          <span id="slider-control-label">Target angle</span>
+          <span id="slider-control-value-label">100 deg</span>
+        </div>
+        <input class="range" id="slider-control-input" data-ai-session-index="0" type="range" min="0" max="360" value="100" />
+      </div>
+    </section>
+  </template>
+  <template id="ai-bridge-template-form-panel">
+    <section class="section-card section-stack">
+      <div class="heading-row">
+        <h2 id="form-panel-title">LCD panel</h2>
+      </div>
+
+      <div class="field-grid" id="form-panel-field-grid"></div>
+
+      <div class="actions button-grid-3" id="form-panel-actions"></div>
+      <button class="btn full" id="form-panel-submit" type="button">Submit</button>
+    </section>
+  </template>
+  <template id="ai-bridge-template-control-view-section">
+      <div class="section-stack section-stack-sticky">
+      <div class="media-shell" id="control-view-shell">
+        <div class="media-root" id="control-view-media-root"></div>
+      </div>
+    </div>
+  </template>
+  <template id="ai-bridge-template-action-panel-section">
+      <div class="section-stack">
+        <div class="heading-row">
+          <h2 id="action-panel-title">Actions</h2>
+          <div class="chip"><span class="status-dot ok"></span>Ready</div>
+        </div>
+        <div class="actions button-grid-3 stack-actions" id="action-panel-root"></div>
+      </div>
+    </template>
+    <template id="ai-bridge-template-output-section">
+      <div class="section-card section-stack">
+        <div class="heading-row">
+          <h2 id="command-center-title">Command center</h2>
+        <div class="toolbar-inline" id="command-center-toolbar"></div>
+      </div>
+      <div class="lights" id="lights-widget-root"></div>
+    </div>
+  </template>
+    <template id="ai-bridge-template-sensor-section">
+      <div class="section-stack">
+        <div class="sensor-grid" id="sensor-widget-root"></div>
+      </div>
+    </template>
+  <template id="ai-bridge-template-business-report-section">
+    <div class="section-stack">
+      <div class="heading-row">
+        <div>
+          <h2>Factory production report</h2>
+        </div>
+      </div>
+      <div class="factory-report-shell">
+        <div class="factory-report-toolbar">
+          <div class="factory-report-tools">
+            <select id="factory-report-range" class="ctl">
+              <option value="24h">Latest 24h</option>
+              <option value="3d" selected>Latest 3 days</option>
+              <option value="7d">Latest 7 days</option>
+              <option value="30d">Latest 30 days</option>
+            </select>
+            <button id="factory-report-refresh" type="button" class="btn">Refresh</button>
+          </div>
+          <div id="factory-report-status" class="chip"><span class="status-dot"></span>Loading</div>
+        </div>
+        <div class="factory-report-kpis">
+          <article class="factory-report-kpi"><div class="factory-report-kpi-label">Total units</div><div class="factory-report-kpi-value" id="factory-report-kpi-units">--</div><div class="factory-report-kpi-note">Finished products in selected range</div></article>
+          <article class="factory-report-kpi"><div class="factory-report-kpi-label">Total energy</div><div class="factory-report-kpi-value" id="factory-report-kpi-energy">--</div><div class="factory-report-kpi-note">Accumulated electricity use</div></article>
+          <article class="factory-report-kpi"><div class="factory-report-kpi-label">Wh per unit</div><div class="factory-report-kpi-value" id="factory-report-kpi-wh">--</div><div class="factory-report-kpi-note">Factory-level electricity per finished product</div></article>
+          <article class="factory-report-kpi"><div class="factory-report-kpi-label">Active sessions</div><div class="factory-report-kpi-value" id="factory-report-kpi-sessions">--</div><div class="factory-report-kpi-note">Production declarations with activity</div></article>
+        </div>
+        <section class="section-card section-stack">
+          <div class="section-head"><strong>Machine timelines</strong></div>
+          <div id="factory-report-machine-list" class="factory-report-machine-list"></div>
+        </section>
+        <section class="section-card section-stack">
+          <div class="section-head">
+            <strong>Production overview</strong>
+            <div class="factory-report-tools">
+              <button id="factory-report-overview-export" type="button" class="btn">Export CSV</button>
+            </div>
+          </div>
+          <div id="factory-report-overview-table" class="factory-report-table-wrap"></div>
+          <div class="factory-report-pager">
+            <button id="factory-report-overview-prev" type="button" class="btn">Previous</button>
+            <div id="factory-report-overview-page-info" class="factory-report-pager-info">Page 1 / 1</div>
+            <button id="factory-report-overview-next" type="button" class="btn">Next</button>
+          </div>
+        </section>
+      </div>
+      <div id="factory-report-modal" class="factory-report-modal" aria-hidden="true">
+        <div class="factory-report-modal-card">
+          <div class="factory-report-modal-head">
+            <div><h3 id="factory-report-modal-title">Edit declaration</h3></div>
+            <button id="factory-report-modal-close" type="button" class="icon-button" aria-label="Close dialog">&times;</button>
+          </div>
+          <form id="factory-report-form">
+            <div class="factory-report-form">
+              <label class="factory-report-field"><span>Machine code</span><input name="machine_code" required readonly /></label>
+              <label class="factory-report-field"><span>Session code</span><input name="session_code" required readonly /></label>
+              <label class="factory-report-field"><span>Order ID</span><input name="order_id" required readonly /></label>
+              <label class="factory-report-field"><span>Mold code</span><input name="mold_code" required readonly /></label>
+              <label class="factory-report-field"><span>Lot code</span><input name="lot_code" required readonly /></label>
+              <label class="factory-report-field"><span>Staff</span><input name="staff" required readonly /></label>
+              <label class="factory-report-field"><span>Required quantity</span><input name="required_quantity" inputmode="numeric" required /></label>
+              <label class="factory-report-field"><span>Rated weight (g/unit)</span><input name="rated_weight" inputmode="decimal" required /></label>
+              <label class="factory-report-field" style="grid-column:1 / -1;"><span>Raw materials remaining (g)</span><input name="raw_materials" inputmode="decimal" required /></label>
+            </div>
+            <div class="factory-report-actions">
+              <button id="factory-report-modal-cancel" type="button" class="btn">Cancel</button>
+              <button id="factory-report-modal-submit" type="submit" class="btn">Save declaration</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </template>
+  <template id="ai-bridge-template-surface-section">
+    <div class="section-stack">
+      <div class="heading-row">
+        <div>
+          <h2>3-phase switchboard control</h2>
+        </div>
+        <div class="meta-chip" id="surface-meta-chip" title="Dedicated realtime device for this operations panel">
+          <span id="surface-device-label">Device: --</span>
+          <small id="surface-updated-label">Updated --</small>
+        </div>
+      </div>
+      <div class="widget-grid" id="surface-widget-root"></div>
+    </div>
+  </template>
+  <!-- AI-BRIDGE-LOCKED WIDGET TEMPLATES: END -->
+  <script src="../../dashboard-command-template.js?v=2026.04.18.1" defer></script>
+  <script src="../../dashboard-action-engine.js" defer></script>
+  <script src="../../dashboard-data-engine.js" defer></script>
+  <script src="../../dashboard-factory-report-engine.js" defer></script>
+  <script src="../../dashboard-light-engine.js" defer></script>
+  <script src="../../dashboard-sensor-engine.js" defer></script>
+  <script src="../../dashboard-surface-engine.js" defer></script>
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START -->
+  <script>
+    window.AIBridgeDashboardBoot = window.AIBridgeDashboardBoot || [];
+    window.AIBridgeDashboardBoot.push(function (runtime) {
+      var controlViewSection = document.getElementById("control-view-section");
+        var actionPanelSection = document.getElementById("action-panel-section");
+      var outputsSection = document.getElementById("outputs-section");
+      var sliderWidgetRoot = document.getElementById("slider-widget-root");
+      var formWidgetRoot = document.getElementById("form-widget-root");
+        var sensorSection = document.getElementById("sensor-section");
+        var surfaceSection = document.getElementById("surface-section");
+      var businessReportSection = document.getElementById("business-report-section");
+      var controlViewTitle = null;
+      var controlViewShell = null;
+      var controlViewMediaRoot = null;
+      var controlViewStage = null;
+      var controlViewFrame = null;
+      var controlViewImage = null;
+      var commandCenterTitle = null;
+      var commandCenterToolbar = null;
+        var sliderControlInput = null;
+        var sliderControlValueLabel = null;
+        var actionPanelTitle = null;
+        var actionPanelRoot = null;
+        var actionModal = document.getElementById("action-modal");
+        var actionModalClose = document.getElementById("action-modal-close");
+        var actionModalSubmit = document.getElementById("action-modal-submit");
+        var actionModalTitle = document.getElementById("action-modal-title");
+        var actionModalFields = document.getElementById("action-modal-fields");
+      var sensorHistoryRange = null;
+      var dataReportRefresh = null;
+      var factoryReportRange = null;
+      var factoryReportRefreshButton = null;
+      var factoryReportStatus = null;
+      var factoryReportMachineList = null;
+      var factoryReportOverviewTable = null;
+      var factoryReportOverviewPrev = null;
+      var factoryReportOverviewNext = null;
+      var factoryReportOverviewPageInfo = null;
+      var factoryReportOverviewExport = null;
+      var factoryReportModal = null;
+      var factoryReportForm = null;
+      var factoryReportModalSubmit = null;
+      var surfaceWidgetRoot = null;
+      var surfaceDeviceLabel = null;
+      var surfaceUpdatedLabel = null;
+      var surfaceToggleControl = null;
+      var surfaceToggleState = null;
+      var surfaceToggleOn = null;
+      var surfaceToggleOff = null;
+      var surfaceChartGrid = null;
+      var surfaceChartEmpty = null;
+      var surfaceChartMaxLabel = null;
+      var surfaceChartMinLabel = null;
+      var surfaceChartHitbox = null;
+      var surfaceChartTooltip = null;
+      var surfaceChartHoverLine = null;
+      var surfaceChartHoverPoints = {};
+      var surfaceChartPathNodes = {};
+      var surfaceFocusGauge = null;
+      var surfaceFocusValue = null;
+      var surfaceFocusCaption = null;
+      var surfaceValuePrimary = null;
+      var surfaceSeriesStore = {};
+      var surfaceSwitchMeta = null;
+      var surfaceMultiLineMeta = null;
+      var surfaceFocusMeta = null;
+      var surfaceValueMeta = null;
+      var surfaceFieldBindings = {};
+      var surfaceHistoryWindowMs = 6 * 60 * 60 * 1000;
+      var surfaceEventSource = null;
+      var surfaceSessionId = "";
+      var surfaceStreamBaseUrl = "";
+      var factoryReportState = { busy: false, timer: 0, row: null, overviewPage: 1, overviewPageSize: 20, overviewTotalRows: 0 };
+      var dashboardConfig = { sessions: [], widgetManifests: {} };
+      var activeActionDefinition = null;
+
+      try {
+        var dashboardConfigNode = document.getElementById("ai-bridge-dashboard-config");
+        dashboardConfig = JSON.parse(dashboardConfigNode && dashboardConfigNode.textContent ? dashboardConfigNode.textContent : '{"sessions":[]}');
+      } catch (error) {
+        console.error("Failed to read editable dashboard config", error);
+      }
+
+      function cloneEditableTemplate(templateId) {
+        var template = document.getElementById(templateId);
+        if (!template || !template.content || !template.content.firstElementChild) {
+          return null;
+        }
+        return template.content.firstElementChild.cloneNode(true);
+      }
+
+      function renderSampleSectionShells() {
+        if (controlViewSection) {
+          controlViewSection.innerHTML = "";
+          var controlShell = cloneEditableTemplate("ai-bridge-template-control-view-section");
+          if (controlShell) {
+            controlViewSection.appendChild(controlShell);
+          }
+        }
+          if (actionPanelSection) {
+            actionPanelSection.innerHTML = "";
+            var actionShell = cloneEditableTemplate("ai-bridge-template-action-panel-section");
+            if (actionShell) {
+              actionPanelSection.appendChild(actionShell);
+            }
+          }
+        if (outputsSection) {
+          outputsSection.innerHTML = "";
+          var outputShell = cloneEditableTemplate("ai-bridge-template-output-section");
+          if (outputShell) {
+            outputsSection.appendChild(outputShell);
+          }
+        }
+        if (sliderWidgetRoot) {
+          sliderWidgetRoot.innerHTML = "";
+        }
+        if (formWidgetRoot) {
+          formWidgetRoot.innerHTML = "";
+        }
+        if (sensorSection) {
+          sensorSection.innerHTML = "";
+          var sensorShell = cloneEditableTemplate("ai-bridge-template-sensor-section");
+          if (sensorShell) {
+            sensorSection.appendChild(sensorShell);
+          }
+        }
+          if (surfaceSection) {
+            surfaceSection.innerHTML = "";
+        var surfaceShell = cloneEditableTemplate("ai-bridge-template-surface-section");
+          if (surfaceShell) {
+            surfaceSection.appendChild(surfaceShell);
+            }
+          }
+        if (businessReportSection) {
+          businessReportSection.innerHTML = "";
+          var reportShell = cloneEditableTemplate("ai-bridge-template-business-report-section");
+          if (reportShell) {
+            businessReportSection.appendChild(reportShell);
+          }
+        }
+
+        controlViewShell = document.getElementById("control-view-shell");
+        controlViewMediaRoot = document.getElementById("control-view-media-root");
+        controlViewStage = null;
+        controlViewFrame = null;
+        controlViewImage = null;
+        commandCenterTitle = document.getElementById("command-center-title");
+        commandCenterToolbar = document.getElementById("command-center-toolbar");
+          actionPanelTitle = document.getElementById("action-panel-title");
+          actionPanelRoot = document.getElementById("action-panel-root");
+        sensorHistoryRange = document.getElementById("sensor-history-range");
+        dataReportRefresh = document.getElementById("data-report-refresh");
+        factoryReportRange = document.getElementById("factory-report-range");
+        factoryReportRefreshButton = document.getElementById("factory-report-refresh");
+        factoryReportStatus = document.getElementById("factory-report-status");
+        factoryReportMachineList = document.getElementById("factory-report-machine-list");
+        factoryReportOverviewTable = document.getElementById("factory-report-overview-table");
+        factoryReportOverviewPrev = document.getElementById("factory-report-overview-prev");
+        factoryReportOverviewNext = document.getElementById("factory-report-overview-next");
+        factoryReportOverviewPageInfo = document.getElementById("factory-report-overview-page-info");
+        factoryReportOverviewExport = document.getElementById("factory-report-overview-export");
+        factoryReportModal = document.getElementById("factory-report-modal");
+        factoryReportForm = document.getElementById("factory-report-form");
+        factoryReportModalSubmit = document.getElementById("factory-report-modal-submit");
+          surfaceWidgetRoot = document.getElementById("surface-widget-root");
+      }
+
+      renderSampleSectionShells();
+
+      function getActionEngine() {
+        return window.AIBridgeDashboardActionEngine || null;
+      }
+
+      function getActionEngineDom() {
+        return {
+          actionModal: actionModal,
+          actionModalFields: actionModalFields,
+          actionModalSubmit: actionModalSubmit,
+          actionModalTitle: actionModalTitle,
+          actionPanelRoot: actionPanelRoot,
+          actionPanelTitle: actionPanelTitle,
+          commandCenterTitle: commandCenterTitle,
+          commandCenterToolbar: commandCenterToolbar,
+          sliderWidgetRoot: sliderWidgetRoot,
+          formWidgetRoot: formWidgetRoot
+        };
+      }
+
+      function getActionEngineHelpers() {
+        return {
+          cloneEditableTemplate: cloneEditableTemplate,
+          renderControlView: renderControlView,
+          runtime: runtime,
+          openActionModal: openActionModal
+        };
+      }
+
+        function getDataEngineHelpers() {
+          return {
+          getBusinessReportRoot: function () { return document.getElementById("business-data-report-root"); },
+          normalizeBusinessReportManifest: normalizeBusinessReportManifest,
+          cloneTemplateById: cloneTemplateById,
+          applyWidgetDataAttributes: applyWidgetDataAttributes,
+          getSessionByIndex: getSessionByIndex,
+          buildDataApiUrl: buildDataApiUrl,
+          getDataSyncId: getDataSyncId,
+          normalizePayload: normalizePayload,
+          escapeHtml: escapeHtml,
+          humanizeLabel: humanizeLabel,
+          extractNumericValue: extractNumericValue,
+          formatDataValue: formatDataValue,
+          formatChartLabelValue: formatChartLabelValue,
+          buildMacroPayloadFromElement: buildMacroPayloadFromElement,
+          getSessionIndexFromElement: getSessionIndexFromElement,
+          toFriendlyErrorMessage: toFriendlyErrorMessage,
+          setDataReportState: setDataReportState,
+          queryDataWidgets: function () {
+            return Array.prototype.slice.call(document.querySelectorAll("[data-ai-data-kpi], [data-ai-data-table], [data-ai-data-chart]"));
+          },
+          setDataReportLastRefreshAt: function (value) {
+            dataReportLastRefreshAt = Number(value || 0);
+          }
+        };
+      }
+
+      function getSurfaceEngineHelpers() {
+        return {
+          getSurfaceWidgetRoot: function () { return surfaceWidgetRoot; },
+          cloneEditableTemplate: cloneEditableTemplate,
+          getSurfaceUpdatedLabel: function () { return surfaceUpdatedLabel; },
+          getSurfaceSeriesStore: function () { return surfaceSeriesStore; },
+          getSurfaceHistoryWindowMs: function () { return surfaceHistoryWindowMs; },
+          getSurfaceToggleControl: function () { return surfaceToggleControl; },
+          getSurfaceToggleState: function () { return surfaceToggleState; },
+          getSurfaceSwitchMeta: function () { return surfaceSwitchMeta; },
+          getSurfaceChartGrid: function () { return surfaceChartGrid; },
+          getSurfaceChartEmpty: function () { return surfaceChartEmpty; },
+          getSurfaceMultiLineMeta: function () { return surfaceMultiLineMeta; },
+          getSurfaceChartPathNodes: function () { return surfaceChartPathNodes; },
+          getSurfaceChartMaxLabel: function () { return surfaceChartMaxLabel; },
+          getSurfaceChartMinLabel: function () { return surfaceChartMinLabel; },
+          getSurfaceChartHitbox: function () { return surfaceChartHitbox; },
+          getSurfaceChartTooltip: function () { return surfaceChartTooltip; },
+          getSurfaceChartHoverLine: function () { return surfaceChartHoverLine; },
+          getSurfaceChartHoverPoints: function () { return surfaceChartHoverPoints; },
+          getSurfaceFocusGauge: function () { return surfaceFocusGauge; },
+          getSurfaceFocusValue: function () { return surfaceFocusValue; },
+          getSurfaceFocusCaption: function () { return surfaceFocusCaption; },
+          getSurfaceFocusMeta: function () { return surfaceFocusMeta; },
+          getSurfaceValuePrimary: function () { return surfaceValuePrimary; },
+          getSurfaceValueMeta: function () { return surfaceValueMeta; }
+        };
+      }
+
+      function getLightEngineHelpers() {
+        return {
+          getLightRoot: function () { return document.getElementById("lights-widget-root"); },
+          cloneTemplateById: cloneTemplateById
+        };
+      }
+
+      function trimSurfaceTrailingSlash(value) {
+        return String(value || "").replace(/\/+$/, "");
+      }
+
+      function buildSurfaceApiUrl(pathname) {
+        var normalizedPath = String(pathname || "");
+        var baseUrl = trimSurfaceTrailingSlash(surfaceStreamBaseUrl) || "https://rosa.technology";
+        if (!normalizedPath) {
+          return baseUrl;
+        }
+        if (/^https?:\/\//i.test(normalizedPath)) {
+          return normalizedPath;
+        }
+        return baseUrl + (normalizedPath.charAt(0) === "/" ? normalizedPath : "/" + normalizedPath);
+      }
+
+      function getLockedSensorEngineHelpers() {
+        return {
+          getSensorRoot: function () { return document.getElementById("sensor-widget-root"); },
+          normalizeSensorManifest: normalizeSensorManifest,
+          cloneTemplateById: cloneTemplateById,
+          normalizeWidgetKey: normalizeWidgetKey,
+          getSensorWidgetEntry: getSensorWidgetEntry,
+          getChartConfig: function (key) { return chartConfigs[key] || null; },
+          getSensorSeries: function (key) { return sensorSeriesByKey[key]; },
+          setSensorSeries: function (key, series) { sensorSeriesByKey[key] = series; },
+          appendSeriesPoint: appendSeriesPoint,
+          getSensorHistoryWindowMs: function () { return SENSOR_HISTORY_WINDOW_MS; },
+          formatTimestamp: formatTimestamp,
+          formatShortTime: formatShortTime,
+          normalizeResultValue: normalizeResultValue
+        };
+      }
+
+      function getLockedLightEngineHelpers() {
+        return {
+          getLightRoot: function () { return document.getElementById("lights-widget-root"); },
+          cloneTemplateById: cloneTemplateById
+        };
+      }
+
+      function normalizeActionEntry(entry, sessionIndex) {
+        var actionEngine = getActionEngine();
+        if (!actionEngine || typeof actionEngine.normalizeActionEntry !== "function") {
+          return null;
+        }
+        return actionEngine.normalizeActionEntry(entry, sessionIndex);
+      }
+
+      function normalizeCommandUiConfig() {
+        var actionEngine = getActionEngine();
+        if (!actionEngine || typeof actionEngine.normalizeCommandUiConfig !== "function") {
+          return { defaultSessionIndex: "0", widgets: [] };
+        }
+        return actionEngine.normalizeCommandUiConfig(dashboardConfig);
+      }
+
+        function normalizeSurfaceWidgetManifest() {
+          var source = dashboardConfig && dashboardConfig.widgetManifests && typeof dashboardConfig.widgetManifests.surfacePanel === "object"
+            ? dashboardConfig.widgetManifests.surfacePanel
+            : {};
+        var defaultSessionIndex = String(source.sessionIndex || "1");
+        var widgets = (Array.isArray(source.widgets) ? source.widgets : []).map(function (entry) {
+          var type = String((entry && entry[0]) || "").trim().toLowerCase();
+          var meta = entry && typeof entry[3] === "object" ? entry[3] : {};
+          if (type === "switch") {
+            return {
+              type: "switch",
+              kicker: String((entry && entry[1]) || "Switch control"),
+              title: String((entry && entry[2]) || "Incoming breaker"),
+              field: String(meta.field || "Contactor_switch"),
+              commands: Array.isArray(meta.commands) ? meta.commands.slice(0, 2) : ["D1O101.1", "D2O101.1"],
+              labels: Array.isArray(meta.labels) ? meta.labels.slice(0, 2) : ["Closed", "Open"],
+              sessionIndex: String(meta.sessionIndex || defaultSessionIndex)
+            };
+          }
+          if (type === "multi-line") {
+            return {
+              type: "multi-line",
+              kicker: String((entry && entry[1]) || "Multi-line sensor"),
+              title: String((entry && entry[2]) || "3-phase voltage"),
+              unit: String(meta.unit || ""),
+              series: (Array.isArray(meta.series) ? meta.series : []).map(function (seriesEntry, index) {
+                return {
+                  field: String((seriesEntry && seriesEntry[0]) || ""),
+                  label: String((seriesEntry && seriesEntry[1]) || ("Line " + (index + 1))),
+                  seriesIndex: index % 6,
+                  key: String((seriesEntry && seriesEntry[0]) || ("series_" + index)).trim().toLowerCase()
+                };
+              }).filter(function (seriesEntry) {
+                return seriesEntry.field;
+              })
+            };
+          }
+          if (type === "focus") {
+            return {
+              type: "focus",
+              kicker: String((entry && entry[1]) || "Focus card"),
+              title: String((entry && entry[2]) || "Current meter"),
+              field: String(meta.field || "CurrentAll_A"),
+              unit: String(meta.unit || "A"),
+              caption: String(meta.caption || "Live current"),
+              max: Number(meta.max || 100)
+            };
+          }
+          if (type === "card") {
+            return {
+              type: "card",
+              kicker: String((entry && entry[1]) || "Data card"),
+              title: String((entry && entry[2]) || "Energy meter"),
+              field: String(meta.field || "Energy_kWh"),
+              unit: String(meta.unit || "kWh"),
+              decimals: Number(meta.decimals || 3)
+            };
+          }
+          return null;
+        }).filter(Boolean);
+        var streamFields = [];
+        widgets.forEach(function (widget) {
+          if (widget.type === "switch" && widget.field) streamFields.push(widget.field);
+          if (widget.type === "focus" && widget.field) streamFields.push(widget.field);
+          if (widget.type === "card" && widget.field) streamFields.push(widget.field);
+          if (widget.type === "multi-line") {
+            widget.series.forEach(function (seriesEntry) {
+              streamFields.push(seriesEntry.field);
+            });
+          }
+        });
+        return {
+          sessionIndex: defaultSessionIndex,
+          streamFields: Array.from(new Set(streamFields.filter(Boolean))),
+          widgets: widgets
+        };
+      }
+
+      var surfaceConfig = normalizeSurfaceWidgetManifest();
+      surfaceHistoryWindowMs = 6 * 60 * 60 * 1000;
+      surfaceStreamBaseUrl = String(dashboardConfig.streamBaseUrl || "").trim();
+      surfaceSessionId = String((dashboardConfig.sessions && dashboardConfig.sessions[Number(surfaceConfig.sessionIndex || 0)] && dashboardConfig.sessions[Number(surfaceConfig.sessionIndex || 0)].sessionId) || "").trim();
+
+      renderSurfaceWidgetLayout(surfaceConfig);
+      surfaceDeviceLabel = document.getElementById("surface-device-label");
+      surfaceUpdatedLabel = document.getElementById("surface-updated-label");
+      surfaceToggleControl = document.getElementById("widget-toggle-control");
+      surfaceToggleState = document.getElementById("widget-toggle-state");
+      surfaceToggleOn = document.getElementById("widget-toggle-on");
+      surfaceToggleOff = document.getElementById("widget-toggle-off");
+      surfaceChartGrid = document.getElementById("widget-series-grid");
+      surfaceChartEmpty = document.getElementById("widget-series-empty");
+      surfaceChartMaxLabel = document.getElementById("widget-series-max-label");
+      surfaceChartMinLabel = document.getElementById("widget-series-min-label");
+      surfaceChartHitbox = document.getElementById("widget-series-hitbox");
+      surfaceChartTooltip = document.getElementById("widget-series-tooltip");
+      surfaceChartHoverLine = document.getElementById("widget-series-hover-line");
+      if (surfaceDeviceLabel) {
+        var surfaceDeviceId = getSurfaceDeviceId(surfaceSessionId);
+        surfaceDeviceLabel.textContent = "Device: " + (surfaceDeviceId || "--");
+      }
+      surfaceFocusGauge = document.getElementById("widget-focus-gauge");
+      surfaceFocusValue = document.getElementById("widget-focus-value");
+      surfaceFocusCaption = document.getElementById("widget-focus-range");
+      surfaceValuePrimary = document.getElementById("widget-value-primary");
+
+      surfaceFieldBindings = {};
+      surfaceSeriesStore = {};
+      surfaceChartPathNodes = {};
+      surfaceChartHoverPoints = {};
+      surfaceSwitchMeta = null;
+      surfaceMultiLineMeta = null;
+      surfaceFocusMeta = null;
+      surfaceValueMeta = null;
+
+      function updateControlViewScale() {
+        if (!controlViewShell || !controlViewStage) {
+          return;
+        }
+        var sourceWidth = Number(controlViewStage.getAttribute("data-source-width") || 1280);
+        var sourceHeight = Number(controlViewStage.getAttribute("data-source-height") || 720);
+        if (!Number.isFinite(sourceWidth) || sourceWidth <= 0) {
+          sourceWidth = 1280;
+        }
+        if (!Number.isFinite(sourceHeight) || sourceHeight <= 0) {
+          sourceHeight = 720;
+        }
+        var shellWidth = Math.max(1, controlViewShell.clientWidth || 0);
+        var scale = shellWidth / sourceWidth;
+        if (!Number.isFinite(scale) || scale <= 0) {
+          scale = 1;
+        }
+        var viewportMaxHeight = Math.max(1, Math.floor(window.innerHeight * 0.3));
+        var scaledHeight = sourceHeight * scale;
+        var clampedHeight = Math.min(scaledHeight, viewportMaxHeight);
+        controlViewStage.style.setProperty("--media-source-width", sourceWidth + "px");
+        controlViewStage.style.setProperty("--media-source-height", sourceHeight + "px");
+        controlViewStage.style.transform = "scale(" + scale + ")";
+        controlViewShell.style.height = clampedHeight + "px";
+      }
+
+      function looksLikeImageStream(url) {
+        return /(?:mjpg|mjpeg|snapshot|httppreview|\.jpg\b|\.jpeg\b|\.png\b)/i.test(String(url || ""));
+      }
+
+      function renderControlViewMedia(widget) {
+        if (!controlViewMediaRoot) {
+          return;
+        }
+        controlViewMediaRoot.innerHTML = "";
+        controlViewStage = null;
+        controlViewFrame = null;
+        controlViewImage = null;
+
+        var url = String((widget && widget.url) || "");
+        if (looksLikeImageStream(url)) {
+          var image = document.createElement("img");
+          image.id = "control-view-image";
+          image.className = "media-feed media-image-feed";
+          image.alt = String((widget && widget.title) || "Control view");
+          image.loading = "lazy";
+          image.referrerPolicy = "no-referrer";
+          image.src = url;
+          controlViewMediaRoot.appendChild(image);
+          controlViewImage = image;
+          if (controlViewShell) {
+            controlViewShell.style.height = "";
+          }
+          return;
+        }
+
+        var stage = document.createElement("div");
+        stage.id = "control-view-stage";
+        stage.className = "media-stage";
+        var frame = document.createElement("iframe");
+        frame.id = "control-view-frame";
+        frame.className = "media-feed";
+        frame.title = "Control process view";
+        frame.loading = "lazy";
+        frame.referrerPolicy = "no-referrer";
+        frame.allowFullscreen = true;
+        frame.src = url;
+        stage.appendChild(frame);
+        controlViewMediaRoot.appendChild(stage);
+        controlViewStage = stage;
+        controlViewFrame = frame;
+      }
+
+      function renderControlView(widget) {
+        renderControlViewMedia(widget);
+        if (controlViewStage) {
+          var width = Number(widget.width || 1280);
+          var height = Number(widget.height || 720);
+          controlViewStage.setAttribute("data-source-width", String(Number.isFinite(width) && width > 0 ? width : 1280));
+          controlViewStage.setAttribute("data-source-height", String(Number.isFinite(height) && height > 0 ? height : 720));
+          updateControlViewScale();
+        }
+      }
+
+      function renderActionToolbar(widget) {
+        var actionEngine = getActionEngine();
+        if (!actionEngine || typeof actionEngine.renderActionToolbar !== "function") {
+          return;
+        }
+        actionEngine.renderActionToolbar(widget, getActionEngineDom(), getActionEngineHelpers());
+      }
+
+      function renderSliderControlLayout(widget) {
+        var actionEngine = getActionEngine();
+        if (!actionEngine || typeof actionEngine.renderSliderControlLayout !== "function") {
+          return;
+        }
+        actionEngine.renderSliderControlLayout(widget, getActionEngineDom(), getActionEngineHelpers());
+      }
+
+      function renderFormWidgetLayout(widget) {
+        var actionEngine = getActionEngine();
+        if (!actionEngine || typeof actionEngine.renderFormWidgetLayout !== "function") {
+          return;
+        }
+        actionEngine.renderFormWidgetLayout(widget, getActionEngineDom(), getActionEngineHelpers());
+      }
+
+            function renderActionPanelLayout(widget) {
+        var actionEngine = getActionEngine();
+        if (!actionEngine || typeof actionEngine.renderActionPanelLayout !== "function") {
+          return;
+        }
+        actionEngine.renderActionPanelLayout(widget, getActionEngineDom(), getActionEngineHelpers());
+      }
+
+      function renderCommandUi(config) {
+        var actionEngine = getActionEngine();
+        if (!actionEngine || typeof actionEngine.renderCommandUi !== "function") {
+          return;
+        }
+        actionEngine.renderCommandUi(config, getActionEngineDom(), getActionEngineHelpers());
+      }
+
+      function openActionModal(definition) {
+        var actionEngine = getActionEngine();
+        if (!actionEngine || typeof actionEngine.openActionModal !== "function" || !definition) {
+          return;
+        }
+        activeActionDefinition = definition;
+        actionEngine.openActionModal(definition, getActionEngineDom());
+      }
+
+      function closeActionModal() {
+        var actionEngine = getActionEngine();
+        activeActionDefinition = null;
+        if (!actionEngine || typeof actionEngine.closeActionModal !== "function") {
+          return;
+        }
+        actionEngine.closeActionModal(getActionEngineDom());
+      }
+
+      function buildActionCommand(definition) {
+        var actionEngine = getActionEngine();
+        if (!actionEngine || typeof actionEngine.buildActionCommand !== "function") {
+          return "";
+        }
+        return actionEngine.buildActionCommand(definition, getActionEngineDom());
+      }
+
+      renderCommandUi(normalizeCommandUiConfig());
+
+      function renderSurfaceWidgetLayout(surfaceConfig) {
+        var surfaceEngine = window.AIBridgeDashboardSurfaceEngine || null;
+        if (!surfaceEngine || typeof surfaceEngine.renderSurfaceWidgetLayout !== "function") {
+          return;
+        }
+        surfaceEngine.renderSurfaceWidgetLayout(surfaceConfig, getSurfaceEngineHelpers());
+      }
+
+      function getSurfaceDeviceId(sessionId) {
+        var raw = String(sessionId || "").trim();
+        if (!raw) {
+          return "";
+        }
+        var atIndex = raw.indexOf("@");
+        return atIndex > 0 ? raw.slice(0, atIndex) : raw;
+      }
+
+      function formatSurfaceShortTime(timestamp) {
+        var surfaceEngine = window.AIBridgeDashboardSurfaceEngine || null;
+        if (!surfaceEngine || typeof surfaceEngine.formatSurfaceShortTime !== "function") {
+          return "No data";
+        }
+        return surfaceEngine.formatSurfaceShortTime(timestamp);
+      }
+
+      function formatSurfaceTooltipTimestamp(timestamp) {
+        var surfaceEngine = window.AIBridgeDashboardSurfaceEngine || null;
+        if (!surfaceEngine || typeof surfaceEngine.formatSurfaceTooltipTimestamp !== "function") {
+          return "No data";
+        }
+        return surfaceEngine.formatSurfaceTooltipTimestamp(timestamp);
+      }
+
+      function updateSurfaceTimestamp(timestamp) {
+        var surfaceEngine = window.AIBridgeDashboardSurfaceEngine || null;
+        if (!surfaceEngine || typeof surfaceEngine.updateSurfaceTimestamp !== "function") {
+          return;
+        }
+        surfaceEngine.updateSurfaceTimestamp(timestamp, getSurfaceEngineHelpers());
+      }
+
+      function extractSurfaceNumericValue(value) {
+        var surfaceEngine = window.AIBridgeDashboardSurfaceEngine || null;
+        if (!surfaceEngine || typeof surfaceEngine.extractSurfaceNumericValue !== "function") {
+          return null;
+        }
+        return surfaceEngine.extractSurfaceNumericValue(value);
+      }
+
+      function appendMultiLineWidgetSeries(field, ts, rawValue) {
+        var surfaceEngine = window.AIBridgeDashboardSurfaceEngine || null;
+        if (!surfaceEngine || typeof surfaceEngine.appendMultiLineWidgetSeries !== "function") {
+          return;
+        }
+        surfaceEngine.appendMultiLineWidgetSeries(field, ts, rawValue, getSurfaceEngineHelpers());
+      }
+
+      function setToggleWidgetState(state, timestamp) {
+        var surfaceEngine = window.AIBridgeDashboardSurfaceEngine || null;
+        if (!surfaceEngine || typeof surfaceEngine.setToggleWidgetState !== "function") {
+          return;
+        }
+        surfaceEngine.setToggleWidgetState(state, timestamp, getSurfaceEngineHelpers());
+      }
+
+      function setToggleWidgetPendingState(label) {
+        var surfaceEngine = window.AIBridgeDashboardSurfaceEngine || null;
+        if (!surfaceEngine || typeof surfaceEngine.setToggleWidgetPendingState !== "function") {
+          return;
+        }
+        surfaceEngine.setToggleWidgetPendingState(label, getSurfaceEngineHelpers());
+      }
+
+      function renderMultiLineWidgetChart() {
+        var surfaceEngine = window.AIBridgeDashboardSurfaceEngine || null;
+        if (!surfaceEngine || typeof surfaceEngine.renderMultiLineWidgetChart !== "function") {
+          return;
+        }
+        surfaceEngine.renderMultiLineWidgetChart(getSurfaceEngineHelpers());
+      }
+
+      function showMultiLineWidgetTooltip(event) {
+        var surfaceEngine = window.AIBridgeDashboardSurfaceEngine || null;
+        if (!surfaceEngine || typeof surfaceEngine.showMultiLineWidgetTooltip !== "function") {
+          return;
+        }
+        surfaceEngine.showMultiLineWidgetTooltip(event, getSurfaceEngineHelpers());
+      }
+
+      function hideMultiLineWidgetTooltip() {
+        var surfaceEngine = window.AIBridgeDashboardSurfaceEngine || null;
+        if (!surfaceEngine || typeof surfaceEngine.hideMultiLineWidgetTooltip !== "function") {
+          return;
+        }
+        surfaceEngine.hideMultiLineWidgetTooltip(getSurfaceEngineHelpers());
+      }
+
+      function setFocusWidgetValue(value, timestamp) {
+        var surfaceEngine = window.AIBridgeDashboardSurfaceEngine || null;
+        if (!surfaceEngine || typeof surfaceEngine.setFocusWidgetValue !== "function") {
+          return;
+        }
+        surfaceEngine.setFocusWidgetValue(value, timestamp, getSurfaceEngineHelpers());
+      }
+
+      function setValueCardValue(value, timestamp) {
+        var surfaceEngine = window.AIBridgeDashboardSurfaceEngine || null;
+        if (!surfaceEngine || typeof surfaceEngine.setValueCardValue !== "function") {
+          return;
+        }
+        surfaceEngine.setValueCardValue(value, timestamp, getSurfaceEngineHelpers());
+      }
+
+      function registerSurfaceFieldBinding(fieldName, handler) {
+        var normalizedField = String(fieldName || "").trim().toLowerCase();
+        if (!normalizedField || typeof handler !== "function") {
+          return;
+        }
+        surfaceFieldBindings[normalizedField] = handler;
+      }
+
+      function initializeSurfacePanel() {
+        surfaceFieldBindings = {};
+        surfaceSeriesStore = {};
+        surfaceChartPathNodes = {};
+        surfaceChartHoverPoints = {};
+        surfaceSwitchMeta = null;
+        surfaceMultiLineMeta = null;
+        surfaceFocusMeta = null;
+        surfaceValueMeta = null;
+
+        (surfaceConfig.widgets || []).forEach(function (widget) {
+          if (!widget || !widget.type) {
+            return;
+          }
+          if (widget.type === "switch") {
+            surfaceSwitchMeta = widget;
+            registerSurfaceFieldBinding(widget.field, function (value, ts) {
+              setToggleWidgetState(value, ts);
+            });
+            return;
+          }
+          if (widget.type === "multi-line") {
+            surfaceMultiLineMeta = widget;
+            widget.series.forEach(function (seriesEntry) {
+              surfaceSeriesStore[seriesEntry.key] = [];
+              surfaceChartPathNodes[seriesEntry.key] = document.getElementById("widget-series-path-" + seriesEntry.key);
+              surfaceChartHoverPoints[seriesEntry.key] = document.getElementById("widget-series-hover-point-" + seriesEntry.key);
+              registerSurfaceFieldBinding(seriesEntry.field, function (value, ts) {
+                appendMultiLineWidgetSeries(seriesEntry.key, ts, value);
+                renderMultiLineWidgetChart();
+              });
+            });
+            return;
+          }
+          if (widget.type === "focus") {
+            surfaceFocusMeta = widget;
+            registerSurfaceFieldBinding(widget.field, function (value, ts) {
+              setFocusWidgetValue(value, ts);
+            });
+            return;
+          }
+          if (widget.type === "card") {
+            surfaceValueMeta = widget;
+            registerSurfaceFieldBinding(widget.field, function (value, ts) {
+              setValueCardValue(value, ts);
+            });
+          }
+        });
+
+        if (surfaceToggleOn) {
+          surfaceToggleOn.setAttribute("data-command", String((surfaceSwitchMeta && surfaceSwitchMeta.commands && surfaceSwitchMeta.commands[0]) || ""));
+          surfaceToggleOn.setAttribute("data-label", String((surfaceSwitchMeta && surfaceSwitchMeta.title) || "Switch on"));
+          surfaceToggleOn.setAttribute("data-pending-state", "Switching");
+        }
+
+        if (surfaceToggleOff) {
+          surfaceToggleOff.setAttribute("data-command", String((surfaceSwitchMeta && surfaceSwitchMeta.commands && surfaceSwitchMeta.commands[1]) || ""));
+          surfaceToggleOff.setAttribute("data-label", String((surfaceSwitchMeta && surfaceSwitchMeta.title) || "Switch off"));
+          surfaceToggleOff.setAttribute("data-pending-state", "Switching");
+        }
+
+        if (surfaceChartHitbox && !surfaceChartHitbox.getAttribute("data-bound")) {
+          surfaceChartHitbox.setAttribute("data-bound", "true");
+          surfaceChartHitbox.addEventListener("mousemove", function (event) {
+            showMultiLineWidgetTooltip(event);
+          });
+          surfaceChartHitbox.addEventListener("mouseleave", function () {
+            hideMultiLineWidgetTooltip();
+          });
+        }
+
+        renderMultiLineWidgetChart();
+      }
+
+      function applySurfaceFieldValue(field, value, timestamp) {
+        var normalizedField = String(field == null ? "" : field).trim().toLowerCase();
+        var ts = Number(timestamp || Date.now());
+        if (surfaceFieldBindings[normalizedField]) {
+          surfaceFieldBindings[normalizedField](value, ts);
+        }
+      }
+
+      function handleSurfaceStreamEvent(data) {
+        if (!data || !data.type) {
+          return;
+        }
+        if (data.type === "telemetry" && data.payload && typeof data.payload === "object") {
+          Object.keys(data.payload).forEach(function (key) {
+            applySurfaceFieldValue(key, data.payload[key], data.serverTime || Date.now());
+          });
+          return;
+        }
+        if (data.type === "timeseries" && Array.isArray(data.rows)) {
+          data.rows.forEach(function (row) {
+            applySurfaceFieldValue(row.field, row.value, row.ts || Date.now());
+          });
+        }
+      }
+
+      function connectSurfaceStream() {
+        if (!surfaceSessionId || typeof EventSource === "undefined") {
+          return;
+        }
+
+        if (surfaceEventSource && typeof surfaceEventSource.close === "function") {
+          surfaceEventSource.close();
+        }
+
+        var params = new URLSearchParams();
+        params.set("historyMs", String(surfaceHistoryWindowMs));
+        params.set("fields", (surfaceConfig.streamFields || []).join(","));
+        surfaceEventSource = new EventSource(buildSurfaceApiUrl("/api/" + encodeURIComponent(surfaceSessionId) + "/stream?" + params.toString()));
+
+        surfaceEventSource.onmessage = function (event) {
+          try {
+            handleSurfaceStreamEvent(JSON.parse(event.data));
+            } catch (error) {
+              console.error("Failed to process surface panel stream event", error);
+          }
+        };
+
+        surfaceEventSource.onerror = function () {
+          if (surfaceToggleState) {
+            surfaceToggleState.setAttribute("data-state", "offline");
+            surfaceToggleState.textContent = "Offline";
+          }
+          window.setTimeout(function () {
+            connectSurfaceStream();
+          }, 3000);
+        };
+      }
+
+      initializeSurfacePanel();
+      connectSurfaceStream();
+    });
+  </script>
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script>
+    (function () {
+      var configNode = document.getElementById("ai-bridge-dashboard-config");
+      var dashboardConfig = { sessions: [] };
+      try {
+        dashboardConfig = JSON.parse(configNode && configNode.textContent ? configNode.textContent : '{"sessions":[]}');
+      } catch (error) {
+        console.error("Invalid dashboard config JSON", error);
+      }
+      var IOT_SESSIONS = Array.isArray(dashboardConfig.sessions) ? dashboardConfig.sessions.filter(function (session) {
+        return session && typeof session.sessionId === "string" && session.sessionId.trim();
+      }) : [];
+      var CONFIGURED_STREAM_BASE_URL = String(dashboardConfig.streamBaseUrl || "").trim();
+      var CONFIGURED_DATA_SYNC_ID = String(dashboardConfig.dataSyncId || "").trim();
+      var CONFIGURED_DATA_REFRESH_MS = Number(dashboardConfig.dataRefreshMs || 0);
+      var WIDGET_MANIFESTS = dashboardConfig && typeof dashboardConfig.widgetManifests === "object" && dashboardConfig.widgetManifests
+        ? dashboardConfig.widgetManifests
+        : {};
+      var PRIMARY_SESSION = IOT_SESSIONS[0] || { sessionId: "", peripherals: [] };
+      var IOT_SESSION_ID = String(PRIMARY_SESSION.sessionId || "").trim();
+      var SESSION_PERIPHERALS = Array.isArray(PRIMARY_SESSION.peripherals) ? PRIMARY_SESSION.peripherals.map(function (code) {
+        return String(code || "").trim();
+      }).filter(Boolean) : [];
+      var SENSOR_FIELDS = SESSION_PERIPHERALS.length > 0 ? SESSION_PERIPHERALS.slice() : ["O1", "O2", "O3", "O4", "O5", "O6", "O7", "O8", "O9", "O101", "I103", "I104"];
+      var SENSOR_HISTORY_WINDOW_MS = 6 * 60 * 60 * 1000;
+      var busy = false;
+      var sensorStreams = new Map();
+      var sensorStreamBlocked = false;
+      var dataRefreshTimer = 0;
+      var dataReportRefreshThrottleTimer = 0;
+      var dataReportLastRefreshAt = 0;
+      var sensorSeriesByKey = {};
+      var sensorWidgetsByKey = {};
+      var sensorCodeToKey = {};
+      var peripheralBindings = {};
+
+      var shell = document.getElementById("app-shell");
+      var themePickerToggle = document.getElementById("theme-picker-toggle");
+      var themePickerMenu = document.getElementById("theme-picker-menu");
+      var errorBox = document.getElementById("error-box");
+      var emptyBox = document.getElementById("empty-box");
+      var resultBox = document.getElementById("result-box");
+      var resultCommand = document.getElementById("result-command");
+      var resultJson = document.getElementById("result-json");
+      var resultMeta = document.getElementById("result-meta");
+      var toastStack = document.getElementById("toast-stack");
+      var actionModal = document.getElementById("action-modal");
+
+      var sliderControlInput = document.getElementById("slider-control-input");
+      var sliderControlValueLabel = document.getElementById("slider-control-value-label");
+      var sensorLiveState = document.getElementById("sensor-live-state");
+      var sensorHistoryRange = null;
+      var chartConfigs = {};
+      var lightStates = {};
+
+      function parseIoTSessionContext(sessionId) {
+        var raw = String(sessionId || "").trim();
+        var atIndex = raw.indexOf("@");
+        if (!raw || atIndex <= 0 || atIndex === raw.length - 1) {
+          return null;
+        }
+        return {
+          ioid: raw.slice(0, atIndex),
+          apikey: raw.slice(atIndex + 1)
+        };
+      }
+
+      function buildCommandApiUrl(sessionId) {
+        var context = parseIoTSessionContext(sessionId);
+        if (!context) {
+          return "";
+        }
+        return "https://iot.ioeasy.com/cmd/" + encodeURIComponent(context.ioid) + "?apiKey=" + encodeURIComponent(context.apikey);
+      }
+
+      function resolveSessionIndex(value) {
+        var index = Number(String(value == null ? "" : value).trim());
+        return Number.isInteger(index) && index >= 0 ? index : 0;
+      }
+
+      function getSessionByIndex(sessionIndex) {
+        return IOT_SESSIONS[resolveSessionIndex(sessionIndex)] || PRIMARY_SESSION;
+      }
+
+      function getSessionIndexFromElement(element) {
+        var source = element && typeof element.closest === "function"
+          ? (element.closest("[data-ai-session-index]") || element)
+          : element;
+        return resolveSessionIndex(source && source.getAttribute ? source.getAttribute("data-ai-session-index") : 0);
+      }
+
+      function resolveCommandApiUrl(sessionIndex) {
+        var sessionConfig = getSessionByIndex(sessionIndex);
+        return buildCommandApiUrl(sessionConfig && sessionConfig.sessionId);
+      }
+
+      function formatTimestamp(date) {
+        return date.toLocaleDateString("en-GB") + " " + date.toLocaleTimeString("en-GB");
+      }
+
+      function formatShortTime(timestamp) {
+        if (!timestamp) {
+          return "No data";
+        }
+        return new Date(timestamp).toLocaleTimeString("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+      }
+
+      function formatHistoryWindowLabel(historyMs) {
+        var ms = Number(historyMs || 0);
+        if (ms <= 0) {
+          return "Recent data";
+        }
+        if (ms % (24 * 60 * 60 * 1000) === 0) {
+          var days = ms / (24 * 60 * 60 * 1000);
+          return days === 1 ? "Last 24 hours" : "Last " + days + " days";
+        }
+        if (ms % (60 * 60 * 1000) === 0) {
+          var hours = ms / (60 * 60 * 1000);
+          return hours === 1 ? "Last 1 hour" : "Last " + hours + " hours";
+        }
+        if (ms % (60 * 1000) === 0) {
+          var minutes = ms / (60 * 1000);
+          return minutes === 1 ? "Last 1 minute" : "Last " + minutes + " min";
+        }
+        return "Recent data";
+      }
+
+      function updateHistoryWindowLabels() {
+        if (sensorHistoryRange) {
+          sensorHistoryRange.value = String(SENSOR_HISTORY_WINDOW_MS);
+        }
+      }
+
+      function setSensorLiveState(text, warn) {
+        if (!sensorLiveState) {
+          return;
+        }
+        sensorLiveState.textContent = text;
+        sensorLiveState.classList.toggle("warn", !!warn);
+      }
+
+      function applyLayoutManifest() {
+        var shell = document.getElementById("app-shell");
+        var layout = Array.isArray(WIDGET_MANIFESTS.layout) ? WIDGET_MANIFESTS.layout : [];
+        if (!shell || layout.length <= 0) {
+          return;
+        }
+
+        var sections = Array.prototype.slice.call(shell.querySelectorAll("[data-layout-key]"));
+        var sectionByKey = {};
+        sections.forEach(function (section) {
+          var key = String(section.getAttribute("data-layout-key") || "").trim();
+          if (key) {
+            sectionByKey[key] = section;
+          }
+        });
+
+        layout.forEach(function (key) {
+          var section = sectionByKey[String(key || "").trim()];
+          if (section) {
+            shell.appendChild(section);
+          }
+        });
+      }
+
+      function getSearchParam(name) {
+        try {
+          return new URLSearchParams(window.location.search).get(name) || "";
+        } catch (error) {
+          return "";
+        }
+      }
+
+      function getDataSyncId() {
+        return String(getSearchParam("syncid") || CONFIGURED_DATA_SYNC_ID || "").trim();
+      }
+
+      function trimTrailingSlash(value) {
+        return String(value || "").replace(/\/+$/, "");
+      }
+
+      function getAppApiBaseUrl() {
+        var configuredBase = trimTrailingSlash(CONFIGURED_STREAM_BASE_URL);
+        if (configuredBase) {
+          return configuredBase;
+        }
+        if (typeof window !== "undefined" && window.location && /^https?:$/i.test(String(window.location.protocol || ""))) {
+          return trimTrailingSlash(window.location.origin);
+        }
+        return "https://rosa.technology";
+      }
+
+      function buildAppApiUrl(pathname) {
+        var normalizedPath = String(pathname || "");
+        if (!normalizedPath) {
+          return getAppApiBaseUrl();
+        }
+        if (/^https?:\/\//i.test(normalizedPath)) {
+          return normalizedPath;
+        }
+        return getAppApiBaseUrl() + (normalizedPath.charAt(0) === "/" ? normalizedPath : "/" + normalizedPath);
+      }
+
+      function getActiveThemeName() {
+        return String(document.documentElement.getAttribute("data-theme") || "aurora-ui").trim() || "aurora-ui";
+      }
+
+      function syncThemePickerState() {
+        if (!themePickerMenu) {
+          return;
+        }
+        var activeTheme = getActiveThemeName();
+        Array.prototype.forEach.call(themePickerMenu.querySelectorAll("[data-theme-option]"), function (button) {
+          var isActive = String(button.getAttribute("data-theme-option") || "") === activeTheme;
+          button.setAttribute("aria-pressed", isActive ? "true" : "false");
+          button.setAttribute("aria-checked", isActive ? "true" : "false");
+        });
+      }
+
+      function setDashboardTheme(themeName) {
+        var nextTheme = String(themeName || "").trim() || "aurora-ui";
+        document.documentElement.setAttribute("data-theme", nextTheme);
+        try {
+          window.localStorage.setItem("sample-dashboard-theme", nextTheme);
+        } catch (error) {
+          // Ignore localStorage access issues and keep the theme applied for this session.
+        }
+        syncThemePickerState();
+      }
+
+      function closeThemePickerMenu() {
+        if (!themePickerMenu) {
+          return;
+        }
+        themePickerMenu.classList.remove("is-open");
+        if (themePickerToggle) {
+          themePickerToggle.setAttribute("aria-expanded", "false");
+        }
+      }
+
+      function openThemePickerMenu() {
+        if (!themePickerMenu) {
+          return;
+        }
+        themePickerMenu.classList.add("is-open");
+        if (themePickerToggle) {
+          themePickerToggle.setAttribute("aria-expanded", "true");
+        }
+      }
+
+      function setDataReportState(text, variant) {
+        var refreshButton = document.getElementById("data-report-refresh");
+        if (!refreshButton) {
+          return;
+        }
+        var updatedText = "Updated " + formatShortTime(dataReportLastRefreshAt || Date.now());
+        refreshButton.innerHTML = "<span>" + (variant === "busy" ? "Refreshing..." : "Refresh reports") + "</span><small>" + updatedText + "</small>";
+        refreshButton.title = text || "";
+      }
+
+      function escapeHtml(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function humanizeLabel(value) {
+        return String(value == null ? "" : value)
+          .replace(/[_-]+/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+          .replace(/\b\w/g, function (char) { return char.toUpperCase(); });
+      }
+
+      function formatChartLabelValue(value) {
+        var text = String(value == null ? "" : value).trim();
+        if (!text) {
+          return "";
+        }
+
+        if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+          return text.slice(2);
+        }
+
+        return text;
+      }
+
+      function formatDataValue(value, format, element) {
+        if (value == null || value === "") {
+          return "--";
+        }
+
+        var normalizedFormat = String(format || "").trim().toLowerCase();
+        var numeric = extractNumericValue(value);
+        var currency = String((element && element.getAttribute("data-ai-currency")) || "VND").trim() || "VND";
+
+        function trimTrailingZeros(text) {
+          return String(text || "").replace(/\.?0+$/, "");
+        }
+
+        function formatCompactVnd(amount) {
+          var absolute = Math.abs(Number(amount || 0));
+          var sign = Number(amount || 0) < 0 ? "-" : "";
+          if (absolute >= 1000000000) {
+            return sign + trimTrailingZeros((absolute / 1000000000).toFixed(3)) + "tid";
+          }
+          if (absolute >= 1000000) {
+            return sign + trimTrailingZeros((absolute / 1000000).toFixed(3)) + "trd";
+          }
+          if (absolute >= 1000) {
+            return sign + trimTrailingZeros((absolute / 1000).toFixed(3)) + "nd";
+          }
+          return sign + trimTrailingZeros(absolute.toFixed(3)) + "d";
+        }
+
+        if (normalizedFormat === "currency" && numeric !== null) {
+          if (currency.toUpperCase() === "VND") {
+            return formatCompactVnd(numeric);
+          }
+          return numeric.toLocaleString("en-US", {
+            style: "currency",
+            currency: currency,
+            maximumFractionDigits: currency === "VND" ? 0 : 2
+          });
+        }
+
+        if ((normalizedFormat === "integer" || normalizedFormat === "count") && numeric !== null) {
+          return Math.round(numeric).toLocaleString("en-US");
+        }
+
+        if ((normalizedFormat === "number" || normalizedFormat === "decimal") && numeric !== null) {
+          return numeric.toLocaleString("en-US", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+          });
+        }
+
+        return String(value);
+      }
+
+      function buildDataApiUrl(sessionId) {
+        var syncId = getDataSyncId();
+        if (!sessionId || !syncId) {
+          return "";
+        }
+        return buildAppApiUrl("/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(syncId));
+      }
+
+      function buildMacroPayloadFromElement(element) {
+        var payload = {};
+        var macroName = String((element && element.getAttribute("data-ai-macro")) || "").trim();
+        if (macroName) {
+          payload.macro = macroName;
+        }
+
+        var customTime = String((element && element.getAttribute("data-ai-t")) || "").trim();
+        if (customTime) {
+          payload.t = customTime;
+        }
+
+        if (!element || !element.attributes) {
+          return payload;
+        }
+
+        Array.prototype.forEach.call(element.attributes, function (attribute) {
+          if (!attribute || !attribute.name) {
+            return;
+          }
+
+          var match = attribute.name.match(/^data-ai-(c\d+)$/i);
+          if (!match) {
+            return;
+          }
+
+          payload[String(match[1]).toLowerCase()] = attribute.value;
+        });
+
+        return payload;
+      }
+
+      function cloneTemplateById(templateId) {
+        var template = document.getElementById(templateId);
+        if (!template || !("content" in template)) {
+          return null;
+        }
+        return template.content.firstElementChild ? template.content.firstElementChild.cloneNode(true) : null;
+      }
+
+      function applyWidgetDataAttributes(element, definition) {
+        if (!element || !definition || typeof definition !== "object") {
+          return;
+        }
+
+        if (definition.sessionIndex != null) {
+          element.setAttribute("data-ai-session-index", String(definition.sessionIndex));
+        }
+
+        element.setAttribute("data-ai-endpoint", String(definition.endpoint || "data").trim().toLowerCase() || "data");
+
+        if (definition.macro) {
+          element.setAttribute("data-ai-macro", String(definition.macro));
+        }
+        if (definition.field) {
+          element.setAttribute("data-ai-field", String(definition.field));
+        }
+        if (definition.format) {
+          element.setAttribute("data-ai-format", String(definition.format));
+        }
+        if (definition.empty) {
+          element.setAttribute("data-ai-empty", String(definition.empty));
+        }
+        if (definition.columns) {
+          element.setAttribute("data-ai-columns", String(definition.columns));
+        }
+        if (definition.limit != null) {
+          element.setAttribute("data-ai-limit", String(definition.limit));
+        }
+        if (definition.x) {
+          element.setAttribute("data-ai-x", String(definition.x));
+        }
+        if (definition.y) {
+          element.setAttribute("data-ai-y", String(definition.y));
+        }
+        if (definition.chartType) {
+          element.setAttribute("data-ai-chart-type", String(definition.chartType));
+        }
+        if (definition.currency) {
+          element.setAttribute("data-ai-currency", String(definition.currency));
+        }
+        if (definition.t) {
+          element.setAttribute("data-ai-t", String(definition.t));
+        }
+
+        Object.keys(definition).forEach(function (key) {
+          var match = String(key || "").match(/^c(\d+)$/i);
+          if (!match) {
+            return;
+          }
+          var value = definition[key];
+          if (value == null || value === "") {
+            return;
+          }
+          element.setAttribute("data-ai-" + String(key).toLowerCase(), String(value));
+        });
+      }
+
+      function normalizeBusinessReportManifest() {
+        var source = WIDGET_MANIFESTS && typeof WIDGET_MANIFESTS.businessReports === "object" && WIDGET_MANIFESTS.businessReports
+          ? WIDGET_MANIFESTS.businessReports
+          : {};
+        var defaults = Array.isArray(source.defaults) ? source.defaults : ["0", "data"];
+        var defaultSessionIndex = String(defaults[0] || "0");
+        var defaultEndpoint = String(defaults[1] || "data").trim().toLowerCase() || "data";
+
+        return {
+          kpis: (Array.isArray(source.kpis) ? source.kpis : []).map(function (entry) {
+            return {
+              title: String((entry && entry[0]) || "--"),
+              sessionIndex: defaultSessionIndex,
+              endpoint: defaultEndpoint,
+              macro: String((entry && entry[1]) || ""),
+              field: String((entry && entry[2]) || ""),
+              format: String((entry && entry[3]) || ""),
+              empty: String((entry && entry[4]) || "")
+            };
+          }),
+          surfaces: (Array.isArray(source.widgets) ? source.widgets : []).map(function (entry) {
+            var widgetType = String((entry && entry[0]) || "chart").trim().toLowerCase();
+            return widgetType === "table"
+              ? {
+                  title: String((entry && entry[1]) || "--"),
+                  widgetType: "table",
+                  sessionIndex: defaultSessionIndex,
+                  endpoint: defaultEndpoint,
+                  macro: String((entry && entry[2]) || ""),
+                  columns: String((entry && entry[3]) || ""),
+                  limit: String((entry && entry[4]) || "8"),
+                  empty: String((entry && entry[7]) || "")
+                }
+              : {
+                  title: String((entry && entry[1]) || "--"),
+                  widgetType: "chart",
+                  sessionIndex: defaultSessionIndex,
+                  endpoint: defaultEndpoint,
+                  macro: String((entry && entry[2]) || ""),
+                  x: String((entry && entry[3]) || ""),
+                  y: String((entry && entry[4]) || ""),
+                  chartType: String((entry && entry[5]) || "bar"),
+                  format: String((entry && entry[6]) || ""),
+                  empty: String((entry && entry[7]) || "")
+                };
+          })
+        };
+      }
+
+      function normalizeLightManifest() {
+        var source = WIDGET_MANIFESTS && typeof WIDGET_MANIFESTS.lights === "object" && WIDGET_MANIFESTS.lights
+          ? WIDGET_MANIFESTS.lights
+          : {};
+        var defaultSessionIndex = String(source.sessionIndex || "0");
+        return (Array.isArray(source.outputs) ? source.outputs : []).map(function (entry, index) {
+          var outputCode = String(entry == null ? "" : entry).trim().toUpperCase();
+          if (!outputCode) {
+            outputCode = "O" + String(index + 2);
+          }
+          if (outputCode.charAt(0) !== "O") {
+            outputCode = "O" + outputCode.replace(/^O/i, "");
+          }
+          return {
+            key: normalizeWidgetKey(outputCode),
+            title: "Light " + String(index + 1),
+            outputCode: outputCode,
+            sessionIndex: defaultSessionIndex
+          };
+        });
+      }
+
+      function normalizeWidgetKey(value) {
+        return String(value == null ? "" : value)
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+      }
+
+      function normalizeSensorManifest() {
+        var source = WIDGET_MANIFESTS && typeof WIDGET_MANIFESTS.sensors === "object" && WIDGET_MANIFESTS.sensors
+          ? WIDGET_MANIFESTS.sensors
+          : {};
+        var defaultSessionIndex = String(source.sessionIndex || "0");
+        return (Array.isArray(source.sensors) ? source.sensors : []).map(function (entry, index) {
+          var title = String((entry && entry[0]) || "--");
+          var command = String((entry && entry[1]) || "").trim();
+          var key = normalizeWidgetKey(command || title);
+          return {
+            key: key,
+            title: title,
+            command: command,
+            unit: String((entry && entry[2]) || ""),
+            seriesIndex: index % 6,
+            sessionIndex: defaultSessionIndex
+          };
+        }).filter(function (entry) {
+          return entry.key && entry.command;
+        });
+      }
+
+      function getSensorWidgetEntry(key) {
+        return sensorWidgetsByKey[normalizeWidgetKey(key)] || null;
+      }
+
+      function renderLightWidgetLayout() {
+        var cards = normalizeLightManifest();
+        var lightEngine = window.AIBridgeDashboardLightEngine || null;
+        if (!lightEngine || typeof lightEngine.renderLightWidgetLayout !== "function") {
+          return;
+        }
+        lightEngine.renderLightWidgetLayout(cards, getLockedLightEngineHelpers());
+        cards.forEach(function (definition) {
+          peripheralBindings[String(definition.outputCode || "").trim().toUpperCase()] = function (value) {
+            setLightState(definition.key, value);
+          };
+        });
+      }
+
+      function renderSensorWidgetLayout() {
+        var root = document.getElementById("sensor-widget-root");
+        if (!root) {
+          return;
+        }
+
+        var cards = normalizeSensorManifest();
+        root.innerHTML = "";
+
+        cards.forEach(function (definition, index) {
+          var card = cloneTemplateById("ai-bridge-template-sensor-stat");
+          if (!card) {
+            return;
+          }
+
+          var titleNode = card.querySelector("[data-slot='title']");
+          var valueNode = card.querySelector("[data-slot='value']");
+          var chartNode = card.querySelector("[data-slot='chart']");
+          var gridNode = card.querySelector("[data-slot='grid']");
+          var maxLabelNode = card.querySelector("[data-slot='max-label']");
+          var emptyPathNode = card.querySelector("[data-slot='empty-path']");
+          var areaPathNode = card.querySelector("[data-slot='area-path']");
+          var linePathNode = card.querySelector("[data-slot='line-path']");
+          var hoverLineNode = card.querySelector("[data-slot='hover-line']");
+          var hoverPointNode = card.querySelector("[data-slot='hover-point']");
+          var hitboxNode = card.querySelector("[data-slot='hitbox']");
+          var tooltipNode = card.querySelector("[data-slot='tooltip']");
+          var footLeftNode = card.querySelector("[data-slot='foot-left']");
+          var lastSeenNode = card.querySelector("[data-slot='last-seen']");
+
+          if (titleNode) {
+            titleNode.textContent = definition.title;
+          }
+          if (valueNode) {
+            valueNode.id = "sensor-" + definition.key;
+          }
+          if (chartNode) {
+            chartNode.id = definition.key + "-chart";
+            chartNode.setAttribute("data-series-index", String(definition.seriesIndex || 0));
+          }
+          if (gridNode) {
+            gridNode.id = definition.key + "-chart-grid";
+          }
+          if (maxLabelNode) {
+            maxLabelNode.id = definition.key + "-chart-max-label";
+          }
+          if (emptyPathNode) {
+            emptyPathNode.id = definition.key + "-chart-empty";
+          }
+          if (areaPathNode) {
+            areaPathNode.id = definition.key + "-chart-area";
+          }
+          if (linePathNode) {
+            linePathNode.id = definition.key + "-chart-path";
+          }
+          if (hoverLineNode) {
+            hoverLineNode.id = definition.key + "-chart-hover-line";
+          }
+          if (hoverPointNode) {
+            hoverPointNode.id = definition.key + "-chart-hover-point";
+          }
+          if (hitboxNode) {
+            hitboxNode.id = definition.key + "-chart-hitbox";
+          }
+          if (tooltipNode) {
+            tooltipNode.id = definition.key + "-chart-tooltip";
+          }
+          if (lastSeenNode) {
+            lastSeenNode.id = definition.key + "-last-seen";
+          }
+          if (footLeftNode) {
+            footLeftNode.textContent = "History";
+          }
+
+          root.appendChild(card);
+          peripheralBindings[String(definition.command || "").trim().toUpperCase()] = function (value, timestamp) {
+            var sensorEntry = getSensorWidgetEntry(definition.key);
+            if (sensorEntry) {
+              setSensorValue(sensorEntry.valueNode, value);
+            }
+            var numericValue = extractNumericValue(value);
+            if (numericValue !== null) {
+              updateSensorHistory(definition.key, Number(timestamp || Date.now()), numericValue);
+            }
+          };
+        });
+      }
+
+      function bindDynamicWidgetRefs() {
+        sliderControlInput = document.getElementById("slider-control-input");
+        sliderControlValueLabel = document.getElementById("slider-control-value-label");
+        sensorLiveState = document.getElementById("sensor-live-state");
+        sensorHistoryRange = document.getElementById("sensor-history-range");
+        sensorWidgetsByKey = {};
+        sensorCodeToKey = {};
+        chartConfigs = {};
+        peripheralBindings = {};
+        normalizeSensorManifest().forEach(function (definition) {
+          var key = definition.key;
+          sensorWidgetsByKey[key] = {
+            definition: definition,
+            valueNode: document.getElementById("sensor-" + key)
+          };
+          sensorCodeToKey[String(definition.command || "").trim().toUpperCase()] = key;
+          peripheralBindings[String(definition.command || "").trim().toUpperCase()] = function (value, timestamp) {
+            var sensorEntry = getSensorWidgetEntry(definition.key);
+            if (sensorEntry) {
+              setSensorValue(sensorEntry.valueNode, value);
+            }
+            var numericValue = extractNumericValue(value);
+            if (numericValue !== null) {
+              updateSensorHistory(definition.key, Number(timestamp || Date.now()), numericValue);
+            }
+          };
+          chartConfigs[key] = {
+            unit: definition.unit || "",
+            container: document.getElementById(key + "-chart"),
+            grid: document.getElementById(key + "-chart-grid"),
+            path: document.getElementById(key + "-chart-path"),
+            area: document.getElementById(key + "-chart-area"),
+            empty: document.getElementById(key + "-chart-empty"),
+            maxLabel: document.getElementById(key + "-chart-max-label"),
+            hoverLine: document.getElementById(key + "-chart-hover-line"),
+            hoverPoint: document.getElementById(key + "-chart-hover-point"),
+            hitbox: document.getElementById(key + "-chart-hitbox"),
+            tooltip: document.getElementById(key + "-chart-tooltip"),
+            series: Array.isArray(sensorSeriesByKey[key]) ? sensorSeriesByKey[key] : []
+          };
+        });
+        lightStates = {};
+        normalizeLightManifest().forEach(function (definition) {
+          lightStates[definition.key] = document.getElementById("light-card-" + String(definition.key));
+          peripheralBindings[String(definition.outputCode || "").trim().toUpperCase()] = function (value) {
+            setLightState(definition.key, value);
+          };
+        });
+      }
+
+
+      function getLockedDataEngineHelpers() {
+        return {
+          getBusinessReportRoot: function () { return document.getElementById("business-data-report-root"); },
+          normalizeBusinessReportManifest: normalizeBusinessReportManifest,
+          cloneTemplateById: cloneTemplateById,
+          applyWidgetDataAttributes: applyWidgetDataAttributes,
+          getSessionByIndex: getSessionByIndex,
+          buildDataApiUrl: buildDataApiUrl,
+          getDataSyncId: getDataSyncId,
+          normalizePayload: normalizePayload,
+          escapeHtml: escapeHtml,
+          humanizeLabel: humanizeLabel,
+          extractNumericValue: extractNumericValue,
+          formatDataValue: formatDataValue,
+          formatChartLabelValue: formatChartLabelValue,
+          buildMacroPayloadFromElement: buildMacroPayloadFromElement,
+          getSessionIndexFromElement: getSessionIndexFromElement,
+          toFriendlyErrorMessage: toFriendlyErrorMessage,
+          setDataReportState: setDataReportState,
+          queryDataWidgets: function () {
+            return Array.prototype.slice.call(document.querySelectorAll("[data-ai-data-kpi], [data-ai-data-table], [data-ai-data-chart]"));
+          },
+          setDataReportLastRefreshAt: function (value) {
+            dataReportLastRefreshAt = Number(value || 0);
+          }
+        };
+      }
+
+      function getLockedLightEngineHelpers() {
+        return {
+          getLightRoot: function () { return document.getElementById("lights-widget-root"); },
+          cloneTemplateById: cloneTemplateById
+        };
+      }
+
+      renderBusinessReportLayout = function () {
+        var reportEngine = window.AIBridgeDashboardFactoryReportEngine || null;
+        var reportRoot = document.getElementById("business-report-section");
+        if (!reportEngine || !reportRoot || typeof reportEngine.init !== "function") {
+          return Promise.resolve();
+        }
+        return reportEngine.init(reportRoot, {
+          sessionId: "IO2552Hif@hR54H37kUmwE2FnDwSTLAnupfTzmMhea",
+          syncId: "2p6anenxen6yyj6ff2fnta",
+          factoryId: "IO2552Hif",
+          showToast: showToast
+        });
+      };
+
+      executeMacroRequest = function (endpoint, payload, sessionIndex) {
+        var dataEngine = window.AIBridgeDashboardDataEngine || null;
+        if (!dataEngine || typeof dataEngine.executeMacroRequest !== "function") {
+          return Promise.reject(new Error("Dashboard data engine is unavailable."));
+        }
+        return dataEngine.executeMacroRequest(endpoint, payload, sessionIndex, getLockedDataEngineHelpers());
+      };
+
+      renderDataWidgetEmpty = function (element, message, isError) {
+        var dataEngine = window.AIBridgeDashboardDataEngine || null;
+        if (!dataEngine || typeof dataEngine.renderDataWidgetEmpty !== "function") {
+          return;
+        }
+        dataEngine.renderDataWidgetEmpty(element, message, isError, getLockedDataEngineHelpers());
+      };
+
+      renderDataKpi = function (element, rows) {
+        var dataEngine = window.AIBridgeDashboardDataEngine || null;
+        if (!dataEngine || typeof dataEngine.renderDataKpi !== "function") {
+          return;
+        }
+        dataEngine.renderDataKpi(element, rows, getLockedDataEngineHelpers());
+      };
+
+      renderDataTable = function (element, rows) {
+        var dataEngine = window.AIBridgeDashboardDataEngine || null;
+        if (!dataEngine || typeof dataEngine.renderDataTable !== "function") {
+          return;
+        }
+        dataEngine.renderDataTable(element, rows, getLockedDataEngineHelpers());
+      };
+
+      renderDataChart = function (element, rows) {
+        var dataEngine = window.AIBridgeDashboardDataEngine || null;
+        if (!dataEngine || typeof dataEngine.renderDataChart !== "function") {
+          return;
+        }
+        dataEngine.renderDataChart(element, rows, getLockedDataEngineHelpers());
+      };
+
+      refreshDataViews = function () {
+        var reportEngine = window.AIBridgeDashboardFactoryReportEngine || null;
+        var reportRoot = document.getElementById("business-report-section");
+        if (!reportEngine || !reportRoot || typeof reportEngine.refresh !== "function") {
+          return renderBusinessReportLayout();
+        }
+        return reportEngine.refresh(reportRoot);
+      };
+
+      function scheduleDataReportRefresh(reason) {
+        if (!getDataSyncId()) {
+          return;
+        }
+
+        var elapsed = Date.now() - dataReportLastRefreshAt;
+        var remaining = Math.max(0, 3000 - elapsed);
+
+        if (remaining <= 0) {
+          if (dataReportRefreshThrottleTimer) {
+            window.clearTimeout(dataReportRefreshThrottleTimer);
+            dataReportRefreshThrottleTimer = 0;
+          }
+          refreshDataViews().catch(function (error) {
+            console.error("Failed to refresh IoData report widgets after live update", reason, error);
+          });
+          return;
+        }
+
+        if (dataReportRefreshThrottleTimer) {
+          return;
+        }
+
+        dataReportRefreshThrottleTimer = window.setTimeout(function () {
+          dataReportRefreshThrottleTimer = 0;
+          refreshDataViews().catch(function (error) {
+            console.error("Failed to refresh IoData report widgets after throttled live update", reason, error);
+          });
+        }, remaining);
+      }
+
+      async function runIoDataMacro(payload, sessionIndex, endpoint) {
+        var rows = await executeMacroRequest(endpoint || "data", payload || {}, sessionIndex);
+        if (String(endpoint || "data").trim().toLowerCase() !== "report") {
+          scheduleDataReportRefresh("local_write");
+        }
+        return rows;
+      }
+
+      function normalizePayload(text) {
+        try {
+          return JSON.parse(text);
+        } catch (error) {
+          return text;
+        }
+      }
+
+      function toFriendlyErrorMessage(message) {
+        var raw = String(message == null ? "" : message).trim();
+        var lower = raw.toLowerCase();
+
+        if (!raw) {
+          return "The command could not be completed. Please try again.";
+        }
+
+        if (lower.indexOf("within 5 seconds") >= 0 || lower.indexOf("aborterror") >= 0) {
+          return "The device did not respond in time. Please try again.";
+        }
+
+        if (lower.indexOf("404") >= 0 || lower.indexOf("not found") >= 0) {
+          return "The device command endpoint could not be found. Please check the IoT session settings.";
+        }
+
+        if (lower.indexOf("401") >= 0 || lower.indexOf("403") >= 0 || lower.indexOf("unauthorized") >= 0 || lower.indexOf("forbidden") >= 0) {
+          return "The device rejected the request. Please check the API key and permissions.";
+        }
+
+        if (lower.indexOf("400") >= 0 || lower.indexOf("json") >= 0 || lower.indexOf("unexpected token") >= 0 || lower.indexOf("invalid") >= 0) {
+          return "The device returned an unexpected response. Please try again.";
+        }
+
+        if (lower.indexOf("500") >= 0 || lower.indexOf("502") >= 0 || lower.indexOf("503") >= 0 || lower.indexOf("504") >= 0 || lower.indexOf("gateway") >= 0) {
+          return "The device service is temporarily unavailable. Please try again later.";
+        }
+
+        if (lower.indexOf("failed to fetch") >= 0 || lower.indexOf("network") >= 0 || lower.indexOf("load failed") >= 0) {
+          return "The dashboard could not reach the device service. Please check the connection and try again.";
+        }
+
+        return raw;
+      }
+
+      function sanitizeBatchTargets(value) {
+        return value
+          .split(";")
+          .map(function (part) { return part.trim(); })
+          .filter(Boolean)
+          .slice(0, 8)
+          .join(";");
+      }
+
+      function showToast(message, type) {
+        if (!toastStack) {
+          return;
+        }
+
+        var toast = document.createElement("div");
+        toast.className = "toast " + (type === "error" ? "error" : "success");
+        toast.textContent = message;
+        toastStack.appendChild(toast);
+
+        window.setTimeout(function () {
+          toast.style.opacity = "0";
+          toast.style.transform = "translateY(10px)";
+          toast.style.transition = "opacity 0.18s ease, transform 0.18s ease";
+          window.setTimeout(function () {
+            if (toast.parentNode) {
+              toast.parentNode.removeChild(toast);
+            }
+          }, 180);
+        }, 3800);
+      }
+
+      function setBusy(nextBusy, isError) {
+        busy = nextBusy;
+        shell.classList.toggle("busy-lock", nextBusy);
+      }
+
+      function normalizeResultValue(value) {
+        var text = String(value == null ? "" : value).trim();
+        return text || "--";
+      }
+
+      function extractNumericValue(value) {
+        if (typeof value === "number" && isFinite(value)) {
+          return value;
+        }
+
+        var text = String(value == null ? "" : value).trim();
+        if (!text) {
+          return null;
+        }
+
+        var parsed = Number(text);
+        if (isFinite(parsed)) {
+          return parsed;
+        }
+
+        var match = text.match(/-?\d+(\.\d+)?/);
+        if (!match) {
+          return null;
+        }
+
+        var nextValue = Number(match[0]);
+        return isFinite(nextValue) ? nextValue : null;
+      }
+
+      function getSensorSeriesMaxPoints() {
+        if (SENSOR_HISTORY_WINDOW_MS <= 2 * 60 * 60 * 1000) return 900;
+        if (SENSOR_HISTORY_WINDOW_MS <= 24 * 60 * 60 * 1000) return 1800;
+        if (SENSOR_HISTORY_WINDOW_MS <= 7 * 24 * 60 * 60 * 1000) return 2600;
+        return 2400;
+      }
+
+      function trimSeries(points) {
+        var cutoff = Date.now() - SENSOR_HISTORY_WINDOW_MS;
+        return points
+          .filter(function (point) {
+            return point && point.ts >= cutoff;
+          })
+          .sort(function (left, right) {
+            return Number(left.ts || 0) - Number(right.ts || 0);
+          })
+          .slice(-getSensorSeriesMaxPoints());
+      }
+
+      function appendSeriesPoint(series, ts, value) {
+        if (!isFinite(value)) {
+          return trimSeries(series);
+        }
+        var nextSeries = trimSeries(series.concat([{ ts: ts, value: value }]));
+        return nextSeries;
+      }
+
+      function buildChartScale(series) {
+        var min = 0;
+        var max = 0;
+        var minTs = Infinity;
+        var maxTs = 0;
+        series.forEach(function (point) {
+          if (point.value > max) {
+            max = point.value;
+          }
+          if (isFinite(point.ts)) {
+            if (point.ts < minTs) {
+              minTs = point.ts;
+            }
+            if (point.ts > maxTs) {
+              maxTs = point.ts;
+            }
+          }
+        });
+        if (max <= 0) {
+          max = 10;
+        }
+        max = Math.ceil(max / 5) * 5;
+        if (max < 10) {
+          max = 10;
+        }
+        if (!isFinite(minTs)) {
+          minTs = Date.now() - SENSOR_HISTORY_WINDOW_MS;
+        }
+        if (!isFinite(maxTs) || maxTs <= minTs) {
+          maxTs = minTs + SENSOR_HISTORY_WINDOW_MS;
+        }
+        return {
+          min: min,
+          max: max,
+          minTs: minTs,
+          maxTs: maxTs,
+          width: 278,
+          height: 108,
+          left: 46,
+          top: 14,
+          bottom: 122
+        };
+      }
+
+      function getChartGeometry(series, scale) {
+        if (!series || series.length <= 0) {
+          return [];
+        }
+
+        var tsSpan = Math.max(1, scale.maxTs - scale.minTs);
+        return series.map(function (point) {
+          var tsOffset = Math.min(Math.max(point.ts - scale.minTs, 0), tsSpan);
+          var x = scale.left + (tsOffset / tsSpan) * scale.width;
+          var normalized = (point.value - scale.min) / (scale.max - scale.min);
+          var y = scale.bottom - (normalized * scale.height);
+          return {
+            ts: point.ts,
+            value: point.value,
+            x: x,
+            y: y
+          };
+        });
+      }
+
+      function renderChartGrid(gridElement, scale) {
+        if (!gridElement) {
+          return;
+        }
+
+        var html = "";
+        for (var step = 0; step <= 4; step += 1) {
+          var y = scale.top + ((scale.height / 4) * step);
+          html += '<line x1="' + scale.left + '" y1="' + y.toFixed(2) + '" x2="' + (scale.left + scale.width) + '" y2="' + y.toFixed(2) + '"></line>';
+        }
+        gridElement.innerHTML = html;
+      }
+
+            function applyPeripheralValue(code, value, timestamp) {
+        var normalizedCode = String(code == null ? "" : code).trim().toUpperCase();
+        var ts = Number(timestamp || Date.now());
+        var mappedSensorKey = sensorCodeToKey[normalizedCode];
+        if (mappedSensorKey) {
+          var mappedSensorEntry = getSensorWidgetEntry(mappedSensorKey);
+          if (!mappedSensorEntry || !mappedSensorEntry.valueNode) {
+            renderSensorWidgetLayout();
+            bindDynamicWidgetRefs();
+          }
+        }
+        if (peripheralBindings[normalizedCode]) {
+          peripheralBindings[normalizedCode](value, ts);
+          return;
+        }
+
+        var motorFeedbackCode = String((sliderControlInput && sliderControlInput.getAttribute("data-feedback-code")) || "").trim().toUpperCase();
+          if (motorFeedbackCode && normalizedCode === motorFeedbackCode) {
+            setSliderControlValue(value);
+          }
+        }
+
+      function applyTelemetryPayload(payload, serverTime) {
+        if (!payload || typeof payload !== "object") {
+          return;
+        }
+
+        Object.keys(payload).forEach(function (key) {
+          applyPeripheralValue(key, payload[key], serverTime || Date.now());
+        });
+      }
+
+      function setLightState(key, value) {
+        var lightEngine = window.AIBridgeDashboardLightEngine || null;
+        if (!lightEngine || typeof lightEngine.setLightState !== "function") {
+          return;
+        }
+        lightEngine.setLightState(lightStates[key], value);
+      }
+
+
+      function getRuntimeSensorEngineHelpers() {
+        return {
+          getSensorRoot: function () { return document.getElementById("sensor-widget-root"); },
+          normalizeSensorManifest: normalizeSensorManifest,
+          cloneTemplateById: cloneTemplateById,
+          normalizeWidgetKey: normalizeWidgetKey,
+          getSensorWidgetEntry: getSensorWidgetEntry,
+          getChartConfig: function (key) { return chartConfigs[key] || null; },
+          getSensorSeries: function (key) { return sensorSeriesByKey[key]; },
+          setSensorSeries: function (key, series) { sensorSeriesByKey[key] = series; },
+          appendSeriesPoint: appendSeriesPoint,
+          getSensorHistoryWindowMs: function () { return SENSOR_HISTORY_WINDOW_MS; },
+          setHistoryWindow: setHistoryWindow,
+          formatTimestamp: formatTimestamp,
+          formatShortTime: formatShortTime,
+          normalizeResultValue: normalizeResultValue
+        };
+      }
+
+      renderSensorWidgetLayout = function () {
+        var sensorEngine = window.AIBridgeDashboardSensorEngine || null;
+        if (!sensorEngine || typeof sensorEngine.renderSensorWidgetLayout !== "function") {
+          return;
+        }
+        sensorEngine.renderSensorWidgetLayout(normalizeSensorManifest(), getRuntimeSensorEngineHelpers());
+      };
+
+      renderSensorChart = function (name) {
+        var sensorEngine = window.AIBridgeDashboardSensorEngine || null;
+        if (!sensorEngine || typeof sensorEngine.renderSensorChart !== "function") {
+          return;
+        }
+        sensorEngine.renderSensorChart(name, getRuntimeSensorEngineHelpers());
+      };
+
+      showChartTooltip = function (name, event) {
+        var sensorEngine = window.AIBridgeDashboardSensorEngine || null;
+        if (!sensorEngine || typeof sensorEngine.showChartTooltip !== "function") {
+          return;
+        }
+        sensorEngine.showChartTooltip(name, event, getRuntimeSensorEngineHelpers());
+      };
+
+      hideChartTooltip = function (name) {
+        var sensorEngine = window.AIBridgeDashboardSensorEngine || null;
+        if (!sensorEngine || typeof sensorEngine.hideChartTooltip !== "function") {
+          return;
+        }
+        sensorEngine.hideChartTooltip(name, getRuntimeSensorEngineHelpers());
+      };
+
+      updateSensorHistory = function (field, ts, value) {
+        var sensorEngine = window.AIBridgeDashboardSensorEngine || null;
+        if (!sensorEngine || typeof sensorEngine.updateSensorHistory !== "function") {
+          return;
+        }
+        sensorEngine.updateSensorHistory(field, ts, value, getRuntimeSensorEngineHelpers());
+      };
+
+      setSensorValue = function (target, value) {
+        var sensorEngine = window.AIBridgeDashboardSensorEngine || null;
+        if (!sensorEngine || typeof sensorEngine.setSensorValue !== "function") {
+          return;
+        }
+        sensorEngine.setSensorValue(target, value, getRuntimeSensorEngineHelpers());
+      };
+
+      function setSliderControlValue(value) {
+        var match = String(value == null ? "" : value).match(/-?\d+(\.\d+)?/);
+        if (!match) {
+          return;
+        }
+
+        var nextAngle = Math.max(0, Math.min(360, Math.round(parseFloat(match[0]))));
+        if (sliderControlInput) {
+          sliderControlInput.value = String(nextAngle);
+        }
+        if (sliderControlValueLabel) {
+          sliderControlValueLabel.textContent = nextAngle + " " + ((sliderControlInput && sliderControlInput.getAttribute("data-unit")) || "");
+        }
+      }
+
+      function escapeCommandPattern(value) {
+        return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      }
+
+      function applyImmediateState(command) {
+        var normalizedCommand = String(command || "").trim();
+        var handled = false;
+        normalizeLightManifest().forEach(function (definition) {
+          if (handled) {
+            return;
+          }
+          var outputCode = String(definition.outputCode || "").trim().toUpperCase();
+          if (normalizedCommand === "D1" + outputCode) {
+            setLightState(definition.key, "ON");
+            handled = true;
+            return;
+          }
+          if (normalizedCommand === "D2" + outputCode) {
+            setLightState(definition.key, "OFF");
+            handled = true;
+          }
+        });
+        if (handled) {
+          return;
+        }
+
+        var motorFormat = String((sliderControlInput && sliderControlInput.getAttribute("data-command-format")) || "").trim();
+        if (motorFormat && motorFormat.indexOf("{angle}") >= 0) {
+          var motorPattern = new RegExp("^" + escapeCommandPattern(motorFormat).replace(/\\\{angle\\\}/g, "(.+?)") + "$", "i");
+          var motorMatch = normalizedCommand.match(motorPattern);
+          if (motorMatch) {
+            setSliderControlValue(String(motorMatch[1]) + " " + ((sliderControlInput && sliderControlInput.getAttribute("data-unit")) || ""));
+          }
+        }
+      }
+
+      function applyResponseState(command, label, data) {
+        var payload = data;
+        if (typeof payload === "string") {
+          return;
+        }
+
+        if (!payload || typeof payload !== "object") {
+          return;
+        }
+
+        if (payload.error) {
+          throw new Error(String(payload.error));
+        }
+
+        if (typeof payload.result !== "string") {
+          return;
+        }
+
+        var commands = String(command || "").split(";").map(function (part) {
+          return part.trim();
+        }).filter(Boolean);
+        var values = payload.result.split(";").map(function (part) {
+          return part.trim();
+        });
+
+        commands.forEach(function (part, index) {
+          var value = values[index];
+          if (typeof value === "undefined") {
+            return;
+          }
+
+          applyPeripheralValue(part, value, Date.now());
+        });
+      }
+
+      function showError(message) {
+        var userMessage = toFriendlyErrorMessage(message);
+        errorBox.textContent = userMessage;
+        errorBox.classList.remove("is-hidden");
+        emptyBox.classList.add("is-hidden");
+        resultBox.classList.add("is-hidden");
+        resultMeta.textContent = "Command failed";
+        setBusy(false, true);
+        showToast(userMessage, "error");
+      }
+
+      function showResult(label, command, data) {
+        applyResponseState(command, label, data);
+        applyImmediateState(command);
+        errorBox.classList.add("is-hidden");
+        emptyBox.classList.add("is-hidden");
+        resultBox.classList.remove("is-hidden");
+        resultCommand.textContent = command;
+        resultJson.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+        resultMeta.textContent = label + " - " + formatTimestamp(new Date());
+        setBusy(false, false);
+        showToast(label + " completed.", "success");
+      }
+
+      function buildSensorStreamUrl(sessionId, peripherals) {
+        var params = new URLSearchParams();
+        params.set("historyMs", String(SENSOR_HISTORY_WINDOW_MS));
+        if (Array.isArray(peripherals) && peripherals.length > 0) {
+          params.set("fields", peripherals.join(","));
+        }
+        var query = params.toString();
+        return buildAppApiUrl("/api/" + encodeURIComponent(sessionId) + "/stream" + (query ? "?" + query : ""));
+      }
+
+      function handleSensorStreamEvent(sessionId, data) {
+        if (!data || !data.type) {
+          return;
+        }
+
+        if (sessionId !== IOT_SESSION_ID) {
+          return;
+        }
+
+        if (data.type === "heartbeat") {
+          return;
+        }
+
+        if (data.type === "billing_blocked") {
+          sensorStreamBlocked = true;
+          setSensorLiveState("Top up required", true);
+          showToast(data.message || "Sensor ingest is blocked until this IoT session is topped up.", "error");
+          return;
+        }
+
+        if (data.type === "telemetry") {
+          applyTelemetryPayload(data.payload || {}, Number(data.serverTime || Date.now()));
+          setSensorLiveState("Telemetry live", false);
+          return;
+        }
+
+        if (data.type === "timeseries" && Array.isArray(data.rows)) {
+          data.rows.forEach(function (row) {
+            applyPeripheralValue(row.field, row.value, Number(row.ts || Date.now()));
+          });
+          setSensorLiveState("Telemetry live", false);
+          return;
+        }
+
+        if (data.type === "iodata_changed") {
+          scheduleDataReportRefresh(data.macro || data.source || "iodata_changed");
+        }
+      }
+
+      function connectSessionStream(sessionConfig) {
+        if (!sessionConfig || !sessionConfig.sessionId || sensorStreamBlocked || typeof EventSource === "undefined") {
+          return;
+        }
+
+        var sessionId = String(sessionConfig.sessionId).trim();
+        var existing = sensorStreams.get(sessionId);
+        if (existing) {
+          existing.close();
+          sensorStreams.delete(sessionId);
+        }
+
+        var stream = new EventSource(buildSensorStreamUrl(sessionId, sessionConfig.peripherals || []));
+        sensorStreams.set(sessionId, stream);
+
+        stream.onmessage = function (event) {
+          try {
+            var data = JSON.parse(event.data);
+            handleSensorStreamEvent(sessionId, data);
+          } catch (error) {
+            console.error("Failed to process sensor stream event", error);
+          }
+        };
+
+        stream.onerror = function () {
+          var current = sensorStreams.get(sessionId);
+          if (current) {
+            current.close();
+            sensorStreams.delete(sessionId);
+          }
+
+          if (sensorStreamBlocked) {
+            return;
+          }
+
+          setSensorLiveState("Reconnecting...", true);
+          window.setTimeout(function () {
+            if (!sensorStreamBlocked) {
+              connectSessionStream(sessionConfig);
+            }
+          }, 3000);
+        };
+      }
+
+      function connectSensorStreams() {
+        if (!PRIMARY_SESSION || !PRIMARY_SESSION.sessionId) {
+          setSensorLiveState("Telemetry offline", true);
+          return;
+        }
+
+        sensorStreams.forEach(function (stream) {
+          if (stream && typeof stream.close === "function") {
+            stream.close();
+          }
+        });
+        sensorStreams.clear();
+
+        connectSessionStream(PRIMARY_SESSION);
+      }
+
+      function setHistoryWindow(nextHistoryWindowMs) {
+        var nextValue = Number(nextHistoryWindowMs);
+        if (!Number.isFinite(nextValue) || nextValue <= 0 || nextValue === SENSOR_HISTORY_WINDOW_MS) {
+          updateHistoryWindowLabels();
+          return;
+        }
+
+        SENSOR_HISTORY_WINDOW_MS = Math.round(nextValue);
+        Object.keys(chartConfigs).forEach(function (key) {
+            sensorSeriesByKey[key] = [];
+            chartConfigs[key].series = [];
+            renderSensorChart(key);
+          });
+        updateHistoryWindowLabels();
+        setSensorLiveState("Reloading history...", false);
+        connectSensorStreams();
+      }
+
+      async function runCommand(command, label, sessionIndex) {
+        var rawCommand = String(command || "").trim();
+        if (!rawCommand || busy) {
+          return;
+        }
+
+        var normalizedCommand = window.AIBridgeCommandTemplate && typeof window.AIBridgeCommandTemplate.resolveCommandTemplate === "function"
+          ? await window.AIBridgeCommandTemplate.resolveCommandTemplate(rawCommand)
+          : rawCommand
+            .replace(/<<email>>/gi, "")
+            .replace(/<<username>>/gi, "");
+        if (!normalizedCommand) {
+          return;
+        }
+
+        var commandApiUrl = resolveCommandApiUrl(sessionIndex);
+        if (!commandApiUrl) {
+          showError("IoT command endpoint is not configured for this session.");
+          return;
+        }
+
+        var commandParts = normalizedCommand.split(";").map(function (part) {
+          return part.trim();
+        }).filter(Boolean);
+
+        if (commandParts.length > 8) {
+          showError("A maximum of 8 read targets can be requested at the same time.");
+          return;
+        }
+
+        setBusy(true, false);
+        errorBox.classList.add("is-hidden");
+
+        var controller = new AbortController();
+        var timeoutId = window.setTimeout(function () {
+          controller.abort();
+        }, 5000);
+
+        try {
+          var response = await fetch(commandApiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ cmd: normalizedCommand }),
+            signal: controller.signal
+          });
+
+          var rawText = await response.text();
+          if (!response.ok) {
+            throw new Error(rawText || ("Request failed with status " + response.status));
+          }
+
+          showResult(label, normalizedCommand, normalizePayload(rawText));
+        } catch (error) {
+          if (error && error.name === "AbortError") {
+            showError("The device did not answer within 5 seconds.");
+          } else {
+            showError((error && error.message) || "Command failed.");
+          }
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      }
+
+      document.addEventListener("click", function (event) {
+        var themeOption = event.target && typeof event.target.closest === "function"
+          ? event.target.closest("[data-theme-option]")
+          : null;
+        if (themeOption) {
+          setDashboardTheme(themeOption.getAttribute("data-theme-option"));
+          closeThemePickerMenu();
+          return;
+        }
+
+        var themeToggle = event.target && typeof event.target.closest === "function"
+          ? event.target.closest("#theme-picker-toggle")
+          : null;
+        if (themeToggle) {
+          if (themePickerMenu && themePickerMenu.classList.contains("is-open")) {
+            closeThemePickerMenu();
+          } else {
+            openThemePickerMenu();
+          }
+          return;
+        }
+
+        if (themePickerMenu && !themePickerMenu.contains(event.target)) {
+          closeThemePickerMenu();
+        }
+
+        var target = event.target;
+        var button = target && typeof target.closest === "function" ? target.closest("[data-command]") : null;
+        if (!button) {
+          return;
+        }
+          if (button.getAttribute("data-action-kind") === "parameterized") {
+            return;
+          }
+        if (button.hasAttribute("disabled") || button.getAttribute("aria-disabled") === "true") {
+          return;
+        }
+        var pendingText = String(button.getAttribute("data-pending-state") || "").trim();
+        if (pendingText) {
+          document.dispatchEvent(new CustomEvent("ai-bridge-command-pending", {
+              detail: {
+                scope: "surface-switch",
+                label: pendingText
+              }
+            }));
+        }
+        runCommand(
+          button.getAttribute("data-command"),
+          button.getAttribute("data-label") || "Command",
+          getSessionIndexFromElement(button)
+        );
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          closeThemePickerMenu();
+        }
+      });
+
+      function restartDataRefreshTimer() {
+        if (dataRefreshTimer) {
+          window.clearInterval(dataRefreshTimer);
+          dataRefreshTimer = 0;
+        }
+
+        if (CONFIGURED_DATA_REFRESH_MS > 0) {
+          dataRefreshTimer = window.setInterval(function () {
+            refreshDataViews().catch(function (error) {
+              console.error("Failed to refresh IoData report widgets", error);
+            });
+          }, CONFIGURED_DATA_REFRESH_MS);
+        }
+      }
+
+      function initializeDashboardRuntime() {
+        applyLayoutManifest();
+
+        window.AIBridgeDashboardRuntime = {
+          runCommand: runCommand,
+          showToast: showToast,
+          getSessionIndex: getSessionIndexFromElement,
+          setHistoryWindow: setHistoryWindow,
+          renderLightWidgetLayout: renderLightWidgetLayout,
+          renderSensorWidgetLayout: renderSensorWidgetLayout,
+          renderBusinessReportLayout: renderBusinessReportLayout,
+          refreshDataViews: refreshDataViews,
+          runIoDataMacro: runIoDataMacro,
+          getDataSyncId: getDataSyncId
+        };
+
+        (window.AIBridgeDashboardBoot || []).forEach(function (initializer) {
+          if (typeof initializer === "function") {
+            try {
+              initializer(window.AIBridgeDashboardRuntime);
+            } catch (error) {
+              console.error("Dashboard boot initializer failed", error);
+            }
+          }
+        });
+
+        setDashboardTheme(getActiveThemeName());
+        renderLightWidgetLayout();
+        renderSensorWidgetLayout();
+        renderBusinessReportLayout();
+        bindDynamicWidgetRefs();
+
+        Object.keys(chartConfigs).forEach(function (name) {
+          var config = chartConfigs[name];
+          if (!config || !config.hitbox) {
+            return;
+          }
+          config.hitbox.addEventListener("mousemove", function (event) {
+            showChartTooltip(name, event);
+          });
+          config.hitbox.addEventListener("mouseleave", function () {
+            hideChartTooltip(name);
+          });
+        });
+
+        updateHistoryWindowLabels();
+        setSensorLiveState("Loading sensors...", false);
+        connectSensorStreams();
+        restartDataRefreshTimer();
+        refreshDataViews().catch(function (error) {
+          console.error("Failed to load IoData report widgets", error);
+        });
+      }
+
+      window.addEventListener("resize", function () {
+        if (window.AIBridgeDashboardRuntime && typeof window.AIBridgeDashboardRuntime.updateControlViewScale === "function") {
+          window.AIBridgeDashboardRuntime.updateControlViewScale();
+        }
+      });
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeDashboardRuntime, { once: true });
+      } else {
+        initializeDashboardRuntime();
+      }
+    })();
+  </script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+
+</html>

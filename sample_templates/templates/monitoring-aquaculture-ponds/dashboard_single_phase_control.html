@@ -1,0 +1,2206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Single-Phase Aquaculture Control</title>
+  <link rel="stylesheet" href="../../dashboard-themes.css?v=2026.04.18" />
+  <link rel="stylesheet" href="/sample_dashboards/monitoring-aquaculture-ponds/dashboard.css?v=2026.04.28.7" />
+  <style>
+    .single-phase-controller-list { display: grid; gap: 14px; }
+    .single-phase-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(156px, 1fr)); gap: 14px; }
+    .single-phase-schedule-card { grid-column: 1 / -1; }
+    .single-phase-controller-tools { display: inline-flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+    .single-phase-controller-settings-button[hidden] { display: none !important; }
+    .single-phase-schedule-table { min-width: 560px; table-layout: fixed; }
+    .single-phase-schedule-table col.single-phase-col-enable { width: 70px; }
+    .single-phase-schedule-table col.single-phase-col-time { width: 112px; }
+    .single-phase-schedule-table col.single-phase-col-action { width: 92px; }
+    .single-phase-schedule-table col.single-phase-col-contactors { width: auto; }
+    .single-phase-schedule-table th:nth-child(1),
+    .single-phase-schedule-table td:nth-child(1) { width: 70px; }
+    .single-phase-schedule-table th:nth-child(2),
+    .single-phase-schedule-table td:nth-child(2) { width: 112px; }
+    .single-phase-schedule-table th:nth-child(3),
+    .single-phase-schedule-table td:nth-child(3) { width: 92px; }
+    .single-phase-schedule-table th:nth-child(4),
+    .single-phase-schedule-table td:nth-child(4) { width: auto; text-align: right; }
+    .single-phase-schedule-table .scheduler-time { width: 96px; min-width: 96px; max-width: 96px; }
+    .single-phase-schedule-table .scheduler-action-toggle { width: 76px; min-width: 76px; max-width: 76px; margin-left: auto; margin-right: auto; }
+    .single-phase-output-grid { width: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); justify-items: center; align-items: center; gap: 6px 8px; }
+    .single-phase-output-option { display: inline-flex; align-items: center; justify-content: center; gap: 4px; width: min(44px, 100%); min-height: 30px; border: 1px solid var(--theme-border); border-radius: 8px; padding: 3px 5px; font-size: 0.74rem; font-weight: 800; background: var(--theme-surface-muted); box-sizing: border-box; }
+    .single-phase-output-option input { width: 14px; height: 14px; margin: 0; }
+    .single-phase-meter-form { display: grid; gap: 14px; }
+    .single-phase-modal-grid { display: grid; gap: 14px; }
+    @media (min-width: 861px) {
+      .single-phase-schedule-card { grid-column: 1 / -1; }
+    }
+    @media (max-width: 720px) {
+      .single-phase-schedule-table { min-width: 320px; }
+      .single-phase-schedule-table col.single-phase-col-enable { width: 42px; }
+      .single-phase-schedule-table col.single-phase-col-time { width: 72px; }
+      .single-phase-schedule-table col.single-phase-col-action { width: 72px; }
+      .single-phase-schedule-table th:nth-child(1),
+      .single-phase-schedule-table td:nth-child(1) { width: 42px; }
+      .single-phase-schedule-table th:nth-child(2),
+      .single-phase-schedule-table td:nth-child(2) { width: 72px; }
+      .single-phase-schedule-table th:nth-child(3),
+      .single-phase-schedule-table td:nth-child(3) { width: 72px; }
+      .single-phase-schedule-table th,
+      .single-phase-schedule-table td { padding-left: 1px; padding-right: 1px; }
+      .single-phase-schedule-table thead th { font-size: 0.58rem; letter-spacing: 0.03em; }
+      .single-phase-schedule-table .scheduler-enable { width: 34px; height: 22px; padding: 3px; }
+      .single-phase-schedule-table .scheduler-enable-thumb { width: 16px; height: 16px; }
+      .single-phase-schedule-table .scheduler-enable input:checked + .scheduler-enable-thumb { transform: translateX(12px); }
+      .single-phase-schedule-table .scheduler-time { width: 62px; min-width: 62px; max-width: 62px; min-height: 34px; padding-left: 2px; padding-right: 2px; font-size: 0.72rem; }
+      .single-phase-schedule-table .scheduler-action-toggle { width: 64px; min-width: 64px; max-width: 64px; min-height: 32px; padding: 3px; }
+      .single-phase-schedule-table .scheduler-action-label { font-size: 0.62rem; letter-spacing: 0; }
+      .single-phase-output-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px 4px; }
+      .single-phase-output-option { width: min(30px, 100%); min-height: 24px; gap: 2px; padding: 2px; font-size: 0.62rem; border-radius: 6px; }
+      .single-phase-output-option input { width: 10px; height: 10px; }
+    }
+    @media (max-width: 420px) {
+      .single-phase-schedule-card { padding-left: 8px; padding-right: 8px; }
+      .single-phase-schedule-table { min-width: 304px; }
+      .single-phase-schedule-table col.single-phase-col-enable { width: 38px; }
+      .single-phase-schedule-table col.single-phase-col-time { width: 68px; }
+      .single-phase-schedule-table col.single-phase-col-action { width: 70px; }
+      .single-phase-schedule-table th:nth-child(1),
+      .single-phase-schedule-table td:nth-child(1) { width: 38px; }
+      .single-phase-schedule-table th:nth-child(2),
+      .single-phase-schedule-table td:nth-child(2) { width: 68px; }
+      .single-phase-schedule-table th:nth-child(3),
+      .single-phase-schedule-table td:nth-child(3) { width: 70px; }
+      .single-phase-schedule-table .scheduler-time { width: 60px; min-width: 60px; max-width: 60px; }
+      .single-phase-schedule-table .scheduler-action-toggle { width: 62px; min-width: 62px; max-width: 62px; }
+      .single-phase-output-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+      .single-phase-output-option { width: min(29px, 100%); }
+    }
+  </style>
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+      } catch (error) { }
+    })();
+  </script>
+</head>
+
+<body>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="page-shell">
+    <section class="hero">
+      <div>
+        <h1 id="hero-title">Single-Phase Aquaculture Control</h1>
+      </div>
+      <div class="hero-tools">
+        <button class="toolbar-button" type="button" id="history-refresh">Refresh history</button>
+        <div class="hero-chip" id="control-count-chip">0 controls</div>
+      </div>
+    </section>
+
+    <section class="history-card" id="history-card">
+      <div class="section-head history-head" id="history-toggle" role="button" tabindex="0" aria-expanded="false"
+        onclick="(function(card){var content=card&&card.querySelector('#history-content');var toggle=card&&card.querySelector('#history-toggle');if(!content)return;var collapsed=!content.hidden;content.hidden=collapsed;if(toggle)toggle.setAttribute('aria-expanded',collapsed?'false':'true');if(card)card.setAttribute('data-collapsed',collapsed?'true':'false');})(this.closest('#history-card'))">
+        <div class="section-toggle history-toggle">
+          <span class="history-title"><h2>History</h2></span>
+          <span class="section-toggle-indicator">&#9662;</span>
+        </div>
+        <div class="section-toolbar">
+          <div class="hero-chip" id="history-source-chip" onclick="event.stopPropagation()">History source</div>
+        </div>
+      </div>
+      <div class="table-wrap" id="history-content" hidden>
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Pond</th>
+              <th>Type</th>
+              <th>Content</th>
+              <th>User</th>
+            </tr>
+          </thead>
+          <tbody id="history-body">
+            <tr>
+              <td colspan="5" class="empty-state">Waiting for history data.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="single-phase-controller-list" id="controller-list"></section>
+  </main>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="modal" id="current-modal" aria-hidden="true">
+    <div class="modal-card modal-card-meter">
+      <div class="modal-head">
+        <div>
+          <h2 id="current-modal-title">Current meter</h2>
+          <p id="current-modal-description">Current chart and settings for this contactor.</p>
+        </div>
+        <button type="button" class="icon-button" id="current-modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="single-phase-modal-grid">
+        <section class="chart-card meter-chart-card" id="current-chart-card">
+          <div class="chart-head">
+            <strong id="current-chart-title">Current</strong>
+            <div class="chart-legend">
+              <span class="chart-legend-item"><span class="chart-legend-dot"
+                  style="--dot-color: var(--theme-series-3);"></span><span class="chart-live-value"
+                  id="current-inline-value">--</span></span>
+            </div>
+          </div>
+          <div class="chart-shell" id="current-chart-shell">
+            <div class="chart-y-label" data-align="max" id="current-chart-max">0</div>
+            <div class="chart-y-label" data-align="min" id="current-chart-min">0</div>
+            <svg class="chart-svg" viewBox="0 0 360 240" preserveAspectRatio="none">
+              <g class="chart-grid" id="current-chart-grid"></g>
+              <g class="chart-axis">
+                <line x1="46" y1="198" x2="340" y2="198"></line>
+                <line x1="46" y1="16" x2="46" y2="198"></line>
+              </g>
+              <path class="chart-empty" id="current-chart-empty" d="M46 106 H340"></path>
+              <line class="chart-threshold-line" id="current-threshold-low-line" data-mode="low" x1="46" y1="0"
+                x2="340" y2="0"></line>
+              <line class="chart-threshold-line" id="current-threshold-high-line" data-mode="high" x1="46" y1="0"
+                x2="340" y2="0"></line>
+              <path class="chart-path" id="current-chart-path" style="--line-color: var(--theme-series-3);" d=""></path>
+              <line class="chart-hover-line" id="current-hover-line" x1="0" y1="16" x2="0" y2="198"></line>
+              <circle class="chart-hover-point" id="current-hover-point" style="--line-color: var(--theme-series-3);"
+                r="4" cx="0" cy="0"></circle>
+              <rect class="chart-hitbox" id="current-hitbox" x="46" y="16" width="294" height="182"></rect>
+            </svg>
+            <div class="chart-tooltip" id="current-tooltip"></div>
+          </div>
+        </section>
+        <form class="single-phase-meter-form" id="current-settings-form">
+          <section class="settings-group">
+            <h3>Current threshold</h3>
+            <div class="field-row">
+              <div class="field-block">
+                <label for="current-threshold-low">Low threshold</label>
+                <input id="current-threshold-low" class="threshold-input" type="number" step="0.1" inputmode="decimal" />
+              </div>
+              <div class="field-block">
+                <label for="current-threshold-high">High threshold</label>
+                <input id="current-threshold-high" class="threshold-input" type="number" step="0.1" inputmode="decimal" />
+              </div>
+            </div>
+          </section>
+          <section class="settings-group">
+            <h3>Run window</h3>
+            <div class="field-row">
+              <div class="field-block">
+                <label for="current-run-window-start">Start</label>
+                <input id="current-run-window-start" class="threshold-input" type="text" inputmode="numeric" maxlength="4" />
+              </div>
+              <div class="field-block">
+                <label for="current-run-window-end">End</label>
+                <input id="current-run-window-end" class="threshold-input" type="text" inputmode="numeric" maxlength="4" />
+              </div>
+            </div>
+          </section>
+          <div class="modal-actions">
+            <button type="button" class="modal-button" id="current-modal-cancel">Cancel</button>
+            <button type="submit" class="modal-button primary" id="current-modal-submit">Save settings</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="controller-settings-modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h2 id="controller-settings-title">Controller settings</h2>
+          <p id="controller-settings-description">Shared settings for this controller.</p>
+        </div>
+        <button type="button" class="icon-button" id="controller-settings-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <form class="form-grid" id="controller-settings-form">
+        <section class="settings-group">
+          <h3>Alarm phone number</h3>
+          <div class="field-block">
+            <label for="controller-alarm-phone">Phone number</label>
+            <input id="controller-alarm-phone" class="threshold-input" type="text" inputmode="tel"
+              placeholder="+84901234567" />
+          </div>
+        </section>
+        <div class="modal-actions">
+          <button type="button" class="modal-button" id="controller-settings-cancel">Cancel</button>
+          <button type="submit" class="modal-button primary" id="controller-settings-submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Choose theme"
+      aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Theme options">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism"
+        role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora
+        UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern
+        Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism"
+        role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk"
+        role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo
+        Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento
+        Grid</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script id="monitoring-aquaculture-ponds-single-phase-config" type="application/json">
+{
+  "title": "Single-Phase Aquaculture Control",
+  "syncId": "<<syncid>>",
+  "history": {
+    "sessionId": "<<sessionid>>",
+    "syncId": "<<syncid>>",
+    "macro": "pond-event-history",
+    "pageSize": 100
+  },
+  "controllers": [
+    {
+      "title": "Controller",
+      "sessionId": "<<sessionid>>",
+      "fields": {
+        "alarm": "alarm1",
+        "alarmPhone": "#1002",
+        "currentThreshold": "#1011",
+        "runWindow": "#1005"
+      },
+      "commands": {
+        "alarmOff": "N4,\"<<username>>\",1"
+      },
+      "scheduleFields": ["#1021", "#1022", "#1023", "#1024", "#1025", "#1026", "#1027", "#1028", "#1029", "#1030"],
+      "controls": [
+        { "label": "Motor 1", "stateField": "O101", "currentField": "Current1_A", "commandOn": "N3,1,\"ON\"", "commandOff": "N3,1,\"OFF\"" },
+        { "label": "Motor 2", "stateField": "O102", "currentField": "Current2_A", "commandOn": "N3,2,\"ON\"", "commandOff": "N3,2,\"OFF\"" },
+        { "label": "Motor 3", "stateField": "O103", "currentField": "Current3_A", "commandOn": "N3,3,\"ON\"", "commandOff": "N3,3,\"OFF\"" },
+        { "label": "Motor 4", "stateField": "O104", "currentField": "Current4_A", "commandOn": "N3,4,\"ON\"", "commandOff": "N3,4,\"OFF\"" },
+        { "label": "Motor 5", "stateField": "O105", "currentField": "Current5_A", "commandOn": "N3,5,\"ON\"", "commandOff": "N3,5,\"OFF\"" },
+        { "label": "Motor 6", "stateField": "O106", "currentField": "Current6_A", "commandOn": "N3,6,\"ON\"", "commandOff": "N3,6,\"OFF\"" },
+        { "label": "Motor 7", "stateField": "O107", "currentField": "Current7_A", "commandOn": "N3,7,\"ON\"", "commandOff": "N3,7,\"OFF\"" },
+        { "label": "Motor 8", "stateField": "O108", "currentField": "Current8_A", "commandOn": "N3,8,\"ON\"", "commandOff": "N3,8,\"OFF\"" }
+      ]
+    }
+  ],
+  "ui": {
+    "controls": {
+      "title": "Controller",
+      "countSingular": "control",
+      "countPlural": "controls"
+    },
+    "contactor": {
+      "offline": "OFFLINE",
+      "error": "ERROR",
+      "meterAria": "Open current settings for {label}",
+      "turnOnAria": "Turn {label} on",
+      "turnOffAria": "Turn {label} off",
+      "turningOn": "Turning on",
+      "turningOff": "Turning off"
+    },
+    "commands": {
+      "sent": "Command sent.",
+      "failed": "Command failed.",
+      "alarmOff": "Turn off alarm",
+      "alarmOffAria": "Turn off alarm for {title}",
+      "alarmOffSent": "Alarm off command sent.",
+      "alarmOffFailed": "Alarm off failed."
+    },
+    "settings": {
+      "commonTitle": "Controller settings",
+      "commonDescription": "Shared settings for this controller.",
+      "openCommon": "Open controller settings",
+      "closeAriaLabel": "Close dialog",
+      "phoneTitle": "Alarm phone number",
+      "phoneLabel": "Phone number",
+      "phonePlaceholder": "+84901234567",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving...",
+      "updated": "Settings updated.",
+      "updateFailed": "Settings update failed.",
+      "bothRequired": "Both low and high thresholds are required.",
+      "invalidRange": "Low threshold must be less than or equal to high threshold.",
+      "timeWindowBothRequired": "Both start and end times are required.",
+      "timeWindowInvalid": "Time must use 4 digits in HHMM format.",
+      "noChanges": "No changes to save."
+    },
+    "schedule": {
+      "title": "Schedule setup",
+      "save": "Save",
+      "saving": "Saving...",
+      "empty": "Schedule is empty.",
+      "updated": "Schedule updated.",
+      "updateFailed": "Schedule update failed.",
+      "actionOn": "ON",
+      "actionOff": "OFF",
+      "enableAriaLabel": "Enable schedule {index}",
+      "toggleActionAriaLabel": "Toggle schedule action {index}",
+      "columns": {
+        "enable": "Enable",
+        "time": "Time",
+        "action": "Action",
+        "contactors": "Contactors"
+      }
+    },
+    "history": {
+      "title": "History",
+      "sourceLabel": "History source",
+      "sourceValue": "Source {ioid}",
+      "waiting": "Waiting for history data.",
+      "empty": "No history rows available.",
+      "loadFailed": "Unable to load event history.",
+      "columns": {
+        "time": "Time",
+        "pond": "Pond",
+        "type": "Type",
+        "content": "Content",
+        "email": "User"
+      },
+      "eventTypes": {
+        "shaftBreak": "Shaft break",
+        "overload": "Overload",
+        "disconnect": "Disconnected",
+        "offTime": "OFF wrong time",
+        "onTime": "ON wrong time",
+        "alarmOff": "Alarm off"
+      }
+    },
+    "alarmCard": {
+      "empty": "No active alarm"
+    },
+    "meterModal": {
+      "idleTitle": "Current meter",
+      "title": "Current meter | {label}",
+      "description": "Current chart and settings for {label}.",
+      "closeAriaLabel": "Close dialog",
+      "currentTitle": "Current",
+      "unavailable": "Current data is not configured for this contactor.",
+      "loadFailed": "Unable to load current history."
+    },
+    "theme": {
+      "toggleAriaLabel": "Choose theme",
+      "menuAriaLabel": "Theme options",
+      "options": {
+        "neumorphism": "Neumorphism",
+        "aurora-ui": "Aurora UI",
+        "modern-flat": "Modern Flat",
+        "glassmorphism": "Glassmorphism",
+        "cyberpunk": "Cyberpunk",
+        "neo-brutalism": "Neo Brutalism",
+        "bento-grid": "Bento Grid"
+      }
+    },
+    "network": {
+      "requestFailed": "Request failed.",
+      "requestFailedWithStatus": "Request failed with status {status}",
+      "unexpectedIoDataResponse": "Unexpected IoData response."
+    }
+  },
+  "locale": "en"
+}
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script>
+    (function () {
+      var configNode = document.getElementById("monitoring-aquaculture-ponds-single-phase-config");
+      var config = { title: "", syncId: "", history: {}, controllers: [], ui: {} };
+      try {
+        config = JSON.parse(configNode && configNode.textContent ? configNode.textContent : "{}");
+      } catch (error) {
+        console.error("Invalid single-phase aquaculture config", error);
+      }
+
+      var searchParams = new URLSearchParams(window.location.search);
+      var syncId = String(searchParams.get("syncId") || searchParams.get("syncid") || config.syncId || "").trim();
+      var ui = config.ui || {};
+      var heroTitle = document.getElementById("hero-title");
+      var controllerList = document.getElementById("controller-list");
+      var controlCountChip = document.getElementById("control-count-chip");
+      var historyCard = document.getElementById("history-card");
+      var historyToggle = document.getElementById("history-toggle");
+      var historyContent = document.getElementById("history-content");
+      var historyBody = document.getElementById("history-body");
+      var historyRefreshButton = document.getElementById("history-refresh");
+      var historySourceChip = document.getElementById("history-source-chip");
+      var toastStack = document.getElementById("toast-stack");
+      var themePickerToggle = document.getElementById("theme-picker-toggle");
+      var themePickerMenu = document.getElementById("theme-picker-menu");
+      var currentModal = document.getElementById("current-modal");
+      var currentModalTitle = document.getElementById("current-modal-title");
+      var currentModalDescription = document.getElementById("current-modal-description");
+      var currentModalClose = document.getElementById("current-modal-close");
+      var currentModalCancel = document.getElementById("current-modal-cancel");
+      var currentModalSubmit = document.getElementById("current-modal-submit");
+      var currentSettingsForm = document.getElementById("current-settings-form");
+      var currentInlineValue = document.getElementById("current-inline-value");
+      var currentChartShell = document.getElementById("current-chart-shell");
+      var currentChartGrid = document.getElementById("current-chart-grid");
+      var currentChartMax = document.getElementById("current-chart-max");
+      var currentChartMin = document.getElementById("current-chart-min");
+      var currentChartEmpty = document.getElementById("current-chart-empty");
+      var currentThresholdLowLine = document.getElementById("current-threshold-low-line");
+      var currentThresholdHighLine = document.getElementById("current-threshold-high-line");
+      var currentChartPath = document.getElementById("current-chart-path");
+      var currentHoverLine = document.getElementById("current-hover-line");
+      var currentHoverPoint = document.getElementById("current-hover-point");
+      var currentHitbox = document.getElementById("current-hitbox");
+      var currentTooltip = document.getElementById("current-tooltip");
+      var currentThresholdLowInput = document.getElementById("current-threshold-low");
+      var currentThresholdHighInput = document.getElementById("current-threshold-high");
+      var currentRunWindowStartInput = document.getElementById("current-run-window-start");
+      var currentRunWindowEndInput = document.getElementById("current-run-window-end");
+      var controllerSettingsModal = document.getElementById("controller-settings-modal");
+      var controllerSettingsTitle = document.getElementById("controller-settings-title");
+      var controllerSettingsDescription = document.getElementById("controller-settings-description");
+      var controllerSettingsClose = document.getElementById("controller-settings-close");
+      var controllerSettingsCancel = document.getElementById("controller-settings-cancel");
+      var controllerSettingsForm = document.getElementById("controller-settings-form");
+      var controllerAlarmPhoneInput = document.getElementById("controller-alarm-phone");
+      var controllerSettingsSubmit = document.getElementById("controller-settings-submit");
+
+      var historyConfig = config.history || {};
+      var historyState = {
+        sessionId: String(historyConfig.sessionId || "").trim(),
+        syncId: String(historyConfig.syncId || syncId || "").trim(),
+        macro: String(historyConfig.macro || "").trim(),
+        pageSize: Number(historyConfig.pageSize || 100) || 100,
+        rows: []
+      };
+      var historyRequestId = 0;
+      var historyEventSource = null;
+      var historyReconnectTimer = null;
+      var historyCooldownTimer = null;
+      var historyRefreshQueued = false;
+      var historyCooldownActive = false;
+      var activeControl = null;
+      var activeControllerState = null;
+      var activeHistoryRequestId = 0;
+      var currentEventSource = null;
+      var currentReconnectTimer = null;
+
+      function getUi(path, fallback) {
+        var parts = String(path || "").split(".");
+        var node = ui;
+        for (var index = 0; index < parts.length; index += 1) {
+          if (!node || typeof node !== "object" || !(parts[index] in node)) return fallback;
+          node = node[parts[index]];
+        }
+        return node == null || node === "" ? fallback : node;
+      }
+
+      function formatUi(path, fallback, values) {
+        var text = String(getUi(path, fallback) || "");
+        Object.keys(values || {}).forEach(function (key) {
+          text = text.replace(new RegExp("\\{" + key + "\\}", "g"), String(values[key]));
+        });
+        return text;
+      }
+
+      function esc(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function safeText(value, fallback) {
+        var text = String(value == null ? "" : value).trim();
+        return text || String(fallback || "");
+      }
+
+      function numericValue(value) {
+        if (typeof value === "number" && isFinite(value)) return value;
+        var text = String(value == null ? "" : value).trim();
+        if (!text) return null;
+        var match = text.match(/-?\d+(\.\d+)?/);
+        return match ? Number(match[0]) : null;
+      }
+
+      function formatNumber(value, digits) {
+        var numeric = Number(value);
+        if (!Number.isFinite(numeric)) return "--";
+        return numeric.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+      }
+
+      function formatValue(value, digits, unit) {
+        var numeric = numericValue(value);
+        if (numeric === null) return "--";
+        return formatNumber(numeric, digits) + (unit ? " " + unit : "");
+      }
+
+      function formatTime(timestamp) {
+        if (!timestamp) return "--";
+        try {
+          return new Date(timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        } catch (error) {
+          return "--";
+        }
+      }
+
+      function getEventTimeMs(value) {
+        if (value === null || value === undefined || value === "") return null;
+        if (typeof value === "number" && Number.isFinite(value)) return value;
+        var numeric = Number(value);
+        if (Number.isFinite(numeric) && Math.abs(numeric) >= 100000000000) return numeric;
+        var date = new Date(String(value).replace(" ", "T"));
+        var time = date.getTime();
+        return Number.isFinite(time) ? time : null;
+      }
+
+      function formatDateTime(value) {
+        var time = getEventTimeMs(value);
+        if (time === null) return value ? String(value) : "--";
+        var date = new Date(time);
+        return String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0") + " " + String(date.getHours()).padStart(2, "0") + ":" + String(date.getMinutes()).padStart(2, "0");
+      }
+
+      function parseSessionContext(sessionId) {
+        var normalized = String(sessionId || "").trim();
+        var atIndex = normalized.indexOf("@");
+        if (atIndex <= 0 || atIndex >= normalized.length - 1) return null;
+        return { ioid: normalized.slice(0, atIndex), apikey: normalized.slice(atIndex + 1) };
+      }
+
+      function extractIoid(sessionId) {
+        var context = parseSessionContext(sessionId);
+        return context ? context.ioid : "";
+      }
+
+      function buildCommandApiUrl(sessionId) {
+        var context = parseSessionContext(sessionId);
+        if (!context) return "";
+        return "https://iot.ioeasy.com/cmd/" + encodeURIComponent(context.ioid) + "?apiKey=" + encodeURIComponent(context.apikey);
+      }
+
+      function buildTelemetryUrl(sessionId, fields) {
+        if (!sessionId || !syncId) return "";
+        var params = new URLSearchParams();
+        if (Array.isArray(fields) && fields.length) params.set("fields", fields.join(","));
+        var suffix = params.toString();
+        return "/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(syncId) + "/iotelemetry" + (suffix ? "?" + suffix : "");
+      }
+
+      function buildTimeseriesUrl(sessionId, fields, from, to) {
+        if (!sessionId || !syncId || !fields.length) return "";
+        var params = new URLSearchParams();
+        params.set("from", String(from));
+        params.set("to", String(to));
+        params.set("fields", fields.join(","));
+        return "/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(syncId) + "/iotimeseries?" + params.toString();
+      }
+
+      function buildStreamUrl(sessionId, fields) {
+        var params = new URLSearchParams();
+        params.set("historyMs", "0");
+        if (fields.length) params.set("fields", fields.join(","));
+        return "/api/" + encodeURIComponent(sessionId) + "/stream?" + params.toString();
+      }
+
+      function buildIoDataUrl(sessionId, nextSyncId) {
+        if (!sessionId || !nextSyncId) return "";
+        return "/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(nextSyncId) + "/iodata";
+      }
+
+      function unique(values) {
+        return values.filter(Boolean).filter(function (value, index, list) {
+          return list.indexOf(value) === index;
+        });
+      }
+
+      function showToast(message, type) {
+        if (!toastStack) return;
+        var toast = document.createElement("div");
+        toast.className = "toast " + (type === "error" ? "error" : "success");
+        toast.textContent = String(message || "").trim();
+        toastStack.appendChild(toast);
+        window.setTimeout(function () {
+          toast.style.opacity = "0";
+          toast.style.transform = "translateY(10px)";
+          toast.style.transition = "opacity 0.18s ease, transform 0.18s ease";
+          window.setTimeout(function () {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+          }, 180);
+        }, 3200);
+      }
+
+      function setTheme(nextTheme) {
+        if (!themePickerMenu || !themePickerToggle) return;
+        document.documentElement.setAttribute("data-theme", nextTheme);
+        try { window.localStorage.setItem("sample-dashboard-theme", nextTheme); } catch (error) {}
+        Array.prototype.forEach.call(themePickerMenu.querySelectorAll("[data-theme-option]"), function (button) {
+          var isActive = String(button.getAttribute("data-theme-option") || "") === nextTheme;
+          button.setAttribute("aria-pressed", isActive ? "true" : "false");
+          button.setAttribute("aria-checked", isActive ? "true" : "false");
+        });
+      }
+
+      function closeThemePickerMenu() {
+        if (!themePickerMenu || !themePickerToggle) return;
+        themePickerMenu.classList.remove("is-open");
+        themePickerToggle.setAttribute("aria-expanded", "false");
+      }
+
+      function openThemePickerMenu() {
+        if (!themePickerMenu || !themePickerToggle) return;
+        themePickerMenu.classList.add("is-open");
+        themePickerToggle.setAttribute("aria-expanded", "true");
+      }
+
+      function initializeThemePicker() {
+        if (!themePickerMenu || !themePickerToggle) return;
+        themePickerToggle.setAttribute("aria-label", getUi("theme.toggleAriaLabel", "Choose theme"));
+        themePickerMenu.setAttribute("aria-label", getUi("theme.menuAriaLabel", "Theme options"));
+        Array.prototype.forEach.call(themePickerMenu.querySelectorAll("[data-theme-option]"), function (button) {
+          var themeKey = String(button.getAttribute("data-theme-option") || "").trim();
+          button.textContent = getUi("theme.options." + themeKey, button.textContent.trim());
+        });
+        document.addEventListener("click", function (event) {
+          var themeOption = event.target && typeof event.target.closest === "function" ? event.target.closest("[data-theme-option]") : null;
+          if (themeOption) {
+            setTheme(String(themeOption.getAttribute("data-theme-option") || "neumorphism"));
+            closeThemePickerMenu();
+            return;
+          }
+          var themeToggle = event.target && typeof event.target.closest === "function" ? event.target.closest("#theme-picker-toggle") : null;
+          if (themeToggle) {
+            if (themePickerMenu.classList.contains("is-open")) closeThemePickerMenu();
+            else openThemePickerMenu();
+            return;
+          }
+          if (!themePickerMenu.contains(event.target)) closeThemePickerMenu();
+        });
+        setTheme(document.documentElement.getAttribute("data-theme") || "neumorphism");
+      }
+
+      function resolveCommandTemplate(command) {
+        var resolver = window.AIBridgeCommandTemplate;
+        var template = String(command == null ? "" : command);
+        if (resolver && typeof resolver.resolveCommandTemplate === "function") {
+          return resolver.resolveCommandTemplate(template);
+        }
+        return Promise.resolve(template.replace(/<<email>>/gi, "").replace(/<<username>>/gi, ""));
+      }
+
+      function postCommandRaw(commandApiUrl, command, timeoutMs) {
+        return resolveCommandTemplate(command).then(function (resolvedCommand) {
+          var controller = new AbortController();
+          var timeoutId = window.setTimeout(function () { controller.abort(); }, timeoutMs || 5000);
+          return fetch(commandApiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cmd: String(resolvedCommand || "") }),
+            signal: controller.signal
+          }).then(function (response) {
+            return response.text().then(function (text) {
+              if (!response.ok) {
+                throw new Error(text || formatUi("network.requestFailedWithStatus", "Request failed with status {status}", { status: response.status }));
+              }
+              return text || "";
+            });
+          }).finally(function () {
+            window.clearTimeout(timeoutId);
+          });
+        });
+      }
+
+      function responseHasOk(text) {
+        var normalized = String(text || "").trim();
+        if (!normalized) return false;
+        return /(^|[^A-Z])OK(?=$|[^A-Z])/i.test(normalized) || /\bSUCCESS\b/i.test(normalized);
+      }
+
+      function responseMatchesCommandEcho(text, command) {
+        var normalizedText = String(text || "").trim();
+        var normalizedCommand = String(command || "").trim();
+        if (!normalizedText || !normalizedCommand) return false;
+        if (normalizedText.indexOf(normalizedCommand) >= 0) return true;
+        var commandMatch = normalizedCommand.match(/^([^=]+?)=(.*)$/);
+        if (!commandMatch) return false;
+        var field = String(commandMatch[1] || "").trim();
+        var expectedValue = String(commandMatch[2] || "").trim();
+        if (!field || !expectedValue) return false;
+        var responseMatch = normalizedText.match(new RegExp("(^|[^A-Za-z0-9_#])" + field.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*=\\s*([^\\r\\n]+)", "i"));
+        return !!responseMatch && String(responseMatch[2] || "").trim() === expectedValue;
+      }
+
+      function runWriteCommand(state, command, message, attemptsLeft) {
+        var remaining = Number.isFinite(attemptsLeft) ? attemptsLeft : 3;
+        if (!state || !state.commandApiUrl) return Promise.reject(new Error(message || getUi("network.requestFailed", "Request failed.")));
+        return postCommandRaw(state.commandApiUrl, command, 5000).then(function (text) {
+          if (responseHasOk(text) || responseMatchesCommandEcho(text, command)) return text;
+          if (remaining > 1) {
+            return delayMs(1600).then(function () { return runWriteCommand(state, command, message, remaining - 1); });
+          }
+          throw new Error(message || getUi("network.requestFailed", "Request failed."));
+        }).catch(function (error) {
+          if (remaining > 1) {
+            return delayMs(1600).then(function () { return runWriteCommand(state, command, message, remaining - 1); });
+          }
+          throw error;
+        });
+      }
+
+      function delayMs(ms) {
+        return new Promise(function (resolve) { window.setTimeout(resolve, ms); });
+      }
+
+      function normalizeContactorState(value) {
+        var normalized = String(value == null ? "" : value).trim().toUpperCase();
+        if (normalized === "1" || normalized === "TRUE" || normalized === "ON" || normalized === "CLOSED") return "on";
+        if (normalized === "0" || normalized === "FALSE" || normalized === "OFF" || normalized === "OPEN") return "off";
+        return "offline";
+      }
+
+      function parseIndexedConfiguredField(fieldName) {
+        var exactKey = String(fieldName || "").trim().toLowerCase();
+        var match = exactKey.match(/^(.*)\.(\d+)$/);
+        if (!match) {
+          return { exactKey: exactKey, baseKey: exactKey, itemIndex: -1 };
+        }
+        return {
+          exactKey: exactKey,
+          baseKey: String(match[1] || "").trim().toLowerCase(),
+          itemIndex: Math.max(0, Number(match[2]) - 1)
+        };
+      }
+
+      function extractConfiguredTelemetryValue(telemetryKey, configuredField, rawValue) {
+        var parsed = parseIndexedConfiguredField(configuredField);
+        if (!parsed.exactKey) return { matched: false, value: undefined };
+        if (telemetryKey === parsed.exactKey) {
+          return { matched: true, value: rawValue };
+        }
+        if (parsed.itemIndex < 0 || telemetryKey !== parsed.baseKey) {
+          return { matched: false, value: undefined };
+        }
+        var parts = String(rawValue == null ? "" : rawValue).split(",");
+        return {
+          matched: true,
+          value: String(parts[parsed.itemIndex] == null ? "" : parts[parsed.itemIndex]).trim()
+        };
+      }
+
+      function expandConfiguredStreamFields(fieldName) {
+        var parsed = parseIndexedConfiguredField(fieldName);
+        if (!parsed.exactKey) return [];
+        if (parsed.itemIndex < 0 || !parsed.baseKey || parsed.baseKey === parsed.exactKey) {
+          return [parsed.exactKey];
+        }
+        return [parsed.exactKey, parsed.baseKey];
+      }
+
+      function expandConfiguredRequestFields(fieldName) {
+        var text = String(fieldName || "").trim();
+        if (!text) return [];
+        var match = text.match(/^(.*)\.(\d+)$/);
+        if (!match) return [text];
+        var base = String(match[1] || "").trim();
+        return base && base !== text ? [text, base] : [text];
+      }
+
+      function normalizeCompactTimeValue(value) {
+        var text = String(value == null ? "" : value).trim().replace(/\D+/g, "");
+        if (!text) return "";
+        if (!/^\d{4}$/.test(text)) return "";
+        var hour = Number(text.slice(0, 2));
+        var minute = Number(text.slice(2, 4));
+        if (!Number.isFinite(hour) || !Number.isFinite(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) return "";
+        return text;
+      }
+
+      function trimTrailingEmptyParts(parts) {
+        var next = parts.slice();
+        while (next.length && String(next[next.length - 1] == null ? "" : next[next.length - 1]).trim() === "") {
+          next.pop();
+        }
+        return next.join(",");
+      }
+
+      function createEmptyThreshold() {
+        return { low: null, high: null };
+      }
+
+      function parseThresholdList(raw) {
+        var parts = String(raw == null ? "" : raw).split(",");
+        var result = [];
+        for (var index = 0; index < 8; index += 1) {
+          result.push({
+            low: parts[index * 2] !== undefined && String(parts[index * 2]).trim() !== "" ? numericValue(parts[index * 2]) : null,
+            high: parts[index * 2 + 1] !== undefined && String(parts[index * 2 + 1]).trim() !== "" ? numericValue(parts[index * 2 + 1]) : null
+          });
+        }
+        return result;
+      }
+
+      function serializeThresholdList(thresholds) {
+        var parts = [];
+        for (var index = 0; index < 8; index += 1) {
+          var item = thresholds[index] || createEmptyThreshold();
+          parts.push(item.low !== null ? String(item.low) : "");
+          parts.push(item.high !== null ? String(item.high) : "");
+        }
+        return trimTrailingEmptyParts(parts);
+      }
+
+      function createEmptyWindow() {
+        return { start: "", end: "" };
+      }
+
+      function parseWindowList(raw) {
+        var parts = String(raw == null ? "" : raw).split(",");
+        var result = [];
+        for (var index = 0; index < 8; index += 1) {
+          result.push({
+            start: normalizeCompactTimeValue(parts[index * 2] || ""),
+            end: normalizeCompactTimeValue(parts[index * 2 + 1] || "")
+          });
+        }
+        return result;
+      }
+
+      function serializeWindowList(windows) {
+        var parts = [];
+        for (var index = 0; index < 8; index += 1) {
+          var item = windows[index] || createEmptyWindow();
+          parts.push(item.start || "");
+          parts.push(item.end || "");
+        }
+        return trimTrailingEmptyParts(parts);
+      }
+
+      function normalizeScheduleEnabledToken(value) {
+        var normalized = String(value == null ? "" : value).trim().toLowerCase();
+        if (normalized === "enable" || normalized === "enabled" || normalized === "on" || normalized === "true" || normalized === "1") return true;
+        if (normalized === "disable" || normalized === "disabled" || normalized === "off" || normalized === "false" || normalized === "0") return false;
+        return null;
+      }
+
+      function normalizeScheduleAction(value) {
+        var normalized = String(value == null ? "" : value).trim().toUpperCase();
+        return normalized === "OFF" ? "off" : "on";
+      }
+
+      function createEmptyScheduleSnapshot() {
+        return { enabled: false, time: "", action: "on", selected: [false, false, false, false, false, false, false, false], empty: true };
+      }
+
+      function formatScheduleTime(compactTime) {
+        var normalized = normalizeCompactTimeValue(compactTime);
+        return normalized ? normalized.slice(0, 2) + ":" + normalized.slice(2, 4) : "";
+      }
+
+      function cloneScheduleSnapshot(row) {
+        var source = row || createEmptyScheduleSnapshot();
+        return {
+          enabled: !!source.enabled,
+          time: String(source.time || ""),
+          action: String(source.action || "on"),
+          selected: (source.selected || []).slice(0, 8).concat([false, false, false, false, false, false, false, false]).slice(0, 8).map(Boolean),
+          empty: !!source.empty
+        };
+      }
+
+      function parseScheduleTelemetryValue(rawText, fieldKey) {
+        var text = String(rawText == null ? "" : rawText).trim();
+        var normalizedFieldKey = String(fieldKey || "").trim();
+        if (normalizedFieldKey) {
+          var prefix = normalizedFieldKey + "=";
+          if (text.slice(0, prefix.length).toLowerCase() === prefix.toLowerCase()) {
+            text = text.slice(prefix.length).trim();
+          }
+        }
+        if (!text) return createEmptyScheduleSnapshot();
+        var parts = text.split(",").map(function (part) { return String(part == null ? "" : part).trim(); });
+        if (parts.length < 11) return createEmptyScheduleSnapshot();
+        var compactTime = normalizeCompactTimeValue(parts[0]);
+        var enabled = normalizeScheduleEnabledToken(parts[1]) === true;
+        var action = normalizeScheduleAction(parts[2]);
+        var selected = [];
+        for (var index = 0; index < 8; index += 1) {
+          selected.push(String(parts[index + 3] || "").trim() === String(index + 1));
+        }
+        var complete = !!compactTime && selected.some(Boolean);
+        return {
+          enabled: complete ? enabled : false,
+          time: complete ? formatScheduleTime(compactTime) : "",
+          action: action,
+          selected: complete ? selected : [false, false, false, false, false, false, false, false],
+          empty: !complete
+        };
+      }
+
+      function buildScheduleTelemetryPayload(row) {
+        if (!row || !row.fieldKey) return null;
+        var compactTime = normalizeCompactTimeValue(String(row.time || "").replace(":", ""));
+        var controlCount = row.controllerState ? row.controllerState.controls.length : 8;
+        var selected = (row.selected || []).slice(0, 8).concat([false, false, false, false, false, false, false, false]).slice(0, 8).map(Boolean);
+        for (var index = controlCount; index < 8; index += 1) selected[index] = false;
+        var action = normalizeScheduleAction(row.action) === "off" ? "OFF" : "ON";
+        var complete = !!compactTime && selected.some(Boolean);
+        var slots = selected.map(function (checked, index) { return checked ? String(index + 1) : "0"; });
+        return {
+          command: row.fieldKey + "=" + (complete ? compactTime : "0000") + "," + ((row.enabled && complete) ? "enable" : "disable") + "," + action + "," + slots.join(","),
+          snapshot: {
+            enabled: complete ? !!row.enabled : false,
+            time: complete ? formatScheduleTime(compactTime) : "",
+            action: action === "OFF" ? "off" : "on",
+            selected: complete ? selected : [false, false, false, false, false, false, false, false],
+            empty: !complete
+          },
+          empty: !complete
+        };
+      }
+
+      function scheduleSnapshotsEqual(left, right) {
+        var a = cloneScheduleSnapshot(left);
+        var b = cloneScheduleSnapshot(right);
+        if (a.enabled !== b.enabled || a.time !== b.time || a.action !== b.action || a.empty !== b.empty) return false;
+        for (var index = 0; index < 8; index += 1) {
+          if (a.selected[index] !== b.selected[index]) return false;
+        }
+        return true;
+      }
+
+      function isScheduleRowDirty(row) {
+        return row && !scheduleSnapshotsEqual(row, row.committed);
+      }
+
+      function rowHasCompleteSchedule(row) {
+        var built = buildScheduleTelemetryPayload(row);
+        return !!(built && !built.empty);
+      }
+
+      function appendSeriesPoint(series, point, historyMs) {
+        if (!series || !point || !Number.isFinite(point.ts) || !Number.isFinite(point.value)) return;
+        var last = series.length ? series[series.length - 1] : null;
+        if (last && last.ts === point.ts && last.value === point.value) return;
+        series.push(point);
+        var minTs = Date.now() - historyMs;
+        while (series.length && series[0].ts < minTs) series.shift();
+      }
+
+      function setControlVisual(control, state, label) {
+        if (!control || !control.toggleNode || !control.stateNode) return;
+        control.state = state || "offline";
+        control.toggleNode.setAttribute("data-state", control.state);
+        control.stateNode.innerHTML = "<span>" + esc(label || getUi("contactor.offline", "OFFLINE")) + "</span>";
+      }
+
+      function setControllerBusy(state, nextBusy) {
+        if (!state) return;
+        state.busy = !!nextBusy;
+        state.controls.forEach(function (control) {
+          if (control.onButton) control.onButton.disabled = !!nextBusy || control.readOnly;
+          if (control.offButton) control.offButton.disabled = !!nextBusy || control.readOnly;
+        });
+        if (state.alarmButton) state.alarmButton.disabled = !!nextBusy;
+        if (state.settingsButton) state.settingsButton.disabled = !!nextBusy;
+        if (activeControllerState === state && controllerSettingsSubmit) controllerSettingsSubmit.disabled = !!nextBusy;
+        if (activeControl && activeControl.controllerState === state && currentModalSubmit) currentModalSubmit.disabled = !!nextBusy;
+      }
+
+      function createControlHtml(control) {
+        var meterButtonHtml = control.currentField
+          ? '<button class="icon-button contactor-meter-button control-only-meter-button" type="button" data-role="meter" aria-label="' + esc(formatUi("contactor.meterAria", "Open current settings for {label}", { label: control.label })) + '"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 18h16M7 14l3-4 3 2 4-6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="7" cy="14" r="1.4" fill="currentColor"></circle><circle cx="10" cy="10" r="1.4" fill="currentColor"></circle><circle cx="13" cy="12" r="1.4" fill="currentColor"></circle><circle cx="17" cy="6" r="1.4" fill="currentColor"></circle></svg></button>'
+          : "";
+        return ""
+          + '<section class="contactor-card" data-control-id="' + esc(control.id) + '" data-read-only="' + (control.readOnly ? "true" : "false") + '" data-has-meter="' + (control.currentField ? "true" : "false") + '">'
+          + meterButtonHtml
+          + '<div class="contactor-head"><div class="contactor-label">' + esc(control.label) + '</div></div>'
+          + '<div class="contactor-toggle" data-role="toggle" data-state="offline">'
+          + '<button class="contactor-zone" data-action="on" data-role="on" type="button" aria-label="' + esc(formatUi("contactor.turnOnAria", "Turn {label} on", { label: control.label })) + '"' + (control.readOnly ? " disabled" : "") + '></button>'
+          + '<div class="contactor-lever" data-role="state"><span>' + esc(getUi("contactor.offline", "OFFLINE")) + '</span></div>'
+          + '<button class="contactor-zone" data-action="off" data-role="off" type="button" aria-label="' + esc(formatUi("contactor.turnOffAria", "Turn {label} off", { label: control.label })) + '"' + (control.readOnly ? " disabled" : "") + '></button>'
+          + '</div>'
+          + '</section>';
+      }
+
+      function controllerSettingsIconHtml() {
+        return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Z" fill="none" stroke="currentColor" stroke-width="1.8"></path><path d="M19.4 15a8 8 0 0 0 .1-1.1 8 8 0 0 0-.1-1.1l2-1.5-2-3.5-2.4 1a8.4 8.4 0 0 0-1.9-1.1L14.8 5h-5.6l-.4 2.7a8.4 8.4 0 0 0-1.9 1.1l-2.4-1-2 3.5 2 1.5a8 8 0 0 0-.1 1.1 8 8 0 0 0 .1 1.1l-2 1.5 2 3.5 2.4-1a8.4 8.4 0 0 0 1.9 1.1l.4 2.7h5.6l.4-2.7a8.4 8.4 0 0 0 1.9-1.1l2.4 1 2-3.5-2.1-1.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg>';
+      }
+
+      function createAlarmCardHtml(state) {
+        var canAlarmOff = !!state.commandApiUrl && !!state.commands.alarmOff;
+        if (!state.fields.alarm && !canAlarmOff) return "";
+        return ""
+          + '<section class="metric-card metric-card--alarm" data-role="alarm-card" data-alarm-active="false" hidden>'
+          + '<div class="energy-alarm-shell" data-role="alarm-shell"><div class="energy-alarm-text" data-role="alarm-text">' + esc(getUi("alarmCard.empty", "No active alarm")) + '</div>'
+          + (canAlarmOff ? '<button type="button" class="toolbar-button energy-alarm-button" data-role="alarm-off" hidden aria-label="' + esc(formatUi("commands.alarmOffAria", "Turn off alarm for {title}", { title: state.title })) + '">' + esc(getUi("commands.alarmOff", "Turn off alarm")) + '</button>' : "")
+          + '</div></section>';
+      }
+
+      function createScheduleRowsHtml(state) {
+        var rows = "";
+        state.scheduleRows.forEach(function (row) {
+          var checkboxes = state.controls.map(function (control, index) {
+            return '<label class="single-phase-output-option"><input type="checkbox" data-role="schedule-output" data-output-index="' + index + '"><span>' + esc(String(index + 1)) + '</span></label>';
+          }).join("");
+          rows += ""
+            + '<tr class="scheduler-row is-disabled" data-role="schedule-row" data-index="' + row.index + '">'
+            + '<td><label class="scheduler-enable" data-role="schedule-enable-shell"><input type="checkbox" data-role="schedule-enable" aria-label="' + esc(formatUi("schedule.enableAriaLabel", "Enable schedule {index}", { index: String(row.index + 1) })) + '"><span class="scheduler-enable-thumb"></span></label></td>'
+            + '<td><input class="scheduler-time" type="time" data-role="schedule-time"></td>'
+            + '<td><button class="scheduler-action-toggle" type="button" data-role="schedule-action" data-state="on" aria-label="' + esc(formatUi("schedule.toggleActionAriaLabel", "Toggle schedule action {index}", { index: String(row.index + 1) })) + '"><span class="scheduler-action-label" data-side="on">' + esc(getUi("schedule.actionOn", "ON")) + '</span><span class="scheduler-action-label" data-side="off">' + esc(getUi("schedule.actionOff", "OFF")) + '</span></button></td>'
+            + '<td><div class="single-phase-output-grid">' + checkboxes + '</div></td>'
+            + '</tr>';
+        });
+        return rows;
+      }
+
+      function createScheduleHtml(state) {
+        if (!state.commandApiUrl || !state.scheduleFields.length) return "";
+        var scheduleExpanded = state.scheduleCollapsed === false;
+        return ""
+          + '<section class="schedule-card single-phase-schedule-card">'
+          + '<div class="section-head section-head--schedule"><button class="section-toggle section-toggle--schedule" type="button" data-role="schedule-toggle" aria-expanded="' + (scheduleExpanded ? "true" : "false") + '"><span><h3>' + esc(getUi("schedule.title", "Schedule setup")) + '</h3></span><span class="section-toggle-indicator">&#9662;</span></button><div class="section-toolbar section-toolbar--schedule"><button class="toolbar-button schedule-save-button" type="button" data-role="schedule-save" hidden>' + esc(getUi("schedule.save", "Save")) + '</button></div></div>'
+          + '<div class="table-wrap schedule-content" data-role="schedule-content"' + (scheduleExpanded ? "" : " hidden") + '><table class="scheduler-table single-phase-schedule-table"><colgroup><col class="single-phase-col-enable"><col class="single-phase-col-time"><col class="single-phase-col-action"><col class="single-phase-col-contactors"></colgroup><thead><tr><th>' + esc(getUi("schedule.columns.enable", "Enable")) + '</th><th>' + esc(getUi("schedule.columns.time", "Time")) + '</th><th>' + esc(getUi("schedule.columns.action", "Action")) + '</th><th>' + esc(getUi("schedule.columns.contactors", "Contactors")) + '</th></tr></thead><tbody data-role="schedule-body">' + createScheduleRowsHtml(state) + '</tbody></table></div>'
+          + '</section>';
+      }
+
+      function createControllerHtml(state) {
+        var settingsButtonHtml = state.fields.alarmPhone
+          ? '<button class="icon-button single-phase-controller-settings-button" type="button" data-role="controller-settings" aria-label="' + esc(getUi("settings.openCommon", "Open controller settings")) + '">' + controllerSettingsIconHtml() + '</button>'
+          : "";
+        return ""
+          + '<section class="control-only-card" data-controller-id="' + esc(state.id) + '">'
+          + '<div class="control-only-head"><h2>' + esc(state.title) + '</h2><div class="single-phase-controller-tools">' + settingsButtonHtml + '</div></div>'
+          + '<div class="control-only-grid single-phase-grid" data-role="control-grid">'
+          + createAlarmCardHtml(state)
+          + state.controls.map(createControlHtml).join("")
+          + createScheduleHtml(state)
+          + '</div></section>';
+      }
+
+      function refreshControllerSettingsLabels() {
+        if (controllerSettingsTitle) controllerSettingsTitle.textContent = getUi("settings.commonTitle", "Controller settings");
+        if (controllerSettingsDescription) controllerSettingsDescription.textContent = getUi("settings.commonDescription", "Shared settings for this controller.");
+        if (controllerSettingsClose) controllerSettingsClose.setAttribute("aria-label", getUi("settings.closeAriaLabel", "Close dialog"));
+        if (controllerAlarmPhoneInput) {
+          controllerAlarmPhoneInput.placeholder = getUi("settings.phonePlaceholder", "+84901234567");
+          var phoneLabel = controllerSettingsModal ? controllerSettingsModal.querySelector('label[for="controller-alarm-phone"]') : null;
+          var phoneHeading = controllerSettingsModal ? controllerSettingsModal.querySelector(".settings-group h3") : null;
+          if (phoneHeading) phoneHeading.textContent = getUi("settings.phoneTitle", "Alarm phone number");
+          if (phoneLabel) phoneLabel.textContent = getUi("settings.phoneLabel", "Phone number");
+        }
+        if (controllerSettingsCancel) controllerSettingsCancel.textContent = getUi("settings.cancel", "Cancel");
+        if (controllerSettingsSubmit) controllerSettingsSubmit.textContent = getUi("settings.save", "Save");
+      }
+
+      function bindControllerState(state) {
+        if (!controllerList || !state) return;
+        state.node = controllerList.querySelector('[data-controller-id="' + state.id + '"]');
+        state.controlGrid = state.node ? state.node.querySelector('[data-role="control-grid"]') : null;
+        if (!state.controlGrid) return;
+        state.alarmCard = state.controlGrid.querySelector('[data-role="alarm-card"]');
+        state.alarmTextNode = state.controlGrid.querySelector('[data-role="alarm-text"]');
+        state.alarmButton = state.controlGrid.querySelector('[data-role="alarm-off"]');
+        state.settingsButton = state.node ? state.node.querySelector('[data-role="controller-settings"]') : null;
+        state.scheduleToggle = state.controlGrid.querySelector('[data-role="schedule-toggle"]');
+        state.scheduleSaveButton = state.controlGrid.querySelector('[data-role="schedule-save"]');
+        state.scheduleContent = state.controlGrid.querySelector('[data-role="schedule-content"]');
+        state.scheduleBody = state.controlGrid.querySelector('[data-role="schedule-body"]');
+        if (state.settingsButton) {
+          state.settingsButton.addEventListener("click", function () { openControllerSettings(state); });
+        }
+        state.controls.forEach(function (control) {
+          control.node = state.controlGrid.querySelector('[data-control-id="' + control.id + '"]');
+          control.toggleNode = control.node ? control.node.querySelector('[data-role="toggle"]') : null;
+          control.stateNode = control.node ? control.node.querySelector('[data-role="state"]') : null;
+          control.onButton = control.node ? control.node.querySelector('[data-role="on"]') : null;
+          control.offButton = control.node ? control.node.querySelector('[data-role="off"]') : null;
+          control.meterButton = control.node ? control.node.querySelector('[data-role="meter"]') : null;
+          if (control.onButton) {
+            control.onButton.addEventListener("click", function () {
+              sendControlCommand(state, control, control.commandOn, getUi("contactor.turningOn", "Turning on"), "on");
+            });
+          }
+          if (control.offButton) {
+            control.offButton.addEventListener("click", function () {
+              sendControlCommand(state, control, control.commandOff, getUi("contactor.turningOff", "Turning off"), "off");
+            });
+          }
+          if (control.meterButton) {
+            control.meterButton.addEventListener("click", function () {
+              openCurrentModal(state, control);
+            });
+          }
+          setControlVisual(control, control.state, control.state === "on" ? "ON" : control.state === "off" ? "OFF" : getUi("contactor.offline", "OFFLINE"));
+        });
+        if (state.alarmButton) {
+          state.alarmButton.addEventListener("click", function () { sendAlarmOffCommand(state); });
+        }
+        if (state.scheduleToggle) {
+          state.scheduleToggle.addEventListener("click", function () {
+            setScheduleCollapsed(state, !state.scheduleCollapsed);
+          });
+        }
+        bindScheduleRows(state);
+        setScheduleCollapsed(state, state.scheduleCollapsed !== false);
+        refreshScheduleSaveUi(state);
+        updateAlarmUi(state);
+      }
+
+      function renderControllers() {
+        if (heroTitle) heroTitle.textContent = safeText(config.title, "Single-Phase Aquaculture Control");
+        if (controllerList) {
+          controllerList.innerHTML = controllerStates.map(createControllerHtml).join("");
+          controllerStates.forEach(bindControllerState);
+        }
+        refreshControllerSettingsLabels();
+        if (controlCountChip) {
+          var totalControls = controllerStates.reduce(function (total, state) { return total + state.controls.length; }, 0);
+          controlCountChip.textContent = totalControls + " " + (totalControls === 1 ? getUi("controls.countSingular", "control") : getUi("controls.countPlural", "controls"));
+        }
+      }
+
+      function updateAlarmUi(state) {
+        if (!state || !state.alarmCard) return;
+        var alarmText = String(state.alarmText || "").trim();
+        var active = !!alarmText;
+        state.alarmCard.hidden = !active;
+        state.alarmCard.setAttribute("data-alarm-active", active ? "true" : "false");
+        if (state.alarmTextNode) {
+          state.alarmTextNode.textContent = active ? alarmText : getUi("alarmCard.empty", "No active alarm");
+        }
+        if (state.alarmButton) {
+          state.alarmButton.hidden = !(active && !!state.commandApiUrl && !!state.commands.alarmOff);
+          state.alarmButton.disabled = !!state.busy;
+        }
+      }
+
+      function sendControlCommand(state, control, command, pendingLabel, nextState) {
+        if (!state || !control || !command || !state.commandApiUrl || state.busy || control.readOnly) return;
+        setControllerBusy(state, true);
+        setControlVisual(control, "pending", pendingLabel);
+        postCommandRaw(state.commandApiUrl, command, 5000).then(function () {
+          setControlVisual(control, nextState, nextState === "on" ? "ON" : "OFF");
+          showToast(getUi("commands.sent", "Command sent."), "success");
+        }).catch(function (error) {
+          setControlVisual(control, "offline", getUi("contactor.error", "ERROR"));
+          showToast((error && error.message) || getUi("commands.failed", "Command failed."), "error");
+        }).finally(function () {
+          setControllerBusy(state, false);
+        });
+      }
+
+      function sendAlarmOffCommand(state) {
+        if (!state || !state.commandApiUrl || state.busy || !state.commands.alarmOff) return;
+        setControllerBusy(state, true);
+        postCommandRaw(state.commandApiUrl, state.commands.alarmOff, 5000).then(function () {
+          showToast(getUi("commands.alarmOffSent", "Alarm off command sent."), "success");
+        }).catch(function (error) {
+          showToast((error && error.message) || getUi("commands.alarmOffFailed", "Alarm off failed."), "error");
+        }).finally(function () {
+          setControllerBusy(state, false);
+        });
+      }
+
+      function openControllerSettings(state) {
+        if (!state || !state.fields.alarmPhone || !controllerSettingsModal) return;
+        activeControllerState = state;
+        state.phoneInput = controllerAlarmPhoneInput;
+        if (controllerAlarmPhoneInput) controllerAlarmPhoneInput.value = state.alarmPhone || "";
+        if (controllerSettingsSubmit) controllerSettingsSubmit.disabled = !!state.busy;
+        controllerSettingsModal.classList.add("is-open");
+        controllerSettingsModal.setAttribute("aria-hidden", "false");
+      }
+
+      function closeControllerSettings() {
+        if (!controllerSettingsModal) return;
+        controllerSettingsModal.classList.remove("is-open");
+        controllerSettingsModal.setAttribute("aria-hidden", "true");
+        activeControllerState = null;
+      }
+
+      function persistAlarmPhone(event) {
+        if (event && typeof event.preventDefault === "function") event.preventDefault();
+        var state = activeControllerState;
+        if (!state || !state.fields.alarmPhone || !state.commandApiUrl || state.busy || !controllerAlarmPhoneInput) return;
+        var nextPhone = String(controllerAlarmPhoneInput.value || "").trim();
+        if (nextPhone === String(state.alarmPhone || "")) {
+          showToast(getUi("settings.noChanges", "No changes to save."), "success");
+          closeControllerSettings();
+          return;
+        }
+        setControllerBusy(state, true);
+        controllerSettingsSubmit.textContent = getUi("settings.saving", "Saving...");
+        var command = state.fields.alarmPhone + "=" + nextPhone;
+        runWriteCommand(state, command, getUi("settings.updateFailed", "Settings update failed."), 3).then(function () {
+          state.alarmPhone = nextPhone;
+          showToast(getUi("settings.updated", "Settings updated."), "success");
+          closeControllerSettings();
+        }).catch(function (error) {
+          showToast((error && error.message) || getUi("settings.updateFailed", "Settings update failed."), "error");
+        }).finally(function () {
+          controllerSettingsSubmit.textContent = getUi("settings.save", "Save");
+          setControllerBusy(state, false);
+        });
+      }
+
+      function closeCurrentStream() {
+        if (currentReconnectTimer) {
+          window.clearTimeout(currentReconnectTimer);
+          currentReconnectTimer = null;
+        }
+        if (currentEventSource) {
+          currentEventSource.close();
+          currentEventSource = null;
+        }
+      }
+
+      function connectCurrentStream(state, control) {
+        if (!state || !control || !control.currentField || !state.sessionId || typeof EventSource === "undefined") return;
+        closeCurrentStream();
+        var fields = expandConfiguredStreamFields(control.currentField);
+        if (!fields.length) return;
+        try {
+          currentEventSource = new EventSource(buildStreamUrl(state.sessionId, fields));
+          currentEventSource.onmessage = function (event) {
+            if (activeControl !== control) return;
+            try { handleStreamPayload(state, JSON.parse(event.data)); } catch (error) {}
+          };
+          currentEventSource.onerror = function () {
+            if (currentEventSource) currentEventSource.close();
+            currentEventSource = null;
+            if (activeControl !== control) return;
+            currentReconnectTimer = window.setTimeout(function () {
+              currentReconnectTimer = null;
+              if (activeControl === control) connectCurrentStream(state, control);
+            }, 3000);
+          };
+        } catch (error) {
+          if (activeControl === control) {
+            currentReconnectTimer = window.setTimeout(function () {
+              currentReconnectTimer = null;
+              if (activeControl === control) connectCurrentStream(state, control);
+            }, 3000);
+          }
+        }
+      }
+
+      function openCurrentModal(state, control) {
+        if (!control || !control.currentField) {
+          showToast(getUi("meterModal.unavailable", "Current data is not configured for this contactor."), "error");
+          return;
+        }
+        if (!state) state = control.controllerState;
+        if (!state) return;
+        activeControl = control;
+        activeControllerState = state;
+        if (currentModalTitle) currentModalTitle.textContent = formatUi("meterModal.title", "Current meter | {label}", { label: control.label });
+        if (currentModalDescription) currentModalDescription.textContent = formatUi("meterModal.description", "Current chart and settings for {label}.", { label: control.label });
+        var threshold = state.thresholds[control.index] || createEmptyThreshold();
+        var runWindow = state.runWindows[control.index] || createEmptyWindow();
+        currentThresholdLowInput.value = threshold.low !== null ? String(threshold.low) : "";
+        currentThresholdHighInput.value = threshold.high !== null ? String(threshold.high) : "";
+        currentRunWindowStartInput.value = runWindow.start || "";
+        currentRunWindowEndInput.value = runWindow.end || "";
+        if (currentModal) {
+          currentModal.classList.add("is-open");
+          currentModal.setAttribute("aria-hidden", "false");
+        }
+        refreshCurrentModal();
+        loadCurrentHistory(state, control);
+        connectCurrentStream(state, control);
+      }
+
+      function closeCurrentModal() {
+        activeHistoryRequestId += 1;
+        closeCurrentStream();
+        activeControl = null;
+        activeControllerState = null;
+        if (currentModal) {
+          currentModal.classList.remove("is-open");
+          currentModal.setAttribute("aria-hidden", "true");
+        }
+        hideChartTooltip();
+      }
+
+      function loadCurrentHistory(state, control) {
+        if (!state || !control || !control.currentField) return Promise.resolve();
+        var to = Date.now();
+        var from = to - (6 * 60 * 60 * 1000);
+        var url = buildTimeseriesUrl(state.sessionId, [control.currentField], from, to);
+        if (!url) return Promise.resolve();
+        var requestId = ++activeHistoryRequestId;
+        return fetch(url, { cache: "no-store" }).then(function (response) {
+          if (!response.ok) return null;
+          return response.json();
+        }).then(function (payload) {
+          if (!payload || requestId !== activeHistoryRequestId) return;
+          control.series = [];
+          var rows = payload.c2 && Array.isArray(payload.c2.rows) ? payload.c2.rows : [];
+          rows.forEach(function (row) {
+            var value = typeof row.last !== "undefined" ? row.last : typeof row.value !== "undefined" ? row.value : row.avg;
+            var numeric = numericValue(value);
+            if (numeric !== null) {
+              control.latestCurrent = numeric;
+              appendSeriesPoint(control.series, { ts: Number(row.ts || Date.now()), value: numeric }, 6 * 60 * 60 * 1000);
+            }
+          });
+          refreshCurrentModal();
+        }).catch(function () {
+          showToast(getUi("meterModal.loadFailed", "Unable to load current history."), "error");
+        });
+      }
+
+      function persistCurrentSettings(event) {
+        event.preventDefault();
+        var control = activeControl;
+        var state = control ? control.controllerState : activeControllerState;
+        if (!state || !control || !state.commandApiUrl || state.busy) return;
+
+        var commands = [];
+        var nextThresholds = state.thresholds.map(function (item) { return { low: item.low, high: item.high }; });
+        var nextWindows = state.runWindows.map(function (item) { return { start: item.start, end: item.end }; });
+
+        if (state.fields.currentThreshold) {
+          var lowRaw = String(currentThresholdLowInput.value || "").trim();
+          var highRaw = String(currentThresholdHighInput.value || "").trim();
+          var currentLow = numericValue(lowRaw);
+          var currentHigh = numericValue(highRaw);
+          if ((lowRaw && currentLow === null) || (highRaw && currentHigh === null) || (currentLow !== null && currentHigh === null) || (currentLow === null && currentHigh !== null)) {
+            showToast(getUi("settings.bothRequired", "Both low and high thresholds are required."), "error");
+            return;
+          }
+          if (currentLow !== null && currentHigh !== null && currentLow > currentHigh) {
+            showToast(getUi("settings.invalidRange", "Low threshold must be less than or equal to high threshold."), "error");
+            return;
+          }
+          nextThresholds[control.index] = { low: currentLow, high: currentHigh };
+          var thresholdRaw = serializeThresholdList(nextThresholds);
+          if (thresholdRaw !== serializeThresholdList(state.thresholds)) {
+            commands.push({
+              command: state.fields.currentThreshold + "=" + thresholdRaw,
+              apply: function () { state.thresholds = nextThresholds; }
+            });
+          }
+        }
+
+        if (state.fields.runWindow) {
+          var startRaw = String(currentRunWindowStartInput.value || "").trim();
+          var endRaw = String(currentRunWindowEndInput.value || "").trim();
+          var start = normalizeCompactTimeValue(startRaw);
+          var end = normalizeCompactTimeValue(endRaw);
+          if ((startRaw && !start) || (endRaw && !end)) {
+            showToast(getUi("settings.timeWindowInvalid", "Time must use 4 digits in HHMM format."), "error");
+            return;
+          }
+          if ((start && !end) || (!start && end)) {
+            showToast(getUi("settings.timeWindowBothRequired", "Both start and end times are required."), "error");
+            return;
+          }
+          nextWindows[control.index] = { start: start, end: end };
+          var windowRaw = serializeWindowList(nextWindows);
+          if (windowRaw !== serializeWindowList(state.runWindows)) {
+            commands.push({
+              command: state.fields.runWindow + "=" + windowRaw,
+              apply: function () { state.runWindows = nextWindows; }
+            });
+          }
+        }
+
+        if (!commands.length) {
+          showToast(getUi("settings.noChanges", "No changes to save."), "success");
+          closeCurrentModal();
+          return;
+        }
+
+        setControllerBusy(state, true);
+        var chain = Promise.resolve();
+        commands.forEach(function (entry) {
+          chain = chain.then(function () {
+            return runWriteCommand(state, entry.command, getUi("settings.updateFailed", "Settings update failed."), 3).then(entry.apply);
+          });
+        });
+        chain.then(function () {
+          refreshCurrentModal();
+          showToast(getUi("settings.updated", "Settings updated."), "success");
+          closeCurrentModal();
+        }).catch(function (error) {
+          showToast((error && error.message) || getUi("settings.updateFailed", "Settings update failed."), "error");
+        }).finally(function () {
+          setControllerBusy(state, false);
+        });
+      }
+
+      function refreshCurrentModal() {
+        var control = activeControl;
+        if (!control) return;
+        var displayValue = Number.isFinite(control.latestCurrent) ? formatValue(control.latestCurrent, 2, "A") : "--";
+        if (currentInlineValue) currentInlineValue.textContent = displayValue;
+        renderCurrentChart(control);
+      }
+
+      function resolveChartBounds(points, threshold) {
+        var values = points.map(function (point) { return point.value; });
+        if (threshold && threshold.low !== null) values.push(threshold.low);
+        if (threshold && threshold.high !== null) values.push(threshold.high);
+        if (!values.length) return { minValue: 0, maxValue: 5 };
+        var minValue = Math.min.apply(null, values);
+        var maxValue = Math.max.apply(null, values);
+        if (minValue > 0) minValue = 0;
+        if (minValue === maxValue) {
+          minValue -= 1;
+          maxValue += 1;
+        }
+        if ((maxValue - minValue) < 5) maxValue = minValue + 5;
+        return { minValue: minValue, maxValue: maxValue };
+      }
+
+      function renderThresholdLine(node, value, bounds, meta) {
+        if (!node) return;
+        if (value === null || !Number.isFinite(value)) {
+          node.style.opacity = "0";
+          return;
+        }
+        var y = meta.bottom - (((value - bounds.minValue) / (bounds.maxValue - bounds.minValue)) * meta.height);
+        node.setAttribute("y1", y.toFixed(2));
+        node.setAttribute("y2", y.toFixed(2));
+        node.style.opacity = "1";
+      }
+
+      function renderCurrentChart(control) {
+        var series = (control && control.series ? control.series : []).filter(function (point) {
+          return point.ts >= Date.now() - (6 * 60 * 60 * 1000);
+        });
+        var meta = { left: 46, top: 16, width: 294, height: 182, bottom: 198 };
+        var gridHtml = "";
+        for (var row = 0; row <= 4; row += 1) {
+          var y = meta.top + ((meta.height / 4) * row);
+          gridHtml += '<line x1="' + meta.left + '" y1="' + y.toFixed(2) + '" x2="' + (meta.left + meta.width) + '" y2="' + y.toFixed(2) + '"></line>';
+        }
+        if (currentChartGrid) currentChartGrid.innerHTML = gridHtml;
+        var state = control ? control.controllerState : null;
+        var threshold = state ? (state.thresholds[control.index] || createEmptyThreshold()) : createEmptyThreshold();
+        var bounds = resolveChartBounds(series, threshold);
+        if (currentChartMin) currentChartMin.textContent = String(Math.round(bounds.minValue));
+        if (currentChartMax) currentChartMax.textContent = String(Math.round(bounds.maxValue));
+        renderThresholdLine(currentThresholdLowLine, threshold.low, bounds, meta);
+        renderThresholdLine(currentThresholdHighLine, threshold.high, bounds, meta);
+        if (!series || series.length <= 1) {
+          if (currentChartEmpty) currentChartEmpty.setAttribute("d", "M46 106 H340");
+          if (currentChartPath) currentChartPath.setAttribute("d", "");
+          currentChartBounds = null;
+          hideChartTooltip();
+          return;
+        }
+        if (currentChartEmpty) currentChartEmpty.setAttribute("d", "");
+        var startTs = Date.now() - (6 * 60 * 60 * 1000);
+        var tsSpan = 6 * 60 * 60 * 1000;
+        var path = "";
+        series.forEach(function (point, index) {
+          var x = meta.left + (((point.ts - startTs) / tsSpan) * meta.width);
+          var y = meta.bottom - (((point.value - bounds.minValue) / (bounds.maxValue - bounds.minValue)) * meta.height);
+          path += (index === 0 ? "M" : " L") + x.toFixed(2) + " " + y.toFixed(2);
+        });
+        if (currentChartPath) currentChartPath.setAttribute("d", path);
+        currentChartBounds = { startTs: startTs, tsSpan: tsSpan, minValue: bounds.minValue, maxValue: bounds.maxValue, left: meta.left, top: meta.top, width: meta.width, height: meta.height, bottom: meta.bottom };
+      }
+
+      var currentChartBounds = null;
+
+      function hideChartTooltip() {
+        if (currentTooltip) {
+          currentTooltip.style.opacity = "0";
+          currentTooltip.style.transform = "translate3d(0, 8px, 0)";
+        }
+        if (currentHoverLine) currentHoverLine.style.opacity = "0";
+        if (currentHoverPoint) currentHoverPoint.style.opacity = "0";
+      }
+
+      if (currentHitbox) {
+        currentHitbox.addEventListener("mousemove", function (event) {
+          if (!activeControl || !currentChartBounds || !currentTooltip) return;
+          var rect = currentHitbox.getBoundingClientRect();
+          if (!rect.width) return;
+          var relativeX = Math.min(Math.max(event.clientX - rect.left, 0), rect.width);
+          var targetTs = currentChartBounds.startTs + ((relativeX / rect.width) * currentChartBounds.tsSpan);
+          var anchor = null;
+          (activeControl.series || []).forEach(function (point) {
+            if (point.ts < currentChartBounds.startTs) return;
+            if (!anchor || Math.abs(point.ts - targetTs) < Math.abs(anchor.ts - targetTs)) anchor = point;
+          });
+          if (!anchor) return;
+          var x = currentChartBounds.left + (((anchor.ts - currentChartBounds.startTs) / currentChartBounds.tsSpan) * currentChartBounds.width);
+          var y = currentChartBounds.bottom - (((anchor.value - currentChartBounds.minValue) / (currentChartBounds.maxValue - currentChartBounds.minValue)) * currentChartBounds.height);
+          if (currentHoverLine) {
+            currentHoverLine.setAttribute("x1", x.toFixed(2));
+            currentHoverLine.setAttribute("x2", x.toFixed(2));
+            currentHoverLine.style.opacity = "1";
+          }
+          if (currentHoverPoint) {
+            currentHoverPoint.setAttribute("cx", x.toFixed(2));
+            currentHoverPoint.setAttribute("cy", y.toFixed(2));
+            currentHoverPoint.style.opacity = "1";
+          }
+          currentTooltip.innerHTML = '<strong>' + esc(formatTime(anchor.ts)) + '</strong><div class="chart-tooltip-row"><span class="chart-tooltip-label"><span class="chart-legend-dot" style="--dot-color:var(--theme-series-3);background:var(--theme-series-3);"></span>Current</span><strong>' + esc(formatValue(anchor.value, 2, "A")) + '</strong></div>';
+          currentTooltip.style.opacity = "1";
+          currentTooltip.style.transform = "translate3d(0, 0, 0)";
+          var shellWidth = currentChartShell ? currentChartShell.clientWidth : 360;
+          currentTooltip.style.left = Math.min(Math.max(x + 10, 8), Math.max(8, shellWidth - 192)) + "px";
+          currentTooltip.style.top = "12px";
+        });
+        currentHitbox.addEventListener("mouseleave", hideChartTooltip);
+      }
+
+      function setScheduleCollapsed(state, nextCollapsed) {
+        if (!state) return;
+        state.scheduleCollapsed = !!nextCollapsed;
+        if (state.scheduleContent) {
+          state.scheduleContent.hidden = state.scheduleCollapsed;
+        }
+        if (state.scheduleToggle) {
+          state.scheduleToggle.setAttribute("aria-expanded", state.scheduleCollapsed ? "false" : "true");
+        }
+      }
+
+      function refreshScheduleRowUi(row) {
+        if (!row) return;
+        if (row.enableInput) row.enableInput.checked = !!row.enabled;
+        if (row.enableShell) row.enableShell.setAttribute("data-enabled", row.enabled ? "true" : "false");
+        if (row.timeInput) row.timeInput.value = row.time || "";
+        if (row.actionToggle) {
+          row.actionToggle.setAttribute("data-state", row.action || "on");
+          row.actionToggle.setAttribute("aria-pressed", row.action === "off" ? "false" : "true");
+        }
+        row.outputInputs.forEach(function (input, index) {
+          input.checked = !!row.selected[index];
+        });
+        if (row.node) {
+          row.node.classList.toggle("is-disabled", !row.enabled);
+          row.node.classList.toggle("is-dirty", isScheduleRowDirty(row));
+          row.node.setAttribute("data-action", row.action || "on");
+          row.node.setAttribute("data-dirty", isScheduleRowDirty(row) ? "true" : "false");
+        }
+      }
+
+      function refreshScheduleSaveUi(state) {
+        if (!state || !state.scheduleSaveButton) return;
+        var dirtyCount = state.scheduleRows.filter(isScheduleRowDirty).length;
+        state.scheduleSaveButton.hidden = !dirtyCount && !state.scheduleSaving;
+        state.scheduleSaveButton.disabled = state.scheduleSaving || dirtyCount === 0 || !state.commandApiUrl;
+        state.scheduleSaveButton.textContent = state.scheduleSaving ? getUi("schedule.saving", "Saving...") : getUi("schedule.save", "Save");
+      }
+
+      function updateScheduleRowState(row) {
+        if (!row) return;
+        var state = row.controllerState;
+        row.empty = !rowHasCompleteSchedule(row);
+        refreshScheduleRowUi(row);
+        refreshScheduleSaveUi(state);
+      }
+
+      function bindScheduleRows(state) {
+        if (!state || !state.scheduleBody) return;
+        Array.prototype.forEach.call(state.scheduleBody.querySelectorAll('[data-role="schedule-row"]'), function (rowNode, index) {
+          var row = state.scheduleRows[index];
+          if (!row) return;
+          row.node = rowNode;
+          row.enableShell = rowNode.querySelector('[data-role="schedule-enable-shell"]');
+          row.enableInput = rowNode.querySelector('[data-role="schedule-enable"]');
+          row.timeInput = rowNode.querySelector('[data-role="schedule-time"]');
+          row.actionToggle = rowNode.querySelector('[data-role="schedule-action"]');
+          row.outputInputs = Array.prototype.slice.call(rowNode.querySelectorAll('[data-role="schedule-output"]'));
+          refreshScheduleRowUi(row);
+          if (row.enableInput) {
+            row.enableInput.addEventListener("change", function () {
+              if (state.scheduleSaving) return refreshScheduleRowUi(row);
+              row.enabled = !!row.enableInput.checked;
+              updateScheduleRowState(row);
+            });
+          }
+          if (row.timeInput) {
+            row.timeInput.addEventListener("input", function () {
+              if (state.scheduleSaving) return refreshScheduleRowUi(row);
+              row.time = String(row.timeInput.value || "");
+              updateScheduleRowState(row);
+            });
+            row.timeInput.addEventListener("change", function () {
+              if (state.scheduleSaving) return refreshScheduleRowUi(row);
+              row.time = String(row.timeInput.value || "");
+              updateScheduleRowState(row);
+            });
+          }
+          if (row.actionToggle) {
+            row.actionToggle.addEventListener("click", function () {
+              if (state.scheduleSaving) return refreshScheduleRowUi(row);
+              row.action = row.action === "off" ? "on" : "off";
+              updateScheduleRowState(row);
+            });
+          }
+          row.outputInputs.forEach(function (input, outputIndex) {
+            input.addEventListener("change", function () {
+              if (state.scheduleSaving) return refreshScheduleRowUi(row);
+              row.selected[outputIndex] = !!input.checked;
+              updateScheduleRowState(row);
+            });
+          });
+        });
+        if (state.scheduleSaveButton) {
+          state.scheduleSaveButton.addEventListener("click", function () { persistDirtyScheduleRows(state); });
+        }
+      }
+
+      function setScheduleRowBusy(row, nextBusy) {
+        row.busy = !!nextBusy;
+        if (row.node) row.node.classList.toggle("is-busy", !!nextBusy);
+        [row.enableInput, row.timeInput, row.actionToggle].forEach(function (node) {
+          if (node) node.disabled = !!nextBusy;
+        });
+        row.outputInputs.forEach(function (node) { node.disabled = !!nextBusy; });
+        if (row.enableShell) row.enableShell.setAttribute("aria-disabled", nextBusy ? "true" : "false");
+      }
+
+      function persistScheduleRow(row) {
+        var state = row ? row.controllerState : null;
+        var built = buildScheduleTelemetryPayload(row);
+        if (!built || !state || !state.commandApiUrl || row.busy) return Promise.resolve(false);
+        if (row.enabled && built.empty) {
+          if (row.timeInput) row.timeInput.focus();
+          return Promise.reject(new Error(getUi("schedule.empty", "Schedule is empty.")));
+        }
+        setScheduleRowBusy(row, true);
+        return runWriteCommand(state, built.command, getUi("schedule.updateFailed", "Schedule update failed."), 3).then(function () {
+          var snapshot = built.snapshot;
+          row.enabled = snapshot.enabled;
+          row.time = snapshot.time;
+          row.action = snapshot.action;
+          row.selected = snapshot.selected.slice();
+          row.empty = snapshot.empty;
+          row.committed = cloneScheduleSnapshot(snapshot);
+          refreshScheduleRowUi(row);
+          return true;
+        }).finally(function () {
+          setScheduleRowBusy(row, false);
+          refreshScheduleSaveUi(state);
+        });
+      }
+
+      function persistDirtyScheduleRows(state) {
+        if (!state || !state.commandApiUrl || state.scheduleSaving) return Promise.resolve(false);
+        var dirtyRows = state.scheduleRows.filter(isScheduleRowDirty);
+        if (!dirtyRows.length) return Promise.resolve(false);
+        var invalidRow = dirtyRows.find(function (row) { return !!row.enabled && !rowHasCompleteSchedule(row); });
+        if (invalidRow) {
+          if (invalidRow.timeInput) invalidRow.timeInput.focus();
+          showToast(getUi("schedule.empty", "Schedule is empty."), "error");
+          return Promise.resolve(false);
+        }
+        state.scheduleSaving = true;
+        refreshScheduleSaveUi(state);
+        var chain = Promise.resolve();
+        dirtyRows.forEach(function (row) {
+          chain = chain.then(function () { return persistScheduleRow(row); });
+        });
+        return chain.then(function () {
+          showToast(getUi("schedule.updated", "Schedule updated."), "success");
+          return true;
+        }).catch(function (error) {
+          showToast((error && error.message) || getUi("schedule.updateFailed", "Schedule update failed."), "error");
+          return false;
+        }).finally(function () {
+          state.scheduleSaving = false;
+          refreshScheduleSaveUi(state);
+        });
+      }
+
+      function applyScheduleSnapshot(row, snapshot) {
+        var next = cloneScheduleSnapshot(snapshot);
+        row.enabled = next.enabled;
+        row.time = next.time;
+        row.action = next.action;
+        row.selected = next.selected.slice();
+        row.empty = next.empty;
+      }
+
+      function updateTelemetryField(state, field, value, timestamp) {
+        if (!state) return;
+        var key = String(field || "").trim().toLowerCase();
+        var ts = Number(timestamp || Date.now());
+        var matched = false;
+        state.controls.forEach(function (control) {
+          var stateMatch = extractConfiguredTelemetryValue(key, control.stateField, value);
+          if (stateMatch.matched) {
+            var nextState = normalizeContactorState(stateMatch.value);
+            control.state = nextState;
+            setControlVisual(control, nextState, nextState === "on" ? "ON" : nextState === "off" ? "OFF" : getUi("contactor.offline", "OFFLINE"));
+            matched = true;
+          }
+          var currentMatch = extractConfiguredTelemetryValue(key, control.currentField, value);
+          if (currentMatch.matched && activeControl === control) {
+            var current = numericValue(currentMatch.value);
+            if (current !== null) {
+              control.latestCurrent = current;
+              appendSeriesPoint(control.series, { ts: ts, value: current }, 6 * 60 * 60 * 1000);
+              refreshCurrentModal();
+            }
+            matched = true;
+          }
+        });
+        var alarmMatch = extractConfiguredTelemetryValue(key, state.fields.alarm, value);
+        if (alarmMatch.matched) {
+          state.alarmText = String(alarmMatch.value == null ? "" : alarmMatch.value).trim();
+          updateAlarmUi(state);
+          matched = true;
+        }
+        var thresholdMatch = extractConfiguredTelemetryValue(key, state.fields.currentThreshold, value);
+        if (thresholdMatch.matched) {
+          state.thresholds = parseThresholdList(thresholdMatch.value);
+          if (activeControl && activeControl.controllerState === state) refreshCurrentModal();
+          matched = true;
+        }
+        var runWindowMatch = extractConfiguredTelemetryValue(key, state.fields.runWindow, value);
+        if (runWindowMatch.matched) {
+          state.runWindows = parseWindowList(runWindowMatch.value);
+          matched = true;
+        }
+        var alarmPhoneMatch = extractConfiguredTelemetryValue(key, state.fields.alarmPhone, value);
+        if (alarmPhoneMatch.matched) {
+          state.alarmPhone = String(alarmPhoneMatch.value == null ? "" : alarmPhoneMatch.value).trim();
+          if (activeControllerState === state && controllerAlarmPhoneInput) controllerAlarmPhoneInput.value = state.alarmPhone;
+          matched = true;
+        }
+        if (typeof state.scheduleFieldLookup[key] === "number") {
+          var scheduleIndex = state.scheduleFieldLookup[key];
+          var snapshot = parseScheduleTelemetryValue(value, state.scheduleFields[scheduleIndex] || "");
+          for (var outputIndex = state.controls.length; outputIndex < 8; outputIndex += 1) snapshot.selected[outputIndex] = false;
+          if (!snapshot.selected.some(Boolean)) {
+            snapshot.enabled = false;
+            snapshot.time = "";
+            snapshot.empty = true;
+          }
+          var row = state.scheduleRows[scheduleIndex];
+          if (row) {
+            row.committed = cloneScheduleSnapshot(snapshot);
+            if (!isScheduleRowDirty(row) && !row.busy) {
+              applyScheduleSnapshot(row, snapshot);
+            }
+            refreshScheduleRowUi(row);
+            refreshScheduleSaveUi(state);
+          }
+          matched = true;
+        }
+      }
+
+      function handleStreamPayload(state, payload) {
+        if (!payload || !payload.type) return;
+        if (payload.type === "billing_blocked") {
+          showToast("Top up needed", "error");
+          return;
+        }
+        if (payload.type === "telemetry" && payload.payload && typeof payload.payload === "object") {
+          Object.keys(payload.payload).forEach(function (field) {
+            updateTelemetryField(state, field, payload.payload[field], payload.serverTime || Date.now());
+          });
+        } else if (payload.type === "timeseries" && Array.isArray(payload.rows)) {
+          payload.rows.forEach(function (row) {
+            updateTelemetryField(state, row.field, typeof row.last !== "undefined" ? row.last : row.value, row.ts || Date.now());
+          });
+        }
+      }
+
+      function getControllerStreamFields(state) {
+        return unique(
+          state.controls.reduce(function (list, control) {
+            return list.concat(expandConfiguredStreamFields(control.stateField));
+          }, [])
+            .concat(expandConfiguredStreamFields(state.fields.alarm))
+            .concat(expandConfiguredStreamFields(state.fields.currentThreshold))
+            .concat(expandConfiguredStreamFields(state.fields.runWindow))
+            .concat(expandConfiguredStreamFields(state.fields.alarmPhone))
+            .concat(state.scheduleFields.reduce(function (list, field) {
+              return list.concat(expandConfiguredStreamFields(field));
+            }, []))
+            .map(function (field) { return String(field || "").trim(); })
+            .filter(Boolean)
+        );
+      }
+
+      function getControllerBootstrapFields(state) {
+        return unique(
+          state.controls.reduce(function (list, control) {
+            return list.concat(expandConfiguredRequestFields(control.stateField));
+          }, [])
+            .concat(expandConfiguredRequestFields(state.fields.alarm))
+            .concat(expandConfiguredRequestFields(state.fields.currentThreshold))
+            .concat(expandConfiguredRequestFields(state.fields.runWindow))
+            .concat(expandConfiguredRequestFields(state.fields.alarmPhone))
+            .concat(state.scheduleFields.reduce(function (list, field) {
+              return list.concat(expandConfiguredRequestFields(field));
+            }, []))
+            .map(function (field) { return String(field || "").trim(); })
+            .filter(Boolean)
+        );
+      }
+
+      function bootstrapController(state, fields) {
+        var url = buildTelemetryUrl(state.sessionId, fields || []);
+        if (!url) return Promise.resolve();
+        return fetch(url, { cache: "no-store" }).then(function (response) {
+          if (!response.ok) return null;
+          return response.json();
+        }).then(function (payload) {
+          var data = payload && payload.c2 && payload.c2.payload;
+          if (!data || typeof data !== "object") return;
+          Object.keys(data).forEach(function (field) {
+            updateTelemetryField(state, field, data[field], payload.c2.serverTime || Date.now());
+          });
+        }).catch(function () {});
+      }
+
+      function connectController(state) {
+        if (!state || !state.sessionId || typeof EventSource === "undefined") {
+          if (state) bootstrapController(state, getControllerBootstrapFields(state));
+          return;
+        }
+        var fields = getControllerStreamFields(state);
+        if (!fields.length) {
+          bootstrapController(state, getControllerBootstrapFields(state));
+          return;
+        }
+        try {
+          state.eventSource = new EventSource(buildStreamUrl(state.sessionId, fields));
+          state.eventSource.onmessage = function (event) {
+            try { handleStreamPayload(state, JSON.parse(event.data)); } catch (error) {}
+          };
+          state.eventSource.onerror = function () {
+            if (state.eventSource) state.eventSource.close();
+            state.eventSource = null;
+            if (state.reconnectTimer) window.clearTimeout(state.reconnectTimer);
+            state.reconnectTimer = window.setTimeout(function () {
+              state.reconnectTimer = null;
+              connectController(state);
+            }, 3000);
+          };
+        } catch (error) {
+          state.reconnectTimer = window.setTimeout(function () { connectController(state); }, 3000);
+        }
+        bootstrapController(state, getControllerBootstrapFields(state));
+      }
+
+      function postIoData(url, payload) {
+        return fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        }).then(function (response) {
+          return response.json().then(function (data) {
+            if (!response.ok) {
+              throw new Error(data && data.error ? data.error : getUi("network.requestFailed", "Request failed."));
+            }
+            return Array.isArray(data) ? data : [];
+          }).catch(function (error) {
+            if (!response.ok) throw error;
+            throw new Error(getUi("network.unexpectedIoDataResponse", "Unexpected IoData response."));
+          });
+        });
+      }
+
+      function normalizeKeyword(value) {
+        return String(value == null ? "" : value).trim().toLowerCase();
+      }
+
+      function severityFromEventType(eventType) {
+        var normalized = normalizeKeyword(eventType);
+        if (!normalized) return "neutral";
+        if (normalized.indexOf("shaft_break") >= 0 || normalized.indexOf("shaft break") >= 0) return "danger";
+        if (normalized.indexOf("overload") >= 0) return "warning";
+        if (normalized.indexOf("disconnect") >= 0) return "disconnect";
+        if (normalized.indexOf("on_time") >= 0) return "control-on";
+        if (normalized.indexOf("off_time") >= 0) return "control-off";
+        if (normalized.indexOf("alarm_off") >= 0) return "info";
+        return "neutral";
+      }
+
+      function eventTypeLabel(eventType) {
+        var normalized = normalizeKeyword(eventType);
+        var key = "";
+        if (normalized.indexOf("shaft_break") >= 0 || normalized.indexOf("shaft break") >= 0) key = "shaftBreak";
+        else if (normalized.indexOf("overload") >= 0) key = "overload";
+        else if (normalized.indexOf("disconnect") >= 0) key = "disconnect";
+        else if (normalized.indexOf("off_time") >= 0) key = "offTime";
+        else if (normalized.indexOf("on_time") >= 0) key = "onTime";
+        else if (normalized.indexOf("alarm_off") >= 0) key = "alarmOff";
+        return key ? getUi("history.eventTypes." + key, eventType) : String(eventType || "--");
+      }
+
+      function scrollHistoryToLatest() {
+        if (!historyContent) return;
+        window.requestAnimationFrame(function () {
+          historyContent.scrollTop = historyContent.scrollHeight;
+        });
+      }
+
+      function renderHistoryRows(rows) {
+        if (!historyBody) return;
+        if (!rows || !rows.length) {
+          historyBody.innerHTML = '<tr><td colspan="5" class="empty-state">' + esc(getUi("history.empty", "No history rows available.")) + '</td></tr>';
+          return;
+        }
+        historyBody.innerHTML = rows.map(function (row) {
+          var severity = severityFromEventType(row.event_type || row.type);
+          var pond = row.pond_name || row.pond || row.c1 || "--";
+          return '<tr class="history-row" data-severity="' + esc(severity) + '">'
+            + '<td>' + esc(formatDateTime(row.event_time_ms || row.event_time || row.time || row.t)) + '</td>'
+            + '<td><span class="event-pond-pill">' + esc(pond) + '</span></td>'
+            + '<td><span class="event-type-pill" data-severity="' + esc(severity) + '">' + esc(eventTypeLabel(row.event_type || row.type)) + '</span></td>'
+            + '<td>' + esc(row.content || row.message || "") + '</td>'
+            + '<td>' + esc(row.email || row.user || "") + '</td>'
+            + '</tr>';
+        }).join("");
+        scrollHistoryToLatest();
+      }
+
+      function refreshHistory() {
+        if (!historyState.sessionId || !historyState.syncId || !historyState.macro) {
+          if (historyCard) historyCard.style.display = "none";
+          return Promise.resolve();
+        }
+        if (historyCard) historyCard.style.display = "";
+        var nextRequestId = ++historyRequestId;
+        var url = buildIoDataUrl(historyState.sessionId, historyState.syncId);
+        if (historySourceChip) historySourceChip.textContent = formatUi("history.sourceValue", "Source {ioid}", { ioid: extractIoid(historyState.sessionId) || "history" });
+        if (historyRefreshButton) historyRefreshButton.disabled = true;
+        return postIoData(url, { macro: historyState.macro, page_size: historyState.pageSize, limit: historyState.pageSize, offset: 0 }).then(function (rows) {
+          if (nextRequestId !== historyRequestId) return;
+          historyState.rows = (rows || []).slice().sort(function (left, right) {
+            return (getEventTimeMs(left.event_time_ms || left.event_time) || 0) - (getEventTimeMs(right.event_time_ms || right.event_time) || 0);
+          }).slice(-historyState.pageSize);
+          renderHistoryRows(historyState.rows);
+        }).catch(function (error) {
+          if (nextRequestId !== historyRequestId) return;
+          renderHistoryRows([]);
+          showToast((error && error.message) || getUi("history.loadFailed", "Unable to load event history."), "error");
+        }).finally(function () {
+          if (historyRefreshButton) historyRefreshButton.disabled = false;
+        });
+      }
+
+      function armHistoryCooldown() {
+        if (historyCooldownTimer) window.clearTimeout(historyCooldownTimer);
+        historyCooldownActive = true;
+        historyCooldownTimer = window.setTimeout(function () {
+          historyCooldownTimer = null;
+          historyCooldownActive = false;
+          if (historyRefreshQueued) {
+            historyRefreshQueued = false;
+            refreshHistory();
+            armHistoryCooldown();
+          }
+        }, 5000);
+      }
+
+      function handleHistoryChangedEvent() {
+        if (!historyCooldownActive) {
+          historyRefreshQueued = false;
+          refreshHistory();
+          armHistoryCooldown();
+          return;
+        }
+        historyRefreshQueued = true;
+      }
+
+      function connectHistoryStream() {
+        if (!historyState.sessionId || typeof EventSource === "undefined") return;
+        if (historyEventSource) historyEventSource.close();
+        if (historyReconnectTimer) window.clearTimeout(historyReconnectTimer);
+        historyEventSource = new EventSource("/api/" + encodeURIComponent(historyState.sessionId) + "/stream?historyMs=0");
+        historyEventSource.onmessage = function (event) {
+          try {
+            var payload = JSON.parse(event.data);
+            if (payload && payload.type === "iodata_changed") handleHistoryChangedEvent();
+          } catch (error) {}
+        };
+        historyEventSource.onerror = function () {
+          if (historyEventSource) historyEventSource.close();
+          historyEventSource = null;
+          historyReconnectTimer = window.setTimeout(connectHistoryStream, 3000);
+        };
+      }
+
+      function toggleHistory() {
+        if (!historyContent || !historyToggle) return;
+        var collapsed = !historyContent.hidden;
+        historyContent.hidden = collapsed;
+        historyToggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        if (historyCard) historyCard.setAttribute("data-collapsed", collapsed ? "true" : "false");
+        if (!collapsed) scrollHistoryToLatest();
+      }
+
+      function createDefaultControlsConfig() {
+        var defaults = [];
+        for (var index = 0; index < 8; index += 1) {
+          var number = index + 1;
+          defaults.push({
+            label: "Motor " + String(number),
+            stateField: "O10" + String(number),
+            currentField: "Current" + String(number) + "_A",
+            commandOn: "N3," + String(number) + ",\"ON\"",
+            commandOff: "N3," + String(number) + ",\"OFF\""
+          });
+        }
+        return defaults;
+      }
+
+      function normalizeController(controllerConfig, controllerIndex) {
+        controllerConfig = controllerConfig || {};
+        var sessionId = safeText(controllerConfig.sessionId, "");
+        var rawFields = controllerConfig.fields || {};
+        var rawControls = Array.isArray(controllerConfig.controls) ? controllerConfig.controls : createDefaultControlsConfig();
+        var controls = rawControls.slice(0, 8).map(function (entry, index) {
+          entry = entry || {};
+          var stateField = safeText(entry.stateField || entry.field, "O10" + String(index + 1));
+          var currentField = safeText(entry.currentField || (entry.meter && entry.meter.current1), "");
+          return {
+            id: "controller-" + controllerIndex + "-control-" + index,
+            index: index,
+            label: safeText(entry.label, "Motor " + String(index + 1)),
+            stateField: stateField,
+            stateKey: stateField.toLowerCase(),
+            currentField: currentField,
+            currentKey: currentField.toLowerCase(),
+            commandOn: safeText(entry.commandOn, ""),
+            commandOff: safeText(entry.commandOff, ""),
+            readOnly: !(sessionId && entry.commandOn && entry.commandOff),
+            state: "offline",
+            latestCurrent: NaN,
+            series: []
+          };
+        });
+        var scheduleFields = (Array.isArray(controllerConfig.scheduleFields) ? controllerConfig.scheduleFields : ["#1021", "#1022", "#1023", "#1024", "#1025", "#1026", "#1027", "#1028", "#1029", "#1030"])
+          .map(function (field) { return String(field || "").trim(); })
+          .filter(Boolean)
+          .slice(0, 10);
+        var scheduleRows = scheduleFields.map(function (field, index) {
+          var snapshot = createEmptyScheduleSnapshot();
+          return Object.assign({
+            index: index,
+            fieldKey: field,
+            controllerState: null,
+            committed: cloneScheduleSnapshot(snapshot),
+            outputInputs: []
+          }, snapshot);
+        });
+        var scheduleFieldLookup = {};
+        scheduleFields.forEach(function (field, index) {
+          scheduleFieldLookup[String(field || "").trim().toLowerCase()] = index;
+        });
+        var state = {
+          id: "controller-" + controllerIndex,
+          title: safeText(controllerConfig.title, getUi("controls.title", "Controller") + (controllerIndex ? " " + String(controllerIndex + 1) : "")),
+          sessionId: sessionId,
+          commandApiUrl: buildCommandApiUrl(sessionId),
+          fields: {
+            alarm: safeText(rawFields.alarm, ""),
+            alarmKey: safeText(rawFields.alarm, "").toLowerCase(),
+            alarmPhone: safeText(rawFields.alarmPhone, ""),
+            alarmPhoneKey: safeText(rawFields.alarmPhone, "").toLowerCase(),
+            currentThreshold: safeText(rawFields.currentThreshold, ""),
+            currentThresholdKey: safeText(rawFields.currentThreshold, "").toLowerCase(),
+            runWindow: safeText(rawFields.runWindow, ""),
+            runWindowKey: safeText(rawFields.runWindow, "").toLowerCase()
+          },
+          commands: controllerConfig.commands || {},
+          controls: controls,
+          scheduleFields: scheduleFields,
+          scheduleRows: scheduleRows,
+          scheduleFieldLookup: scheduleFieldLookup,
+          scheduleCollapsed: true,
+          thresholds: parseThresholdList(""),
+          runWindows: parseWindowList(""),
+          alarmText: "",
+          alarmPhone: "",
+          busy: false,
+          scheduleSaving: false,
+          eventSource: null,
+          reconnectTimer: null
+        };
+        controls.forEach(function (control) { control.controllerState = state; });
+        scheduleRows.forEach(function (row) { row.controllerState = state; });
+        return state;
+      }
+
+      function normalizeControllers() {
+        var rawControllers = Array.isArray(config.controllers) && config.controllers.length
+          ? config.controllers
+          : (config.controller ? [config.controller] : [{}]);
+        return rawControllers.map(function (entry, index) {
+          return normalizeController(entry, index);
+        });
+      }
+
+      var controllerStates = normalizeControllers();
+
+      function initialize() {
+        initializeThemePicker();
+        renderControllers();
+        controllerStates.forEach(connectController);
+        refreshHistory();
+        connectHistoryStream();
+        if (historyRefreshButton) historyRefreshButton.addEventListener("click", refreshHistory);
+        if (historyToggle) {
+          if (!historyToggle.getAttribute("onclick")) {
+            historyToggle.addEventListener("click", function (event) {
+              var target = event.target;
+              if (target && typeof target.closest === "function" && target.closest("#history-source-chip")) return;
+              toggleHistory();
+            });
+          }
+          historyToggle.addEventListener("keydown", function (event) {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              toggleHistory();
+            }
+          });
+        }
+        if (historyContent) historyContent.hidden = true;
+        if (historyToggle) historyToggle.setAttribute("aria-expanded", "false");
+        if (historyCard) historyCard.setAttribute("data-collapsed", "true");
+        if (controllerSettingsClose) controllerSettingsClose.addEventListener("click", closeControllerSettings);
+        if (controllerSettingsCancel) controllerSettingsCancel.addEventListener("click", closeControllerSettings);
+        if (controllerSettingsForm) controllerSettingsForm.addEventListener("submit", persistAlarmPhone);
+        if (controllerSettingsModal) {
+          controllerSettingsModal.addEventListener("click", function (event) {
+            if (event.target === controllerSettingsModal) closeControllerSettings();
+          });
+        }
+        if (currentModalClose) currentModalClose.addEventListener("click", closeCurrentModal);
+        if (currentModalCancel) currentModalCancel.addEventListener("click", closeCurrentModal);
+        if (currentSettingsForm) currentSettingsForm.addEventListener("submit", persistCurrentSettings);
+        if (currentModal) {
+          currentModal.addEventListener("click", function (event) {
+            if (event.target === currentModal) closeCurrentModal();
+          });
+        }
+      }
+
+      initialize();
+    })();
+  </script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+
+</html>

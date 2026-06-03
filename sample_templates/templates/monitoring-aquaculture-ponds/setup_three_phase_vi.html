@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cai dat ao nuoi 3 pha</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --panel-soft: #f1f5f9;
+      --line: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #f97316;
+      --primary-strong: #ea580c;
+      --danger: #dc2626;
+      --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #020617;
+        --panel: #09090b;
+        --panel-soft: #18181b;
+        --line: #27272a;
+        --text: #f8fafc;
+        --muted: #a1a1aa;
+        --shadow: 0 18px 44px rgba(0, 0, 0, 0.36);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); }
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, Arial, sans-serif;
+      padding: 16px 16px 32px;
+    }
+
+    .shell { display: grid; gap: 14px; max-width: 1080px; margin: 0 auto; }
+    .head, .panel, .controller-card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .head { padding: 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    h1, h2, h3 { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 1.05rem; }
+    h2 { font-size: 0.98rem; }
+    h3 { font-size: 0.92rem; }
+    .status { color: var(--muted); font-size: 0.82rem; margin-top: 5px; line-height: 1.35; }
+    .badge { border: 1px solid color-mix(in srgb, var(--primary) 45%, var(--line)); color: var(--primary-strong); background: color-mix(in srgb, var(--primary) 10%, transparent); border-radius: 999px; padding: 6px 10px; font-size: 0.75rem; font-weight: 800; white-space: nowrap; }
+
+    .panel { padding: 14px; display: grid; gap: 12px; }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .full { grid-column: 1 / -1; }
+
+    label { display: grid; gap: 5px; min-width: 0; font-size: 0.76rem; color: var(--muted); font-weight: 700; }
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      color: var(--text);
+      border-radius: 12px;
+      min-height: 38px;
+      padding: 8px 10px;
+      font: inherit;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    input:focus, select:focus { border-color: color-mix(in srgb, var(--primary) 70%, var(--line)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent); }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 9px 12px;
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      color: #fff;
+      background: var(--primary);
+    }
+    button:hover { background: var(--primary-strong); }
+    button.secondary { color: var(--text); background: var(--panel-soft); border: 1px solid var(--line); }
+    button.secondary:hover { background: color-mix(in srgb, var(--panel-soft) 70%, var(--primary) 8%); }
+    button.danger { background: color-mix(in srgb, var(--danger) 90%, black 0%); }
+    button.icon { width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+
+    .controller-list { display: grid; gap: 10px; }
+    .controller-card { padding: 12px; display: grid; gap: 10px; }
+    .controller-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .controller-title { min-width: 0; display: flex; align-items: center; gap: 8px; }
+    .controller-title strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.93rem; }
+    .controller-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    details {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--panel-soft) 65%, transparent);
+      overflow: hidden;
+    }
+    summary { cursor: pointer; padding: 10px 12px; font-size: 0.83rem; font-weight: 900; color: var(--text); }
+    .advanced-body { display: grid; gap: 14px; padding: 0 12px 12px; }
+    .advanced-section { display: grid; gap: 9px; }
+    .schedule-grid { display: grid; gap: 8px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .empty { color: var(--muted); font-size: 0.86rem; padding: 12px; border: 1px dashed var(--line); border-radius: 14px; text-align: center; }
+
+    @media (max-width: 760px) {
+      body { padding: 10px; }
+      .head, .toolbar, .controller-top { align-items: stretch; flex-direction: column; }
+      .grid, .grid-3, .schedule-grid { grid-template-columns: 1fr; }
+      .controller-actions { justify-content: flex-start; }
+      button { width: 100%; }
+      button.icon { width: 38px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="head">
+      <div>
+        <h1>Cài đặt ao nuôi 3 pha</h1>
+        <div class="status" id="status">Đang chờ dữ liệu từ ứng dụng.</div>
+      </div>
+      <div class="badge" id="count-badge">0 tủ</div>
+    </header>
+
+    <section class="panel">
+      <h2>Thông tin chung</h2>
+      <div class="grid">
+        <label class="full">Tên dashboard
+          <input id="dashboard-title" maxlength="120" />
+        </label>
+        <label>Nguồn lịch sử
+          <input id="history-session" />
+        </label>
+        <label>AccountID tính phí chung
+          <input id="history-sync" />
+        </label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <h2>Danh sách tủ / ao</h2>
+        <button type="button" data-action="add-controller">Thêm tủ</button>
+      </div>
+      <div class="controller-list" id="controller-list"></div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var DEFAULT_TITLE = "Giám sát ao nuôi";
+      var state = {
+        baseConfig: {},
+        controllers: [],
+        context: {},
+        initialized: false
+      };
+
+      var els = {
+        status: document.getElementById("status"),
+        countBadge: document.getElementById("count-badge"),
+        title: document.getElementById("dashboard-title"),
+        historySession: document.getElementById("history-session"),
+        historySync: document.getElementById("history-sync"),
+        list: document.getElementById("controller-list")
+      };
+
+      function clone(value) {
+        try { return JSON.parse(JSON.stringify(value == null ? {} : value)); } catch (error) { return {}; }
+      }
+
+      function esc(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function safeText(value, fallback) {
+        var text = String(value == null ? "" : value).trim();
+        return text || fallback || "";
+      }
+
+      function motorCountFromSession(session) {
+        var fields = session && session.fields && typeof session.fields === "object" ? session.fields : {};
+        var meters = session && session.meters && typeof session.meters === "object" ? session.meters : {};
+        if (fields.contactor3 || meters.contactor3) return 3;
+        if (fields.contactor2 || meters.contactor2) return 2;
+        return 1;
+      }
+
+      function makeGeneratedController(index, basic, outputStart) {
+        var ordinal = index + 1;
+        var motorCount = Math.max(1, Math.min(3, Number(basic.motorCount || 2) || 2));
+        var fields = {
+          contactor1: motorCount >= 1 ? "O" + outputStart : "",
+          contactor2: motorCount >= 2 ? "O" + (outputStart + 1) : "",
+          contactor3: motorCount >= 3 ? "O" + (outputStart + 2) : "",
+          alarm: "alarm" + ordinal,
+          currentThreshold: "#" + (1010 + ordinal),
+          alarmPhone: "#1002." + ordinal,
+          runWindow: "#" + (1004 + ordinal),
+          updateEnabled: "#1003." + ordinal
+        };
+        var commands = {
+          contactor1On: motorCount >= 1 ? 'N3,' + ordinal + ',1,"ON","<<username>>"' : "",
+          contactor1Off: motorCount >= 1 ? 'N3,' + ordinal + ',1,"OFF","<<username>>"' : "",
+          contactor2On: motorCount >= 2 ? 'N3,' + ordinal + ',2,"ON","<<username>>"' : "",
+          contactor2Off: motorCount >= 2 ? 'N3,' + ordinal + ',2,"OFF","<<username>>"' : "",
+          contactor3On: motorCount >= 3 ? 'N3,' + ordinal + ',3,"ON","<<username>>"' : "",
+          contactor3Off: motorCount >= 3 ? 'N3,' + ordinal + ',3,"OFF","<<username>>"' : "",
+          alarmOff: 'N4,"<<username>>",' + ordinal
+        };
+        var scheduleStart = 1021 + (index * 4);
+        var meters = {};
+        for (var motorIndex = 1; motorIndex <= motorCount; motorIndex += 1) {
+          meters["contactor" + motorIndex] = {
+            title: "Mô tơ " + motorIndex,
+            voltage: "Voltage" + ordinal + motorIndex + "_V",
+            current1: "Current" + ordinal + motorIndex + "_A1",
+            current2: "Current" + ordinal + motorIndex + "_A2",
+            current3: "Current" + ordinal + motorIndex + "_A3",
+            temperature: "Temper" + ordinal + motorIndex,
+            energy: "Energy" + ordinal + motorIndex + "_Wh"
+          };
+        }
+
+        return {
+          title: safeText(basic.title, "Tủ ao nuôi " + ordinal),
+          sessionId: safeText(basic.sessionId, state.context.sessionId || ""),
+          description: safeText(basic.description, ""),
+          motorCount: motorCount,
+          fields: fields,
+          commands: commands,
+          scheduleFields: ["#" + scheduleStart, "#" + (scheduleStart + 1), "#" + (scheduleStart + 2), "#" + (scheduleStart + 3)],
+          meters: meters
+        };
+      }
+
+      function normalizeControllers(controllers, preserveAdvanced) {
+        var outputCursor = 101;
+        return controllers.map(function (controller, index) {
+          var generated = makeGeneratedController(index, controller || {}, outputCursor);
+          outputCursor += generated.motorCount;
+          if (!preserveAdvanced) return generated;
+
+          var next = clone(generated);
+          next.title = generated.title;
+          next.sessionId = generated.sessionId;
+          next.description = generated.description;
+          next.motorCount = generated.motorCount;
+          next.fields = Object.assign({}, generated.fields, clone(controller.fields));
+          next.commands = Object.assign({}, generated.commands, clone(controller.commands));
+          next.scheduleFields = Array.isArray(controller.scheduleFields) && controller.scheduleFields.length
+            ? controller.scheduleFields.map(function (field) { return safeText(field, ""); }).slice(0, 4)
+            : generated.scheduleFields;
+          next.meters = clone(generated.meters);
+          var sourceMeters = controller.meters && typeof controller.meters === "object" ? controller.meters : {};
+          Object.keys(next.meters).forEach(function (meterKey) {
+            next.meters[meterKey] = Object.assign({}, next.meters[meterKey], clone(sourceMeters[meterKey]));
+          });
+          return next;
+        });
+      }
+
+      function controllerFromSession(session, index) {
+        var source = session && typeof session === "object" ? session : {};
+        return {
+          title: safeText(source.title, "Tủ ao nuôi " + (index + 1)),
+          sessionId: safeText(source.sessionId, state.context.sessionId || ""),
+          description: safeText(source.description, ""),
+          motorCount: motorCountFromSession(source),
+          fields: clone(source.fields),
+          commands: clone(source.commands),
+          scheduleFields: Array.isArray(source.scheduleFields) ? source.scheduleFields.slice(0, 4) : [],
+          meters: clone(source.meters)
+        };
+      }
+
+      function readControllersFromDom() {
+        var cards = Array.prototype.slice.call(els.list.querySelectorAll("[data-controller-index]"));
+        state.controllers = cards.map(function (card, index) {
+          var controller = state.controllers[index] || {};
+          var read = function (selector) {
+            var node = card.querySelector(selector);
+            return node ? String(node.value || "").trim() : "";
+          };
+          var next = {
+            title: read('[data-basic="title"]'),
+            sessionId: read('[data-basic="sessionId"]'),
+            description: read('[data-basic="description"]'),
+            motorCount: Math.max(1, Math.min(3, Number(read('[data-basic="motorCount"]') || 2) || 2)),
+            fields: {},
+            commands: {},
+            scheduleFields: [],
+            meters: clone(controller.meters)
+          };
+
+          card.querySelectorAll("[data-field-key]").forEach(function (node) {
+            next.fields[node.getAttribute("data-field-key")] = String(node.value || "").trim();
+          });
+          card.querySelectorAll("[data-command-key]").forEach(function (node) {
+            next.commands[node.getAttribute("data-command-key")] = String(node.value || "").trim();
+          });
+          card.querySelectorAll("[data-schedule-index]").forEach(function (node) {
+            next.scheduleFields[Number(node.getAttribute("data-schedule-index") || 0)] = String(node.value || "").trim();
+          });
+          card.querySelectorAll("[data-meter-key][data-meter-field]").forEach(function (node) {
+            var meterKey = node.getAttribute("data-meter-key");
+            var meterField = node.getAttribute("data-meter-field");
+            if (!next.meters[meterKey]) next.meters[meterKey] = {};
+            next.meters[meterKey][meterField] = String(node.value || "").trim();
+          });
+          return next;
+        });
+      }
+
+      function fieldInput(key, value) {
+        return '<label>' + esc(key) + '<input data-field-key="' + esc(key) + '" value="' + esc(value) + '" /></label>';
+      }
+
+      function commandInput(key, value) {
+        return '<label>' + esc(key) + '<input data-command-key="' + esc(key) + '" value="' + esc(value) + '" /></label>';
+      }
+
+      function meterInputs(meterKey, meter) {
+        var fields = ["title", "voltage", "current1", "current2", "current3", "temperature", "energy"];
+        return '<div class="advanced-section"><h3>' + esc(meter.title || meterKey) + '</h3><div class="grid-3">'
+          + fields.map(function (field) {
+            return '<label>' + esc(field) + '<input data-meter-key="' + esc(meterKey) + '" data-meter-field="' + esc(field) + '" value="' + esc(meter[field] || "") + '" /></label>';
+          }).join("")
+          + '</div></div>';
+      }
+
+      function renderController(controller, index) {
+        var schedule = controller.scheduleFields || [];
+        var meterHtml = Object.keys(controller.meters || {}).map(function (meterKey) {
+          return meterInputs(meterKey, controller.meters[meterKey] || {});
+        }).join("");
+
+        return '<article class="controller-card" data-controller-index="' + index + '">'
+          + '<div class="controller-top">'
+          + '<div class="controller-title"><span class="badge">#' + (index + 1) + '</span><strong>' + esc(controller.title || ("Tủ ao nuôi " + (index + 1))) + '</strong></div>'
+          + '<div class="controller-actions">'
+          + '<button class="secondary" type="button" data-action="clone-controller" data-index="' + index + '">Nhân bản</button>'
+          + '<button class="danger" type="button" data-action="delete-controller" data-index="' + index + '">Xóa</button>'
+          + '</div></div>'
+          + '<div class="grid-3">'
+          + '<label>Tên tủ / ao<input data-basic="title" value="' + esc(controller.title) + '" /></label>'
+          + '<label>Device key<input data-basic="sessionId" value="' + esc(controller.sessionId) + '" /></label>'
+          + '<label>Số mô tơ<select data-basic="motorCount">'
+          + '<option value="1"' + (controller.motorCount === 1 ? " selected" : "") + '>1</option>'
+          + '<option value="2"' + (controller.motorCount === 2 ? " selected" : "") + '>2</option>'
+          + '<option value="3"' + (controller.motorCount === 3 ? " selected" : "") + '>3</option>'
+          + '</select></label>'
+          + '<label class="full">Mô tả<input data-basic="description" value="' + esc(controller.description) + '" /></label>'
+          + '</div>'
+          + '<details><summary>Nâng cao: field, lệnh, điện kế</summary>'
+          + '<div class="advanced-body">'
+          + '<div class="advanced-section"><h3>Field thiết bị</h3><div class="grid-3">'
+          + Object.keys(controller.fields || {}).map(function (key) { return fieldInput(key, controller.fields[key]); }).join("")
+          + '</div></div>'
+          + '<div class="advanced-section"><h3>Lệnh điều khiển</h3><div class="grid-3">'
+          + Object.keys(controller.commands || {}).map(function (key) { return commandInput(key, controller.commands[key]); }).join("")
+          + '</div></div>'
+          + '<div class="advanced-section"><h3>Field hẹn giờ</h3><div class="schedule-grid">'
+          + [0, 1, 2, 3].map(function (slot) {
+            return '<label>Dòng ' + (slot + 1) + '<input data-schedule-index="' + slot + '" value="' + esc(schedule[slot] || "") + '" /></label>';
+          }).join("")
+          + '</div></div>'
+          + (meterHtml || '<div class="empty">Không có điện kế riêng.</div>')
+          + '</div></details>'
+          + '</article>';
+      }
+
+      function notifyResize() {
+        window.requestAnimationFrame(function () {
+          var height = Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight || 560);
+          window.parent.postMessage({ type: "dashboardSetup:resize", payload: { height: height } }, window.location.origin);
+        });
+      }
+
+      function render() {
+        if (!state.controllers.length) {
+          els.list.innerHTML = '<div class="empty">Chưa có tủ nào.</div>';
+        } else {
+          els.list.innerHTML = state.controllers.map(renderController).join("");
+        }
+        els.countBadge.textContent = state.controllers.length + " tủ";
+        notifyResize();
+      }
+
+      function initialize(payload) {
+        var config = payload && payload.config && typeof payload.config === "object" ? payload.config : {};
+        state.baseConfig = clone(config);
+        state.context = clone(payload && payload.context ? payload.context : {});
+        els.title.value = safeText(config.title, DEFAULT_TITLE);
+        var history = config.history && typeof config.history === "object" ? config.history : {};
+        els.historySession.value = safeText(history.sessionId, state.context.sessionId || "");
+        els.historySync.value = safeText(history.syncId, state.context.syncId || config.syncId || "");
+
+        var sessions = Array.isArray(config.sessions) ? config.sessions : [];
+        state.controllers = sessions.length
+          ? sessions.map(controllerFromSession)
+          : [controllerFromSession({ title: "Tủ ao nuôi 1", sessionId: state.context.sessionId || "" }, 0)];
+        state.controllers = normalizeControllers(state.controllers, true);
+        state.initialized = true;
+        els.status.textContent = "Sẵn sàng cấu hình.";
+        render();
+      }
+
+      function buildConfig() {
+        readControllersFromDom();
+        state.controllers = normalizeControllers(state.controllers, true);
+
+        var title = safeText(els.title.value, "");
+        if (!title) throw new Error("Hãy nhập tên dashboard.");
+        if (!state.controllers.length) throw new Error("Cần ít nhất một tủ ao nuôi.");
+
+        var sessions = state.controllers.map(function (controller, index) {
+          if (!controller.sessionId) {
+            throw new Error("Tủ #" + (index + 1) + " chưa có Device key.");
+          }
+          var item = {
+            title: safeText(controller.title, "Tủ ao nuôi " + (index + 1)),
+            sessionId: controller.sessionId,
+            description: safeText(controller.description, ""),
+            fields: controller.fields || {},
+            commands: controller.commands || {},
+            scheduleFields: (controller.scheduleFields || []).filter(Boolean).slice(0, 4),
+            meters: controller.meters || {}
+          };
+          return item;
+        });
+
+        var next = clone(state.baseConfig);
+        next.title = title;
+        next.description = safeText(next.description, "");
+        next.syncId = safeText(els.historySync.value, safeText(next.syncId, state.context.syncId || ""));
+        next.history = Object.assign({}, clone(next.history), {
+          sessionId: safeText(els.historySession.value, state.context.sessionId || ""),
+          syncId: safeText(els.historySync.value, state.context.syncId || next.syncId || ""),
+          macro: safeText(next.history && next.history.macro, "pond-event-history"),
+          pageSize: Number(next.history && next.history.pageSize) || 100
+        });
+        next.sessions = sessions;
+        if (!next.locale) next.locale = "vi";
+        return next;
+      }
+
+      function sendError(message) {
+        window.parent.postMessage({ type: "dashboardSetup:error", payload: { message: String(message || "Cấu hình chưa hợp lệ.") } }, window.location.origin);
+      }
+
+      document.addEventListener("click", function (event) {
+        var target = event.target.closest("[data-action]");
+        if (!target) return;
+        readControllersFromDom();
+        var index = Number(target.getAttribute("data-index") || -1);
+        if (target.getAttribute("data-action") === "add-controller") {
+          state.controllers.push({ title: "Tủ ao nuôi " + (state.controllers.length + 1), sessionId: state.context.sessionId || "", motorCount: 2 });
+          state.controllers = normalizeControllers(state.controllers, true);
+          render();
+          return;
+        }
+        if (target.getAttribute("data-action") === "clone-controller" && index >= 0) {
+          var source = state.controllers[index] || {};
+          state.controllers.splice(index + 1, 0, {
+            title: safeText(source.title, "Tủ ao nuôi") + " copy",
+            sessionId: safeText(source.sessionId, state.context.sessionId || ""),
+            description: safeText(source.description, ""),
+            motorCount: Number(source.motorCount || 2) || 2
+          });
+          state.controllers = normalizeControllers(state.controllers, true);
+          render();
+          return;
+        }
+        if (target.getAttribute("data-action") === "delete-controller" && index >= 0) {
+          if (state.controllers.length <= 1) {
+            sendError("Cần giữ ít nhất một tủ.");
+            return;
+          }
+          state.controllers.splice(index, 1);
+          state.controllers = normalizeControllers(state.controllers, false);
+          render();
+        }
+      });
+
+      els.list.addEventListener("change", function (event) {
+        if (!event.target.matches('[data-basic="motorCount"]')) return;
+        readControllersFromDom();
+        state.controllers = normalizeControllers(state.controllers, false);
+        render();
+      });
+
+      els.list.addEventListener("input", function () {
+        notifyResize();
+      });
+
+      window.addEventListener("message", function (event) {
+        if (event.origin !== window.location.origin) return;
+        var data = event.data && typeof event.data === "object" ? event.data : null;
+        if (!data || !data.type) return;
+        if (data.type === "dashboardSetup:init") {
+          initialize(data.payload || {});
+          return;
+        }
+        if (data.type === "dashboardSetup:collect") {
+          try {
+            var config = buildConfig();
+            window.parent.postMessage({ type: "dashboardSetup:submit", payload: { config: config } }, window.location.origin);
+          } catch (error) {
+            sendError(error && error.message ? error.message : "Cấu hình chưa hợp lệ.");
+          }
+        }
+      });
+
+      if (window.ResizeObserver) {
+        new ResizeObserver(notifyResize).observe(document.body);
+      }
+      window.parent.postMessage({ type: "dashboardSetup:ready" }, window.location.origin);
+      notifyResize();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basic Cards Dashboard</title>
+  <link rel="stylesheet" href="../../dashboard-themes.css" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) {
+          document.documentElement.setAttribute("data-theme", savedTheme);
+        }
+      } catch (error) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/sample_dashboards/basic-cards-dashboard/dashboard.css" />
+</head>
+<body>
+
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="bc-page" id="basic-cards-root">
+    <section class="bc-topbar">
+      <div class="bc-topbar-title">
+        <h1 id="basic-cards-title">Basic Cards Dashboard</h1>
+        <p id="basic-cards-subtitle">Compact config-driven widgets</p>
+      </div>
+      <div class="bc-topbar-tools">
+        <div class="bc-chip" id="basic-cards-groups-chip">0 groups</div>
+        <div class="bc-chip" id="basic-cards-widgets-chip">0 cards</div>
+      </div>
+    </section>
+
+    <section class="bc-groups" id="basic-cards-groups"></section>
+  </main>
+
+  <div class="bc-toast-stack" id="basic-cards-toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Choose theme" aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Theme options">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism" role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism" role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk" role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento Grid</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script type="application/json" id="basic-cards-config">
+    {
+      "locale": "en",
+      "title": "Basic Cards Dashboard",
+      "subtitle": "Compact config-driven widgets",
+      "syncId": "<<syncid>>",
+      "groups": [
+        {
+          "title": "Primary device",
+          "sessionId": "<<sessionid>>",
+          "widgets": [
+            {
+              "type": "switch",
+              "label": "Pump O2",
+              "stateField": "O2",
+              "commandOn": "D1O2",
+              "commandOff": "D2O2",
+              "tone": "success"
+            },
+			{
+              "type": "telemetry",
+              "label": "Temperature",
+              "field": "temperature",
+              "unit": "°C",
+              "digits": 1,
+              "tone": "danger"
+            },
+            {
+              "type": "command",
+              "label": "N5 LED blink",
+              "command": "N5",
+              "buttonLabel": "Run",
+              "tone": "primary"
+            },
+            {
+              "type": "input",
+              "label": "Motor angle",
+              "input": {
+                "key": "value",
+                "valueType": "number",
+                "field": "O2"
+              },
+              "submitCommand": "D1O2'{value}'",
+              "buttonLabel": "Send",
+              "tone": "info"
+            },
+            {
+              "type": "dual-input",
+              "label": "Temp band",
+              "field": "#1010",
+              "inputs": [
+                { "key": "low", "label": "Low", "valueType": "number" },
+                { "key": "high", "label": "High", "valueType": "number" }
+              ],
+              "submitCommand": "#1010={low},{high}",
+              "buttonLabel": "Save",
+              "tone": "danger"
+            },
+            {
+              "type": "line-chart",
+              "label": "Temperature chart",
+              "field": "temperature",
+              "unit": "°C",
+              "digits": 1,
+              "range": "24h",
+              "yDeltaMin": 10,
+              "tone": "warning"
+            }
+          ]
+        }
+      ]
+    }
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START -->
+  <script>
+    // Editable sample script slot for small per-template enhancements.
+  </script>
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+
+  <script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script src="/sample_dashboards/basic-cards-dashboard/dashboard-runtime.js"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý lò đốt sinh khối</title>
+  <link rel="stylesheet" href="../../dashboard-themes.css" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) {
+          document.documentElement.setAttribute("data-theme", savedTheme);
+        }
+      } catch (error) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/dashboard.css?v=2026.05.24.1" />
+</head>
+<body>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="bb-page" id="biomass-burner-root">
+    <section class="bb-panel bb-topbar">
+      <div class="bb-title">
+        <h1 id="bb-title">Quản lý lò đốt sinh khối</h1>
+        <p id="bb-subtitle">Theo dõi hợp đồng, phút đốt, nhiệt độ và cài đặt trực tiếp trên bộ điều khiển.</p>
+      </div>
+      <div class="bb-toolbar">
+        <div class="bb-status-chip" id="bb-status" data-state="loading">Đang tải</div>
+        <button class="bb-btn" id="bb-refresh" type="button">Làm mới</button>
+        <button class="bb-btn bb-btn-primary" id="bb-add-open" type="button">+ Thêm lò</button>
+      </div>
+    </section>
+
+    <section class="bb-kpi-grid" aria-label="Tổng quan lò đốt">
+      <article class="bb-kpi"><span>Tổng lò</span><strong id="bb-kpi-total">--</strong><em id="bb-kpi-total-note">đang quản lý</em></article>
+      <article class="bb-kpi"><span>Phút đã mua</span><strong id="bb-kpi-purchased">--</strong><em>toàn hệ thống</em></article>
+      <article class="bb-kpi"><span>Phút đã đốt</span><strong id="bb-kpi-burned">--</strong><em>thiết bị báo về</em></article>
+      <article class="bb-kpi"><span>Phút còn lại</span><strong id="bb-kpi-remaining">--</strong><em>ước tính theo DB</em></article>
+      <article class="bb-kpi"><span>Sắp hết hạn</span><strong id="bb-kpi-expiring">--</strong><em id="bb-kpi-expiring-note">30 ngày tới</em></article>
+      <article class="bb-kpi"><span>CO2 giảm</span><strong id="bb-kpi-co2">--</strong><em>kg ước tính</em></article>
+    </section>
+
+    <section class="bb-panel bb-filters">
+      <input class="bb-input" id="bb-search" type="search" placeholder="Tìm mã lò, tên, khách hàng..." autocomplete="off" />
+      <select class="bb-select" id="bb-filter-expiry" aria-label="Lọc hạn thuê">
+        <option value="">Tất cả hạn thuê</option>
+        <option value="expired">Đã hết hạn</option>
+        <option value="soon">Sắp hết hạn</option>
+        <option value="active">Còn hạn</option>
+      </select>
+      <select class="bb-select" id="bb-page-size" aria-label="Số dòng mỗi trang">
+        <option value="20">20 dòng</option>
+        <option value="50" selected>50 dòng</option>
+        <option value="100">100 dòng</option>
+      </select>
+      <button class="bb-btn bb-btn-primary" id="bb-apply-filter" type="button">Áp dụng</button>
+    </section>
+
+    <section class="bb-panel bb-table-panel">
+      <div class="bb-table-scroll">
+        <table class="bb-table">
+          <thead>
+            <tr>
+              <th>Mã lò</th>
+              <th>Tên / vị trí</th>
+              <th>Hạn thuê</th>
+              <th>Phút mua</th>
+              <th>Phút đốt</th>
+              <th>Còn lại</th>
+              <th>Nhiệt độ</th>
+              <th>Trạng thái</th>
+              <th>Cập nhật</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="bb-table-body"></tbody>
+        </table>
+        <div class="bb-empty" id="bb-empty" hidden>Chưa có lò đốt phù hợp.</div>
+      </div>
+      <div class="bb-pager">
+        <button class="bb-btn" id="bb-prev" type="button">Trước</button>
+        <div class="bb-page-info" id="bb-page-info">Trang 1 / 1</div>
+        <button class="bb-btn" id="bb-next" type="button">Sau</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="bb-modal" id="bb-add-modal" aria-hidden="true">
+    <div class="bb-modal-card bb-modal-card-sm">
+      <div class="bb-modal-head">
+        <div>
+          <h2>Thêm lò mới</h2>
+          <p>Mỗi mã lò gồm 6 số và không bắt đầu bằng 0.</p>
+        </div>
+        <button class="bb-icon-btn" id="bb-add-close" type="button" aria-label="Đóng">×</button>
+      </div>
+      <div class="bb-modal-body">
+        <form id="bb-add-form" class="bb-section">
+          <div class="bb-form-grid">
+            <div class="bb-field"><label for="add-burner-code">Mã lò</label><input class="bb-input" id="add-burner-code" name="burner_code" inputmode="numeric" maxlength="6" required /></div>
+            <div class="bb-field"><label for="add-display-name">Tên hiển thị</label><input class="bb-input" id="add-display-name" name="display_name" required /></div>
+            <div class="bb-field bb-field-full"><label for="add-session-id">Session thiết bị</label><input class="bb-input" id="add-session-id" name="session_id" placeholder="IO...@apiKey" required /></div>
+            <div class="bb-field"><label for="add-customer">Khách hàng</label><input class="bb-input" id="add-customer" name="customer_name" /></div>
+            <div class="bb-field"><label for="add-site">Vị trí</label><input class="bb-input" id="add-site" name="site_name" /></div>
+            <div class="bb-field"><label for="add-lease">Ngày hết hạn</label><input class="bb-input" id="add-lease" name="lease_expires_at" type="date" /></div>
+            <div class="bb-field"><label for="add-purchased">Phút đã mua</label><input class="bb-input" id="add-purchased" name="purchased_minutes" inputmode="numeric" value="0" /></div>
+            <div class="bb-field"><label for="add-burned">Phút đã đốt ban đầu</label><input class="bb-input" id="add-burned" name="burned_minutes_current" inputmode="numeric" value="0" /></div>
+            <div class="bb-field"><label for="add-status-field">Field trạng thái</label><input class="bb-input" id="add-status-field" name="status_field" value="status" /></div>
+            <div class="bb-field"><label for="add-temp-field">Field nhiệt độ</label><input class="bb-input" id="add-temp-field" name="temperature_field" value="temperature" /></div>
+            <div class="bb-field bb-field-full"><label for="add-notes">Ghi chú</label><textarea class="bb-textarea" id="add-notes" name="notes"></textarea></div>
+          </div>
+          <div class="bb-form-actions">
+            <button class="bb-btn" id="bb-add-cancel" type="button">Hủy</button>
+            <button class="bb-btn bb-btn-primary" type="submit">Thêm lò</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="bb-modal" id="bb-settings-modal" aria-hidden="true">
+    <div class="bb-modal-card bb-modal-card-wide">
+      <div class="bb-modal-head">
+        <div>
+          <h2 id="bb-settings-title">Cài đặt lò</h2>
+          <p id="bb-settings-subtitle">Đang tải tham số hiện tại từ thiết bị.</p>
+        </div>
+        <button class="bb-icon-btn" id="bb-settings-close" type="button" aria-label="Đóng">×</button>
+      </div>
+      <div class="bb-modal-body">
+        <section class="bb-section">
+          <div class="bb-section-title"><strong>Thông tin quản lý</strong><span class="bb-small-chip" id="bb-settings-code">------</span></div>
+          <form id="bb-contract-form" class="bb-section">
+            <div class="bb-form-grid">
+              <div class="bb-field"><label for="settings-display-name">Tên hiển thị</label><input class="bb-input" id="settings-display-name" name="display_name" required /></div>
+              <div class="bb-field"><label for="settings-customer">Khách hàng</label><input class="bb-input" id="settings-customer" name="customer_name" /></div>
+              <div class="bb-field"><label for="settings-site">Vị trí</label><input class="bb-input" id="settings-site" name="site_name" /></div>
+              <div class="bb-field"><label for="settings-lease">Ngày hết hạn</label><input class="bb-input" id="settings-lease" name="lease_expires_at" type="date" /></div>
+              <div class="bb-field"><label for="settings-purchased">Phút đã mua</label><input class="bb-input" id="settings-purchased" name="purchased_minutes" inputmode="numeric" /></div>
+              <div class="bb-field"><label for="settings-burned">Phút đã đốt</label><input class="bb-input" id="settings-burned" name="burned_minutes_current" inputmode="numeric" /></div>
+              <div class="bb-field"><label for="settings-status-field">Field trạng thái</label><input class="bb-input" id="settings-status-field" name="status_field" /></div>
+              <div class="bb-field"><label for="settings-temp-field">Field nhiệt độ</label><input class="bb-input" id="settings-temp-field" name="temperature_field" /></div>
+              <div class="bb-field bb-field-full"><label for="settings-notes">Ghi chú</label><textarea class="bb-textarea" id="settings-notes" name="notes"></textarea></div>
+            </div>
+            <div class="bb-form-actions">
+              <button class="bb-btn bb-btn-primary" type="submit">Lưu thông tin</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="bb-section">
+          <div class="bb-section-title"><strong>Tham số thiết bị</strong><span class="bb-small-chip" id="bb-settings-read-state">Chưa đọc</span></div>
+          <div class="bb-setting-grid" id="bb-settings-grid"></div>
+        </section>
+
+        <section class="bb-danger-zone">
+          <div>
+            <strong>Xóa lò</strong>
+            <div class="bb-muted">Lò sẽ được ẩn khỏi danh sách nhưng dữ liệu lịch sử vẫn giữ trong database.</div>
+          </div>
+          <div class="bb-form-actions">
+            <button class="bb-btn bb-btn-danger" id="bb-delete-burner" type="button">Xóa lò này</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="bb-modal" id="bb-chart-modal" aria-hidden="true">
+    <div class="bb-modal-card">
+      <div class="bb-modal-head">
+        <div>
+          <h2 id="bb-chart-title">Nhiệt độ chi tiết</h2>
+          <p id="bb-chart-subtitle">5 giờ gần nhất</p>
+        </div>
+        <button class="bb-icon-btn" id="bb-chart-close" type="button" aria-label="Đóng">×</button>
+      </div>
+      <div class="bb-modal-body">
+        <div class="bb-chart-shell">
+          <svg class="bb-chart-svg" id="bb-chart-svg" viewBox="0 0 920 360" preserveAspectRatio="none" role="img" aria-label="Biểu đồ nhiệt độ"></svg>
+          <div class="bb-chart-empty" id="bb-chart-empty">Đang tải dữ liệu</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Chọn giao diện" aria-haspopup="true" aria-expanded="false">◐</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Tùy chọn giao diện">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui">Aurora UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat">Modern Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism">Neo Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid">Bento Grid</button>
+    </div>
+  </div>
+
+  <div class="bb-toast-stack" id="bb-toast-stack" aria-live="polite" aria-atomic="true"></div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script type="application/json" id="biomass-burner-config">
+    {
+      "title": "Quản lý lò đốt sinh khối",
+      "subtitle": "Theo dõi hợp đồng, phút đốt, nhiệt độ và cài đặt trực tiếp trên bộ điều khiển.",
+      "databaseSessionId": "<<sessionid>>",
+      "syncId": "<<syncid>>",
+      "pageSize": 50,
+      "telemetryRefreshMs": 30000,
+      "expirySoonDays": 30,
+      "co2KgPerBurnMinute": 2.77
+    }
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START -->
+  <script>
+    // Editable sample script slot for small per-template enhancements.
+  </script>
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+
+  <script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script src="/sample_dashboards/biomass-burner-management/dashboard-runtime.js?v=2026.05.24.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

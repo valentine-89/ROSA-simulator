@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trang thẻ cơ bản</title>
+  <link rel="stylesheet" href="../../dashboard-themes.css" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) {
+          document.documentElement.setAttribute("data-theme", savedTheme);
+        }
+      } catch (error) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/sample_dashboards/basic-cards-dashboard/dashboard.css" />
+</head>
+<body>
+
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="bc-page" id="basic-cards-root">
+    <section class="bc-topbar">
+      <div class="bc-topbar-title">
+        <h1 id="basic-cards-title">Trang thẻ cơ bản</h1>
+        <p id="basic-cards-subtitle">Widget gọn, dựng hoàn toàn từ cấu hình</p>
+      </div>
+      <div class="bc-topbar-tools">
+        <div class="bc-chip" id="basic-cards-groups-chip">0 nhóm</div>
+        <div class="bc-chip" id="basic-cards-widgets-chip">0 thẻ</div>
+      </div>
+    </section>
+
+    <section class="bc-groups" id="basic-cards-groups"></section>
+  </main>
+
+  <div class="bc-toast-stack" id="basic-cards-toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Chọn giao diện" aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Tùy chọn giao diện">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism" role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism" role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk" role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento Grid</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script type="application/json" id="basic-cards-config">
+    {
+      "locale": "vi",
+      "title": "Trang thẻ cơ bản",
+      "subtitle": "Widget gọn, dựng hoàn toàn từ cấu hình",
+      "syncId": "<<syncid>>",
+      "groups": [
+        {
+          "title": "Thiết bị chính",
+          "sessionId": "<<sessionid>>",
+          "widgets": [
+            {
+              "type": "switch",
+              "label": "Bơm O2",
+              "stateField": "O2",
+              "commandOn": "D1O2",
+              "commandOff": "D2O2",
+              "tone": "success"
+            },
+			{
+              "type": "telemetry",
+              "label": "Nhiệt độ",
+              "field": "temperature",
+              "unit": "°C",
+              "digits": 1,
+              "tone": "danger"
+            },
+            {
+              "type": "command",
+              "label": "Nháy LED N5",
+              "command": "N5",
+              "buttonLabel": "Chạy",
+              "tone": "primary"
+            },
+            {
+              "type": "input",
+              "label": "Góc động cơ",
+              "input": {
+                "key": "value",
+                "valueType": "number",
+                "field": "O2"
+              },
+              "submitCommand": "D1O2'{value}'",
+              "buttonLabel": "Gửi",
+              "tone": "info"
+            },
+            {
+              "type": "dual-input",
+              "label": "Dải nhiệt độ",
+              "field": "#1010",
+              "inputs": [
+                { "key": "low", "label": "Thấp", "valueType": "number" },
+                { "key": "high", "label": "Cao", "valueType": "number" }
+              ],
+              "submitCommand": "#1010={low},{high}",
+              "buttonLabel": "Lưu",
+              "tone": "danger"
+            },
+            {
+              "type": "line-chart",
+              "label": "Biểu đồ nhiệt độ",
+              "field": "temperature",
+              "unit": "°C",
+              "digits": 1,
+              "range": "24h",
+              "yDeltaMin": 10,
+              "tone": "warning"
+            }
+          ]
+        }
+      ]
+    }
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START -->
+  <script>
+    // Editable sample script slot for small per-template enhancements.
+  </script>
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+
+  <script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script src="/sample_dashboards/basic-cards-dashboard/dashboard-runtime.js"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

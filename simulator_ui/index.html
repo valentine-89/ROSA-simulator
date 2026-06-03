@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ROSA-simulator</title>
+  <link rel="stylesheet" href="/simulator/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>ROSA-simulator</h1>
+      <p>Local-only development environment for ROSA sample templates.</p>
+    </div>
+    <div class="context-pill" id="context-pill">Loading...</div>
+  </header>
+
+  <main class="workspace">
+    <aside class="sidebar">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Template</h2>
+          <button type="button" id="refresh-manifest" class="icon-button" data-icon="refresh" title="Reload templates" aria-label="Reload templates">Reload</button>
+        </div>
+        <label class="field">
+          <span>Template</span>
+          <select id="template-select"></select>
+        </label>
+        <label class="field">
+          <span>Variant</span>
+          <select id="locale-select"></select>
+        </label>
+        <div class="button-row compact-actions">
+          <button type="button" id="load-template" class="icon-button" data-icon="preview" title="Preview" aria-label="Preview">Preview</button>
+          <button type="button" id="open-setup" class="icon-button" data-icon="settings" title="Setup GUI" aria-label="Setup GUI">Setup GUI</button>
+          <button type="button" id="load-database" class="icon-button" data-icon="database" title="Load sample database" aria-label="Load sample database">Load sample DB</button>
+          <button type="button" id="clear-databases" class="icon-button" data-icon="trash" title="Clear simulated databases" aria-label="Clear simulated databases">Clear DB</button>
+        </div>
+        <div class="status" id="template-status">No template selected.</div>
+      </section>
+
+      <section class="panel" id="macro-panel">
+        <h2>Macro runner</h2>
+        <label class="field" id="macro-example-field" hidden>
+          <span>Example</span>
+          <select id="macro-example"></select>
+        </label>
+        <label class="field">
+          <span>Macro payload JSON</span>
+          <textarea id="macro-payload" rows="6">{"macro":"irrigation-control-history","limit":20}</textarea>
+        </label>
+        <div class="field macro-gateway-field" id="macro-gateway-field" hidden>
+          <span>Gateway command</span>
+          <div class="copy-row">
+            <pre class="gateway-command" id="macro-gateway-command"></pre>
+            <button type="button" id="copy-macro-gateway" class="icon-button" data-icon="copy" title="Copy gateway command" aria-label="Copy gateway command">Copy</button>
+          </div>
+        </div>
+        <button type="button" id="run-macro" class="icon-button" data-icon="play" title="Run macro" aria-label="Run macro">Run macro</button>
+        <pre class="result" id="macro-result"></pre>
+      </section>
+    </aside>
+
+    <section class="preview-column">
+      <div class="preview-toolbar">
+        <strong id="preview-title">Preview</strong>
+        <span id="preview-state">Waiting</span>
+      </div>
+      <iframe id="dashboard-frame" title="Dashboard preview"></iframe>
+    </section>
+
+    <aside class="tools">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Telemetry / timeseries</h2>
+          <div class="panel-actions">
+            <button type="button" id="add-generator" class="icon-button" data-icon="plus" title="Add telemetry generator" aria-label="Add telemetry generator">Add</button>
+            <button type="button" id="refresh-generators" class="icon-button" data-icon="refresh" title="Refresh generators" aria-label="Refresh generators">Refresh</button>
+            <button type="button" id="clear-generators" class="icon-button" data-icon="trash" title="Clear telemetry and timeseries" aria-label="Clear telemetry and timeseries">Clear</button>
+          </div>
+        </div>
+        <div id="generator-list" class="generator-list"></div>
+        <div class="default-fields" id="default-fields-panel">
+          <div class="sub-panel-head">
+            <h3>Default fields</h3>
+            <div class="panel-actions">
+              <button type="button" id="add-default-fields" class="icon-button" data-icon="check" title="Add all default fields" aria-label="Add all default fields">Add all</button>
+              <button type="button" id="refresh-default-fields" class="icon-button" data-icon="refresh" title="Refresh default fields" aria-label="Refresh default fields">Refresh defaults</button>
+            </div>
+          </div>
+          <div id="default-field-list" class="default-field-list"></div>
+        </div>
+        <form id="generator-form" class="generator-form" hidden>
+          <input type="hidden" id="generator-id">
+          <label class="field">
+            <span>DeviceId</span>
+            <input id="generator-session" placeholder="IO123abcd@simulate">
+          </label>
+          <label class="field">
+            <span>Field</span>
+            <input id="generator-field" placeholder="temperature">
+          </label>
+          <label class="field">
+            <span>Kind</span>
+            <select id="generator-kind">
+              <option value="timeseries">Timeseries number</option>
+              <option value="number">Telemetry number</option>
+              <option value="text">Text</option>
+              <option value="onoff">ON/OFF</option>
+            </select>
+          </label>
+          <label class="field" id="generator-value-field">
+            <span>Value / text</span>
+            <input id="generator-value" placeholder="text@tech:ROSA simulator">
+          </label>
+          <div class="grid-2" id="generator-range-fields">
+            <label class="field"><span>Min</span><input id="generator-min" type="number" step="any" value="20"></label>
+            <label class="field"><span>Max</span><input id="generator-max" type="number" step="any" value="35"></label>
+          </div>
+          <label class="field"><span>Interval ms</span><input id="generator-interval" type="number" min="250" value="1000"></label>
+          <label class="check"><input id="generator-enabled" type="checkbox" checked> Auto run</label>
+          <div class="button-row compact-actions">
+            <button type="submit" class="icon-button" data-icon="save" title="Save generator" aria-label="Save generator">Save</button>
+            <button type="button" id="generator-reset" class="icon-button" data-icon="close" title="Cancel" aria-label="Cancel">Cancel</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Command log</h2>
+          <div class="panel-actions">
+            <button type="button" id="refresh-commands" class="icon-button" data-icon="refresh" title="Refresh command log" aria-label="Refresh command log">Refresh</button>
+            <button type="button" id="clear-commands" class="icon-button" data-icon="trash" title="Clear command log" aria-label="Clear command log">Clear</button>
+          </div>
+        </div>
+        <div id="command-log" class="command-log"></div>
+      </section>
+    </aside>
+  </main>
+
+  <dialog id="setup-dialog">
+    <div class="dialog-head">
+      <strong>Setup GUI</strong>
+      <button type="button" id="close-setup" class="icon-button" data-icon="close" title="Close" aria-label="Close">Close</button>
+    </div>
+    <iframe id="setup-frame" title="Template setup"></iframe>
+    <div class="dialog-actions">
+      <button type="button" id="save-setup" class="icon-button" data-icon="save" title="Apply setup config" aria-label="Apply setup config">Apply setup config</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="/simulator/app.js"></script>
+</body>
+</html>

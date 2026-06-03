@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giám sát sản xuất nhà máy</title>
+  <link rel="stylesheet" href="../../dashboard-themes.css" />
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem("sample-dashboard-theme");
+        if (theme) {
+          document.documentElement.setAttribute("data-theme", theme);
+        }
+      } catch (error) {}
+    })();
+  </script>
+  <style>
+    :root { color-scheme: light dark; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--theme-bg); color: var(--theme-text); font-family: "Segoe UI Variable Text", "Segoe UI", Tahoma, Geneva, Verdana, Arial, sans-serif; overflow-x: hidden; }
+    body { padding: 18px; }
+    button, input, select { font: inherit; }
+    .shell { width: min(1480px, 100%); max-width: 100%; margin: 0 auto; display: grid; gap: 18px; }
+    .card, .hero, .toast, .modal-card { min-width: 0; max-width: 100%; background: var(--theme-card); border: var(--theme-border); box-shadow: var(--theme-shadow); border-radius: min(var(--theme-radius), 28px); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+    .hero { display: flex; justify-content: space-between; gap: 16px; padding: 22px 24px; }
+    .hero h1 { margin: 0; font-size: clamp(1.7rem, 3vw, 2.6rem); letter-spacing: -0.05em; }
+    .hero p { margin: 10px 0 0; color: color-mix(in srgb, var(--theme-text) 68%, transparent); line-height: 1.5; }
+    .tools { display: flex; gap: 12px; align-items: flex-start; justify-content: flex-end; flex-wrap: wrap; }
+    .pill, .ctl, .btn { border-radius: 999px; border: var(--theme-border); box-shadow: var(--theme-shadow); background: var(--theme-btn-bg); color: var(--theme-btn-text); }
+    .pill { display: inline-flex; align-items: center; gap: 10px; padding: 12px 16px; font-size: 0.88rem; font-weight: 800; background: color-mix(in srgb, var(--theme-primary) 12%, transparent); }
+    .pill::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.16); }
+    .pill[data-state="loading"]::before { background: #f59e0b; box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.14); }
+    .pill[data-state="error"]::before { background: #ef4444; box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.16); }
+    .ctl, .btn { padding: 11px 16px; }
+    .ctl { padding-right: 38px; background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%); background-position: calc(100% - 18px) calc(50% - 2px), calc(100% - 12px) calc(50% - 2px); background-size: 6px 6px, 6px 6px; background-repeat: no-repeat; }
+    .btn.primary { background: var(--theme-primary); color: #fff; border-color: transparent; font-weight: 800; }
+    .grid-kpi, .machine-list { display: grid; gap: 16px; }
+    .grid-kpi { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .card { padding: 18px; }
+    .kpi-title { font-size: 0.9rem; color: color-mix(in srgb, var(--theme-text) 72%, transparent); font-weight: 700; }
+    .kpi-value { margin-top: 12px; font-size: clamp(2rem, 3vw, 3.2rem); font-weight: 900; letter-spacing: -0.05em; line-height: 1; }
+    .kpi-note { margin-top: 10px; font-size: 0.82rem; color: color-mix(in srgb, var(--theme-text) 64%, transparent); }
+    .section-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 14px; }
+    .section-head strong { font-size: 1rem; letter-spacing: -0.03em; }
+    .machine-list { width: 100%; max-width: 100%; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); }
+    .machine-card { min-width: 0; max-width: 100%; padding: 18px; display: grid; gap: 16px; transition: border-color .16s ease, background .16s ease; }
+    .machine-card.is-warning { background: color-mix(in srgb, #ef4444 12%, var(--theme-card)); border-color: color-mix(in srgb, #ef4444 34%, transparent); }
+    .machine-top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+    .machine-title strong { display: block; font-size: 1.12rem; letter-spacing: -0.03em; }
+    .machine-title span { display: block; margin-top: 6px; color: color-mix(in srgb, var(--theme-text) 68%, transparent); font-size: 0.84rem; }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .legend-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: color-mix(in srgb, var(--theme-primary) 7%, transparent); border: 1px solid color-mix(in srgb, var(--theme-text) 8%, transparent); color: color-mix(in srgb, var(--theme-text) 84%, transparent); font-size: 0.8rem; font-weight: 800; }
+    .legend-chip em { font-style: normal; color: color-mix(in srgb, var(--theme-text) 62%, transparent); font-weight: 700; }
+    .swatch { width: 12px; height: 12px; border-radius: 999px; flex: 0 0 auto; }
+    .swatch.output { background: var(--theme-series-2); }
+    .swatch.efficiency { background: var(--theme-series-5); }
+    .swatch.material { background: var(--theme-series-3); }
+    .trend-shell { min-width: 0; width: 100%; max-width: 100%; position: relative; padding: 12px; border-radius: 22px; background: color-mix(in srgb, var(--theme-primary) 5%, transparent); border: 1px solid color-mix(in srgb, var(--theme-text) 8%, transparent); overflow: hidden; }
+    .trend-shell.is-warning { background: color-mix(in srgb, #ef4444 10%, transparent); border-color: color-mix(in srgb, #ef4444 28%, transparent); }
+    .trend-svg { display: block; width: 100%; height: auto; }
+    .trend-grid { stroke: color-mix(in srgb, var(--theme-text) 12%, transparent); stroke-width: 1; }
+    .trend-axis { stroke: color-mix(in srgb, var(--theme-text) 18%, transparent); stroke-width: 1; }
+    .trend-label { fill: color-mix(in srgb, var(--theme-text) 72%, transparent); font-size: 11px; font-weight: 800; }
+    .trend-pane-title { fill: color-mix(in srgb, var(--theme-text) 88%, transparent); font-size: 11px; font-weight: 900; }
+    .trend-bar { fill: var(--theme-series-2); opacity: 0.82; }
+    .trend-line { fill: none; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+    .trend-line.efficiency { stroke: var(--theme-series-5); }
+    .trend-line.material { stroke: var(--theme-series-3); }
+    .trend-area { fill: color-mix(in srgb, var(--theme-series-3) 18%, transparent); stroke: none; }
+    .trend-hover-line { stroke: color-mix(in srgb, var(--theme-text) 22%, transparent); stroke-width: 2; opacity: 0; }
+    .trend-dot { opacity: 0; stroke: var(--theme-card); stroke-width: 3; }
+    .trend-dot.efficiency { fill: var(--theme-series-5); }
+    .trend-dot.material { fill: var(--theme-series-3); }
+    .trend-hitbox { fill: transparent; cursor: crosshair; }
+    .tooltip { position: absolute; left: 12px; top: 12px; min-width: 210px; padding: 10px 12px; border-radius: min(var(--theme-radius), 18px); background: color-mix(in srgb, var(--theme-card) 96%, transparent); border: var(--theme-border); box-shadow: var(--theme-shadow); opacity: 0; pointer-events: none; transform: translate3d(0, 8px, 0); transition: opacity 0.14s ease, transform 0.14s ease; font-size: 0.8rem; line-height: 1.5; }
+    .tooltip strong { display: block; margin-bottom: 6px; }
+    .meta { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); font-size: 0.84rem; color: color-mix(in srgb, var(--theme-text) 72%, transparent); }
+    .meta b { color: var(--theme-text); }
+    .warn-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(239, 68, 68, 0.14); color: #b91c1c; border: 1px solid rgba(239, 68, 68, 0.28); font-size: 0.76rem; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }
+    .warn-chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+    .overview-tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .table-wrap { width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--theme-text) 8%, transparent); }
+    table { width: 100%; border-collapse: collapse; min-width: 1320px; }
+    th, td { padding: 12px 14px; text-align: left; font-size: 0.86rem; white-space: nowrap; }
+    thead th { position: sticky; top: 0; z-index: 1; background: color-mix(in srgb, var(--theme-card) 94%, transparent); font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: color-mix(in srgb, var(--theme-text) 74%, transparent); }
+    tbody tr + tr td { border-top: 1px solid color-mix(in srgb, var(--theme-text) 8%, transparent); }
+    tbody tr.warn-row td { background: color-mix(in srgb, #ef4444 8%, transparent); }
+    .pager { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .pager-info { font-size: 0.84rem; color: color-mix(in srgb, var(--theme-text) 68%, transparent); font-weight: 800; }
+    .empty { padding: 26px; border-radius: 22px; text-align: center; color: color-mix(in srgb, var(--theme-text) 66%, transparent); border: 1px dashed color-mix(in srgb, var(--theme-text) 18%, transparent); }
+    .modal { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; padding: 18px; background: rgba(12, 18, 28, 0.48); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    .modal.is-open { display: flex; }
+    .modal-card { width: min(100%, 640px); padding: 22px; display: grid; gap: 18px; }
+    .modal-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .modal-head h2 { margin: 0; font-size: 1.3rem; letter-spacing: -0.04em; }
+    .icon-btn { width: 40px; height: 40px; border-radius: 999px; border: var(--theme-border); background: var(--theme-btn-bg); color: var(--theme-btn-text); box-shadow: var(--theme-shadow); cursor: pointer; }
+    .form { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .field { display: grid; gap: 8px; }
+    .field span { font-size: 0.84rem; font-weight: 800; }
+    .field input { width: 100%; padding: 12px 14px; border-radius: 18px; border: var(--theme-border); background: var(--theme-btn-bg); color: var(--theme-btn-text); box-shadow: var(--theme-shadow); outline: none; }
+    .field input[readonly] { opacity: 0.82; cursor: default; }
+    .actions { display: flex; justify-content: flex-end; gap: 12px; }
+    .toast-stack { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 70; display: flex; flex-direction: column; gap: 10px; width: min(calc(100vw - 28px), 380px); pointer-events: none; }
+    .toast { padding: 12px 14px; font-size: 0.9rem; font-weight: 800; }
+    .toast.success { border-bottom: 4px solid #10b981; }
+    .toast.error { border-bottom: 4px solid #f43f5e; }
+    @media (max-width: 900px) {
+      .hero { flex-direction: column; }
+      .tools { justify-content: flex-start; }
+      .form, .meta { grid-template-columns: 1fr; }
+      .overview-tools, .pager { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <h1 id="hero-title">Giám sát sản xuất nhà máy</h1>
+        <p id="hero-description">Theo dõi sản lượng và hiệu suất điện cho dây chuyền ép nhựa.</p>
+      </div>
+      <div class="tools">
+        <select id="range" class="ctl">
+          <option value="24h">24 giờ cuối</option>
+          <option value="3d" selected>3 ngày cuối</option>
+          <option value="7d">7 ngày cuối</option>
+          <option value="30d">30 ngày cuối</option>
+        </select>
+        <button id="refresh" type="button" class="btn">Làm mới</button>
+        <div id="status" class="pill" data-state="loading">Đang tải</div>
+      </div>
+    </section>
+    <section class="grid-kpi">
+      <article class="card"><div class="kpi-title">Tổng sản phẩm</div><div class="kpi-value" id="kpi-units">--</div><div class="kpi-note">Thành phẩm trong khoảng đã chọn</div></article>
+      <article class="card"><div class="kpi-title">Tổng điện năng</div><div class="kpi-value" id="kpi-energy">--</div><div class="kpi-note">Điện năng tiêu thụ tích lũy</div></article>
+      <article class="card"><div class="kpi-title">Wh trên mỗi sản phẩm</div><div class="kpi-value" id="kpi-wh">--</div><div class="kpi-note">Điện năng trên mỗi thành phẩm toàn nhà máy</div></article>
+      <article class="card"><div class="kpi-title">Phiên đang hoạt động</div><div class="kpi-value" id="kpi-sessions">--</div><div class="kpi-note">Khai báo sản xuất có phát sinh hoạt động</div></article>
+    </section>
+    <section class="card">
+      <div class="section-head"><strong>Dòng thời gian theo máy</strong></div>
+      <div id="machine-list" class="machine-list"></div>
+    </section>
+    <section class="card">
+      <div class="section-head">
+        <strong>Tổng quan sản xuất</strong>
+        <div class="overview-tools">
+          <button id="overview-export" type="button" class="btn">Xuất CSV</button>
+        </div>
+      </div>
+      <div id="overview-table" class="table-wrap"></div>
+      <div class="pager">
+        <button id="overview-prev" type="button" class="btn">Trước</button>
+        <div id="overview-page-info" class="pager-info">Trang 1 / 1</div>
+        <button id="overview-next" type="button" class="btn">Sau</button>
+      </div>
+    </section>
+  </main>
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-toggle" aria-label="Chọn giao diện" aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-menu" role="menu">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui">Aurora UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat">Modern Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism">Neo Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid">Bento Grid</button>
+    </div>
+  </div>
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div><h2 id="modal-title">Sửa khai báo</h2></div>
+        <button id="modal-close" type="button" class="icon-btn" aria-label="Đóng hộp thoại">&times;</button>
+      </div>
+      <form id="form">
+        <div class="form">
+          <label class="field"><span>Mã máy</span><input name="machine_code" required readonly /></label>
+          <label class="field"><span>Mã phiên</span><input name="session_code" required readonly /></label>
+          <label class="field"><span>Mã đơn hàng</span><input name="order_id" required readonly /></label>
+          <label class="field"><span>Mã khuôn</span><input name="mold_code" required readonly /></label>
+          <label class="field"><span>Mã lô</span><input name="lot_code" required readonly /></label>
+          <label class="field"><span>Nhân sự</span><input name="staff" required readonly /></label>
+          <label class="field"><span>Số lượng yêu cầu</span><input name="required_quantity" inputmode="numeric" required /></label>
+          <label class="field"><span>Khối lượng định mức (g/sp)</span><input name="rated_weight" inputmode="decimal" required /></label>
+          <label class="field" style="grid-column:1 / -1;"><span>Nguyên liệu còn lại (g)</span><input name="raw_materials" inputmode="decimal" required /></label>
+        </div>
+        <div class="actions">
+          <button id="modal-cancel" type="button" class="btn">Hủy</button>
+          <button id="modal-submit" type="submit" class="btn primary">Lưu khai báo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script id="factory-config" type="application/json">{"sessionId":"<<sessionid>>","syncId":"<<syncid>>","factoryId":"","title":"Giám sát sản xuất nhà máy","description":"Theo dõi sản lượng và hiệu suất điện cho dây chuyền ép nhựa.","refreshMs":30000}</script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script>
+    (function () {
+      var cfg = { sessionId: "", syncId: "", factoryId: "", refreshMs: 30000, title: "", description: "" };
+      try { cfg = JSON.parse(document.getElementById("factory-config").textContent || "{}"); } catch (error) {}
+      var params = new URLSearchParams(location.search);
+      var sessionId = String(params.get("sessionId") || params.get("sessionid") || cfg.sessionId || "").trim();
+      var syncId = String(params.get("syncId") || params.get("syncid") || cfg.syncId || "").trim();
+      var factoryId = String(cfg.factoryId || (sessionId.split("@")[0] || "")).trim();
+      var refreshMs = Math.max(10000, Number(cfg.refreshMs || 30000));
+      var state = { busy: false, timer: null, row: null, overviewPage: 1, overviewPageSize: 20, overviewTotalRows: 0 };
+      var heroTitle = document.getElementById("hero-title");
+      var heroDescription = document.getElementById("hero-description");
+      var range = document.getElementById("range");
+      var refresh = document.getElementById("refresh");
+      var status = document.getElementById("status");
+      var machineList = document.getElementById("machine-list");
+      var overviewTable = document.getElementById("overview-table");
+      var overviewPrev = document.getElementById("overview-prev");
+      var overviewNext = document.getElementById("overview-next");
+      var overviewPageInfo = document.getElementById("overview-page-info");
+      var overviewExport = document.getElementById("overview-export");
+      var toastStack = document.getElementById("toast-stack");
+      var modal = document.getElementById("modal");
+      var form = document.getElementById("form");
+      var modalSubmit = document.getElementById("modal-submit");
+      var themePicker = document.getElementById("theme-picker");
+      var themeToggle = document.getElementById("theme-toggle");
+      var themeMenu = document.getElementById("theme-menu");
+      heroTitle.textContent = String(cfg.title || heroTitle.textContent || "").trim() || "Giám sát sản xuất nhà máy";
+      heroDescription.textContent = String(cfg.description || heroDescription.textContent || "").trim() || "Theo dõi sản lượng và hiệu suất điện cho dây chuyền ép nhựa.";
+      function esc(value) { return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;"); }
+      function num(value, digits) { var parsed = Number(value); if (!Number.isFinite(parsed)) return "--"; return parsed.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits }); }
+      function unit(value, digits, suffix) { var formatted = num(value, digits); return formatted === "--" ? formatted : formatted + suffix; }
+      function toast(message, type) { var node = document.createElement("div"); node.className = "toast " + (type === "error" ? "error" : "success"); node.textContent = String(message || "").trim(); toastStack.appendChild(node); setTimeout(function () { node.remove(); }, 3600); }
+      function setStatus(text, mode) { status.textContent = text; status.setAttribute("data-state", mode || "live"); }
+      function ioDataUrl() { return sessionId && syncId ? "/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(syncId) + "/iodata" : ""; }
+      function bucketMinutesForRange() { return range.value === "7d" || range.value === "30d" ? 60 : 15; }
+      function bucketLabel(minutes) { return minutes >= 60 ? "1 hour" : String(minutes) + " mins"; }
+      function alignDateToBucket(date, minutes) { var copy = new Date(date.getTime()); copy.setSeconds(0, 0); copy.setMinutes(copy.getMinutes() - (copy.getMinutes() % minutes)); return copy; }
+      function formatSqlDateTime(date) { return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0") + " " + String(date.getHours()).padStart(2, "0") + ":" + String(date.getMinutes()).padStart(2, "0") + ":" + String(date.getSeconds()).padStart(2, "0"); }
+      function parseSqlDateTime(value) {
+        var text = String(value || '').trim();
+        if (!text) return null;
+        var match = text.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/);
+        if (!match) {
+          var parsed = new Date(text);
+          return Number.isFinite(parsed.getTime()) ? parsed : null;
+        }
+        return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5]), Number(match[6] || 0), 0);
+      }
+      function sqlLatestWindow(anchorValue) {
+        var minutes = bucketMinutesForRange();
+        var anchorDate = parseSqlDateTime(anchorValue) || new Date();
+        var end = alignDateToBucket(anchorDate, minutes);
+        var start = new Date(end.getTime());
+        if (range.value === "24h") start.setDate(start.getDate() - 1);
+        else if (range.value === "7d") start.setDate(start.getDate() - 7);
+        else if (range.value === "30d") start.setDate(start.getDate() - 30);
+        else start.setDate(start.getDate() - 3);
+        start = alignDateToBucket(start, minutes);
+        return { factory_id: factoryId, start_time: formatSqlDateTime(start), end_time: formatSqlDateTime(end), bucket_minutes: minutes, bucket_label: bucketLabel(minutes), latest_time: formatSqlDateTime(end) };
+      }
+      function resolveLatestQuery() {
+        return post(ioDataUrl(), { macro: "factory-latest-update-time", factory_id: factoryId }).then(function (rows) {
+          var latest = rows && rows[0] ? String(rows[0].latest_update_time || '').trim() : '';
+          state.latestDataTime = latest;
+          return sqlLatestWindow(latest);
+        }).catch(function () {
+          state.latestDataTime = '';
+          return sqlLatestWindow('');
+        });
+      }
+      function post(url, payload) {
+        return fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).then(function (response) {
+          return response.json().then(function (data) {
+            if (!response.ok) throw new Error(data && data.error ? data.error : "Yêu cầu thất bại.");
+            return Array.isArray(data) ? data : [];
+          });
+        });
+      }
+      function setKpi(id, value) { var node = document.getElementById(id); if (node) node.textContent = value; }
+      function csvCell(value) {
+        var text = String(value == null ? "" : value);
+        return '"' + text.replace(/"/g, '""') + '"';
+      }
+      function remainingPercent(value) {
+        var parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+      function openModal(row) {
+        state.row = row || null;
+        if (!state.row) return;
+        document.getElementById("modal-title").textContent = "Sửa khai báo | " + String(row.machine_code || "--");
+        ["machine_code", "session_code", "order_id", "mold_code", "lot_code", "staff", "required_quantity", "rated_weight", "raw_materials"].forEach(function (name) {
+          var input = form.elements[name];
+          if (!input) return;
+          var value = row[name] == null ? "" : String(row[name]);
+          input.value = value;
+          input.placeholder = value;
+        });
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+      }
+      function closeModal() {
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        state.row = null;
+      }
+      function buildSeriesMap(rows) {
+        var grouped = {};
+        (rows || []).forEach(function (row) {
+          var key = String(row.machine_code || "").trim();
+          if (!key) return;
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(row);
+        });
+        Object.keys(grouped).forEach(function (key) {
+          grouped[key].sort(function (left, right) {
+            return new Date(left.bucket_time).getTime() - new Date(right.bucket_time).getTime();
+          });
+        });
+        return grouped;
+      }
+      function buildLinePath(points, accessor, left, width, paneTop, paneHeight, min, max) {
+        var path = "";
+        for (var index = 0; index < points.length; index += 1) {
+          var raw = accessor(points[index]);
+          if (!Number.isFinite(raw)) continue;
+          var x = left + (points.length <= 1 ? 0 : (index / (points.length - 1)) * width);
+          var y = paneTop + paneHeight - (((raw - min) / (max - min)) * paneHeight);
+          path += (path ? " L" : "M") + x.toFixed(2) + " " + y.toFixed(2);
+        }
+        return path;
+      }
+      function buildAreaPath(points, accessor, left, width, paneTop, paneHeight, min, max) {
+        var line = buildLinePath(points, accessor, left, width, paneTop, paneHeight, min, max);
+        if (!line) return "";
+        var firstIndex = -1;
+        var lastIndex = -1;
+        for (var i = 0; i < points.length; i += 1) {
+          if (Number.isFinite(accessor(points[i]))) {
+            if (firstIndex === -1) firstIndex = i;
+            lastIndex = i;
+          }
+        }
+        if (firstIndex === -1 || lastIndex === -1) return "";
+        var firstX = left + (points.length <= 1 ? 0 : (firstIndex / (points.length - 1)) * width);
+        var lastX = left + (points.length <= 1 ? 0 : (lastIndex / (points.length - 1)) * width);
+        var baseY = paneTop + paneHeight;
+        return line + " L" + lastX.toFixed(2) + " " + baseY.toFixed(2) + " L" + firstX.toFixed(2) + " " + baseY.toFixed(2) + " Z";
+      }
+      function metricMax(points, accessor) {
+        var max = 0;
+        for (var index = 0; index < points.length; index += 1) {
+          var value = Number(accessor(points[index]));
+          if (Number.isFinite(value) && value > max) max = value;
+        }
+        return max > 0 ? max : 1;
+      }
+      function formatBucketTime(value) { return String(value || "").replace(" ", " | "); }
+      function renderMachineTrend(points, label) {
+        if (!points || points.length <= 1) {
+          return '<svg class="trend-svg" viewBox="0 0 860 320"><path class="trend-axis" d="M68 152 H800"></path></svg><div class="empty">Không đủ mẫu cho máy này trong khoảng thời gian đã chọn.</div>';
+        }
+        var rows = points.slice();
+        var left = 68;
+        var right = 48;
+        var top = 18;
+        var width = 860 - left - right;
+        var paneHeight = 72;
+        var paneGap = 18;
+        var outputTop = top;
+        var efficiencyTop = outputTop + paneHeight + paneGap;
+        var materialTop = efficiencyTop + paneHeight + paneGap;
+        var outputMax = metricMax(rows, function (row) { return row.output_units; });
+        var efficiencyMax = metricMax(rows, function (row) { return row.wh_per_unit; });
+        var materialMax = metricMax(rows, function (row) { return row.remaining_material; });
+        var slotWidth = width / Math.max(rows.length, 1);
+        var barWidth = Math.max(2, Math.min(14, slotWidth * 0.72));
+        var bars = "";
+        var dotsEfficiency = "";
+        var dotsMaterial = "";
+        var grid = "";
+        for (var lineIndex = 0; lineIndex <= 3; lineIndex += 1) {
+          var outputY = outputTop + (paneHeight / 3) * lineIndex;
+          var efficiencyY = efficiencyTop + (paneHeight / 3) * lineIndex;
+          var materialY = materialTop + (paneHeight / 3) * lineIndex;
+          grid += '<line class="trend-grid" x1="' + left + '" y1="' + outputY.toFixed(2) + '" x2="' + (left + width) + '" y2="' + outputY.toFixed(2) + '"></line>';
+          grid += '<line class="trend-grid" x1="' + left + '" y1="' + efficiencyY.toFixed(2) + '" x2="' + (left + width) + '" y2="' + efficiencyY.toFixed(2) + '"></line>';
+          grid += '<line class="trend-grid" x1="' + left + '" y1="' + materialY.toFixed(2) + '" x2="' + (left + width) + '" y2="' + materialY.toFixed(2) + '"></line>';
+        }
+        rows.forEach(function (row, index) {
+          var x = left + (rows.length <= 1 ? 0 : (index / (rows.length - 1)) * width);
+          var outputValue = Number(row.output_units || 0);
+          var barHeight = (outputValue / outputMax) * paneHeight;
+          var barY = outputTop + paneHeight - barHeight;
+          bars += '<rect class="trend-bar" x="' + (x - (barWidth / 2)).toFixed(2) + '" y="' + barY.toFixed(2) + '" width="' + barWidth.toFixed(2) + '" height="' + Math.max(barHeight, 1).toFixed(2) + '"></rect>';
+          var efficiencyValue = Number(row.wh_per_unit);
+          if (Number.isFinite(efficiencyValue)) {
+            var efficiencyY = efficiencyTop + paneHeight - ((efficiencyValue / efficiencyMax) * paneHeight);
+            dotsEfficiency += '<circle class="trend-dot efficiency" data-series="efficiency" data-index="' + index + '" cx="' + x.toFixed(2) + '" cy="' + efficiencyY.toFixed(2) + '" r="5"></circle>';
+          }
+          var materialValue = Number(row.remaining_material);
+          if (Number.isFinite(materialValue)) {
+            var materialY = materialTop + paneHeight - ((materialValue / materialMax) * paneHeight);
+            dotsMaterial += '<circle class="trend-dot material" data-series="material" data-index="' + index + '" cx="' + x.toFixed(2) + '" cy="' + materialY.toFixed(2) + '" r="5"></circle>';
+          }
+        });
+        var efficiencyPath = buildLinePath(rows, function (row) { return Number(row.wh_per_unit); }, left, width, efficiencyTop, paneHeight, 0, efficiencyMax);
+        var materialPath = buildLinePath(rows, function (row) { return Number(row.remaining_material); }, left, width, materialTop, paneHeight, 0, materialMax);
+        var materialArea = buildAreaPath(rows, function (row) { return Number(row.remaining_material); }, left, width, materialTop, paneHeight, 0, materialMax);
+        var firstLabel = rows[0].bucket_time.slice(5, 16);
+        var lastLabel = rows[rows.length - 1].bucket_time.slice(5, 16);
+        var overallBottom = materialTop + paneHeight;
+        return '<div class="tooltip"></div><svg class="trend-svg" viewBox="0 0 860 320"><g>' + grid + '</g><line class="trend-axis" x1="' + left + '" y1="' + outputTop + '" x2="' + left + '" y2="' + overallBottom + '"></line><line class="trend-axis" x1="' + left + '" y1="' + overallBottom + '" x2="' + (left + width) + '" y2="' + overallBottom + '"></line><text class="trend-pane-title" x="' + left + '" y="' + (outputTop - 6) + '">Sản lượng / ' + esc(label) + '</text><text class="trend-pane-title" x="' + left + '" y="' + (efficiencyTop - 6) + '">Wh / sản phẩm</text><text class="trend-pane-title" x="' + left + '" y="' + (materialTop - 6) + '">Nguyên liệu còn lại</text><text class="trend-label" x="6" y="' + (outputTop + 10) + '">' + esc(num(outputMax, 0)) + '</text><text class="trend-label" x="18" y="' + (outputTop + paneHeight) + '">0</text><text class="trend-label" x="6" y="' + (efficiencyTop + 10) + '">' + esc(num(efficiencyMax, 2)) + '</text><text class="trend-label" x="18" y="' + (efficiencyTop + paneHeight) + '">0</text><text class="trend-label" x="6" y="' + (materialTop + 10) + '">' + esc(num(materialMax, 0)) + ' g</text><text class="trend-label" x="18" y="' + (materialTop + paneHeight) + '">0</text><text class="trend-label" x="' + left + '" y="' + (overallBottom + 22) + '">' + esc(firstLabel) + '</text><text class="trend-label" x="' + (left + width) + '" y="' + (overallBottom + 22) + '" text-anchor="end">' + esc(lastLabel) + '</text><g>' + bars + '</g>' + (materialArea ? '<path class="trend-area" d="' + materialArea + '"></path>' : "") + (materialPath ? '<path class="trend-line material" d="' + materialPath + '"></path>' : "") + (efficiencyPath ? '<path class="trend-line efficiency" d="' + efficiencyPath + '"></path>' : "") + '<line class="trend-hover-line" x1="' + left + '" y1="' + outputTop + '" x2="' + left + '" y2="' + overallBottom + '"></line><g>' + dotsEfficiency + dotsMaterial + '</g><rect class="trend-hitbox" x="' + left + '" y="' + outputTop + '" width="' + width + '" height="' + (overallBottom - outputTop) + '"></rect></svg>';
+      }
+      function bindMachineTrend(host, points, label) {
+        host.innerHTML = renderMachineTrend(points, label);
+        var rows = (points || []).slice().sort(function (left, right) { return new Date(left.bucket_time).getTime() - new Date(right.bucket_time).getTime(); });
+        var tooltip = host.querySelector(".tooltip");
+        var hitbox = host.querySelector(".trend-hitbox");
+        var hoverLine = host.querySelector(".trend-hover-line");
+        var dots = host.querySelectorAll(".trend-dot");
+        if (!hitbox || rows.length <= 1) return;
+        hitbox.addEventListener("mousemove", function (event) {
+          var rect = hitbox.getBoundingClientRect();
+          var x = Math.min(Math.max(event.clientX - rect.left, 0), rect.width);
+          var index = Math.round((x / rect.width) * (rows.length - 1));
+          var row = rows[index];
+          var svgX = 68 + ((rows.length <= 1 ? 0 : index / (rows.length - 1)) * (860 - 68 - 48));
+          hoverLine.setAttribute("x1", svgX.toFixed(2));
+          hoverLine.setAttribute("x2", svgX.toFixed(2));
+          hoverLine.style.opacity = "1";
+          Array.prototype.forEach.call(dots, function (dot) { dot.style.opacity = Number(dot.getAttribute("data-index")) === index ? "1" : "0"; });
+          tooltip.innerHTML = "<strong>" + esc(formatBucketTime(row.bucket_time)) + "</strong><div>Sản lượng: " + esc(unit(row.output_units, 0, " sản phẩm")) + "</div><div>Wh / unit: " + esc(unit(row.wh_per_unit, 2, " Wh")) + "</div><div>Nguyên liệu còn lại: " + esc(unit(Math.round(Number(row.remaining_material || 0)), 0, " g")) + "</div>";
+          var hostRect = host.getBoundingClientRect();
+          var tooltipRect = tooltip.getBoundingClientRect();
+          var desiredLeft = (event.clientX - hostRect.left) + 14;
+          var desiredTop = (event.clientY - hostRect.top) + 14;
+          var maxLeft = Math.max(12, hostRect.width - tooltipRect.width - 12);
+          var maxTop = Math.max(12, hostRect.height - tooltipRect.height - 12);
+          tooltip.style.left = Math.min(Math.max(12, desiredLeft), maxLeft) + "px";
+          tooltip.style.top = Math.min(Math.max(12, desiredTop), maxTop) + "px";
+          tooltip.style.opacity = "1";
+          tooltip.style.transform = "translate3d(0,0,0)";
+        });
+        hitbox.addEventListener("mouseleave", function () {
+          hoverLine.style.opacity = "0";
+          Array.prototype.forEach.call(dots, function (dot) { dot.style.opacity = "0"; });
+          tooltip.style.opacity = "0";
+          tooltip.style.transform = "translate3d(0,8px,0)";
+        });
+      }
+      function renderOverviewTable(rows) {
+        if (!rows || !rows.length) {
+          overviewTable.innerHTML = '<div class="empty">Không có dòng tổng quan sản xuất trong khoảng thời gian này.</div>';
+          overviewPageInfo.textContent = 'Trang 1 / 1';
+          overviewPrev.disabled = true;
+          overviewNext.disabled = true;
+          return;
+        }
+        var totalRows = Number(rows[0].total_rows || 0);
+        var totalPages = Math.max(1, Math.ceil(totalRows / state.overviewPageSize));
+        overviewPageInfo.textContent = 'Trang ' + state.overviewPage + ' / ' + totalPages + ' · ' + num(totalRows, 0) + ' dòng';
+        overviewPrev.disabled = state.overviewPage <= 1;
+        overviewNext.disabled = state.overviewPage >= totalPages;
+        var html = '<table><thead><tr><th>Cập nhật</th><th>Máy</th><th>Đơn hàng</th><th>Khuôn</th><th>Lô</th><th>Nhân sự</th><th>Phiên</th><th>Số lượng</th><th>Lỗi</th><th>Yêu cầu</th><th>Khối lượng định mức</th><th>Còn lại</th><th>% còn lại</th><th>Tổng điện năng</th><th>Tổng thời gian</th><th>Wh/sp</th></tr></thead><tbody>';
+        rows.forEach(function (row) {
+          var warning = remainingPercent(row.remaining_percent) < 15;
+          html += '<tr' + (warning ? ' class="warn-row"' : '') + '><td>' + esc(row.update_time || '--') + '</td><td><strong>' + esc(row.machine_code || '--') + '</strong></td><td>' + esc(row.order_id || '--') + '</td><td>' + esc(row.mold_code || '--') + '</td><td>' + esc(row.lot_code || '--') + '</td><td>' + esc(row.staff || '--') + '</td><td>' + esc(row.session_code || '--') + '</td><td>' + esc(num(row.quantity, 0)) + '</td><td>' + esc(num(row.error_quantity, 0)) + '</td><td>' + esc(num(row.required_quantity, 0)) + '</td><td>' + esc(unit(row.rated_weight, 2, ' g')) + '</td><td>' + esc(unit(Math.round(Number(row.raw_materials || 0)), 0, ' g')) + '</td><td>' + esc(unit(row.remaining_percent, 0, '%')) + '</td><td>' + esc(unit(Number(row.total_energy_wh || 0) / 1000, 2, ' KWh')) + '</td><td>' + esc(unit(row.total_time_s, 0, ' s')) + '</td><td>' + esc(unit(row.wh_per_unit, 2, ' Wh')) + '</td></tr>';
+        });
+        overviewTable.innerHTML = html + '</tbody></table>';
+      }
+      function renderMachines(rows, seriesMap, label) {
+        if (!rows || !rows.length) {
+          machineList.innerHTML = '<div class="empty">Không có khai báo máy nào.</div>';
+          return;
+        }
+        machineList.innerHTML = rows.map(function (row, index) {
+          var warning = remainingPercent(row.remaining_percent) < 15;
+          return '<article class="card machine-card' + (warning ? ' is-warning' : '') + '"><div class="machine-top"><div class="machine-title"><strong>' + esc(row.machine_code || ("Máy " + (index + 1))) + '</strong><span>' + esc(row.order_id || "--") + ' | ' + esc(row.session_code || "--") + '</span></div><div style="display:grid;gap:10px;justify-items:end;"><button type="button" class="btn" data-edit="' + index + '">Sửa</button>' + (warning ? '<span class="warn-chip">Thiếu vật liệu</span>' : '') + '</div></div><div class="legend"><span class="legend-chip"><span class="swatch output"></span>Output <em>/ ' + esc(label) + '</em></span><span class="legend-chip"><span class="swatch efficiency"></span>Wh / sản phẩm</span><span class="legend-chip"><span class="swatch material"></span>Nguyên liệu còn lại</span></div><div class="trend-shell' + (warning ? ' is-warning' : '') + '" data-chart-index="' + index + '"></div><div class="meta"><div><b>Khuôn</b><br />' + esc(row.mold_code || "--") + '</div><div><b>Lô</b><br />' + esc(row.lot_code || "--") + '</div><div><b>Nhân sự</b><br />' + esc(row.staff || "--") + '</div><div><b>Yêu cầu</b><br />' + esc(num(row.required_quantity, 0)) + '</div><div><b>Khối lượng định mức</b><br />' + esc(unit(row.rated_weight, 2, " g")) + '</div><div><b>Tổng điện năng</b><br />' + esc(unit(Number(row.total_energy_wh || 0) / 1000, 2, " KWh")) + '</div></div></article>';
+        }).join("");
+        Array.prototype.forEach.call(machineList.querySelectorAll("[data-edit]"), function (button) {
+          button.addEventListener("click", function () { openModal(rows[Number(button.getAttribute("data-edit"))]); });
+        });
+        Array.prototype.forEach.call(machineList.querySelectorAll("[data-chart-index]"), function (host) {
+          var row = rows[Number(host.getAttribute("data-chart-index"))];
+          var points = seriesMap[String(row.machine_code || "").trim()] || [];
+          bindMachineTrend(host, points, label);
+        });
+      }
+      function setTheme(name) {
+        var value = String(name || "neumorphism").trim() || "neumorphism";
+        document.documentElement.setAttribute("data-theme", value);
+        try { localStorage.setItem("sample-dashboard-theme", value); } catch (error) {}
+        Array.prototype.forEach.call(themeMenu.querySelectorAll("[data-theme-option]"), function (button) {
+          var active = button.getAttribute("data-theme-option") === value;
+          button.classList.toggle("is-active", active);
+          button.setAttribute("aria-checked", active ? "true" : "false");
+        });
+      }
+      function openTheme() { themeMenu.classList.add("is-open"); themeToggle.setAttribute("aria-expanded", "true"); }
+      function closeTheme() { themeMenu.classList.remove("is-open"); themeToggle.setAttribute("aria-expanded", "false"); }
+      function exportOverviewCsv() {
+        if (!sessionId || !syncId || !factoryId) {
+          toast("Thiếu ngữ cảnh để xuất CSV.", "error");
+          return;
+        }
+        resolveLatestQuery().then(function (query) {
+          return post(ioDataUrl(), {
+            macro: "factory-production-overview",
+            factory_id: query.factory_id,
+            start_time: query.start_time,
+            end_time: query.end_time,
+            page_size: 100000,
+            offset: 0
+          }).then(function (rows) {
+            if (!rows || !rows.length) {
+              toast("Không có dòng tổng quan để xuất.", "error");
+              return;
+            }
+            var headers = ["update_time", "machine_code", "order_id", "mold_code", "lot_code", "staff", "session_code", "quantity", "error_quantity", "required_quantity", "rated_weight_g", "raw_materials_g", "remaining_percent", "total_energy_kwh", "total_time_s", "wh_per_unit"];
+            var lines = [headers.map(csvCell).join(",")];
+            rows.forEach(function (row) {
+              lines.push([
+                row.update_time,
+                row.machine_code,
+                row.order_id,
+                row.mold_code,
+                row.lot_code,
+                row.staff,
+                row.session_code,
+                row.quantity,
+                row.error_quantity,
+                row.required_quantity,
+                row.rated_weight,
+                Math.round(Number(row.raw_materials || 0)),
+                row.remaining_percent,
+                (Number(row.total_energy_wh || 0) / 1000).toFixed(2),
+                row.total_time_s,
+                row.wh_per_unit
+              ].map(csvCell).join(","));
+            });
+            var blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement("a");
+            link.href = url;
+            link.download = "factory-production-overview-" + query.start_time.slice(0, 10) + "-to-" + query.end_time.slice(0, 10) + ".csv";
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+            toast("Đã xuất CSV cho khoảng bám theo dữ liệu mới nhất.", "success");
+          });
+        }).catch(function (error) {
+          toast(error && error.message ? error.message : "Không thể xuất CSV.", "error");
+        });
+      }
+      function refreshAll() {
+        if (!sessionId || !syncId || !factoryId) {
+          setStatus("Thiếu ngữ cảnh", "error");
+          machineList.innerHTML = '<div class="empty">Mẫu này cần sessionId và syncId từ ngữ cảnh IoT đang hoạt động.</div>';
+          overviewTable.innerHTML = '<div class="empty">Tổng quan chưa khả dụng cho đến khi các placeholder context-aware được thay thế.</div>';
+          return;
+        }
+        if (state.busy) return;
+        state.busy = true;
+        setStatus("Đang tải", "loading");
+        var url = ioDataUrl();
+        resolveLatestQuery().then(function (query) {
+          return Promise.all([
+            post(url, { macro: "factory-kpis", factory_id: query.factory_id, start_time: query.start_time, end_time: query.end_time }),
+            post(url, { macro: "factory-machine-list", factory_id: query.factory_id }),
+            post(url, { macro: "factory-machine-series", factory_id: query.factory_id, start_time: query.start_time, end_time: query.end_time, bucket_minutes: query.bucket_minutes }),
+            post(url, { macro: "factory-production-overview", factory_id: query.factory_id, start_time: query.start_time, end_time: query.end_time, page_size: state.overviewPageSize, offset: (state.overviewPage - 1) * state.overviewPageSize })
+          ]).then(function (response) {
+            var kpi = response[0] && response[0][0] ? response[0][0] : {};
+            var machines = Array.isArray(response[1]) ? response[1] : [];
+            var series = Array.isArray(response[2]) ? response[2] : [];
+            var overviewRows = Array.isArray(response[3]) ? response[3] : [];
+            setKpi("kpi-units", num(kpi.total_units, 0));
+            setKpi("kpi-energy", unit(Number(kpi.total_energy_wh || 0) / 1000, 2, " KWh"));
+            setKpi("kpi-wh", unit(kpi.wh_per_unit, 2, " Wh"));
+            setKpi("kpi-sessions", num(kpi.active_sessions, 0));
+            renderMachines(machines, buildSeriesMap(series), query.bucket_label);
+            state.overviewTotalRows = overviewRows.length ? Number(overviewRows[0].total_rows || 0) : 0;
+            if (state.overviewPage > 1 && state.overviewTotalRows > 0) {
+              var totalPages = Math.max(1, Math.ceil(state.overviewTotalRows / state.overviewPageSize));
+              if (state.overviewPage > totalPages) {
+                state.overviewPage = totalPages;
+                state.busy = false;
+                refreshAll();
+                return;
+              }
+            }
+            renderOverviewTable(overviewRows);
+            setStatus("Đang hoạt động", "live");
+          });
+        }).catch(function (error) {
+          setStatus("Lỗi", "error");
+          toast(error && error.message ? error.message : "Không thể làm mới trang sản xuất.", "error");
+        }).finally(function () {
+          state.busy = false;
+        });
+      }
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        if (!sessionId || !syncId || !factoryId) {
+          toast("Thiếu ngữ cảnh để cập nhật khai báo.", "error");
+          return;
+        }
+        modalSubmit.disabled = true;
+        post(ioDataUrl(), {
+          macro: "factory-log-declare",
+          factory_id: factoryId,
+          update_time: new Date().toISOString().slice(0, 19).replace("T", " "),
+          machine_code: form.elements.machine_code.value.trim(),
+          session_code: form.elements.session_code.value.trim(),
+          order_id: form.elements.order_id.value.trim(),
+          mold_code: form.elements.mold_code.value.trim(),
+          lot_code: form.elements.lot_code.value.trim(),
+          staff: form.elements.staff.value.trim(),
+          required_quantity: form.elements.required_quantity.value.trim(),
+          rated_weight: form.elements.rated_weight.value.trim(),
+          raw_materials: form.elements.raw_materials.value.trim()
+        }).then(function () {
+          closeModal();
+          toast("Declaration updated.", "success");
+          refreshAll();
+        }).catch(function (error) {
+          toast(error && error.message ? error.message : "Không thể cập nhật khai báo.", "error");
+        }).finally(function () { modalSubmit.disabled = false; });
+      });
+      document.getElementById("modal-close").addEventListener("click", closeModal);
+      document.getElementById("modal-cancel").addEventListener("click", closeModal);
+      modal.addEventListener("click", function (event) { if (event.target === modal) closeModal(); });
+      refresh.addEventListener("click", refreshAll);
+      range.addEventListener("change", function () { state.overviewPage = 1; refreshAll(); });
+      overviewPrev.addEventListener("click", function () { if (state.overviewPage > 1 && !state.busy) { state.overviewPage -= 1; refreshAll(); } });
+      overviewNext.addEventListener("click", function () { var totalPages = Math.max(1, Math.ceil(state.overviewTotalRows / state.overviewPageSize)); if (state.overviewPage < totalPages && !state.busy) { state.overviewPage += 1; refreshAll(); } });
+      overviewExport.addEventListener("click", exportOverviewCsv);
+      themeToggle.addEventListener("click", function (event) {
+        event.stopPropagation();
+        if (themeMenu.classList.contains("is-open")) closeTheme();
+        else openTheme();
+      });
+      document.addEventListener("click", function (event) {
+        var option = event.target && typeof event.target.closest === "function" ? event.target.closest("[data-theme-option]") : null;
+        if (option) {
+          setTheme(option.getAttribute("data-theme-option"));
+          closeTheme();
+          return;
+        }
+        if (!themePicker.contains(event.target)) closeTheme();
+      });
+      setTheme(document.documentElement.getAttribute("data-theme") || "neumorphism");
+      refreshAll();
+      state.timer = setInterval(refreshAll, refreshMs);
+    })();
+  </script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

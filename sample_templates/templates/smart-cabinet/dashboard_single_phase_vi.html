@@ -1,0 +1,1312 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tủ điện thông minh - Bộ 1 pha</title>
+  <link rel="stylesheet" href="../../dashboard-themes.css" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+      } catch (error) {}
+    })();
+  </script>
+  <style>
+    :root { color-scheme: light dark; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--theme-bg);
+      color: var(--theme-text);
+      font-family: "Segoe UI Variable Text", "Segoe UI", Tahoma, Geneva, Verdana, Arial, sans-serif;
+    }
+    body { min-height: 100vh; padding: 18px; }
+    .page-shell { width: min(1400px, 100%); margin: 0 auto; display: grid; gap: 18px; }
+    .hero,
+    .cabinet-card,
+    .metric-card,
+    .env-card,
+    .switch-card {
+      background: var(--theme-card);
+      border: var(--theme-border);
+      box-shadow: var(--theme-shadow);
+      border-radius: min(var(--theme-radius), 28px);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 20px 22px;
+    }
+    .hero h1 { margin: 0; font-size: clamp(1.5rem, 3vw, 2.4rem); letter-spacing: -0.04em; }
+    .hero-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      background: color-mix(in srgb, var(--theme-primary) 14%, transparent);
+      white-space: nowrap;
+    }
+    .cabinet-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+    .cabinet-card { padding: 18px; display: grid; gap: 18px; min-width: 0; }
+    .cabinet-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .cabinet-title { min-width: 0; }
+    .cabinet-title h2 { margin: 0; font-size: 1.2rem; letter-spacing: -0.03em; }
+    .cabinet-title p { margin: 8px 0 0; color: color-mix(in srgb, var(--theme-text) 68%, transparent); font-size: 0.9rem; line-height: 1.45; word-break: break-word; }
+    .cabinet-toolbar {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .range-select {
+      appearance: none;
+      border: var(--theme-border);
+      background: var(--theme-btn-bg);
+      color: var(--theme-btn-text);
+      border-radius: 999px;
+      padding: 10px 36px 10px 14px;
+      min-width: 122px;
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 800;
+      box-shadow: var(--theme-shadow);
+      background-image:
+        linear-gradient(45deg, transparent 50%, currentColor 50%),
+        linear-gradient(135deg, currentColor 50%, transparent 50%);
+      background-position:
+        calc(100% - 18px) calc(50% - 2px),
+        calc(100% - 12px) calc(50% - 2px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+      cursor: pointer;
+    }
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 108px;
+      justify-content: center;
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      background: color-mix(in srgb, var(--theme-series-4) 16%, transparent);
+      color: var(--theme-text);
+    }
+    .live-pill::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: #f59e0b;
+      box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.14);
+    }
+    .live-pill[data-state="live"]::before { background: #22c55e; box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.16); }
+    .live-pill[data-state="error"]::before { background: #ef4444; box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.16); }
+    .switch-grid { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .switch-card { padding: 16px; display: grid; gap: 14px; min-width: 0; }
+    .switch-head { display: flex; align-items: center; justify-content: center; gap: 12px; }
+    .switch-label { font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; }
+    .switch-toggle {
+      position: relative;
+      min-height: 184px;
+      border-radius: 30px;
+      border: var(--theme-border);
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--theme-card) 76%, black 24%) 0%, color-mix(in srgb, var(--theme-card) 92%, transparent) 100%);
+      box-shadow:
+        inset 0 22px 28px color-mix(in srgb, black 20%, transparent),
+        inset 0 -14px 24px color-mix(in srgb, white 5%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--theme-text) 8%, transparent),
+        var(--theme-shadow);
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .switch-toggle::before {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, color-mix(in srgb, black 20%, transparent) 0%, color-mix(in srgb, black 6%, transparent) 36%, color-mix(in srgb, white 6%, transparent) 100%);
+      box-shadow:
+        inset 0 16px 18px color-mix(in srgb, black 16%, transparent),
+        inset 0 -10px 14px color-mix(in srgb, white 5%, transparent);
+      pointer-events: none;
+    }
+    .switch-toggle::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 52px;
+      height: calc(100% - 54px);
+      transform: translate(-50%, -50%);
+      border-radius: 999px;
+      background: linear-gradient(180deg, color-mix(in srgb, black 24%, transparent) 0%, color-mix(in srgb, white 4%, transparent) 100%);
+      box-shadow:
+        inset 0 14px 18px color-mix(in srgb, black 18%, transparent),
+        inset 0 -8px 14px color-mix(in srgb, white 4%, transparent);
+      opacity: 0.78;
+      pointer-events: none;
+    }
+    .switch-zone {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      appearance: none;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      z-index: 1;
+    }
+    .switch-zone[data-action="on"] { top: 0; padding-bottom: 88px; }
+    .switch-zone[data-action="off"] { bottom: 0; padding-top: 88px; }
+    .switch-zone[disabled] { cursor: wait; opacity: 0.54; }
+    .switch-lever {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      height: 78px;
+      top: 16px;
+      border-radius: 24px;
+      border: 1px solid color-mix(in srgb, var(--theme-text) 10%, transparent);
+      background:
+        linear-gradient(180deg, color-mix(in srgb, white 76%, var(--theme-card) 24%) 0%, color-mix(in srgb, var(--theme-card) 90%, transparent) 100%);
+      box-shadow:
+        0 16px 24px color-mix(in srgb, var(--theme-text) 14%, transparent),
+        inset 0 1px 0 color-mix(in srgb, white 52%, transparent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0 12px;
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--theme-btn-text);
+      transform: translateY(0);
+      transition: transform 0.22s ease, background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .switch-lever::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 14px;
+      width: 48px;
+      height: calc(100% - 28px);
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: linear-gradient(180deg, color-mix(in srgb, white 45%, transparent) 0%, color-mix(in srgb, black 12%, transparent) 100%);
+      box-shadow: inset 0 1px 0 color-mix(in srgb, white 46%, transparent), inset 0 -2px 6px color-mix(in srgb, black 10%, transparent);
+      opacity: 0.62;
+    }
+    .switch-lever > span {
+      position: relative;
+      z-index: 1;
+    }
+    .switch-toggle[data-state="on"] .switch-lever {
+      transform: translateY(0);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--theme-series-3) 28%, white 72%) 0%, color-mix(in srgb, var(--theme-series-3) 18%, var(--theme-card) 82%) 100%);
+      color: color-mix(in srgb, var(--theme-series-3) 78%, #082010);
+    }
+    .switch-toggle[data-state="off"] .switch-lever {
+      transform: translateY(74px);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--theme-series-5) 28%, white 72%) 0%, color-mix(in srgb, var(--theme-series-5) 14%, var(--theme-card) 86%) 100%);
+      color: color-mix(in srgb, var(--theme-series-5) 78%, #23020d);
+    }
+    .switch-toggle[data-state="pending"] .switch-lever {
+      transform: translateY(37px);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--theme-series-4) 30%, white 70%) 0%, color-mix(in srgb, var(--theme-series-4) 14%, var(--theme-card) 86%) 100%);
+      color: color-mix(in srgb, var(--theme-series-4) 84%, #291c02);
+    }
+    .switch-toggle[data-state="offline"] .switch-lever {
+      transform: translateY(37px);
+      color: color-mix(in srgb, var(--theme-text) 62%, transparent);
+    }
+    .charts-stack { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); align-items: stretch; }
+    .charts-stack > * { min-width: 0; }
+    .chart-row-secondary { display: contents; }
+    .chart-card {
+      min-width: 0;
+      padding: 16px;
+      background: color-mix(in srgb, var(--theme-primary) 4%, var(--theme-card));
+      border: var(--theme-border);
+      border-radius: min(var(--theme-radius), 24px);
+      box-shadow: var(--theme-shadow);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .chart-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .chart-head strong { font-size: 1rem; letter-spacing: -0.02em; }
+    .chart-legend { display: flex; flex-wrap: wrap; gap: 10px 14px; justify-content: flex-end; font-size: 0.8rem; font-weight: 800; }
+    .chart-legend-item { display: inline-flex; align-items: center; gap: 8px; color: color-mix(in srgb, var(--theme-text) 74%, transparent); }
+    .chart-legend-dot { width: 10px; height: 10px; border-radius: 999px; background: var(--dot-color); flex: 0 0 auto; }
+    .chart-live-value { color: var(--theme-text); font-weight: 900; }
+    .chart-shell { position: relative; margin-top: auto; flex: 1 1 auto; }
+    .chart-svg { display: block; width: 100%; height: 192px; }
+    .chart-grid line, .chart-axis line { stroke: color-mix(in srgb, var(--theme-text) 12%, transparent); stroke-width: 1; }
+    .chart-y-label { position: absolute; left: 12px; z-index: 1; pointer-events: none; color: color-mix(in srgb, var(--theme-text) 70%, transparent); font-size: 11px; font-weight: 800; line-height: 1; }
+    .chart-y-label[data-align="max"] { top: 6px; }
+    .chart-y-label[data-align="min"] { bottom: 28px; }
+    .chart-path { fill: none; stroke: var(--line-color); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .chart-empty { stroke: color-mix(in srgb, var(--theme-text) 16%, transparent); stroke-width: 2; fill: none; stroke-linecap: round; }
+    .chart-hover-line { stroke: color-mix(in srgb, var(--theme-text) 16%, transparent); stroke-width: 1.5; opacity: 0; }
+    .chart-hover-point { fill: var(--line-color); stroke: var(--theme-card); stroke-width: 2; opacity: 0; }
+    .chart-hitbox { fill: transparent; cursor: crosshair; }
+    .chart-tooltip {
+      position: absolute;
+      left: 0;
+      top: 0;
+      min-width: 176px;
+      padding: 10px 12px;
+      border-radius: min(var(--theme-radius), 18px);
+      background: color-mix(in srgb, var(--theme-card) 96%, transparent);
+      border: var(--theme-border);
+      box-shadow: var(--theme-shadow);
+      opacity: 0;
+      pointer-events: none;
+      transform: translate3d(0, 8px, 0);
+      transition: opacity 0.14s ease, transform 0.14s ease;
+      font-size: 0.8rem;
+    }
+    .chart-tooltip strong { display: block; margin-bottom: 8px; }
+    .chart-tooltip-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px; }
+    .chart-tooltip-label { display: inline-flex; align-items: center; gap: 8px; }
+    .metric-grid { display: contents; }
+    .metric-card, .env-card {
+      min-width: 0;
+      padding: 16px;
+      display: grid;
+      justify-items: center;
+      text-align: center;
+      align-content: center;
+      height: 100%;
+    }
+    .metric-card strong, .env-card strong { display: block; font-size: 0.96rem; letter-spacing: -0.02em; text-align: center; }
+    .metric-value { margin-top: 12px; font-size: clamp(2.2rem, 4vw, 4rem); font-weight: 900; line-height: 1; letter-spacing: -0.05em; text-align: center; }
+    .metric-caption { margin-top: 8px; color: color-mix(in srgb, var(--theme-text) 68%, transparent); font-size: 0.84rem; text-align: center; }
+    .motor-shell { position: relative; margin-top: 12px; display: grid; place-items: center; min-height: 186px; }
+    .motor-ring {
+      --motor-turn: 0deg;
+      width: 168px;
+      height: 168px;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at center, var(--theme-card) 0 52%, transparent 53%),
+        conic-gradient(from 0deg, var(--theme-series-2) 0deg, var(--theme-series-3) var(--motor-turn), color-mix(in srgb, var(--theme-text) 12%, transparent) var(--motor-turn), color-mix(in srgb, var(--theme-text) 12%, transparent) 360deg);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-text) 8%, transparent);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+    .motor-ring[aria-disabled="true"] {
+      opacity: 0.6;
+      cursor: wait;
+      pointer-events: none;
+    }
+    .motor-inner {
+      width: 112px;
+      height: 112px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--theme-card) 90%, transparent);
+      border: var(--theme-border);
+      box-shadow: var(--theme-shadow);
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+    .motor-inner strong { font-size: 1.55rem; font-weight: 900; letter-spacing: -0.05em; }
+    .motor-inner span { display: block; margin-top: 4px; font-size: 0.76rem; color: color-mix(in srgb, var(--theme-text) 68%, transparent); }
+    .toast-stack {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      z-index: 70;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: min(calc(100vw - 28px), 380px);
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--theme-card);
+      color: var(--theme-text);
+      border: var(--theme-border);
+      box-shadow: var(--theme-shadow);
+      border-radius: min(var(--theme-radius), 18px);
+      padding: 12px 14px;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+    .toast.success { border-bottom: 4px solid #10b981; }
+    .toast.error { border-bottom: 4px solid #f43f5e; }
+    @media (max-width: 1120px) { .charts-stack { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); } .chart-svg { height: 208px; } }
+    @media (max-width: 860px) { .switch-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 560px) {
+      body { padding: 14px; }
+      .hero { align-items: flex-start; flex-direction: column; }
+      .switch-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .switch-toggle { min-height: 168px; }
+      .switch-zone[data-action="on"] { padding-bottom: 76px; }
+      .switch-zone[data-action="off"] { padding-top: 76px; }
+      .switch-lever { height: 72px; }
+      .switch-toggle[data-state="off"] .switch-lever { transform: translateY(64px); }
+      .switch-toggle[data-state="pending"] .switch-lever,
+      .switch-toggle[data-state="offline"] .switch-lever { transform: translateY(32px); }
+      .chart-head { align-items: flex-start; flex-direction: column; }
+      .chart-legend { justify-content: flex-start; }
+      .chart-svg { height: 228px; }
+      .cabinet-header { flex-direction: column; }
+      .cabinet-toolbar { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="page-shell">
+    <section class="hero">
+      <div>
+        <h1>Tủ điện thông minh - Bộ 1 pha</h1>
+      </div>
+      <div class="hero-chip" id="cabinet-count-chip">0 tủ</div>
+    </section>
+
+    <section class="cabinet-grid" id="cabinet-grid"></section>
+  </main>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Chọn giao diện" aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Tùy chọn giao diện">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism" role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism" role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk" role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento Grid</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script id="smart-cabinet-single-phase-config" type="application/json">
+    {
+      "syncId": "<<syncid>>",
+      "sessions": [
+        {
+          "title": "Tủ điện mẫu",
+          "sessionId": "<<sessionid>>",
+          "description": "Tủ điện 1 pha chính liên kết từ ngữ cảnh IoT đang hoạt động.",
+          "fields": {
+            "switch1": "O3",
+            "switch2": "O4",
+            "switch3": "",
+            "motor": "O2",
+            "voltage": "Voltage_V",
+            "current": "Current_A",
+            "energy": "Energy_Wh",
+            "powerFactor": "power_factor",
+            "temperature": "temperature",
+            "humidity": "humidity"
+          },
+          "commands": {
+            "switch1On": "D1O3",
+            "switch1Off": "D2O3",
+            "switch2On": "D1O4",
+            "switch2Off": "D2O4",
+            "switch3On": "",
+            "switch3Off": ""
+          }
+        }
+      ]
+    }
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+
+  <script src="../../dashboard-command-template.js?v=2026.04.18.1"></script>
+  <script>
+    (function () {
+      var configNode = document.getElementById("smart-cabinet-single-phase-config");
+      var dashboardConfig = { syncId: "", sessions: [] };
+      try {
+        dashboardConfig = JSON.parse(configNode && configNode.textContent ? configNode.textContent : '{"sessions":[]}');
+      } catch (error) {
+        console.error("Invalid smart cabinet single-phase config", error);
+      }
+
+      var searchParams = new URLSearchParams(window.location.search);
+      var syncId = String(searchParams.get("syncId") || searchParams.get("syncid") || dashboardConfig.syncId || "").trim();
+      var cabinetGrid = document.getElementById("cabinet-grid");
+      var cabinetCountChip = document.getElementById("cabinet-count-chip");
+      var toastStack = document.getElementById("toast-stack");
+      var themePicker = document.getElementById("theme-picker");
+      var themePickerToggle = document.getElementById("theme-picker-toggle");
+      var themePickerMenu = document.getElementById("theme-picker-menu");
+      var historyOptions = [
+        { label: "30m", value: 30 * 60 * 1000 },
+        { label: "1h", value: 60 * 60 * 1000 },
+        { label: "6h", value: 6 * 60 * 60 * 1000 },
+        { label: "24h", value: 24 * 60 * 60 * 1000 },
+        { label: "7d", value: 7 * 24 * 60 * 60 * 1000 }
+      ];
+      var globalHistoryWindowMs = historyOptions[2].value;
+
+      function safeText(value, fallback) {
+        var normalized = String(value == null ? "" : value).trim();
+        return normalized || fallback || "";
+      }
+
+      function escapeHtml(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function parseSessionContext(sessionId) {
+        var raw = String(sessionId || "").trim();
+        var parts = raw.split("@");
+        if (parts.length < 2) return null;
+        return { ioid: parts[0], apikey: parts.slice(1).join("@") };
+      }
+
+      function buildCommandApiUrl(sessionId) {
+        var context = parseSessionContext(sessionId);
+        if (!context) return "";
+        return "https://iot.ioeasy.com/cmd/" + encodeURIComponent(context.ioid) + "?apiKey=" + encodeURIComponent(context.apikey);
+      }
+
+      function buildTelemetryUrl(sessionId) {
+        if (!sessionId || !syncId) return "";
+        return "/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(syncId) + "/iotelemetry";
+      }
+
+      function buildStreamUrl(sessionId, fields) {
+        var params = new URLSearchParams();
+        params.set("historyMs", String(globalHistoryWindowMs));
+        params.set("fields", fields.join(","));
+        return "/api/" + encodeURIComponent(sessionId) + "/stream?" + params.toString();
+      }
+
+      function normalizeSwitchState(value) {
+        var normalized = String(value == null ? "" : value).trim().toUpperCase();
+        if (normalized === "1" || normalized === "TRUE" || normalized === "ON" || normalized === "CLOSED") return "on";
+        if (normalized === "0" || normalized === "FALSE" || normalized === "OFF" || normalized === "OPEN") return "off";
+        return "offline";
+      }
+
+      function numericValue(value) {
+        if (typeof value === "number" && isFinite(value)) return value;
+        var match = String(value == null ? "" : value).match(/-?\d+(\.\d+)?/);
+        return match ? parseFloat(match[0]) : null;
+      }
+
+      function formatValue(value, digits, unit) {
+        var numeric = numericValue(value);
+        if (numeric === null) return "--";
+        return numeric.toFixed(digits) + (unit ? " " + unit : "");
+      }
+
+      function formatTime(timestamp) {
+        if (!timestamp) return "--";
+        try {
+          return new Date(timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        } catch (error) {
+          return "--";
+        }
+      }
+
+      function showToast(message, type) {
+        if (!toastStack) return;
+        var toast = document.createElement("div");
+        toast.className = "toast " + (type === "error" ? "error" : "success");
+        toast.textContent = String(message || "");
+        toastStack.appendChild(toast);
+        window.setTimeout(function () {
+          toast.style.opacity = "0";
+          toast.style.transform = "translateY(10px)";
+          toast.style.transition = "opacity 0.18s ease, transform 0.18s ease";
+          window.setTimeout(function () {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+          }, 180);
+        }, 3200);
+      }
+
+      function setSwitchVisual(node, nextState, label) {
+        if (!node) return;
+        var stateValue = String(nextState || "offline");
+        node.setAttribute("data-state", stateValue);
+        node.innerHTML = "<span>" + escapeHtml(label || (stateValue === "on" ? "ON" : stateValue === "off" ? "OFF" : stateValue === "pending" ? "..." : "OFFLINE")) + "</span>";
+        var toggle = node.closest(".switch-toggle");
+        if (toggle) {
+          toggle.setAttribute("data-state", stateValue);
+        }
+      }
+
+      function setCabinetBusy(state, nextBusy) {
+        state.isBusy = !!nextBusy;
+        if (Array.isArray(state.commandButtons)) {
+          state.commandButtons.forEach(function (button) {
+            button.disabled = !!nextBusy;
+            button.setAttribute("aria-disabled", nextBusy ? "true" : "false");
+          });
+        }
+        if (state.motorRing) {
+          state.motorRing.setAttribute("aria-disabled", nextBusy ? "true" : "false");
+        }
+      }
+
+      function setTheme(nextTheme) {
+        document.documentElement.setAttribute("data-theme", nextTheme);
+        try { window.localStorage.setItem("sample-dashboard-theme", nextTheme); } catch (error) {}
+        Array.prototype.forEach.call(themePickerMenu.querySelectorAll("[data-theme-option]"), function (button) {
+          var isActive = String(button.getAttribute("data-theme-option") || "") === nextTheme;
+          button.setAttribute("aria-pressed", isActive ? "true" : "false");
+          button.setAttribute("aria-checked", isActive ? "true" : "false");
+        });
+      }
+
+      function closeThemePickerMenu() {
+        themePickerMenu.classList.remove("is-open");
+        themePickerToggle.setAttribute("aria-expanded", "false");
+      }
+
+      function openThemePickerMenu() {
+        themePickerMenu.classList.add("is-open");
+        themePickerToggle.setAttribute("aria-expanded", "true");
+      }
+
+      function createRangeOptionsHtml() {
+        return historyOptions.map(function (option) {
+          var selected = option.value === globalHistoryWindowMs ? ' selected' : '';
+          return '<option value="' + option.value + '"' + selected + '>' + option.label + '</option>';
+        }).join("");
+      }
+
+      function hasField(state, key) {
+        return !!safeText(state && state.fields ? state.fields[key] : "", "");
+      }
+
+      function hasCommand(state, key) {
+        return !!safeText(state && state.commands ? state.commands[key] : "", "");
+      }
+
+      function getSwitchDefinitions(state) {
+        return [
+          { key: "switch1", label: "Công tắc 1", fieldKey: "switch1", onKey: "switch1On", offKey: "switch1Off" },
+          { key: "switch2", label: "Công tắc 2", fieldKey: "switch2", onKey: "switch2On", offKey: "switch2Off" },
+          { key: "switch3", label: "Công tắc 3", fieldKey: "switch3", onKey: "switch3On", offKey: "switch3Off" }
+        ].filter(function (entry) {
+          return hasField(state, entry.fieldKey) && hasCommand(state, entry.onKey) && hasCommand(state, entry.offKey);
+        });
+      }
+
+      function createSwitchCardHtml(definition) {
+        return '<section class="switch-card">'
+          + '<div class="switch-head"><div class="switch-label">' + escapeHtml(definition.label) + '</div></div>'
+          + '<div class="switch-toggle" data-role="' + definition.key + '-toggle" data-state="offline">'
+          + '<button class="switch-zone" data-action="on" data-role="' + definition.key + '-on" type="button" aria-label="' + escapeHtml(definition.label) + ' bật"></button>'
+          + '<div class="switch-lever" data-role="' + definition.key + '-state" data-state="offline"><span>OFFLINE</span></div>'
+          + '<button class="switch-zone" data-action="off" data-role="' + definition.key + '-off" type="button" aria-label="' + escapeHtml(definition.label) + ' tắt"></button>'
+          + '</div>'
+          + '</section>';
+      }
+
+      function renderCabinet(state) {
+        var ioid = safeText((parseSessionContext(state.sessionId) || {}).ioid, "Unknown");
+        var switchDefinitions = getSwitchDefinitions(state);
+        var hasVoltage = hasField(state, "voltage");
+        var hasCurrent = hasField(state, "current");
+        var hasEnergy = hasField(state, "energy");
+        var hasPowerFactor = hasField(state, "powerFactor");
+        var hasMotor = hasField(state, "motor");
+        var hasTemperature = hasField(state, "temperature");
+        var hasHumidity = hasField(state, "humidity");
+        var hasEnvChart = hasTemperature || hasHumidity;
+        var statsPrimaryHtml = "";
+        var statsAsideHtml = "";
+        var statsLayoutHtml = "";
+
+        if (hasVoltage) {
+          statsPrimaryHtml += '<section class="chart-card"><div class="chart-head"><strong>Điện áp</strong><div class="chart-legend"><span class="chart-legend-item"><span class="chart-legend-dot" style="--dot-color: var(--theme-series-1);"></span><span class="chart-live-value" data-role="voltage-inline">--</span></span></div></div><div class="chart-shell" data-role="voltage-shell"><div class="chart-y-label" data-align="max" data-role="voltage-max">0</div><div class="chart-y-label" data-align="min" data-role="voltage-min">0</div><svg class="chart-svg" viewBox="0 0 360 240" preserveAspectRatio="none"><g class="chart-grid" data-role="voltage-grid"></g><g class="chart-axis"><line x1="46" y1="16" x2="46" y2="198"></line><line x1="46" y1="198" x2="340" y2="198"></line></g><path class="chart-empty" data-role="voltage-empty" d="M46 106 H340"></path><path class="chart-path" data-role="voltage-path-voltage" style="--line-color: var(--theme-series-1);" d=""></path><line class="chart-hover-line" data-role="voltage-hover-line" x1="0" y1="16" x2="0" y2="198"></line><circle class="chart-hover-point" data-role="voltage-point-voltage" style="--line-color: var(--theme-series-1);" r="5"></circle><rect class="chart-hitbox" data-role="voltage-hitbox" x="46" y="16" width="294" height="182"></rect></svg><div class="chart-tooltip" data-role="voltage-tooltip"></div></div></section>';
+        }
+        if (hasCurrent) {
+          statsPrimaryHtml += '<section class="chart-card"><div class="chart-head"><strong>Dòng điện</strong><div class="chart-legend"><span class="chart-legend-item"><span class="chart-legend-dot" style="--dot-color: var(--theme-series-3);"></span><span class="chart-live-value" data-role="current-inline">--</span></span></div></div><div class="chart-shell" data-role="current-shell"><div class="chart-y-label" data-align="max" data-role="current-max">0</div><div class="chart-y-label" data-align="min" data-role="current-min">0</div><svg class="chart-svg" viewBox="0 0 360 240" preserveAspectRatio="none"><g class="chart-grid" data-role="current-grid"></g><g class="chart-axis"><line x1="46" y1="16" x2="46" y2="198"></line><line x1="46" y1="198" x2="340" y2="198"></line></g><path class="chart-empty" data-role="current-empty" d="M46 106 H340"></path><path class="chart-path" data-role="current-path-current" style="--line-color: var(--theme-series-3);" d=""></path><line class="chart-hover-line" data-role="current-hover-line" x1="0" y1="16" x2="0" y2="198"></line><circle class="chart-hover-point" data-role="current-point-current" style="--line-color: var(--theme-series-3);" r="5"></circle><rect class="chart-hitbox" data-role="current-hitbox" x="46" y="16" width="294" height="182"></rect></svg><div class="chart-tooltip" data-role="current-tooltip"></div></div></section>';
+        }
+        if (hasEnergy || hasPowerFactor) {
+          statsAsideHtml += '<div class="metric-grid">';
+          if (hasEnergy) {
+            statsAsideHtml += '<section class="metric-card"><strong>Điện năng</strong><div class="metric-value" data-role="energy">--</div></section>';
+          }
+          if (hasPowerFactor) {
+            statsAsideHtml += '<section class="metric-card"><strong>Hệ số công suất</strong><div class="metric-value" data-role="power-factor">--</div></section>';
+          }
+          statsAsideHtml += '</div>';
+        }
+        if (hasEnvChart) {
+          var envLegendHtml = '';
+          var envPathHtml = '';
+          var envPointHtml = '';
+          if (hasTemperature) {
+            envLegendHtml += '<span class="chart-legend-item"><span class="chart-legend-dot" style="--dot-color: var(--theme-series-5);"></span>Nhiệt độ <span class="chart-live-value" data-role="temperature-inline">--</span></span>';
+            envPathHtml += '<path class="chart-path" data-role="env-path-temperature" style="--line-color: var(--theme-series-5);" d=""></path>';
+            envPointHtml += '<circle class="chart-hover-point" data-role="env-point-temperature" style="--line-color: var(--theme-series-5);" r="5"></circle>';
+          }
+          if (hasHumidity) {
+            envLegendHtml += '<span class="chart-legend-item"><span class="chart-legend-dot" style="--dot-color: var(--theme-series-2);"></span>Độ ẩm <span class="chart-live-value" data-role="humidity-inline">--</span></span>';
+            envPathHtml += '<path class="chart-path" data-role="env-path-humidity" style="--line-color: var(--theme-series-2);" d=""></path>';
+            envPointHtml += '<circle class="chart-hover-point" data-role="env-point-humidity" style="--line-color: var(--theme-series-2);" r="5"></circle>';
+          }
+          statsAsideHtml += '<section class="chart-card"><div class="chart-head"><strong>Nhiệt độ và độ ẩm</strong><div class="chart-legend">' + envLegendHtml + '</div></div><div class="chart-shell" data-role="env-shell"><div class="chart-y-label" data-align="max" data-role="env-max">0</div><div class="chart-y-label" data-align="min" data-role="env-min">0</div><svg class="chart-svg" viewBox="0 0 360 240" preserveAspectRatio="none"><g class="chart-grid" data-role="env-grid"></g><g class="chart-axis"><line x1="46" y1="16" x2="46" y2="198"></line><line x1="46" y1="198" x2="340" y2="198"></line></g><path class="chart-empty" data-role="env-empty" d="M46 106 H340"></path>' + envPathHtml + '<line class="chart-hover-line" data-role="env-hover-line" x1="0" y1="16" x2="0" y2="198"></line>' + envPointHtml + '<rect class="chart-hitbox" data-role="env-hitbox" x="46" y="16" width="294" height="182"></rect></svg><div class="chart-tooltip" data-role="env-tooltip"></div></div></section>';
+        }
+        if (statsPrimaryHtml || statsAsideHtml) {
+          statsLayoutHtml = '<div class="charts-stack">' + statsPrimaryHtml + statsAsideHtml + '</div>';
+        }
+
+        state.node = document.createElement("article");
+        state.node.className = "cabinet-card";
+        state.node.innerHTML = ''
+          + '<div class="cabinet-header">'
+          + '<div class="cabinet-title"><h2>' + escapeHtml(state.title) + '</h2><p>Thiết bị: ' + escapeHtml(ioid) + '</p></div>'
+          + '<div class="cabinet-toolbar"><select class="range-select" data-role="history-range" aria-label="Khoảng thời gian biểu đồ">' + createRangeOptionsHtml() + '</select><div class="live-pill" data-role="live" data-state="connecting">Đang kết nối</div></div>'
+          + '</div>'
+          + ((switchDefinitions.length || hasMotor) ? '<div class="switch-grid">' + switchDefinitions.map(createSwitchCardHtml).join("") + (hasMotor ? '<section class="switch-card"><div class="switch-head"><div class="switch-label">Động cơ</div></div><div class="motor-shell"><div class="motor-ring" data-role="motor-ring"><div class="motor-inner"><div><strong data-role="motor-value">--</strong><span data-role="motor-unit">Góc đặt</span></div></div></div></div></section>' : '') + '</div>' : '')
+          + statsLayoutHtml;
+        cabinetGrid.appendChild(state.node);
+
+        state.live = state.node.querySelector('[data-role="live"]');
+        state.rangeSelect = state.node.querySelector('[data-role="history-range"]');
+        state.switchControls = {};
+        state.commandButtons = [];
+        switchDefinitions.forEach(function (definition) {
+          var onButton = state.node.querySelector('[data-role="' + definition.key + '-on"]');
+          var offButton = state.node.querySelector('[data-role="' + definition.key + '-off"]');
+          state.switchControls[definition.key] = {
+            stateNode: state.node.querySelector('[data-role="' + definition.key + '-state"]'),
+            toggleNode: state.node.querySelector('[data-role="' + definition.key + '-toggle"]'),
+            onButton: onButton,
+            offButton: offButton,
+            onCommand: state.commands[definition.onKey],
+            offCommand: state.commands[definition.offKey],
+            fieldName: state.fields[definition.fieldKey]
+          };
+          if (onButton) state.commandButtons.push(onButton);
+          if (offButton) state.commandButtons.push(offButton);
+        });
+        state.switch1State = state.switchControls.switch1 ? state.switchControls.switch1.stateNode : null;
+        state.switch2State = state.switchControls.switch2 ? state.switchControls.switch2.stateNode : null;
+        state.switch3State = state.switchControls.switch3 ? state.switchControls.switch3.stateNode : null;
+        state.energyValue = state.node.querySelector('[data-role="energy"]');
+        state.powerFactorValue = state.node.querySelector('[data-role="power-factor"]');
+        state.motorRing = state.node.querySelector('[data-role="motor-ring"]');
+        state.motorValue = state.node.querySelector('[data-role="motor-value"]');
+        state.motorUnit = state.node.querySelector('[data-role="motor-unit"]');
+        state.voltageInline = state.node.querySelector('[data-role="voltage-inline"]');
+        state.currentInline = state.node.querySelector('[data-role="current-inline"]');
+        state.temperatureInline = state.node.querySelector('[data-role="temperature-inline"]');
+        state.humidityInline = state.node.querySelector('[data-role="humidity-inline"]');
+        state.voltageChart = hasVoltage ? {
+          shell: state.node.querySelector('[data-role="voltage-shell"]'),
+          grid: state.node.querySelector('[data-role="voltage-grid"]'),
+          max: state.node.querySelector('[data-role="voltage-max"]'),
+          min: state.node.querySelector('[data-role="voltage-min"]'),
+          empty: state.node.querySelector('[data-role="voltage-empty"]'),
+          hoverLine: state.node.querySelector('[data-role="voltage-hover-line"]'),
+          hitbox: state.node.querySelector('[data-role="voltage-hitbox"]'),
+          tooltip: state.node.querySelector('[data-role="voltage-tooltip"]'),
+          bounds: null,
+          floorMode: "baseline",
+          floorValue: 180,
+          ceilingValue: 260,
+          minRange: 80,
+          series: [
+            { key: "voltage", label: "Điện áp", unit: "V", digits: 1, color: "var(--theme-series-1)", path: state.node.querySelector('[data-role="voltage-path-voltage"]'), point: state.node.querySelector('[data-role="voltage-point-voltage"]') }
+          ]
+        } : null;
+        state.currentChart = hasCurrent ? {
+          shell: state.node.querySelector('[data-role="current-shell"]'),
+          grid: state.node.querySelector('[data-role="current-grid"]'),
+          max: state.node.querySelector('[data-role="current-max"]'),
+          min: state.node.querySelector('[data-role="current-min"]'),
+          empty: state.node.querySelector('[data-role="current-empty"]'),
+          hoverLine: state.node.querySelector('[data-role="current-hover-line"]'),
+          hitbox: state.node.querySelector('[data-role="current-hitbox"]'),
+          tooltip: state.node.querySelector('[data-role="current-tooltip"]'),
+          bounds: null,
+          floorMode: "zero",
+          minRange: 5,
+          series: [
+            { key: "current", label: "Dòng điện", unit: "A", digits: 2, color: "var(--theme-series-3)", path: state.node.querySelector('[data-role="current-path-current"]'), point: state.node.querySelector('[data-role="current-point-current"]') }
+          ]
+        } : null;
+        state.envChart = hasEnvChart ? {
+          shell: state.node.querySelector('[data-role="env-shell"]'),
+          grid: state.node.querySelector('[data-role="env-grid"]'),
+          max: state.node.querySelector('[data-role="env-max"]'),
+          min: state.node.querySelector('[data-role="env-min"]'),
+          empty: state.node.querySelector('[data-role="env-empty"]'),
+          hoverLine: state.node.querySelector('[data-role="env-hover-line"]'),
+          hitbox: state.node.querySelector('[data-role="env-hitbox"]'),
+          tooltip: state.node.querySelector('[data-role="env-tooltip"]'),
+          bounds: null,
+          floorMode: "zero",
+          minRange: 100,
+          series: [
+            hasTemperature ? { key: "temperature", label: "Nhiệt độ", unit: "°C", digits: 1, color: "var(--theme-series-5)", path: state.node.querySelector('[data-role="env-path-temperature"]'), point: state.node.querySelector('[data-role="env-point-temperature"]') } : null,
+            hasHumidity ? { key: "humidity", label: "Độ ẩm", unit: "%", digits: 1, color: "var(--theme-series-2)", path: state.node.querySelector('[data-role="env-path-humidity"]'), point: state.node.querySelector('[data-role="env-point-humidity"]') } : null
+          ].filter(Boolean)
+        } : null;
+        if (state.voltageChart) bindChartHover(state, state.voltageChart);
+        if (state.currentChart) bindChartHover(state, state.currentChart);
+        if (state.envChart) bindChartHover(state, state.envChart);
+        state.lastUpdatedAt = 0;
+      }
+
+      function getSeriesMaxPoints() {
+        if (globalHistoryWindowMs <= 2 * 60 * 60 * 1000) return 900;
+        if (globalHistoryWindowMs <= 24 * 60 * 60 * 1000) return 1800;
+        if (globalHistoryWindowMs <= 7 * 24 * 60 * 60 * 1000) return 2600;
+        return 2400;
+      }
+
+      function appendSeriesPoint(series, point) {
+        if (series.length && Number(point.ts || 0) < Number(series[series.length - 1].ts || 0)) {
+          series.push(point);
+          series.sort(function (left, right) { return Number(left.ts || 0) - Number(right.ts || 0); });
+        } else {
+          series.push(point);
+        }
+        var cutoff = Date.now() - globalHistoryWindowMs;
+        var maxPoints = getSeriesMaxPoints();
+        while (series.length > maxPoints || (series.length > 1 && series[0].ts < cutoff)) {
+          series.shift();
+        }
+      }
+
+      function hideChartTooltip(chartMeta) {
+        if (!chartMeta || !chartMeta.tooltip || !chartMeta.hoverLine || !Array.isArray(chartMeta.series)) {
+          return;
+        }
+        chartMeta.tooltip.style.opacity = "0";
+        chartMeta.tooltip.style.transform = "translate3d(0, 8px, 0)";
+        chartMeta.hoverLine.style.opacity = "0";
+        chartMeta.series.forEach(function (entry) {
+          entry.point.style.opacity = "0";
+        });
+      }
+
+      function resolveChartBounds(values, chartMeta) {
+        var minValue = Math.min.apply(null, values);
+        var maxValue = Math.max.apply(null, values);
+
+        if (chartMeta.floorMode === "zero" && minValue > 0) {
+          minValue = 0;
+        }
+        if (typeof chartMeta.floorValue === "number" && isFinite(chartMeta.floorValue) && minValue > chartMeta.floorValue) {
+          minValue = chartMeta.floorValue;
+        }
+        if (typeof chartMeta.ceilingValue === "number" && isFinite(chartMeta.ceilingValue) && maxValue < chartMeta.ceilingValue) {
+          maxValue = chartMeta.ceilingValue;
+        }
+
+        if (minValue === maxValue) {
+          minValue -= 1;
+          maxValue += 1;
+        }
+
+        var minRange = Number(chartMeta.minRange || 0);
+        if (minRange > 0 && (maxValue - minValue) < minRange) {
+          if (chartMeta.floorMode === "zero" || typeof chartMeta.floorValue === "number") {
+            maxValue = minValue + minRange;
+          } else {
+            var midpoint = (minValue + maxValue) / 2;
+            minValue = midpoint - (minRange / 2);
+            maxValue = midpoint + (minRange / 2);
+          }
+        }
+
+        return { minValue: minValue, maxValue: maxValue };
+      }
+
+      function renderChart(state, chartMeta) {
+        if (!chartMeta || !chartMeta.grid || !chartMeta.empty || !chartMeta.min || !chartMeta.max || !Array.isArray(chartMeta.series)) {
+          return;
+        }
+        var left = 46;
+        var top = 16;
+        var width = 294;
+        var height = 182;
+        var bottom = top + height;
+        var startTs = Date.now() - globalHistoryWindowMs;
+        var tsSpan = globalHistoryWindowMs;
+        var visibleSeries = chartMeta.series.map(function (entry) {
+          return state.series[entry.key]
+            .filter(function (point) { return point.ts >= startTs; })
+            .slice()
+            .sort(function (leftPoint, rightPoint) { return Number(leftPoint.ts || 0) - Number(rightPoint.ts || 0); });
+        });
+        var allPoints = visibleSeries.reduce(function (result, series) {
+          return result.concat(series);
+        }, []);
+
+        var gridHtml = "";
+        for (var row = 0; row <= 4; row += 1) {
+          var y = top + ((height / 4) * row);
+          gridHtml += '<line x1="' + left + '" y1="' + y.toFixed(2) + '" x2="' + (left + width) + '" y2="' + y.toFixed(2) + '"></line>';
+        }
+        chartMeta.grid.innerHTML = gridHtml;
+
+        if (allPoints.length <= 1) {
+          chartMeta.empty.setAttribute("d", "M46 106 H340");
+          chartMeta.series.forEach(function (entry) {
+            entry.path.setAttribute("d", "");
+          });
+          chartMeta.min.textContent = "0";
+          chartMeta.max.textContent = "0";
+          chartMeta.bounds = null;
+          hideChartTooltip(chartMeta);
+          return;
+        }
+
+        var values = allPoints.map(function (point) { return point.value; });
+        var bounds = resolveChartBounds(values, chartMeta);
+        var minValue = bounds.minValue;
+        var maxValue = bounds.maxValue;
+
+        function pathFromSeries(series) {
+          if (series.length <= 1) return "";
+          var path = "";
+          series.forEach(function (point, index) {
+            var x = left + (((point.ts - startTs) / tsSpan) * width);
+            var y = bottom - (((point.value - minValue) / (maxValue - minValue)) * height);
+            path += (index === 0 ? "M" : " L") + x.toFixed(2) + " " + y.toFixed(2);
+          });
+          return path;
+        }
+
+        chartMeta.empty.setAttribute("d", "");
+        chartMeta.series.forEach(function (entry, index) {
+          entry.path.setAttribute("d", pathFromSeries(visibleSeries[index]));
+        });
+        chartMeta.min.textContent = String(Math.round(minValue));
+        chartMeta.max.textContent = String(Math.round(maxValue));
+        chartMeta.bounds = {
+          left: left,
+          top: top,
+          width: width,
+          height: height,
+          bottom: bottom,
+          startTs: startTs,
+          tsSpan: tsSpan,
+          minValue: minValue,
+          maxValue: maxValue
+        };
+      }
+
+      function bindChartHover(state, chartMeta) {
+        if (!chartMeta || !chartMeta.hitbox || !chartMeta.tooltip || !Array.isArray(chartMeta.series)) {
+          return;
+        }
+        chartMeta.hitbox.addEventListener("mousemove", function (event) {
+          if (!chartMeta.bounds) return;
+          var bounds = chartMeta.bounds;
+          var rect = chartMeta.hitbox.getBoundingClientRect();
+          if (!rect.width || !rect.height) return;
+          var relativeX = Math.min(Math.max(event.clientX - rect.left, 0), rect.width);
+          var targetTs = bounds.startTs + ((relativeX / rect.width) * bounds.tsSpan);
+          var anchor = null;
+
+          chartMeta.series.forEach(function (entry) {
+            state.series[entry.key]
+              .slice()
+              .sort(function (leftPoint, rightPoint) { return Number(leftPoint.ts || 0) - Number(rightPoint.ts || 0); })
+              .forEach(function (point) {
+              if (point.ts < bounds.startTs) return;
+              if (!anchor || Math.abs(point.ts - targetTs) < Math.abs(anchor.ts - targetTs)) anchor = point;
+            });
+          });
+          if (!anchor) return;
+
+          var anchorX = null;
+          var tooltipRows = "";
+          chartMeta.series.forEach(function (entry) {
+            var nearest = null;
+            state.series[entry.key]
+              .slice()
+              .sort(function (leftPoint, rightPoint) { return Number(leftPoint.ts || 0) - Number(rightPoint.ts || 0); })
+              .forEach(function (point) {
+              if (point.ts < bounds.startTs) return;
+              if (!nearest || Math.abs(point.ts - anchor.ts) < Math.abs(nearest.ts - anchor.ts)) nearest = point;
+            });
+            if (!nearest) {
+              entry.point.style.opacity = "0";
+              return;
+            }
+            var pointX = bounds.left + (((nearest.ts - bounds.startTs) / bounds.tsSpan) * bounds.width);
+            var pointY = bounds.bottom - (((nearest.value - bounds.minValue) / (bounds.maxValue - bounds.minValue)) * bounds.height);
+            if (anchorX === null) anchorX = pointX;
+            entry.point.setAttribute("cx", pointX.toFixed(2));
+            entry.point.setAttribute("cy", pointY.toFixed(2));
+            entry.point.style.opacity = "1";
+            tooltipRows += '<div class="chart-tooltip-row"><span class="chart-tooltip-label"><span class="chart-legend-dot" style="--dot-color:' + escapeHtml(entry.color) + ';background:' + escapeHtml(entry.color) + ';"></span>' + escapeHtml(entry.label) + '</span><strong>' + escapeHtml(formatValue(nearest.value, entry.digits, entry.unit)) + '</strong></div>';
+          });
+          if (anchorX === null) return;
+          chartMeta.hoverLine.setAttribute("x1", anchorX.toFixed(2));
+          chartMeta.hoverLine.setAttribute("x2", anchorX.toFixed(2));
+          chartMeta.hoverLine.style.opacity = "1";
+          chartMeta.tooltip.innerHTML = '<strong>' + escapeHtml(formatTime(anchor.ts)) + '</strong>' + tooltipRows;
+          chartMeta.tooltip.style.opacity = "1";
+          chartMeta.tooltip.style.transform = "translate3d(0, 0, 0)";
+          var tooltipLeft = Math.min(Math.max(anchorX + 10, 8), Math.max(8, (chartMeta.shell.clientWidth || 360) - 192));
+          chartMeta.tooltip.style.left = tooltipLeft + "px";
+          chartMeta.tooltip.style.top = "12px";
+        });
+        chartMeta.hitbox.addEventListener("mouseleave", function () {
+          hideChartTooltip(chartMeta);
+        });
+      }
+
+      function renderCabinetCharts(state) {
+        if (state.voltageChart) renderChart(state, state.voltageChart);
+        if (state.currentChart) renderChart(state, state.currentChart);
+        if (state.envChart) renderChart(state, state.envChart);
+      }
+
+      function updateCabinetField(state, field, value, timestamp, deferRender) {
+        var key = String(field || "").trim().toLowerCase();
+        var fields = state.fields;
+        var eventTs = Number(timestamp || Date.now());
+        if (key === String(fields.switch1 || "").trim().toLowerCase()) {
+          var switch1State = normalizeSwitchState(value);
+          setSwitchVisual(state.switch1State, switch1State, switch1State === "on" ? "ON" : switch1State === "off" ? "OFF" : "OFFLINE");
+        } else if (key === String(fields.switch2 || "").trim().toLowerCase()) {
+          var switch2State = normalizeSwitchState(value);
+          setSwitchVisual(state.switch2State, switch2State, switch2State === "on" ? "ON" : switch2State === "off" ? "OFF" : "OFFLINE");
+        } else if (key === String(fields.switch3 || "").trim().toLowerCase()) {
+          var switch3State = normalizeSwitchState(value);
+          setSwitchVisual(state.switch3State, switch3State, switch3State === "on" ? "ON" : switch3State === "off" ? "OFF" : "OFFLINE");
+        } else if (key === String(fields.energy || "").trim().toLowerCase()) {
+          if (state.energyValue) state.energyValue.textContent = formatValue(value, 0, "Wh");
+        } else if (key === String(fields.powerFactor || "").trim().toLowerCase()) {
+          if (state.powerFactorValue) {
+            var powerFactor = numericValue(value);
+            state.powerFactorValue.textContent = powerFactor === null ? "--" : Math.round(powerFactor) + "%";
+          }
+        } else if (key === String(fields.temperature || "").trim().toLowerCase()) {
+          if (state.temperatureInline) state.temperatureInline.textContent = formatValue(value, 1, "°C");
+          var temperature = numericValue(value);
+          if (temperature !== null) appendSeriesPoint(state.series.temperature, { ts: eventTs, value: temperature });
+        } else if (key === String(fields.humidity || "").trim().toLowerCase()) {
+          if (state.humidityInline) state.humidityInline.textContent = formatValue(value, 1, '%');
+          var humidity = numericValue(value);
+          if (humidity !== null) appendSeriesPoint(state.series.humidity, { ts: eventTs, value: humidity });
+        } else if (key === String(fields.motor || "").trim().toLowerCase()) {
+          var angle = numericValue(value);
+          if (!state.motorValue || !state.motorRing) {
+          } else if (angle === null) {
+            state.motorValue.textContent = "--";
+          } else {
+            var normalizedAngle = ((angle % 360) + 360) % 360;
+            state.motorValue.textContent = Math.round(normalizedAngle) + "°";
+            state.motorRing.style.setProperty("--motor-turn", normalizedAngle + "deg");
+          }
+        } else if (key === String(fields.voltage || "").trim().toLowerCase()) {
+          var voltage = numericValue(value);
+          if (state.voltageInline) state.voltageInline.textContent = formatValue(value, 1, 'V');
+          if (voltage !== null) appendSeriesPoint(state.series.voltage, { ts: eventTs, value: voltage });
+        } else if (key === String(fields.current || "").trim().toLowerCase()) {
+          var current = numericValue(value);
+          if (state.currentInline) state.currentInline.textContent = formatValue(value, 2, 'A');
+          if (current !== null) appendSeriesPoint(state.series.current, { ts: eventTs, value: current });
+        }
+
+        if (!deferRender) renderCabinetCharts(state);
+        state.lastUpdatedAt = eventTs;
+      }
+
+      function refreshLiveStatus(state) {
+        var ageMs = state.lastUpdatedAt > 0 ? (Date.now() - state.lastUpdatedAt) : Infinity;
+        if (ageMs < 30000) {
+          state.live.setAttribute("data-state", "live");
+          state.live.textContent = "Đang hoạt động";
+          return;
+        }
+        if (state.eventSource) {
+          state.live.setAttribute("data-state", "connecting");
+          state.live.textContent = "Chậm cập nhật";
+          return;
+        }
+        state.live.setAttribute("data-state", "error");
+        state.live.textContent = "Mất kết nối";
+      }
+
+      function handlePayload(state, data) {
+        if (!data || !data.type) return;
+        if (data.type === "billing_blocked") {
+          state.live.setAttribute("data-state", "error");
+          state.live.textContent = "Cần nạp thêm";
+          return;
+        }
+        if (data.type === "telemetry" && data.payload && typeof data.payload === "object") {
+          Object.keys(data.payload).forEach(function (field) {
+            updateCabinetField(state, field, data.payload[field], data.serverTime || Date.now(), true);
+          });
+          renderCabinetCharts(state);
+          refreshLiveStatus(state);
+        } else if (data.type === "timeseries" && Array.isArray(data.rows)) {
+          data.rows.forEach(function (row) {
+            updateCabinetField(state, row.field, typeof row.last !== "undefined" ? row.last : row.value, row.ts || Date.now(), true);
+          });
+          renderCabinetCharts(state);
+          refreshLiveStatus(state);
+        }
+      }
+
+      function sendCommand(state, command, node, pendingLabel) {
+        if (!command || !state.commandApiUrl || state.isBusy) return;
+        setCabinetBusy(state, true);
+        setSwitchVisual(node, "pending", pendingLabel);
+        var resolver = window.AIBridgeCommandTemplate;
+        var resolvePromise = resolver && typeof resolver.resolveCommandTemplate === "function"
+          ? resolver.resolveCommandTemplate(command)
+          : Promise.resolve(String(command || "")
+            .replace(/<<email>>/gi, "")
+            .replace(/<<username>>/gi, ""));
+        resolvePromise.then(function (resolvedCommand) {
+          return fetch(state.commandApiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cmd: String(resolvedCommand || "") })
+          });
+        }).then(function (response) {
+          if (!response.ok) {
+            throw new Error("Lệnh thất bại.");
+          }
+          showToast("Đã gửi lệnh.", "success");
+        }).catch(function () {
+          setSwitchVisual(node, "offline", "ERROR");
+          showToast("Lệnh thất bại.", "error");
+        }).finally(function () {
+          setCabinetBusy(state, false);
+        });
+      }
+
+      function sendMotorAngle(state, angle) {
+        if (!state.commandApiUrl || state.isBusy || !state.motorValue || !state.motorUnit || !state.motorRing) return;
+        var normalizedAngle = Math.round(((angle % 360) + 360) % 360);
+        setCabinetBusy(state, true);
+        state.motorValue.textContent = normalizedAngle + "°";
+        state.motorUnit.textContent = "Đang gửi...";
+        state.motorRing.style.setProperty("--motor-turn", normalizedAngle + "deg");
+        fetch(state.commandApiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cmd: "D1O2'" + normalizedAngle + "'" })
+        }).then(function (response) {
+          if (!response.ok) {
+            throw new Error("Lệnh động cơ thất bại.");
+          }
+          state.motorUnit.textContent = "Bấm để đặt góc";
+          showToast("Đã gửi góc động cơ.", "success");
+        }).catch(function () {
+          state.motorUnit.textContent = "Lệnh thất bại";
+          showToast("Lệnh động cơ thất bại.", "error");
+        }).finally(function () {
+          setCabinetBusy(state, false);
+        });
+      }
+
+      function bindMotorDial(state) {
+        if (!state.motorRing) return;
+        state.motorRing.addEventListener("click", function (event) {
+          var rect = state.motorRing.getBoundingClientRect();
+          var centerX = rect.left + (rect.width / 2);
+          var centerY = rect.top + (rect.height / 2);
+          var radians = Math.atan2(event.clientY - centerY, event.clientX - centerX);
+          var degrees = ((radians * 180 / Math.PI) + 90 + 360) % 360;
+          sendMotorAngle(state, degrees);
+        });
+      }
+
+      function connectCabinet(state) {
+        var streamFields = [
+          state.fields.switch1,
+          state.fields.switch2,
+          state.fields.switch3,
+          state.fields.voltage,
+          state.fields.current,
+          state.fields.energy,
+          state.fields.powerFactor,
+          state.fields.motor,
+          state.fields.temperature,
+          state.fields.humidity
+        ].map(function (value) { return String(value || "").trim(); }).filter(Boolean);
+
+        bootstrapCabinet(state).finally(function () {
+          state.live.setAttribute("data-state", "connecting");
+          state.live.textContent = "Đang kết nối";
+          state.eventSource = new EventSource(buildStreamUrl(state.sessionId, streamFields));
+          state.eventSource.onmessage = function (event) {
+            try { handlePayload(state, JSON.parse(event.data)); } catch (error) {}
+          };
+          state.eventSource.onerror = function () {
+            if (state.eventSource) {
+              state.eventSource.close();
+              state.eventSource = null;
+            }
+            state.live.setAttribute("data-state", "connecting");
+            state.live.textContent = "Đang kết nối lại";
+            if (state.reconnectTimer) window.clearTimeout(state.reconnectTimer);
+            state.reconnectTimer = window.setTimeout(function () {
+              state.reconnectTimer = null;
+              connectCabinet(state);
+            }, 3000);
+          };
+        });
+      }
+
+      function bootstrapCabinet(state) {
+        var url = buildTelemetryUrl(state.sessionId);
+        if (!url) return Promise.resolve();
+        return fetch(url, { cache: "no-store" })
+          .then(function (response) {
+            if (!response.ok) return null;
+            return response.json();
+          })
+          .then(function (payload) {
+            var data = payload && payload.c2 && payload.c2.payload;
+            if (!data || typeof data !== "object") return;
+            Object.keys(data).forEach(function (field) {
+              updateCabinetField(state, field, data[field], payload.c2.serverTime || Date.now());
+            });
+          })
+          .catch(function () {});
+      }
+
+      var cabinetStates = (Array.isArray(dashboardConfig.sessions) ? dashboardConfig.sessions : []).map(function (sessionConfig, index) {
+        return {
+          title: safeText(sessionConfig.title, "Tủ điện " + String(index + 1)),
+          description: safeText(sessionConfig.description, "Tủ điện 1 pha"),
+          sessionId: safeText(sessionConfig.sessionId, ""),
+          fields: sessionConfig.fields || {},
+          commands: sessionConfig.commands || {},
+          commandApiUrl: buildCommandApiUrl(sessionConfig.sessionId),
+          series: { voltage: [], current: [], temperature: [], humidity: [] },
+          eventSource: null,
+          reconnectTimer: null
+        };
+      }).filter(function (state) { return state.sessionId; });
+
+      function reconnectCabinet(state) {
+        if (state.reconnectTimer) {
+          window.clearTimeout(state.reconnectTimer);
+          state.reconnectTimer = null;
+        }
+        if (state.eventSource) {
+          state.eventSource.close();
+          state.eventSource = null;
+        }
+        state.series.voltage = [];
+        state.series.current = [];
+        state.series.temperature = [];
+        state.series.humidity = [];
+        if (state.voltageChart) renderChart(state, state.voltageChart);
+        if (state.currentChart) renderChart(state, state.currentChart);
+        if (state.envChart) renderChart(state, state.envChart);
+        connectCabinet(state);
+      }
+
+      function applyGlobalHistoryWindow(nextValue) {
+        globalHistoryWindowMs = nextValue;
+        cabinetStates.forEach(function (state) {
+          if (state.rangeSelect && Number(state.rangeSelect.value) !== nextValue) {
+            state.rangeSelect.value = String(nextValue);
+          }
+          reconnectCabinet(state);
+        });
+      }
+
+      cabinetStates.forEach(function (state) {
+        renderCabinet(state);
+        Object.keys(state.switchControls).forEach(function (switchKey) {
+          var control = state.switchControls[switchKey];
+          if (control.onButton) {
+            control.onButton.addEventListener("click", function () {
+              sendCommand(state, control.onCommand, control.stateNode, "Đang bật");
+            });
+          }
+          if (control.offButton) {
+            control.offButton.addEventListener("click", function () {
+              sendCommand(state, control.offCommand, control.stateNode, "Đang tắt");
+            });
+          }
+        });
+        state.rangeSelect.addEventListener("change", function () {
+          applyGlobalHistoryWindow(Number(state.rangeSelect.value || historyOptions[2].value));
+        });
+        bindMotorDial(state);
+        if (state.voltageChart) renderChart(state, state.voltageChart);
+        if (state.currentChart) renderChart(state, state.currentChart);
+        if (state.envChart) renderChart(state, state.envChart);
+        connectCabinet(state);
+      });
+
+      cabinetCountChip.textContent = cabinetStates.length + " tủ";
+      window.setInterval(function () {
+        cabinetStates.forEach(refreshLiveStatus);
+      }, 5000);
+      document.addEventListener("click", function (event) {
+        var themeOption = event.target && typeof event.target.closest === "function"
+          ? event.target.closest("[data-theme-option]")
+          : null;
+        if (themeOption) {
+          setTheme(String(themeOption.getAttribute("data-theme-option") || "neumorphism"));
+          closeThemePickerMenu();
+          return;
+        }
+
+        var themeToggle = event.target && typeof event.target.closest === "function"
+          ? event.target.closest("#theme-picker-toggle")
+          : null;
+        if (themeToggle) {
+          if (themePickerMenu.classList.contains("is-open")) {
+            closeThemePickerMenu();
+          } else {
+            openThemePickerMenu();
+          }
+          return;
+        }
+
+        if (!themePickerMenu.contains(event.target)) {
+          closeThemePickerMenu();
+        }
+      });
+      setTheme(document.documentElement.getAttribute("data-theme") || "neumorphism");
+    })();
+  </script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

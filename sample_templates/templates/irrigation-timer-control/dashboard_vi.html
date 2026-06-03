@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hẹn giờ tưới tiêu</title>
+  <link rel="stylesheet" href="../../dashboard-themes.css?v=2026.04.18" />
+  <link rel="stylesheet" href="/sample_dashboards/irrigation-timer-control/dashboard.css?v=2026.05.31.2" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+      } catch (error) { }
+    })();
+  </script>
+</head>
+
+<body>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="page-shell">
+    <section class="hero">
+      <div>
+        <h1 id="hero-title">Hẹn giờ tưới tiêu</h1>
+      </div>
+      <div class="hero-tools">
+        <button class="toolbar-button" type="button" id="history-refresh">Tải lại lịch sử</button>
+        <div class="hero-chip" id="control-count-chip">0 công tắc</div>
+      </div>
+    </section>
+
+    <section class="history-card" id="history-card">
+      <div class="section-head history-head" id="history-toggle" role="button" tabindex="0" aria-expanded="false"
+        onclick="(function(card){var content=card&&card.querySelector('#history-content');var toggle=card&&card.querySelector('#history-toggle');if(!content)return;var collapsed=!content.hidden;content.hidden=collapsed;if(toggle)toggle.setAttribute('aria-expanded',collapsed?'false':'true');if(card)card.setAttribute('data-collapsed',collapsed?'true':'false');})(this.closest('#history-card'))">
+        <div class="section-toggle history-toggle">
+          <span class="history-title"><h2>Lịch sử</h2></span>
+          <span class="section-toggle-indicator">&#9662;</span>
+        </div>
+        <div class="section-toolbar">
+          <div class="hero-chip" id="history-source-chip" onclick="event.stopPropagation()">Nguồn lịch sử</div>
+        </div>
+      </div>
+      <div class="table-wrap" id="history-content" hidden>
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Thời gian</th>
+              <th>Khu tưới</th>
+              <th>Loại</th>
+              <th>Nội dung</th>
+              <th>Người thực hiện</th>
+            </tr>
+          </thead>
+          <tbody id="history-body">
+            <tr>
+              <td colspan="5" class="empty-state">Đang chờ dữ liệu lịch sử.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="control-only-card" id="controls-card">
+      <div class="control-only-head">
+        <h2 id="controls-title">Điều khiển</h2>
+        <div class="live-pill" id="controls-live" data-state="connecting">Đang kết nối</div>
+      </div>
+      <div class="control-only-grid" id="control-grid"></div>
+    </section>
+  </main>
+
+  <div class="modal" id="schedule-modal" aria-hidden="true">
+    <div class="modal-card schedule-modal-card">
+      <div class="modal-head">
+        <div>
+          <h2 id="schedule-modal-title">Hẹn giờ</h2>
+          <p id="schedule-modal-description">Lịch hẹn giờ của công tắc đang chọn.</p>
+        </div>
+        <button type="button" class="icon-button" id="schedule-modal-close" aria-label="Đóng hộp thoại">&times;</button>
+      </div>
+      <div class="table-wrap schedule-table-wrap">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>Kích hoạt</th>
+              <th>Thời điểm</th>
+              <th>Tác vụ</th>
+            </tr>
+          </thead>
+          <tbody id="schedule-body">
+            <tr>
+              <td colspan="3" class="empty-state">Chưa có lịch hẹn giờ.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-button" id="schedule-modal-cancel">Đóng</button>
+        <button type="button" class="modal-button primary" id="schedule-modal-save">Lưu lịch</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Chọn giao diện"
+      aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Tùy chọn giao diện">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism"
+        role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora
+        UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern
+        Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism"
+        role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk"
+        role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo
+        Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento
+        Grid</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script id="irrigation-timer-control-config" type="application/json">
+{
+  "title": "Hẹn giờ tưới tiêu",
+  "syncId": "<<syncid>>",
+  "history": {
+    "sessionId": "<<sessionid>>",
+    "syncId": "<<syncid>>",
+    "macro": "irrigation-control-history",
+    "pageSize": 100
+  },
+  "groups": [
+    {
+      "title": "Khu tưới chính",
+      "sessionId": "<<sessionid>>",
+      "controls": [
+        {
+          "label": "Bơm tổng",
+          "stateField": "O101",
+          "commandOn": "N3,1,\"ON\",\"<<username>>\"",
+          "commandOff": "N3,1,\"OFF\",\"<<username>>\"",
+          "scheduleFields": ["#1021", "#1022", "#1023", "#1024", "#1025"]
+        },
+        {
+          "label": "Van khu A",
+          "stateField": "O102",
+          "commandOn": "N3,2,\"ON\",\"<<username>>\"",
+          "commandOff": "N3,2,\"OFF\",\"<<username>>\"",
+          "scheduleFields": ["#1031", "#1032", "#1033", "#1034", "#1035"]
+        },
+        {
+          "label": "Van khu B",
+          "stateField": "O103",
+          "commandOn": "N3,3,\"ON\",\"<<username>>\"",
+          "commandOff": "N3,3,\"OFF\",\"<<username>>\"",
+          "scheduleFields": ["#1041", "#1042", "#1043", "#1044", "#1045"]
+        },
+        {
+          "label": "Van khu C",
+          "stateField": "O104",
+          "commandOn": "N3,4,\"ON\",\"<<username>>\"",
+          "commandOff": "N3,4,\"OFF\",\"<<username>>\"",
+          "scheduleFields": ["#1051", "#1052", "#1053", "#1054", "#1055"]
+        }
+      ]
+    }
+  ],
+  "ui": {
+    "controls": {
+      "title": "Điều khiển tưới tiêu",
+      "countSingular": "công tắc",
+      "countPlural": "công tắc",
+      "connecting": "Đang kết nối",
+      "live": "Hoạt động",
+      "stale": "Chậm dữ liệu",
+      "offline": "Mất kết nối"
+    },
+    "contactor": {
+      "off": "OFF",
+      "offline": "OFFLINE",
+      "error": "ERROR",
+      "scheduleAria": "Mở lịch hẹn giờ cho {label}",
+      "turnOnAria": "Bật {label}",
+      "turnOffAria": "Tắt {label}",
+      "turningOn": "Đang bật",
+      "turningOff": "Đang tắt"
+    },
+    "commands": {
+      "sent": "Đã gửi lệnh.",
+      "failed": "Gửi lệnh thất bại."
+    },
+    "schedule": {
+      "title": "Lịch hẹn giờ | {label}",
+      "description": "Lịch hẹn giờ được lưu trực tiếp trên thiết bị.",
+      "empty": "Chưa có lịch hẹn giờ cho công tắc này.",
+      "save": "Lưu lịch",
+      "saving": "Đang lưu...",
+      "saved": "Đã lưu lịch hẹn giờ.",
+      "failed": "Không thể lưu lịch hẹn giờ.",
+      "noChanges": "Không có thay đổi.",
+      "invalid": "Lịch đã kích hoạt cần có thời điểm chạy.",
+      "actionOn": "ON",
+      "actionOff": "OFF",
+      "enableAria": "Kích hoạt lịch {index}",
+      "actionAria": "Đổi tác vụ lịch {index}",
+      "close": "Đóng",
+      "closeAria": "Đóng hộp thoại"
+    },
+    "history": {
+      "title": "Lịch sử",
+      "sourceValue": "Nguồn {ioid}",
+      "waiting": "Đang chờ dữ liệu lịch sử.",
+      "empty": "Chưa có dữ liệu lịch sử.",
+      "loadFailed": "Không thể tải lịch sử.",
+      "eventTypes": {
+        "on": "Bật",
+        "off": "Tắt",
+        "schedule": "Hẹn giờ",
+        "manual": "Thủ công"
+      }
+    },
+    "network": {
+      "requestFailed": "Yêu cầu thất bại.",
+      "requestFailedWithStatus": "Yêu cầu thất bại với mã {status}",
+      "unexpectedIoDataResponse": "Dữ liệu lịch sử không hợp lệ."
+    }
+  },
+  "locale": "vi"
+}
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START -->
+  <script>
+    // Editable sample script slot for small per-template enhancements.
+  </script>
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+
+  <script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script src="/sample_dashboards/irrigation-timer-control/dashboard-runtime.js?v=2026.05.29.2"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+
+</html>

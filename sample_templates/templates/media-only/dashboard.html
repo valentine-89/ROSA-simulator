@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Media Only</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --stage-fg: #f7f7f6;
+      --stage-subtle: rgba(247, 247, 246, 0.74);
+      --stage-overlay: rgba(0, 0, 0, 0.18);
+      --stage-bg: #050505;
+      --stage-accent: #8ab4ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: "Segoe UI Variable Text", "Segoe UI", Tahoma, Geneva, Verdana, Arial, sans-serif;
+    }
+
+    body {
+      position: relative;
+      color: var(--stage-fg);
+      background: var(--stage-bg);
+    }
+
+    .app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      isolation: isolate;
+      background: var(--stage-bg);
+      color: var(--stage-fg);
+    }
+
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.04), transparent 24%),
+        var(--stage-bg);
+    }
+
+    .backdrop,
+    .backdrop::before,
+    .backdrop::after {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      content: "";
+    }
+
+    .backdrop {
+      overflow: hidden;
+      background: var(--stage-bg);
+    }
+
+    .fx-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .fx-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      opacity: 0.96;
+    }
+
+    .style-black {
+      --stage-bg: #020202;
+      --stage-fg: #f9fafb;
+      --stage-subtle: rgba(249, 250, 251, 0.74);
+      --stage-overlay: rgba(0, 0, 0, 0.18);
+      --stage-accent: #7dd3fc;
+    }
+
+    .style-white {
+      --stage-bg: #f7f7f2;
+      --stage-fg: #111827;
+      --stage-subtle: rgba(17, 24, 39, 0.68);
+      --stage-overlay: rgba(255, 255, 255, 0.2);
+      --stage-accent: #2563eb;
+    }
+
+    .style-warm {
+      --stage-bg: linear-gradient(145deg, #41170d 0%, #7a2a18 34%, #cc6132 100%);
+      --stage-fg: #fff7ed;
+      --stage-subtle: rgba(255, 247, 237, 0.78);
+      --stage-overlay: rgba(53, 18, 8, 0.16);
+      --stage-accent: #fed7aa;
+    }
+
+    .style-sunrise {
+      --stage-bg: linear-gradient(160deg, #30155b 0%, #8d4ec2 38%, #ff8a5b 100%);
+      --stage-fg: #fff8f0;
+      --stage-subtle: rgba(255, 248, 240, 0.76);
+      --stage-overlay: rgba(48, 21, 91, 0.18);
+      --stage-accent: #fde68a;
+    }
+
+    .style-tech {
+      --stage-bg:
+        radial-gradient(circle at top, rgba(24, 161, 255, 0.22), transparent 34%),
+        linear-gradient(180deg, #03121f 0%, #071a2b 45%, #020914 100%);
+      --stage-fg: #e0f2fe;
+      --stage-subtle: rgba(224, 242, 254, 0.76);
+      --stage-overlay: rgba(2, 12, 24, 0.18);
+      --stage-accent: #38bdf8;
+    }
+
+    .style-spotlight {
+      --stage-bg:
+        radial-gradient(circle at 50% 16%, rgba(255, 248, 220, 0.24), transparent 18%),
+        linear-gradient(180deg, #111827 0%, #090b12 100%);
+      --stage-fg: #f8fafc;
+      --stage-subtle: rgba(248, 250, 252, 0.74);
+      --stage-overlay: rgba(7, 9, 15, 0.18);
+      --stage-accent: #fde68a;
+    }
+
+    .style-ani1 {
+      --stage-bg: linear-gradient(135deg, #05273b 0%, #0d5f85 45%, #37a9b8 100%);
+      --stage-fg: #f7feff;
+      --stage-subtle: rgba(247, 254, 255, 0.78);
+      --stage-overlay: rgba(4, 28, 42, 0.18);
+      --stage-accent: #d9fbff;
+    }
+
+    .style-ani1 .backdrop::before {
+      inset: -15%;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.3), transparent 20%),
+        radial-gradient(circle at 70% 20%, rgba(180,255,246,0.35), transparent 18%),
+        radial-gradient(circle at 50% 70%, rgba(100,220,255,0.25), transparent 22%),
+        radial-gradient(circle at 80% 80%, rgba(150,255,255,0.28), transparent 16%);
+      filter: blur(20px);
+      animation: ocean-wave 8s ease-in-out infinite alternate;
+    }
+
+    .style-ani1 .backdrop::after {
+      background:
+        linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 30%, rgba(190,255,255,0.35) 50%, rgba(255,255,255,0.2) 70%, transparent 100%),
+        radial-gradient(circle at 25% 25%, rgba(255,255,255,0.15), transparent 15%),
+        radial-gradient(circle at 75% 75%, rgba(180,255,246,0.2), transparent 12%);
+      opacity: 0.9;
+      filter: blur(12px);
+      animation: bubble-rise 6s ease-in-out infinite, shimmer-flow 4s linear infinite;
+    }
+
+    .style-ani2 {
+      --stage-bg: linear-gradient(150deg, #2f0c31 0%, #7a1f68 45%, #ff7a59 100%);
+      --stage-fg: #fff7fb;
+      --stage-subtle: rgba(255, 247, 251, 0.78);
+      --stage-overlay: rgba(45, 8, 31, 0.18);
+      --stage-accent: #ffd36d;
+    }
+
+    .style-ani2 .backdrop::before {
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255,215,109,0.25), transparent 9%),
+        radial-gradient(circle at 82% 24%, rgba(255,255,255,0.22), transparent 10%),
+        radial-gradient(circle at 30% 70%, rgba(255,179,71,0.2), transparent 10%),
+        radial-gradient(circle at 70% 78%, rgba(255,255,255,0.18), transparent 8%);
+      animation: pulse-celebrate 5.5s ease-in-out infinite;
+    }
+
+    .style-ani2 .backdrop::after {
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,0.95) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,220,125,0.9) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255,174,94,0.85) 0 2px, transparent 3px);
+      background-size: 180px 180px, 220px 220px, 260px 260px;
+      background-position: 10% -10%, 80% -16%, 45% -22%;
+      opacity: 0.72;
+      animation: confetti-fall 8s linear infinite;
+    }
+
+    .style-ani3 {
+      --stage-bg: linear-gradient(155deg, #1f0f1c 0%, #5a224c 44%, #f18bb5 100%);
+      --stage-fg: #fff7fb;
+      --stage-subtle: rgba(255, 247, 251, 0.82);
+      --stage-overlay: rgba(28, 10, 24, 0.2);
+      --stage-accent: #ffd0e6;
+    }
+
+    .style-ani3 .backdrop::before {
+      inset: -10%;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(255, 238, 247, 0.22), transparent 16%),
+        radial-gradient(circle at 78% 18%, rgba(255, 206, 228, 0.2), transparent 18%),
+        radial-gradient(circle at 50% 68%, rgba(255, 190, 223, 0.16), transparent 24%);
+      opacity: 0.92;
+      filter: blur(18px);
+      animation: sakura-breeze 7.4s ease-in-out infinite alternate;
+    }
+
+    .style-ani3 .backdrop::after {
+      background:
+        radial-gradient(circle at 22% 24%, rgba(255,255,255,0.14), transparent 18%),
+        radial-gradient(circle at 78% 32%, rgba(255, 220, 236, 0.16), transparent 16%),
+        radial-gradient(circle at 48% 76%, rgba(255, 190, 223, 0.14), transparent 22%),
+        linear-gradient(180deg, rgba(255,255,255,0.05), transparent 28%);
+      opacity: 0.76;
+      filter: blur(16px);
+    }
+
+    .style-ani4 {
+      --stage-bg: linear-gradient(180deg, #02111d 0%, #05263d 50%, #04101b 100%);
+      --stage-fg: #e9fbff;
+      --stage-subtle: rgba(233, 251, 255, 0.78);
+      --stage-overlay: rgba(2, 12, 24, 0.2);
+      --stage-accent: #4be2ff;
+    }
+
+    .style-ani4 .backdrop::before {
+      background-image:
+        linear-gradient(rgba(75, 226, 255, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(75, 226, 255, 0.1) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.6;
+      animation: tech-grid-pan 7s linear infinite;
+    }
+
+    .style-ani4 .backdrop::after {
+      inset: -10%;
+      background:
+        linear-gradient(180deg, transparent 0%, rgba(106, 240, 255, 0.18) 45%, transparent 55%, transparent 100%);
+      opacity: 0.7;
+      animation: tech-scan 3.4s linear infinite;
+    }
+
+    .style-ani5 {
+      --stage-bg: linear-gradient(180deg, #0a1120 0%, #05070e 100%);
+      --stage-fg: #fcfbf8;
+      --stage-subtle: rgba(252, 251, 248, 0.74);
+      --stage-overlay: rgba(4, 5, 10, 0.22);
+      --stage-accent: #ffe28a;
+    }
+
+    .style-ani5 .backdrop::before {
+      background:
+        radial-gradient(circle at 50% 16%, rgba(255, 234, 168, 0.4), transparent 11%),
+        linear-gradient(90deg, transparent 44%, rgba(255,255,255,0.08) 50%, transparent 56%);
+      opacity: 0.92;
+      animation: spotlight-sweep 6s ease-in-out infinite alternate;
+      transform-origin: top center;
+    }
+
+    .style-ani5 .backdrop::after {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.04), transparent 24%),
+        radial-gradient(circle at 50% 0%, rgba(255, 231, 171, 0.16), transparent 28%);
+    }
+
+    .style-ani6 {
+      --stage-bg: linear-gradient(160deg, #2b0f54 0%, #7c41b7 42%, #ff8d63 100%);
+      --stage-fg: #fff8f2;
+      --stage-subtle: rgba(255, 248, 242, 0.8);
+      --stage-overlay: rgba(39, 12, 65, 0.2);
+      --stage-accent: #ffd48d;
+    }
+
+    .style-ani6 .backdrop::before {
+      inset: -12%;
+      background:
+        radial-gradient(circle at 22% 68%, rgba(255, 190, 122, 0.22), transparent 16%),
+        radial-gradient(circle at 80% 26%, rgba(255, 255, 255, 0.22), transparent 14%),
+        radial-gradient(circle at 48% 34%, rgba(255, 140, 109, 0.18), transparent 18%);
+      filter: blur(14px);
+      animation: sunrise-orbit 5.8s ease-in-out infinite alternate;
+    }
+
+    .style-ani6 .backdrop::after {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.05), transparent 24%),
+        radial-gradient(circle at 50% 112%, rgba(255, 199, 115, 0.28), transparent 38%);
+      opacity: 0.86;
+      animation: sunrise-glow 2.8s ease-in-out infinite, sunrise-sweep 6.4s ease-in-out infinite alternate;
+    }
+
+    .style-ani7 {
+      --stage-bg: linear-gradient(180deg, #040816 0%, #101b38 48%, #050915 100%);
+      --stage-fg: #f5f8ff;
+      --stage-subtle: rgba(245, 248, 255, 0.78);
+      --stage-overlay: rgba(6, 10, 22, 0.22);
+      --stage-accent: #8fb8ff;
+    }
+
+    .style-ani7 .backdrop::before {
+      background:
+        radial-gradient(circle at 18% 22%, rgba(255,255,255,0.92) 0 1px, transparent 2px),
+        radial-gradient(circle at 74% 18%, rgba(220,236,255,0.88) 0 1px, transparent 2px),
+        radial-gradient(circle at 30% 74%, rgba(255,255,255,0.84) 0 1px, transparent 2px),
+        radial-gradient(circle at 84% 68%, rgba(198,222,255,0.86) 0 1px, transparent 2px),
+        radial-gradient(circle at 58% 42%, rgba(255,255,255,0.8) 0 1px, transparent 2px),
+        radial-gradient(circle at 44% 16%, rgba(190,216,255,0.88) 0 1px, transparent 2px);
+      background-size: 220px 220px, 280px 280px, 320px 320px, 260px 260px, 340px 340px, 300px 300px;
+      opacity: 0.86;
+      animation: cosmic-drift 10s linear infinite, cosmic-twinkle 2.4s ease-in-out infinite alternate;
+    }
+
+    .style-ani7 .backdrop::after {
+      inset: -12%;
+      background:
+        radial-gradient(circle at 50% 46%, rgba(132, 175, 255, 0.18), transparent 22%),
+        radial-gradient(circle at 68% 34%, rgba(255,255,255,0.12), transparent 10%),
+        radial-gradient(circle at 36% 64%, rgba(155, 198, 255, 0.16), transparent 14%);
+      filter: blur(18px);
+      animation: nebula-breathe 4.4s ease-in-out infinite;
+    }
+
+    .style-ani8 {
+      --stage-bg: linear-gradient(180deg, #08131e 0%, #10283a 52%, #09111a 100%);
+      --stage-fg: #eef9ff;
+      --stage-subtle: rgba(238, 249, 255, 0.78);
+      --stage-overlay: rgba(6, 14, 21, 0.22);
+      --stage-accent: #7dd3fc;
+    }
+
+    .style-ani8 .backdrop::before {
+      inset: -8%;
+      background-image:
+        linear-gradient(108deg, transparent 0 44%, rgba(173, 228, 255, 0.28) 46%, transparent 48%),
+        linear-gradient(108deg, transparent 0 52%, rgba(255,255,255,0.18) 54%, transparent 56%),
+        linear-gradient(108deg, transparent 0 62%, rgba(125, 211, 252, 0.24) 64%, transparent 66%);
+      background-size: 180px 180px, 240px 240px, 320px 320px;
+      opacity: 0.8;
+      animation: rain-fall 3.4s linear infinite;
+    }
+
+    .style-ani8 .backdrop::after {
+      background:
+        radial-gradient(circle at 20% 86%, rgba(255,255,255,0.08), transparent 7%),
+        radial-gradient(circle at 64% 90%, rgba(125,211,252,0.14), transparent 8%),
+        radial-gradient(circle at 84% 84%, rgba(255,255,255,0.08), transparent 6%);
+      animation: rain-ripple 4.6s ease-in-out infinite;
+    }
+
+    .style-ani9 {
+      --stage-bg: linear-gradient(150deg, #2c0531 0%, #6f1658 46%, #ff7b54 100%);
+      --stage-fg: #fff7fb;
+      --stage-subtle: rgba(255, 247, 251, 0.8);
+      --stage-overlay: rgba(38, 7, 34, 0.2);
+      --stage-accent: #ffd36d;
+    }
+
+    .style-ani9 .backdrop::before {
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.8), transparent 2px),
+        radial-gradient(circle at 70% 20%, rgba(255, 211, 109, 0.7), transparent 2px),
+        radial-gradient(circle at 50% 70%, rgba(255, 146, 102, 0.6), transparent 2px),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.75), transparent 2px),
+        radial-gradient(circle at 10% 50%, rgba(255, 180, 120, 0.65), transparent 2px),
+        radial-gradient(circle at 90% 40%, rgba(255, 255, 255, 0.7), transparent 2px),
+        radial-gradient(circle at 30% 90%, rgba(255, 211, 109, 0.6), transparent 2px),
+        radial-gradient(circle at 60% 10%, rgba(255, 146, 102, 0.65), transparent 2px);
+      filter: blur(1px);
+      animation: star-twinkle 3s ease-in-out infinite alternate, star-orbit 15s linear infinite;
+    }
+
+    .style-ani9 .backdrop::after {
+      background:
+        radial-gradient(circle at 15% 25%, rgba(255, 255, 255, 0.5), transparent 1px),
+        radial-gradient(circle at 85% 15%, rgba(255, 211, 109, 0.45), transparent 1px),
+        radial-gradient(circle at 45% 75%, rgba(255, 146, 102, 0.4), transparent 1px),
+        radial-gradient(circle at 65% 45%, rgba(255, 180, 120, 0.5), transparent 1px),
+        radial-gradient(circle at 25% 55%, rgba(255, 255, 255, 0.55), transparent 1px),
+        radial-gradient(circle at 75% 85%, rgba(255, 211, 109, 0.4), transparent 1px);
+      filter: blur(0.5px);
+      animation: star-twinkle 4s ease-in-out infinite alternate-reverse, star-orbit-reverse 20s linear infinite;
+    }
+
+    .style-ani10 {
+      --stage-bg: linear-gradient(180deg, #0c1022 0%, #162548 44%, #090d18 100%);
+      --stage-fg: #f6f7ff;
+      --stage-subtle: rgba(246, 247, 255, 0.78);
+      --stage-overlay: rgba(8, 11, 22, 0.22);
+      --stage-accent: #a78bfa;
+    }
+
+    .style-ani10 .backdrop::before {
+      inset: -8%;
+      background:
+        radial-gradient(circle at 50% 50%, transparent 0 14%, rgba(167,139,250,0.24) 15%, transparent 17%),
+        radial-gradient(circle at 50% 50%, transparent 0 24%, rgba(255,255,255,0.18) 25%, transparent 27%),
+        radial-gradient(circle at 50% 50%, transparent 0 36%, rgba(129,140,248,0.16) 37%, transparent 39%);
+      animation: pulse-rings 5.8s ease-out infinite;
+    }
+
+    .style-ani10 .backdrop::after {
+      background:
+        radial-gradient(circle at 50% 50%, rgba(167,139,250,0.12), transparent 28%),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08), transparent 12%);
+      filter: blur(12px);
+      animation: core-breathe 4.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-celebrate {
+      0%, 100% { transform: scale(1); opacity: 0.72; }
+      50% { transform: scale(1.06); opacity: 1; }
+    }
+
+    @keyframes confetti-fall {
+      0% { transform: translateY(-12%) rotate(0deg); }
+      100% { transform: translateY(14%) rotate(6deg); }
+    }
+
+    @keyframes sakura-breeze {
+      0% {
+        transform: translate3d(-2%, 0, 0) scale(0.96);
+        opacity: 0.56;
+      }
+      100% {
+        transform: translate3d(2%, -2%, 0) scale(1.08);
+        opacity: 1;
+      }
+    }
+
+    @keyframes tech-grid-pan {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(24px, 24px, 0); }
+    }
+
+    @keyframes tech-scan {
+      0% { transform: translateY(-55%); opacity: 0; }
+      20% { opacity: 0.65; }
+      100% { transform: translateY(120%); opacity: 0; }
+    }
+
+    @keyframes spotlight-sweep {
+      0% { transform: translateX(-10%) rotate(-4deg); }
+      100% { transform: translateX(10%) rotate(4deg); }
+    }
+
+    @keyframes sunrise-orbit {
+      0% { transform: translate3d(-10%, 8%, 0) scale(0.94); opacity: 0.66; }
+      100% { transform: translate3d(12%, -12%, 0) scale(1.18); opacity: 1; }
+    }
+
+    @keyframes sunrise-glow {
+      0%, 100% { opacity: 0.52; transform: scale(0.96); }
+      50% { opacity: 1; transform: scale(1.12); }
+    }
+
+    @keyframes sunrise-sweep {
+      0% { transform: translateX(-4%) translateY(0); }
+      100% { transform: translateX(4%) translateY(-2%); }
+    }
+
+    @keyframes cosmic-drift {
+      0% { transform: translate3d(-2%, 0, 0) scale(1); }
+      50% { transform: translate3d(2%, -2%, 0) scale(1.05); }
+      100% { transform: translate3d(-1.5%, 2%, 0) scale(1.02); }
+    }
+
+    @keyframes nebula-breathe {
+      0%, 100% { opacity: 0.54; transform: scale(0.94); }
+      50% { opacity: 1; transform: scale(1.12); }
+    }
+
+    @keyframes cosmic-twinkle {
+      0% { opacity: 0.42; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes rain-fall {
+      0% { transform: translateY(-12%) translateX(-2%); }
+      100% { transform: translateY(16%) translateX(2%); }
+    }
+
+    @keyframes rain-ripple {
+      0%, 100% { opacity: 0.28; transform: scale(1); }
+      50% { opacity: 0.72; transform: scale(1.08); }
+    }
+
+    @keyframes sparkle-drift {
+      0% { transform: translateY(-2%) translateX(-2%); opacity: 0.75; }
+      100% { transform: translateY(4%) translateX(3%); opacity: 1; }
+    }
+
+    @keyframes ocean-wave {
+      0% { transform: translate3d(-5%, -3%, 0) scale(0.95); opacity: 0.7; }
+      50% { opacity: 0.9; }
+      100% { transform: translate3d(7%, 4%, 0) scale(1.1); opacity: 0.8; }
+    }
+
+    @keyframes bubble-rise {
+      0% { transform: translateY(10%) scale(0.8); opacity: 0.5; }
+      50% { opacity: 0.8; }
+      100% { transform: translateY(-10%) scale(1.2); opacity: 0.3; }
+    }
+
+    @keyframes shimmer-flow {
+      0% { transform: translateX(-20%) skewX(-5deg); }
+      100% { transform: translateX(20%) skewX(5deg); }
+    }
+
+    @keyframes glow-pulse {
+      0%, 100% { transform: scale(0.95); opacity: 0.7; }
+      50% { transform: scale(1.1); opacity: 1; }
+    }
+
+    @keyframes star-twinkle {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes star-orbit {
+      0% { transform: rotate(0deg) translateX(50px) rotate(0deg); }
+      100% { transform: rotate(360deg) translateX(50px) rotate(-360deg); }
+    }
+
+    @keyframes star-orbit-reverse {
+      0% { transform: rotate(0deg) translateX(30px) rotate(0deg); }
+      100% { transform: rotate(-360deg) translateX(30px) rotate(360deg); }
+    }
+
+    @keyframes pulse-rings {
+      0% { opacity: 0.2; transform: scale(0.86); }
+      50% { opacity: 0.95; transform: scale(1); }
+      100% { opacity: 0.18; transform: scale(1.14); }
+    }
+
+    @keyframes core-breathe {
+      0%, 100% { opacity: 0.6; transform: scale(0.94); }
+      50% { opacity: 1; transform: scale(1.08); }
+    }
+
+    .style-tech .backdrop::before {
+      background-image:
+        linear-gradient(rgba(56, 189, 248, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.1) 1px, transparent 1px);
+      background-size: 56px 56px;
+      opacity: 0.5;
+    }
+
+    .style-spotlight .backdrop::before {
+      background:
+        radial-gradient(circle at 50% 16%, rgba(255, 243, 199, 0.35), transparent 14%),
+        linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.04) 42%, transparent 100%);
+    }
+
+    .content-layer {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(16px, 3vw, 36px);
+    }
+
+    .media-box {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .media-box img,
+    .media-box video,
+    .media-box iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      object-fit: contain;
+      border-radius: 0;
+      background: transparent;
+    }
+
+    .media-box iframe.web-frame {
+      background: rgba(255,255,255,0.04);
+    }
+
+    .text-box {
+      width: min(94vw, 1500px);
+      max-width: 94vw;
+      max-height: calc(100vh - 72px);
+      text-align: center;
+      line-height: 1.06;
+      font-weight: 900;
+      white-space: pre-wrap;
+      word-break: break-word;
+      letter-spacing: -0.045em;
+      color: var(--stage-fg);
+      text-wrap: balance;
+      text-shadow:
+        0 12px 34px rgba(0, 0, 0, 0.34),
+        0 0 24px rgba(255, 255, 255, 0.12);
+    }
+
+    .audio-box {
+      width: min(92vw, 720px);
+      display: grid;
+      gap: 24px;
+      justify-items: center;
+      text-align: center;
+      color: var(--stage-fg);
+    }
+
+    .audio-visualizer {
+      width: min(72vw, 420px);
+      height: min(22vh, 140px);
+      display: grid;
+      grid-template-columns: repeat(16, minmax(0, 1fr));
+      gap: 8px;
+      align-items: end;
+    }
+
+    .audio-visualizer span {
+      display: block;
+      border-radius: 999px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--stage-accent) 84%, white 16%), color-mix(in srgb, var(--stage-accent) 65%, transparent));
+      animation: equalizer 1.2s ease-in-out infinite;
+      transform-origin: bottom center;
+    }
+
+    .audio-visualizer span:nth-child(odd) { animation-duration: 1s; }
+    .audio-visualizer span:nth-child(3n) { animation-duration: 1.5s; }
+
+    .audio-caption {
+      max-width: 820px;
+      color: var(--stage-subtle);
+      font-size: clamp(0.95rem, 2vw, 1.15rem);
+      line-height: 1.5;
+    }
+
+    .data-box {
+      width: min(96vw, 1400px);
+      height: min(88vh, 980px);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 18px;
+      padding: clamp(14px, 2.2vw, 24px);
+      border-radius: 28px;
+      background: color-mix(in srgb, var(--stage-overlay) 72%, rgba(0, 0, 0, 0.18));
+      border: 1px solid color-mix(in srgb, var(--stage-fg) 14%, transparent);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+
+    .data-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .data-title {
+      margin: 0;
+      min-width: 0;
+      font-size: clamp(1.1rem, 2.5vw, 1.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--stage-fg);
+    }
+
+    .data-subtitle {
+      color: var(--stage-subtle);
+      font-size: clamp(0.78rem, 1.6vw, 0.95rem);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .data-table-shell {
+      min-height: 0;
+      overflow: auto;
+      border-radius: 22px;
+      background: color-mix(in srgb, var(--stage-overlay) 62%, rgba(255, 255, 255, 0.02));
+      border: 1px solid color-mix(in srgb, var(--stage-fg) 10%, transparent);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      color: var(--stage-fg);
+      font-size: clamp(0.78rem, 1.5vw, 0.98rem);
+    }
+
+    .data-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 0.78em;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--stage-subtle);
+      background: color-mix(in srgb, var(--stage-bg) 46%, rgba(0, 0, 0, 0.28));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .data-table tbody td {
+      padding: 14px 16px;
+      border-top: 1px solid color-mix(in srgb, var(--stage-fg) 8%, transparent);
+      vertical-align: top;
+      line-height: 1.45;
+    }
+
+    .data-table tbody tr:nth-child(even) td {
+      background: color-mix(in srgb, var(--stage-fg) 3%, transparent);
+    }
+
+    .data-empty {
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      text-align: center;
+      color: var(--stage-subtle);
+      font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+      line-height: 1.6;
+    }
+
+    @keyframes equalizer {
+      0%, 100% { transform: scaleY(0.28); opacity: 0.42; }
+      50% { transform: scaleY(1); opacity: 1; }
+    }
+
+    .floating-ui {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+    }
+
+    .signal-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(10, 14, 24, 0.48);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+      color: #f8fafc;
+      font-size: 0.84rem;
+      font-weight: 700;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: opacity 0.24s ease, transform 0.24s ease;
+    }
+
+    .signal-pill::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #f59e0b;
+      box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.18);
+    }
+
+    .signal-pill.is-hidden {
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+    }
+
+    .signal-pill.is-connected::before {
+      background: #22c55e;
+      box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.18);
+    }
+
+    @media (max-width: 720px) {
+      .floating-ui {
+        top: 12px;
+        right: 12px;
+      }
+
+      .signal-pill {
+        font-size: 0.76rem;
+        padding: 8px 12px;
+      }
+    }
+  </style>
+</head>
+  <body>
+
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+    <div class="app" id="app">
+      <div class="stage style-black" id="stage">
+        <div class="backdrop"></div>
+        <div class="fx-layer" id="fx-layer"></div>
+        <div class="content-layer" id="content-layer"></div>
+      </div>
+
+    <div class="floating-ui">
+      <div class="signal-pill" id="signal-pill">Connecting...</div>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+<script type="application/json" id="ai-bridge-media-only-config">
+{
+  "sessionId": "<<sessionid>>",
+  "syncId": "<<syncid>>",
+  "field": "media",
+  "defaultSignal": "text@ani1:Waiting for media",
+  "historyMs": 86400000
+}
+</script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START -->
+<script>
+  // Editable sample script slot for small per-template enhancements.
+</script>
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script>
+      (function () {
+        var searchParams = new URLSearchParams(window.location.search);
+        var configNode = document.getElementById("ai-bridge-media-only-config");
+        var config = {};
+        try {
+          config = JSON.parse(configNode && configNode.textContent ? configNode.textContent : "{}");
+        } catch (error) {
+          config = {};
+        }
+        var SESSION_ID = String(searchParams.get("sessionId") || searchParams.get("sessionid") || config.sessionId || "<<sessionid>>").trim();
+        var SYNC_ID = String(searchParams.get("syncId") || searchParams.get("syncid") || config.syncId || "<<syncid>>").trim();
+        var MEDIA_FIELD = String(config.field || "media").trim() || "media";
+        var STREAM_FIELDS = [MEDIA_FIELD];
+        var DEFAULT_MEDIA_SIGNAL = String(config.defaultSignal || "text@ani1:Waiting for media").trim() || "text@ani1:Waiting for media";
+        var STREAM_HISTORY_MS = Math.max(0, Number(config.historyMs || 24 * 60 * 60 * 1000) || 24 * 60 * 60 * 1000);
+
+      var stage = document.getElementById("stage");
+      var fxLayer = document.getElementById("fx-layer");
+      var contentLayer = document.getElementById("content-layer");
+      var signalPill = document.getElementById("signal-pill");
+      var currentDisposable = null;
+      var currentFxDisposable = null;
+      var currentTextNode = null;
+      var resizeRaf = 0;
+      var eventSource = null;
+      var currentRenderToken = 0;
+      var fitBurstTimers = [];
+      var stageResizeObserver = null;
+      var connectionState = "connecting";
+      var connectionHideTimer = 0;
+
+      var styleRegistry = {
+        black: true,
+        white: true,
+        warm: true,
+        sunrise: true,
+        tech: true,
+        spotlight: true,
+        ani1: true,
+        ani2: true,
+        ani3: true,
+        ani4: true,
+        ani5: true,
+        ani6: true,
+        ani7: true,
+        ani8: true,
+        ani9: true,
+        ani10: true
+      };
+
+      function cleanupCurrentMedia() {
+        if (currentDisposable && typeof currentDisposable === "function") {
+          currentDisposable();
+        }
+        if (currentFxDisposable && typeof currentFxDisposable === "function") {
+          currentFxDisposable();
+        }
+        currentDisposable = null;
+        currentFxDisposable = null;
+        currentTextNode = null;
+        while (fitBurstTimers.length) {
+          clearTimeout(fitBurstTimers.pop());
+        }
+        contentLayer.innerHTML = "";
+        if (fxLayer) {
+          fxLayer.innerHTML = "";
+        }
+      }
+
+      function parseMediaSignal(raw) {
+        var source = String(raw == null ? "" : raw).trim();
+        if (!source) {
+          return {
+            type: "text",
+            style: "black",
+            payload: "No media payload"
+          };
+        }
+
+        var separatorIndex = source.indexOf(":");
+        if (separatorIndex < 0) {
+          return {
+            type: "text",
+            style: "black",
+            payload: source
+          };
+        }
+
+        var header = source.slice(0, separatorIndex).trim();
+        var payload = source.slice(separatorIndex + 1);
+        var headerParts = header.split("@");
+        var type = String(headerParts[0] || "text").trim().toLowerCase();
+        var style = String(headerParts[1] || "black").trim().toLowerCase();
+
+        if (!styleRegistry[style]) {
+          style = "black";
+        }
+
+        return {
+          type: type || "text",
+          style: style,
+          payload: payload
+        };
+      }
+
+      function applyStyle(styleName) {
+        Object.keys(styleRegistry).forEach(function (name) {
+          stage.classList.remove("style-" + name);
+        });
+        stage.classList.add("style-" + (styleRegistry[styleName] ? styleName : "black"));
+      }
+
+      function createFxCanvas() {
+        if (!fxLayer) return null;
+        fxLayer.innerHTML = "";
+        var canvas = document.createElement("canvas");
+        canvas.className = "fx-canvas";
+        fxLayer.appendChild(canvas);
+        var context = canvas.getContext("2d");
+        if (!context) {
+          return null;
+        }
+        return { canvas: canvas, context: context };
+      }
+
+      function renderSkylineEffect() {
+        var surface = createFxCanvas();
+        if (!surface) return;
+        var canvas = surface.canvas;
+        var ctx = surface.context;
+        var rafId = 0;
+        var disposed = false;
+        var width = 0;
+        var height = 0;
+        var dpr = 1;
+        var patterns = [];
+
+        function buildSkylinePattern(baseColor, glowColor, seed, density) {
+          var patternCanvas = document.createElement("canvas");
+          patternCanvas.width = Math.max(640, Math.floor(width));
+          patternCanvas.height = Math.max(240, Math.floor(height));
+          var pctx = patternCanvas.getContext("2d");
+          var baseline = patternCanvas.height;
+          var rng = seed;
+          function nextRand() {
+            rng = (rng * 1664525 + 1013904223) % 4294967296;
+            return rng / 4294967296;
+          }
+          pctx.fillStyle = baseColor;
+          var x = 0;
+          while (x < patternCanvas.width + 80) {
+            var buildingWidth = 18 + nextRand() * density;
+            var buildingHeight = patternCanvas.height * (0.18 + nextRand() * 0.5);
+            pctx.fillRect(x, baseline - buildingHeight, buildingWidth, buildingHeight);
+            if (nextRand() > 0.42) {
+              pctx.fillStyle = glowColor;
+              var windowCols = Math.max(1, Math.floor(buildingWidth / 8));
+              var windowRows = Math.max(2, Math.floor(buildingHeight / 18));
+              for (var col = 0; col < windowCols; col += 1) {
+                for (var row = 0; row < windowRows; row += 1) {
+                  if (nextRand() > 0.6) continue;
+                  pctx.fillRect(x + 3 + col * 7, baseline - buildingHeight + 6 + row * 14, 3, 5);
+                }
+              }
+              pctx.fillStyle = baseColor;
+            }
+            x += buildingWidth + 2 + nextRand() * 6;
+          }
+          return patternCanvas;
+        }
+
+        function resize() {
+          var bounds = fxLayer.getBoundingClientRect();
+          width = Math.max(1, bounds.width);
+          height = Math.max(1, bounds.height);
+          dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+          canvas.width = Math.round(width * dpr);
+          canvas.height = Math.round(height * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          patterns = [
+            buildSkylinePattern("rgba(16, 24, 46, 0.88)", "rgba(255, 219, 126, 0.55)", 17, 34),
+            buildSkylinePattern("rgba(10, 16, 34, 0.94)", "rgba(255, 242, 186, 0.72)", 71, 44),
+            buildSkylinePattern("rgba(4, 7, 18, 0.98)", "rgba(255, 234, 160, 0.88)", 131, 54)
+          ];
+        }
+
+        function drawLayer(patternCanvas, speed, yOffset, alpha) {
+          var offset = -((performance.now() * speed) % patternCanvas.width);
+          ctx.globalAlpha = alpha;
+          for (var x = offset; x < width + patternCanvas.width; x += patternCanvas.width) {
+            ctx.drawImage(patternCanvas, x, height - patternCanvas.height + yOffset, patternCanvas.width, patternCanvas.height);
+          }
+        }
+
+        function frame() {
+          if (disposed) return;
+          ctx.clearRect(0, 0, width, height);
+          var glow = ctx.createRadialGradient(width * 0.55, height * 0.18, 0, width * 0.55, height * 0.18, width * 0.38);
+          glow.addColorStop(0, "rgba(255, 220, 150, 0.34)");
+          glow.addColorStop(1, "rgba(255, 220, 150, 0)");
+          ctx.fillStyle = glow;
+          ctx.fillRect(0, 0, width, height);
+          drawLayer(patterns[0], 0.012, 34, 0.55);
+          drawLayer(patterns[1], 0.02, 18, 0.78);
+          drawLayer(patterns[2], 0.032, 0, 1);
+          ctx.globalAlpha = 1;
+          rafId = requestAnimationFrame(frame);
+        }
+
+        resize();
+        frame();
+        currentFxDisposable = function () {
+          disposed = true;
+          if (rafId) cancelAnimationFrame(rafId);
+        };
+      }
+
+      function renderSakuraEffect() {
+        var surface = createFxCanvas();
+        if (!surface) return;
+        var canvas = surface.canvas;
+        var ctx = surface.context;
+        var rafId = 0;
+        var disposed = false;
+        var width = 0;
+        var height = 0;
+        var dpr = 1;
+        var petals = [];
+        var petalCount = 34;
+
+        function resize() {
+          var bounds = fxLayer.getBoundingClientRect();
+          width = Math.max(1, bounds.width);
+          height = Math.max(1, bounds.height);
+          dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+          canvas.width = Math.round(width * dpr);
+          canvas.height = Math.round(height * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          petals = [];
+          for (var i = 0; i < petalCount; i += 1) {
+            petals.push({
+              x: Math.random() * width,
+              y: (Math.random() * height * 1.3) - height * 0.2,
+              size: 10 + Math.random() * 12,
+              speedY: 0.35 + Math.random() * 1.1,
+              sway: 18 + Math.random() * 42,
+              rotation: Math.random() * Math.PI * 2,
+              rotationSpeed: (Math.random() - 0.5) * 0.03,
+              phase: Math.random() * Math.PI * 2,
+              tint: 330 + Math.random() * 20
+            });
+          }
+        }
+
+        function drawPetal(petal) {
+          ctx.save();
+          ctx.translate(petal.x, petal.y);
+          ctx.rotate(petal.rotation);
+          ctx.scale(1, 0.82);
+          var fill = ctx.createRadialGradient(-petal.size * 0.16, -petal.size * 0.1, 1, 0, 0, petal.size);
+          fill.addColorStop(0, "hsla(" + petal.tint + ", 90%, 96%, 0.96)");
+          fill.addColorStop(0.52, "hsla(" + petal.tint + ", 84%, 82%, 0.94)");
+          fill.addColorStop(1, "hsla(" + petal.tint + ", 68%, 70%, 0.88)");
+          ctx.fillStyle = fill;
+          ctx.beginPath();
+          ctx.moveTo(0, -petal.size);
+          ctx.bezierCurveTo(petal.size * 0.9, -petal.size * 0.7, petal.size * 0.95, petal.size * 0.28, 0, petal.size);
+          ctx.bezierCurveTo(-petal.size * 0.95, petal.size * 0.28, -petal.size * 0.9, -petal.size * 0.7, 0, -petal.size);
+          ctx.fill();
+          ctx.fillStyle = "rgba(255,255,255,0.34)";
+          ctx.fillRect(-1, -petal.size * 0.68, 2, petal.size * 1.18);
+          ctx.restore();
+        }
+
+        function frame(time) {
+          if (disposed) return;
+          ctx.clearRect(0, 0, width, height);
+          for (var i = 0; i < petals.length; i += 1) {
+            var petal = petals[i];
+            petal.y += petal.speedY;
+            petal.x += Math.sin((time * 0.0012) + petal.phase + (petal.y * 0.008)) * 0.9;
+            petal.rotation += petal.rotationSpeed;
+            drawPetal(petal);
+            if (petal.y > height + 24) {
+              petal.y = -24 - Math.random() * 60;
+              petal.x = Math.random() * width;
+            }
+            if (petal.x < -30) petal.x = width + 30;
+            if (petal.x > width + 30) petal.x = -30;
+          }
+          rafId = requestAnimationFrame(frame);
+        }
+
+        resize();
+        frame(0);
+        currentFxDisposable = function () {
+          disposed = true;
+          if (rafId) cancelAnimationFrame(rafId);
+        };
+      }
+
+      function renderNoiseFlowEffect() {
+        var surface = createFxCanvas();
+        if (!surface) return;
+        var canvas = surface.canvas;
+        var ctx = surface.context;
+        var rafId = 0;
+        var disposed = false;
+        var width = 0;
+        var height = 0;
+        var dpr = 1;
+        var particles = [];
+        var particleCount = 900;
+        var hueBase = 210;
+
+        function fract(value) {
+          return value - Math.floor(value);
+        }
+
+        function lerp(a, b, t) {
+          return a + (b - a) * t;
+        }
+
+        function smoothstep(t) {
+          return t * t * (3 - 2 * t);
+        }
+
+        function hash(x, y, z) {
+          return fract(Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453123);
+        }
+
+        function valueNoise(x, y, z) {
+          var xi = Math.floor(x);
+          var yi = Math.floor(y);
+          var zi = Math.floor(z);
+          var xf = x - xi;
+          var yf = y - yi;
+          var zf = z - zi;
+          var u = smoothstep(xf);
+          var v = smoothstep(yf);
+          var w = smoothstep(zf);
+
+          var x00 = lerp(hash(xi, yi, zi), hash(xi + 1, yi, zi), u);
+          var x10 = lerp(hash(xi, yi + 1, zi), hash(xi + 1, yi + 1, zi), u);
+          var x01 = lerp(hash(xi, yi, zi + 1), hash(xi + 1, yi, zi + 1), u);
+          var x11 = lerp(hash(xi, yi + 1, zi + 1), hash(xi + 1, yi + 1, zi + 1), u);
+
+          var y0 = lerp(x00, x10, v);
+          var y1 = lerp(x01, x11, v);
+          return lerp(y0, y1, w);
+        }
+
+        function resize() {
+          var bounds = fxLayer.getBoundingClientRect();
+          width = Math.max(1, bounds.width);
+          height = Math.max(1, bounds.height);
+          dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+          canvas.width = Math.round(width * dpr);
+          canvas.height = Math.round(height * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          particles = [];
+          for (var index = 0; index < particleCount; index += 1) {
+              particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                hue: 0,
+                life: 60 + Math.random() * 160
+              });
+            }
+            ctx.fillStyle = "rgba(3, 8, 18, 1)";
+            ctx.fillRect(0, 0, width, height);
+          }
+
+          function respawn(particle) {
+            particle.x = Math.random() * width;
+            particle.y = Math.random() * height;
+            particle.life = 60 + Math.random() * 160;
+          }
+
+          function frame(time) {
+            if (disposed) return;
+            ctx.fillStyle = "rgba(4, 10, 22, 0.035)";
+            ctx.fillRect(0, 0, width, height);
+            for (var i = 0; i < particles.length; i += 1) {
+              var p = particles[i];
+              var noise = valueNoise(p.x * 0.0042, p.y * 0.0042, time * 0.00018);
+              var angle = noise * Math.PI * 6;
+              var speed = 0.9;
+              var nx = p.x + Math.cos(angle) * speed * 1.9;
+              var ny = p.y + Math.sin(angle) * speed * 1.9;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(nx, ny);
+              p.hue = (hueBase + noise * 120 + i * 0.04) % 360;
+              ctx.strokeStyle = "hsla(" + p.hue + ", 90%, 72%, 0.11)";
+              ctx.lineWidth = 1;
+              ctx.stroke();
+              p.x = nx;
+              p.y = ny;
+              p.life -= 1;
+              if (p.x < -20 || p.x > width + 20 || p.y < -20 || p.y > height + 20 || p.life <= 0) {
+                respawn(p);
+              }
+            }
+            hueBase += 0.18;
+            rafId = requestAnimationFrame(frame);
+          }
+
+        resize();
+        frame(0);
+        currentFxDisposable = function () {
+          disposed = true;
+          if (rafId) cancelAnimationFrame(rafId);
+        };
+      }
+
+        function renderStyleEffects(styleName) {
+        if (currentFxDisposable && typeof currentFxDisposable === "function") {
+          currentFxDisposable();
+        }
+        currentFxDisposable = null;
+        if (fxLayer) {
+          fxLayer.innerHTML = "";
+        }
+        if (styleName === "ani6") {
+          renderSkylineEffect();
+          return;
+        }
+        if (styleName === "ani3") {
+          renderSakuraEffect();
+          return;
+        }
+        if (styleName === "ani7") {
+          renderNoiseFlowEffect();
+        }
+      }
+
+      function normalizeYouTubeUrl(input) {
+        var value = String(input || "").trim();
+        if (!value) return "";
+        try {
+          var url = new URL(value);
+          if (url.hostname.indexOf("youtu.be") >= 0) {
+            return "https://www.youtube.com/embed/" + url.pathname.replace(/^\//, "") + "?autoplay=1&mute=1&playsinline=1&rel=0";
+          }
+          if (url.hostname.indexOf("youtube.com") >= 0) {
+            var videoId = url.searchParams.get("v");
+            if (videoId) {
+              return "https://www.youtube.com/embed/" + videoId + "?autoplay=1&mute=1&playsinline=1&rel=0";
+            }
+            if (url.pathname.indexOf("/embed/") >= 0) {
+              return value;
+            }
+          }
+        } catch (error) {}
+        return value;
+      }
+
+      function humanizeMacroName(value) {
+        return String(value || "")
+          .trim()
+          .replace(/[_-]+/g, " ")
+          .replace(/\s+/g, " ")
+          .replace(/\b\w/g, function (match) { return match.toUpperCase(); });
+      }
+
+      function formatTableValue(value) {
+        if (value === null || typeof value === "undefined") {
+          return "—";
+        }
+        if (typeof value === "object") {
+          try {
+            return JSON.stringify(value);
+          } catch (error) {
+            return String(value);
+          }
+        }
+        return String(value);
+      }
+
+      function fitText() {
+        if (!currentTextNode) return;
+        var node = currentTextNode;
+        var min = 10;
+        var max = 80;
+        var bounds = contentLayer ? contentLayer.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight };
+        var availableWidth = Math.min(Math.max(120, bounds.width - 12), 1500);
+        var availableHeight = Math.max(80, bounds.height - 12);
+        node.style.width = availableWidth + "px";
+        node.style.maxWidth = availableWidth + "px";
+        node.style.maxHeight = availableHeight + "px";
+        var probe = document.createElement("div");
+        probe.className = "text-box";
+        probe.textContent = node.textContent || "";
+        probe.style.position = "absolute";
+        probe.style.left = "-99999px";
+        probe.style.top = "0";
+        probe.style.visibility = "hidden";
+        probe.style.pointerEvents = "none";
+        probe.style.width = availableWidth + "px";
+        probe.style.maxWidth = availableWidth + "px";
+        probe.style.maxHeight = "none";
+        probe.style.overflow = "visible";
+        document.body.appendChild(probe);
+
+        var low = min;
+        var high = max;
+        var best = min;
+        while (low <= high) {
+          var mid = Math.floor((low + high) / 2);
+          probe.style.fontSize = mid + "px";
+          if (probe.scrollHeight <= availableHeight && probe.scrollWidth <= availableWidth) {
+            best = mid;
+            low = mid + 1;
+          } else {
+            high = mid - 1;
+          }
+        }
+
+        document.body.removeChild(probe);
+        node.style.fontSize = best + "px";
+      }
+
+      function requestFitText() {
+        if (resizeRaf) cancelAnimationFrame(resizeRaf);
+        resizeRaf = requestAnimationFrame(fitText);
+      }
+
+      function scheduleFitBurst() {
+        while (fitBurstTimers.length) {
+          clearTimeout(fitBurstTimers.pop());
+        }
+        [0, 80, 180, 360, 720].forEach(function (delay) {
+          fitBurstTimers.push(window.setTimeout(requestFitText, delay));
+        });
+      }
+
+      function renderText(payload) {
+        var box = document.createElement("div");
+        box.className = "media-box";
+        var text = document.createElement("div");
+        text.className = "text-box";
+        text.textContent = String(payload || "").replace(/\\n/g, "\n");
+        box.appendChild(text);
+        contentLayer.appendChild(box);
+        currentTextNode = text;
+        scheduleFitBurst();
+      }
+
+      function renderImage(url) {
+        var box = document.createElement("div");
+        box.className = "media-box";
+        var image = document.createElement("img");
+        image.alt = "media image";
+        image.src = String(url || "").trim();
+        box.appendChild(image);
+        contentLayer.appendChild(box);
+      }
+
+      function renderVideo(url) {
+        var box = document.createElement("div");
+        box.className = "media-box";
+        var video = document.createElement("video");
+        video.src = String(url || "").trim();
+        video.autoplay = true;
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.controls = true;
+        box.appendChild(video);
+        contentLayer.appendChild(box);
+      }
+
+      function renderWebsite(url, className) {
+        var box = document.createElement("div");
+        box.className = "media-box";
+        var frame = document.createElement("iframe");
+        frame.className = className || "web-frame";
+        frame.src = String(url || "").trim();
+        frame.referrerPolicy = "no-referrer-when-downgrade";
+        box.appendChild(frame);
+        contentLayer.appendChild(box);
+      }
+
+      function renderAudio(url) {
+        var box = document.createElement("div");
+        box.className = "audio-box";
+
+        var bars = document.createElement("div");
+        bars.className = "audio-visualizer";
+        for (var index = 0; index < 16; index += 1) {
+          var bar = document.createElement("span");
+          bar.style.height = (30 + ((index * 9) % 70)) + "%";
+          bars.appendChild(bar);
+        }
+
+        var caption = document.createElement("div");
+        caption.className = "audio-caption";
+        caption.textContent = String(url || "").trim();
+
+        var audio = document.createElement("audio");
+        audio.src = String(url || "").trim();
+        audio.controls = true;
+        audio.autoplay = true;
+        audio.style.width = "min(88vw, 560px)";
+
+        box.appendChild(bars);
+        box.appendChild(audio);
+        box.appendChild(caption);
+        contentLayer.appendChild(box);
+
+        currentDisposable = function () {
+          try {
+            audio.pause();
+            audio.src = "";
+          } catch (error) {}
+        };
+      }
+
+      function renderDataTable(macroName, renderToken) {
+        var box = document.createElement("div");
+        box.className = "data-box";
+
+        var header = document.createElement("div");
+        header.className = "data-header";
+
+        var title = document.createElement("h2");
+        title.className = "data-title";
+        title.textContent = humanizeMacroName(macroName || "Data");
+
+        var subtitle = document.createElement("div");
+        subtitle.className = "data-subtitle";
+        subtitle.textContent = "Loading data...";
+
+        header.appendChild(title);
+        header.appendChild(subtitle);
+
+        var tableShell = document.createElement("div");
+        tableShell.className = "data-table-shell";
+
+        var empty = document.createElement("div");
+        empty.className = "data-empty";
+        empty.textContent = "Loading data...";
+        tableShell.appendChild(empty);
+
+        box.appendChild(header);
+        box.appendChild(tableShell);
+        contentLayer.appendChild(box);
+
+        if (!SESSION_ID || !SYNC_ID || typeof fetch !== "function" || window.location.protocol === "file:") {
+          subtitle.textContent = "Unavailable";
+          empty.textContent = "IoData is only available when this sample is opened through the app with sessionId and syncId.";
+          return;
+        }
+
+        var controller = typeof AbortController === "function" ? new AbortController() : null;
+        currentDisposable = function () {
+          if (controller) {
+            try {
+              controller.abort();
+            } catch (error) {}
+          }
+        };
+
+        fetch("/api/" + encodeURIComponent(SESSION_ID) + "/" + encodeURIComponent(SYNC_ID) + "/iodata", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ macro: String(macroName || "").trim() }),
+          signal: controller ? controller.signal : undefined
+        })
+          .then(function (response) {
+            if (!response.ok) {
+              return response.json().catch(function () { return {}; }).then(function (errorPayload) {
+                throw new Error(String(errorPayload && (errorPayload.error || errorPayload.message) || "Unable to load data."));
+              });
+            }
+            return response.json();
+          })
+          .then(function (rows) {
+            if (renderToken !== currentRenderToken) {
+              return;
+            }
+            var safeRows = Array.isArray(rows) ? rows : [];
+            subtitle.textContent = safeRows.length ? (safeRows.length + " row" + (safeRows.length === 1 ? "" : "s")) : "No rows";
+            tableShell.innerHTML = "";
+
+            if (!safeRows.length) {
+              var noRows = document.createElement("div");
+              noRows.className = "data-empty";
+              noRows.textContent = "This macro returned no rows.";
+              tableShell.appendChild(noRows);
+              return;
+            }
+
+            var columns = Object.keys(safeRows.reduce(function (acc, row) {
+              if (row && typeof row === "object" && !Array.isArray(row)) {
+                Object.keys(row).forEach(function (key) {
+                  acc[key] = true;
+                });
+              }
+              return acc;
+            }, {}));
+
+            var table = document.createElement("table");
+            table.className = "data-table";
+            var thead = document.createElement("thead");
+            var headRow = document.createElement("tr");
+            columns.forEach(function (column) {
+              var th = document.createElement("th");
+              th.textContent = humanizeMacroName(column);
+              headRow.appendChild(th);
+            });
+            thead.appendChild(headRow);
+
+            var tbody = document.createElement("tbody");
+            safeRows.forEach(function (row) {
+              var tr = document.createElement("tr");
+              columns.forEach(function (column) {
+                var td = document.createElement("td");
+                td.textContent = formatTableValue(row && typeof row === "object" ? row[column] : "");
+                tr.appendChild(td);
+              });
+              tbody.appendChild(tr);
+            });
+
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            tableShell.appendChild(table);
+          })
+          .catch(function (error) {
+            if (controller && controller.signal && controller.signal.aborted) {
+              return;
+            }
+            if (renderToken !== currentRenderToken) {
+              return;
+            }
+            subtitle.textContent = "Error";
+            tableShell.innerHTML = "";
+            var errorBox = document.createElement("div");
+            errorBox.className = "data-empty";
+            errorBox.textContent = String((error && error.message) || "Unable to load data.");
+            tableShell.appendChild(errorBox);
+          });
+      }
+
+      function renderMedia(parsed) {
+        cleanupCurrentMedia();
+        currentRenderToken += 1;
+        var renderToken = currentRenderToken;
+        applyStyle(parsed.style);
+        renderStyleEffects(parsed.style);
+
+        if (parsed.type === "image") {
+          renderImage(parsed.payload);
+          return;
+        }
+
+        if (parsed.type === "web") {
+          renderWebsite(parsed.payload, "web-frame");
+          return;
+        }
+
+        if (parsed.type === "video") {
+          renderVideo(parsed.payload);
+          return;
+        }
+
+        if (parsed.type === "youtube") {
+          renderWebsite(normalizeYouTubeUrl(parsed.payload), "web-frame");
+          return;
+        }
+
+        if (parsed.type === "audio") {
+          renderAudio(parsed.payload);
+          return;
+        }
+
+        if (parsed.type === "data") {
+          renderDataTable(parsed.payload, renderToken);
+          return;
+        }
+
+        renderText(parsed.payload);
+      }
+
+      function applyMediaSignal(value) {
+        renderMedia(parseMediaSignal(value));
+      }
+
+      function setConnectionState(mode) {
+        if (!signalPill) return;
+        connectionState = mode;
+        if (connectionHideTimer) {
+          clearTimeout(connectionHideTimer);
+          connectionHideTimer = 0;
+        }
+        if (mode === "hidden") {
+          signalPill.classList.add("is-hidden");
+          signalPill.classList.remove("is-connected");
+          return;
+        }
+        signalPill.classList.remove("is-hidden");
+        signalPill.classList.toggle("is-connected", mode === "connected");
+        signalPill.textContent = mode === "connected" ? "Connected" : "Connecting...";
+      }
+
+      function handleStreamPayload(data) {
+        if (!data || !data.type) return;
+        if (data.type === "telemetry" && data.payload && typeof data.payload === "object") {
+          if (Object.prototype.hasOwnProperty.call(data.payload, MEDIA_FIELD)) {
+            applyMediaSignal(data.payload[MEDIA_FIELD]);
+          }
+          return;
+        }
+        if (data.type === "timeseries" && Array.isArray(data.rows)) {
+          data.rows.forEach(function (row) {
+            if (String(row.field || "").trim().toLowerCase() === MEDIA_FIELD.toLowerCase()) {
+              applyMediaSignal(row.value);
+            }
+          });
+        }
+      }
+
+      function fetchLatestMedia() {
+        if (!SESSION_ID || !SYNC_ID || typeof fetch !== "function") {
+          return Promise.resolve(false);
+        }
+        if (window.location.protocol === "file:") {
+          return Promise.resolve(false);
+        }
+        var latestUrl = "/api/" + encodeURIComponent(SESSION_ID) + "/" + encodeURIComponent(SYNC_ID) + "/iotelemetry";
+        return fetch(latestUrl, { cache: "no-store" })
+          .then(function (response) {
+            if (!response.ok) {
+              return null;
+            }
+            return response.json();
+          })
+          .then(function (result) {
+            var payload = result && result.c2 && result.c2.payload;
+            if (payload && Object.prototype.hasOwnProperty.call(payload, MEDIA_FIELD)) {
+              applyMediaSignal(payload[MEDIA_FIELD]);
+              return true;
+            }
+            return false;
+          })
+          .catch(function () {
+            return false;
+          });
+      }
+
+      function connectStream() {
+        if (typeof EventSource === "undefined" || !SESSION_ID) return;
+        if (eventSource && typeof eventSource.close === "function") eventSource.close();
+        setConnectionState("connecting");
+        var params = new URLSearchParams();
+        params.set("historyMs", String(STREAM_HISTORY_MS));
+        params.set("fields", STREAM_FIELDS.join(","));
+        eventSource = new EventSource("/api/" + encodeURIComponent(SESSION_ID) + "/stream?" + params.toString());
+        eventSource.onmessage = function (event) {
+          try {
+            var parsed = JSON.parse(event.data);
+            handleStreamPayload(parsed);
+            if (parsed && parsed.type !== "heartbeat" && connectionState === "connecting") {
+              setConnectionState("connected");
+              connectionHideTimer = window.setTimeout(function () {
+                setConnectionState("hidden");
+              }, 900);
+            }
+          } catch (error) {}
+        };
+        eventSource.onerror = function () {
+          setConnectionState("connecting");
+        };
+      }
+      window.addEventListener("resize", requestFitText);
+      if (typeof ResizeObserver === "function" && contentLayer) {
+        stageResizeObserver = new ResizeObserver(function () {
+          requestFitText();
+        });
+        stageResizeObserver.observe(contentLayer);
+      }
+
+      applyMediaSignal(DEFAULT_MEDIA_SIGNAL);
+      fetchLatestMedia().finally(function () {
+        connectStream();
+      });
+      })();
+    </script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

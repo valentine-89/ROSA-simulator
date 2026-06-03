@@ -1,0 +1,256 @@
+:root, [data-theme="neumorphism"] {
+  --theme-bg: #e0e5ec;
+  --theme-card: #e0e5ec;
+  --theme-text: #4a5568;
+  --theme-border: 1px solid transparent;
+  --theme-shadow: 9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5);
+  --theme-radius: 30px;
+  --theme-primary: #3182ce;
+  --theme-btn-bg: #e0e5ec;
+  --theme-btn-text: #4a5568;
+  --theme-series-1: #3182ce;
+  --theme-series-2: #4a5568;
+  --theme-series-3: #38a169;
+  --theme-series-4: #d69e2e;
+  --theme-series-5: #d53f8c;
+  --theme-series-6: #805ad5;
+}
+
+[data-theme="aurora-ui"] {
+  --theme-bg: linear-gradient(120deg, #1f0122, #04123b, #032b26);
+  --theme-card: rgba(255, 255, 255, 0.05);
+  --theme-text: #e2e8f0;
+  --theme-border: 1px solid rgba(255, 255, 255, 0.15);
+  --theme-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  --theme-radius: 32px;
+  --theme-primary: #c084fc;
+  --theme-btn-bg: rgba(255, 255, 255, 0.1);
+  --theme-btn-text: #ffffff;
+  --theme-series-1: #c084fc;
+  --theme-series-2: #22d3ee;
+  --theme-series-3: #34d399;
+  --theme-series-4: #fbbf24;
+  --theme-series-5: #f472b6;
+  --theme-series-6: #60a5fa;
+}
+
+[data-theme="modern-flat"] {
+  --theme-bg: #f4f4f5;
+  --theme-card: #ffffff;
+  --theme-text: #18181b;
+  --theme-border: 2px solid #18181b;
+  --theme-shadow: 4px 4px 0px #18181b;
+  --theme-radius: 0px;
+  --theme-primary: #3b82f6;
+  --theme-btn-bg: #18181b;
+  --theme-btn-text: #ffffff;
+  --theme-series-1: #3b82f6;
+  --theme-series-2: #18181b;
+  --theme-series-3: #10b981;
+  --theme-series-4: #f59e0b;
+  --theme-series-5: #ef4444;
+  --theme-series-6: #8b5cf6;
+}
+
+[data-theme="glassmorphism"] {
+  --theme-bg: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+  --theme-card: rgba(255, 255, 255, 0.25);
+  --theme-text: #1e293b;
+  --theme-border: 1px solid rgba(255, 255, 255, 0.4);
+  --theme-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  --theme-radius: 24px;
+  --theme-primary: #ec4899;
+  --theme-btn-bg: rgba(255, 255, 255, 0.4);
+  --theme-btn-text: #1e293b;
+  --theme-series-1: #ec4899;
+  --theme-series-2: #6366f1;
+  --theme-series-3: #06b6d4;
+  --theme-series-4: #f59e0b;
+  --theme-series-5: #22c55e;
+  --theme-series-6: #8b5cf6;
+}
+
+[data-theme="cyberpunk"] {
+  --theme-bg: #fbee0f;
+  --theme-card: #050505;
+  --theme-text: #02fdf5;
+  --theme-border: 2px solid #ff003c;
+  --theme-shadow: 5px 5px 0px #ff003c;
+  --theme-radius: 0px;
+  --theme-primary: #ff003c;
+  --theme-btn-bg: #ff003c;
+  --theme-btn-text: #050505;
+  --theme-series-1: #ff003c;
+  --theme-series-2: #02fdf5;
+  --theme-series-3: #fbee0f;
+  --theme-series-4: #ffffff;
+  --theme-series-5: #ff8fab;
+  --theme-series-6: #7dd3fc;
+}
+
+[data-theme="neo-brutalism"] {
+  --theme-bg: #ffe500;
+  --theme-card: #ffffff;
+  --theme-text: #000000;
+  --theme-border: 3px solid #000000;
+  --theme-shadow: 6px 6px 0px #000000;
+  --theme-radius: 0px;
+  --theme-primary: #ff5252;
+  --theme-btn-bg: #000000;
+  --theme-btn-text: #ffffff;
+  --theme-series-1: #ff5252;
+  --theme-series-2: #000000;
+  --theme-series-3: #2563eb;
+  --theme-series-4: #16a34a;
+  --theme-series-5: #f59e0b;
+  --theme-series-6: #9333ea;
+}
+
+[data-theme="bento-grid"] {
+  --theme-bg: #f2f2f7;
+  --theme-card: #ffffff;
+  --theme-text: #1c1c1e;
+  --theme-border: 1px solid rgba(0,0,0,0.05);
+  --theme-shadow: 0 8px 24px rgba(149, 157, 165, 0.12);
+  --theme-radius: 32px;
+  --theme-primary: #007aff;
+  --theme-btn-bg: #007aff;
+  --theme-btn-text: #ffffff;
+  --theme-series-1: #007aff;
+  --theme-series-2: #34c759;
+  --theme-series-3: #ff9500;
+  --theme-series-4: #af52de;
+  --theme-series-5: #ff2d55;
+  --theme-series-6: #5ac8fa;
+}
+
+[data-theme="modern-flat"] .panel,
+[data-theme="modern-flat"] .section-card,
+[data-theme="modern-flat"] .light-card,
+[data-theme="modern-flat"] .sensor-stat,
+[data-theme="modern-flat"] .data-surface,
+[data-theme="modern-flat"] .data-kpi-card,
+[data-theme="modern-flat"] .widget-card,
+[data-theme="neo-brutalism"] .panel,
+[data-theme="neo-brutalism"] .section-card,
+[data-theme="neo-brutalism"] .light-card,
+[data-theme="neo-brutalism"] .sensor-stat,
+[data-theme="neo-brutalism"] .data-surface,
+[data-theme="neo-brutalism"] .data-kpi-card,
+[data-theme="neo-brutalism"] .widget-card,
+[data-theme="bento-grid"] .panel,
+[data-theme="bento-grid"] .section-card,
+[data-theme="bento-grid"] .light-card,
+[data-theme="bento-grid"] .sensor-stat,
+[data-theme="bento-grid"] .data-surface,
+[data-theme="bento-grid"] .data-kpi-card,
+[data-theme="bento-grid"] .widget-card,
+[data-theme="cyberpunk"] .panel,
+[data-theme="cyberpunk"] .section-card,
+[data-theme="cyberpunk"] .light-card,
+[data-theme="cyberpunk"] .sensor-stat,
+[data-theme="cyberpunk"] .data-surface,
+[data-theme="cyberpunk"] .data-kpi-card,
+[data-theme="cyberpunk"] .widget-card,
+[data-theme="neumorphism"] .panel,
+[data-theme="neumorphism"] .section-card,
+[data-theme="neumorphism"] .light-card,
+[data-theme="neumorphism"] .sensor-stat,
+[data-theme="neumorphism"] .data-surface,
+[data-theme="neumorphism"] .data-kpi-card,
+[data-theme="neumorphism"] .widget-card {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-theme="neumorphism"] .input,
+[data-theme="neumorphism"] .textarea,
+[data-theme="neumorphism"] .select {
+  box-shadow: inset 6px 6px 10px 0 rgba(163,177,198,0.4), inset -6px -6px 10px 0 rgba(255,255,255,0.4) !important;
+}
+
+.theme-picker {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 50;
+}
+
+.theme-picker-toggle {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  opacity: 0.9;
+  font-size: 1.25rem;
+  background: var(--theme-card);
+  color: var(--theme-text);
+  border: var(--theme-border);
+  box-shadow: var(--theme-shadow);
+  border-radius: min(var(--theme-radius), 18px);
+}
+
+.theme-picker-toggle:hover {
+  opacity: 1;
+}
+
+.theme-picker-toggle:active {
+  transform: translate(2px, 2px);
+  box-shadow: none !important;
+}
+
+.theme-picker-menu {
+  position: absolute;
+  right: 0;
+  bottom: 3.5rem;
+  min-width: 180px;
+  padding: 0.5rem;
+  display: none;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: color-mix(in srgb, var(--theme-card) 96%, transparent);
+  color: var(--theme-text);
+  border: var(--theme-border);
+  box-shadow: var(--theme-shadow);
+  border-radius: min(var(--theme-radius), 20px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.theme-picker-menu.is-open {
+  display: flex;
+}
+
+.theme-menu-button {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: transparent;
+  color: inherit;
+  border: 0;
+  border-radius: min(var(--theme-radius), 14px);
+}
+
+.theme-menu-button:hover,
+.theme-menu-button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--theme-primary) 14%, transparent);
+}
+
+/* Fix for native select dropdown options readability in Aurora UI theme */
+[data-theme="aurora-ui"] select,
+[data-theme="aurora-ui"] .select {
+  color-scheme: dark;
+}
+
+[data-theme="aurora-ui"] select option,
+[data-theme="aurora-ui"] .select option {
+  background-color: #04123b; /* Match middle gradient color of the theme */
+  color: var(--theme-text);
+}

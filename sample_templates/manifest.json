@@ -1,0 +1,2560 @@
+{
+  "samples": [
+    {
+      "id": "media-only",
+      "name": "Media Only",
+      "description": "Overview:\nFull-screen media stage driven by telemetry field media. Supports image, web, video, youtube, audio, text, and data:macro rendering.\n\nType:\ntelemetry + database\n\nMain parameters used:\n- Telemetry field: media\n- Optional database macro when payload starts with data:macro_name\n- Supported styles: black, white, warm, sunrise, tech, spotlight, ani1..ani10\n- Supported text syntax: text@style:message\n\nDevice API to install:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nExample device commands:\nD23,#801,,\"telemetry\",\"media=text@ani1:Welcome Mr Tuan\"\nD23,#801,,\"telemetry\",\"media=image:https://example.com/banner.jpg\"\nD23,#801,,\"telemetry\",\"media=data@tech:factory-production-overview\"\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- Best for kiosks, welcome screens, public displays, and signage where one telemetry field controls the whole stage.",
+      "image": "/sample_dashboards/media-only/sample.png",
+      "html": "/sample_dashboards/media-only/dashboard.html",
+      "setup": {
+        "page": "/sample_dashboards/media-only/setup.html"
+      },
+      "tags": [
+        "media",
+        "telemetry",
+        "display",
+        "context-aware"
+      ],
+      "default-fields": [
+        {
+          "field": "media",
+          "kind": "text"
+        }
+      ]
+    },
+    {
+      "id": "basic-cards-dashboard",
+      "name": "Basic Cards Dashboard",
+      "description": "Overview:\nCompact config-driven dashboard made from small uniform cards in an auto-fit grid. Supports mixed telemetry, switch, command, input, dual-input, and line-chart widgets across one or more session groups.\n\nType:\ntelemetry + timeseries + commands\n\nMain parameters used:\n- Top level: syncId, groups[]\n- Group level: title, sessionId, widgets[]\n- Widget types: telemetry, switch, command, input, dual-input, line-chart\n- Switch example: stateField O1 with commandOn D1O1 and commandOff D2O1\n- Line chart example: Current_A with range 24h\n- Input example: D1O2'{value}' or #1010={low},{high}\n\nDevice API to install:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nExample device command:\nD23,#801,,\"timeseries\",\"Voltage_V=\"#1.1,\"Current_A=\"#1.2,\"temperature=\"#1.3,\"O1=\"O1\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- This template is 100% config-driven: add, remove, reorder, or change widget types directly in groups[].widgets[].\n- All cards share the same compact shell so mobile can still show two columns.",
+      "image": "/sample_dashboards/basic-cards-dashboard/sample.png",
+      "html": "/sample_dashboards/basic-cards-dashboard/dashboard.html",
+      "setup": {
+        "page": "/sample_dashboards/basic-cards-dashboard/setup_en.html"
+      },
+      "tags": [
+        "cards",
+        "compact",
+        "context-aware",
+        "commands",
+        "timeseries"
+      ],
+      "defaultLocale": "vi",
+      "locales": {
+        "en": {
+          "name": "Basic Cards Dashboard",
+          "description": "Overview:\nCompact config-driven dashboard made from small uniform cards in an auto-fit grid. Supports mixed telemetry, switch, command, input, dual-input, and line-chart widgets across one or more session groups.\n\nType:\ntelemetry + timeseries + commands\n\nMain parameters used:\n- Top level: syncId, groups[]\n- Group level: title, sessionId, widgets[]\n- Widget types: telemetry, switch, command, input, dual-input, line-chart\n- Switch example: stateField O1 with commandOn D1O1 and commandOff D2O1\n- Line chart example: Current_A with range 24h\n- Input example: D1O2'{value}' or #1010={low},{high}\n\nDevice API to install:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nExample device command:\nD23,#801,,\"timeseries\",\"Voltage_V=\"#1.1,\"Current_A=\"#1.2,\"temperature=\"#1.3,\"O1=\"O1\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- This template is 100% config-driven: add, remove, reorder, or change widget types directly in groups[].widgets[].\n- All cards share the same compact shell so mobile can still show two columns.",
+          "html": "/sample_dashboards/basic-cards-dashboard/dashboard.html",
+          "setup": {
+            "page": "/sample_dashboards/basic-cards-dashboard/setup_en.html"
+          }
+        },
+        "vi": {
+          "name": "Basic Cards Dashboard (VI)",
+          "description": "Tổng quan:\nTrang gọn, dựng hoàn toàn từ cấu hình, dùng các thẻ nhỏ đồng đều trong lưới tự chia cột. Hỗ trợ trộn telemetry, switch, command, input, dual-input và line-chart trên một hoặc nhiều nhóm session.\n\nLoại:\ntelemetry + timeseries + commands\n\nCác tham số chính:\n- Cấp cao nhất: syncId, groups[]\n- Cấp nhóm: title, sessionId, widgets[]\n- Loại widget: telemetry, switch, command, input, dual-input, line-chart\n- Ví dụ switch: stateField O1 với commandOn D1O1 và commandOff D2O1\n- Ví dụ line chart: Current_A với range 24h\n- Ví dụ input: D1O2'{value}' hoặc #1010={low},{high}\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ lệnh thiết bị:\nD23,#801,,\"timeseries\",\"Voltage_V=\"#1.1,\"Current_A=\"#1.2,\"temperature=\"#1.3,\"O1=\"O1\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Trang mẫu này dựng 100% từ cấu hình: thêm, bớt, đổi thứ tự hoặc đổi loại widget trực tiếp trong groups[].widgets[].\n- Tất cả thẻ dùng chung một khung gọn để màn hình mobile vẫn hiển thị được hai cột.",
+          "html": "/sample_dashboards/basic-cards-dashboard/dashboard_vi.html",
+          "setup": {
+            "page": "/sample_dashboards/basic-cards-dashboard/setup_vi.html"
+          }
+        }
+      },
+      "default-fields": [
+        {
+          "field": "O2",
+          "kind": "onoff"
+        },
+        {
+          "field": "temperature",
+          "kind": "timeseries",
+          "min": 25,
+          "max": 35
+        },
+        {
+          "field": "#1010",
+          "kind": "text"
+        }
+      ]
+    },
+    {
+      "id": "smart-cabinet",
+      "name": "Smart Cabinet",
+      "description": "Tổng quan:\nTrang context-aware cho một hoặc nhiều tủ điện 1 pha, gồm công tắc kiểu contactor, điều khiển góc động cơ, biểu đồ điện và biểu đồ môi trường.\n\nLoại:\ntelemetry + timeseries\n\nCác tham số chính:\n- Switches: O3, O4, tùy chọn switch3 nếu có cấu hình\n- Góc động cơ: O2\n- Điện: Voltage_V, Current_A, Energy_Wh, power_factor\n- Môi trường: temperature, humidity\n- Lệnh: D1O3/D2O3, D1O4/D2O4, góc động cơ qua D1O2'value'\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ lệnh thiết bị:\nD23,#801,,\"timeseries\",\"Voltage_V=\"#1.1,\"Current_A=\"#1.2,\"Energy_Wh=\"#1.4,\"power_factor=\"#1.5,\"temperature=\"#1.6,\"humidity=\"#1.7,\"O2=\"O2,\"O3=\"O3,\"O4=\"O4\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Có thể thêm nhiều tủ bằng cách mở rộng sessions[] trong cấu hình trang mẫu.\n- Switch3 là tùy chọn và chỉ xuất hiện khi được cấu hình.",
+      "image": "/sample_dashboards/smart-cabinet/sample1.png",
+      "html": "/sample_dashboards/smart-cabinet/dashboard_single_phase_vi.html",
+      "setup": {
+        "page": "/sample_dashboards/smart-cabinet/setup_single_phase_vi.html"
+      },
+      "tags": [
+        "electrical",
+        "iot",
+        "context-aware",
+        "multi-device"
+      ],
+      "defaultLocale": "single-phase-vi",
+      "locales": {
+        "single-phase-en": {
+          "label": "Single Phase (EN)",
+          "name": "Smart Cabinet - Single Phase",
+          "description": "Overview:\nContext-aware dashboard for one or more single-phase smart cabinets, with contactor-style switch controls, motor angle control, electrical charts, and environment charts.\n\nType:\ntelemetry + timeseries\n\nMain parameters used:\n- Switches: O3, O4, optional switch3 if configured\n- Motor angle: O2\n- Electrical: Voltage_V, Current_A, Energy_Wh, power_factor\n- Environment: temperature, humidity\n- Commands: D1O3/D2O3, D1O4/D2O4, motor angle via D1O2'value'\n\nDevice API to install:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nExample device command:\nD23,#801,,\"timeseries\",\"Voltage_V=\"#1.1,\"Current_A=\"#1.2,\"Energy_Wh=\"#1.4,\"power_factor=\"#1.5,\"temperature=\"#1.6,\"humidity=\"#1.7,\"O2=\"O2,\"O3=\"O3,\"O4=\"O4\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- Add more cabinets by extending sessions[] in the template config.\n- Switch3 is optional and only appears if configured in the template.",
+          "image": "/sample_dashboards/smart-cabinet/sample1.png",
+          "html": "/sample_dashboards/smart-cabinet/dashboard_single_phase.html",
+          "setup": {
+            "page": "/sample_dashboards/smart-cabinet/setup_single_phase_en.html"
+          },
+          "default-fields": [
+            {
+              "field": "O2",
+              "kind": "onoff"
+            },
+            {
+              "field": "O3",
+              "kind": "onoff"
+            },
+            {
+              "field": "O4",
+              "kind": "onoff"
+            },
+            {
+              "field": "Voltage_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Energy_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "power_factor",
+              "kind": "timeseries",
+              "min": 0.85,
+              "max": 1
+            },
+            {
+              "field": "temperature",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "humidity",
+              "kind": "timeseries",
+              "min": 40,
+              "max": 80
+            }
+          ]
+        },
+        "single-phase-vi": {
+          "label": "Single Phase (VI)",
+          "name": "Smart Cabinet - Single Phase (VI)",
+          "description": "Tổng quan:\nTrang context-aware cho một hoặc nhiều tủ điện 1 pha, gồm công tắc kiểu contactor, điều khiển góc động cơ, biểu đồ điện và biểu đồ môi trường.\n\nLoại:\ntelemetry + timeseries\n\nCác tham số chính:\n- Switches: O3, O4, tùy chọn switch3 nếu có cấu hình\n- Góc động cơ: O2\n- Điện: Voltage_V, Current_A, Energy_Wh, power_factor\n- Môi trường: temperature, humidity\n- Lệnh: D1O3/D2O3, D1O4/D2O4, góc động cơ qua D1O2'value'\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ lệnh thiết bị:\nD23,#801,,\"timeseries\",\"Voltage_V=\"#1.1,\"Current_A=\"#1.2,\"Energy_Wh=\"#1.4,\"power_factor=\"#1.5,\"temperature=\"#1.6,\"humidity=\"#1.7,\"O2=\"O2,\"O3=\"O3,\"O4=\"O4\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Có thể thêm nhiều tủ bằng cách mở rộng sessions[] trong cấu hình trang mẫu.\n- Switch3 là tùy chọn và chỉ xuất hiện khi được cấu hình.",
+          "image": "/sample_dashboards/smart-cabinet/sample1.png",
+          "html": "/sample_dashboards/smart-cabinet/dashboard_single_phase_vi.html",
+          "setup": {
+            "page": "/sample_dashboards/smart-cabinet/setup_single_phase_vi.html"
+          },
+          "default-fields": [
+            {
+              "field": "O2",
+              "kind": "onoff"
+            },
+            {
+              "field": "O3",
+              "kind": "onoff"
+            },
+            {
+              "field": "O4",
+              "kind": "onoff"
+            },
+            {
+              "field": "Voltage_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Energy_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "power_factor",
+              "kind": "timeseries",
+              "min": 0.85,
+              "max": 1
+            },
+            {
+              "field": "temperature",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "humidity",
+              "kind": "timeseries",
+              "min": 40,
+              "max": 80
+            }
+          ]
+        },
+        "three-phase-en": {
+          "label": "Three Phase (EN)",
+          "name": "Smart Cabinet - Three Phase",
+          "description": "Overview:\nContext-aware dashboard for one or more three-phase smart cabinets, with per-phase voltage/current charts, energy, power factor, and contactor-style switch controls.\n\nType:\ntelemetry + timeseries\n\nMain parameters used:\n- Switches: O101.1, O101.2, optional switch3 if configured\n- Voltage lines: Voltage1_V, Voltage2_V, Voltage3_V\n- Current lines: Current1_A, Current2_A, Current3_A\n- Energy: Energy_KWh\n- Power factor: Total_power_factor\n- Commands: D1O101.1/D2O101.1, D1O101.2/D2O101.2\n\nDevice API to install:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nExample device command:\nD23,#801,,\"timeseries\",\"Voltage1_V=\"#1.1,\"Voltage2_V=\"#1.2,\"Voltage3_V=\"#1.3,\"Current1_A=\"#1.4,\"Current2_A=\"#1.5,\"Current3_A=\"#1.6,\"Energy_KWh=\"#1.7,\"Total_power_factor=\"#1.8,\"O101.1=\"O101.1,\"O101.2=\"O101.2\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- Use this variant when per-phase electrical visibility matters more than the compact single-phase layout.\n- Optional motor and environment fields remain supported by the runtime when added to the template config.",
+          "image": "/sample_dashboards/smart-cabinet/sample2.png",
+          "html": "/sample_dashboards/smart-cabinet/dashboard_three_phase.html",
+          "setup": {
+            "page": "/sample_dashboards/smart-cabinet/setup_three_phase_en.html"
+          },
+          "default-fields": [
+            {
+              "field": "O101.1",
+              "kind": "onoff"
+            },
+            {
+              "field": "O101.2",
+              "kind": "onoff"
+            },
+            {
+              "field": "Voltage1_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Voltage2_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Voltage3_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current1_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current2_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current3_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Energy_KWh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 100
+            },
+            {
+              "field": "Total_power_factor",
+              "kind": "timeseries",
+              "min": 0.85,
+              "max": 1
+            },
+            {
+              "field": "temperature",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "humidity",
+              "kind": "timeseries",
+              "min": 40,
+              "max": 80
+            }
+          ]
+        },
+        "three-phase-vi": {
+          "label": "Three Phase (VI)",
+          "name": "Smart Cabinet - Three Phase (VI)",
+          "description": "Tổng quan:\nTrang context-aware cho một hoặc nhiều tủ điện 3 pha, gồm biểu đồ điện áp/dòng điện theo từng pha, điện năng, hệ số công suất và công tắc kiểu contactor.\n\nLoại:\ntelemetry + timeseries\n\nCác tham số chính:\n- Switches: O101.1, O101.2, tùy chọn switch3 nếu có cấu hình\n- Điện áp từng pha: Voltage1_V, Voltage2_V, Voltage3_V\n- Dòng điện từng pha: Current1_A, Current2_A, Current3_A\n- Điện năng: Energy_KWh\n- Hệ số công suất: Total_power_factor\n- Lệnh: D1O101.1/D2O101.1, D1O101.2/D2O101.2\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ lệnh thiết bị:\nD23,#801,,\"timeseries\",\"Voltage1_V=\"#1.1,\"Voltage2_V=\"#1.2,\"Voltage3_V=\"#1.3,\"Current1_A=\"#1.4,\"Current2_A=\"#1.5,\"Current3_A=\"#1.6,\"Energy_KWh=\"#1.7,\"Total_power_factor=\"#1.8,\"O101.1=\"O101.1,\"O101.2=\"O101.2\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Phù hợp khi cần theo dõi điện áp và dòng điện theo từng pha chi tiết hơn bố cục 1 pha.\n- Runtime vẫn hỗ trợ trường góc động cơ và môi trường nếu thêm vào cấu hình trang mẫu.",
+          "image": "/sample_dashboards/smart-cabinet/sample2.png",
+          "html": "/sample_dashboards/smart-cabinet/dashboard_three_phase_vi.html",
+          "setup": {
+            "page": "/sample_dashboards/smart-cabinet/setup_three_phase_vi.html"
+          },
+          "default-fields": [
+            {
+              "field": "O101.1",
+              "kind": "onoff"
+            },
+            {
+              "field": "O101.2",
+              "kind": "onoff"
+            },
+            {
+              "field": "Voltage1_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Voltage2_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Voltage3_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current1_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current2_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current3_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Energy_KWh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 100
+            },
+            {
+              "field": "Total_power_factor",
+              "kind": "timeseries",
+              "min": 0.85,
+              "max": 1
+            },
+            {
+              "field": "temperature",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "humidity",
+              "kind": "timeseries",
+              "min": 40,
+              "max": 80
+            }
+          ]
+        }
+      },
+      "default-fields": [
+        {
+          "field": "O2",
+          "kind": "onoff"
+        },
+        {
+          "field": "O3",
+          "kind": "onoff"
+        },
+        {
+          "field": "O4",
+          "kind": "onoff"
+        },
+        {
+          "field": "Voltage_V",
+          "kind": "timeseries",
+          "min": 210,
+          "max": 230
+        },
+        {
+          "field": "Current_A",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Energy_Wh",
+          "kind": "timeseries",
+          "min": 0,
+          "max": 1000
+        },
+        {
+          "field": "power_factor",
+          "kind": "timeseries",
+          "min": 0.85,
+          "max": 1
+        },
+        {
+          "field": "temperature",
+          "kind": "timeseries",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "field": "humidity",
+          "kind": "timeseries",
+          "min": 40,
+          "max": 80
+        }
+      ]
+    },
+    {
+      "id": "monitoring-aquaculture-ponds",
+      "name": "Monitoring Aquaculture Ponds",
+      "description": "Overview:\nContext-aware dashboard for aquaculture pond cabinets, with shared alarm/control history, 1-phase or 3-phase electrical telemetry, ambient temperature monitoring, contactor control, and on-device timer schedules.\n\nType:\ntelemetry + timeseries + database\n\nMain parameters used:\n- Contactors: O1, O2, O3 (render only when a state field exists)\n- Voltage lines: Voltage1_V, Voltage2_V, Voltage3_V or map only Voltage1_V for single-phase\n- Current lines: Current1_A, Current2_A, Current3_A or map only Current1_A for single-phase\n- Energy: Energy_Wh\n- Temperature: temperature\n- Threshold telemetry: #1010 for temperature, #1011 for total current\n- Shared IoData history macro: pond-event-history returning event_time_ms, event_time, pond_name, event_type, content, email\n- Schedule programs: N21..N30\n\nDevice API to install:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nExample device commands:\nD23,#801,,\"timeseries\",\"Voltage1_V\"=#1.1,\"Voltage2_V\"=#1.2,\"Voltage3_V\"=#1.3,\"Current1_A\"=#1.4,\"Current2_A\"=#1.5,\"Current3_A\"=#1.6,\"Energy_Wh\"=#1.7,\"temperature\"=#1.8,\"O1\"=\"O1,\"O2\"=\"O2,\"O3\"=\"O3,\"#1010\"=\"#1010,\"#1011\"=\"#1011\nD23,#801,,\"data\",\"IO-pond-event-log\",\"2026-04-06 18:30:00\",\"Ao 1\",\"overload\",\"Dòng tổng vượt ngưỡng cao 3.8A\",\"operator@example.com\"\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- Shared event history can point to a different sessionId in history.sessionId if one common IoData store is used for multiple ponds.\n- Schedule rows 1-10 map to N21-N30 and auto-save on change when time, contactor, and action are all present.",
+      "image": "/sample_dashboards/monitoring-aquaculture-ponds/sample.png",
+      "html": "/sample_dashboards/monitoring-aquaculture-ponds/dashboard.html",
+      "setup": {
+        "page": "/sample_dashboards/monitoring-aquaculture-ponds/setup_three_phase_en.html"
+      },
+      "sampleDatabase": "/sample_dashboards/monitoring-aquaculture-ponds/sample.sqlite",
+      "tags": [
+        "aquaculture",
+        "iot",
+        "context-aware",
+        "timeseries",
+        "database"
+      ],
+      "defaultLocale": "vi",
+      "locales": {
+        "en": {
+          "label": "Three Phase (EN)",
+          "name": "Monitoring Aquaculture Ponds",
+          "description": "Overview:\nContext-aware dashboard for aquaculture pond cabinets, with shared alarm/control history, 1-phase or 3-phase electrical telemetry, ambient temperature monitoring, contactor control, and on-device timer schedules.\n\nType:\ntelemetry + timeseries + database\n\nMain parameters used:\n- Contactors: O1, O2, O3 (render only when a state field exists)\n- Voltage lines: Voltage1_V, Voltage2_V, Voltage3_V or map only Voltage1_V for single-phase\n- Current lines: Current1_A, Current2_A, Current3_A or map only Current1_A for single-phase\n- Energy: Energy_Wh\n- Temperature: temperature\n- Threshold telemetry: #1010 for temperature, #1011 for total current\n- Shared IoData history macro: pond-event-history returning event_time_ms, event_time, pond_name, event_type, content, email\n- Schedule programs: N21..N30\n\nDevice API to install:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nExample device commands:\nD23,#801,,\"timeseries\",\"Voltage1_V\"=#1.1,\"Voltage2_V\"=#1.2,\"Voltage3_V\"=#1.3,\"Current1_A\"=#1.4,\"Current2_A\"=#1.5,\"Current3_A\"=#1.6,\"Energy_Wh\"=#1.7,\"temperature\"=#1.8,\"O1\"=\"O1,\"O2\"=\"O2,\"O3\"=\"O3,\"#1010\"=\"#1010,\"#1011\"=\"#1011\nD23,#801,,\"data\",\"IO-pond-event-log\",\"2026-04-06 18:30:00\",\"Ao 1\",\"overload\",\"Dòng tổng vượt ngưỡng cao 3.8A\",\"operator@example.com\"\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- Shared event history can point to a different sessionId in history.sessionId if one common IoData store is used for multiple ponds.\n- Schedule rows 1-10 map to N21-N30 and auto-save on change when time, contactor, and action are all present.",
+          "html": "/sample_dashboards/monitoring-aquaculture-ponds/dashboard.html",
+          "setup": {
+            "page": "/sample_dashboards/monitoring-aquaculture-ponds/setup_three_phase_en.html"
+          },
+          "default-fields": [
+            {
+              "field": "O101",
+              "kind": "onoff"
+            },
+            {
+              "field": "O102",
+              "kind": "onoff"
+            },
+            {
+              "field": "O103",
+              "kind": "onoff"
+            },
+            {
+              "field": "O104",
+              "kind": "onoff"
+            },
+            {
+              "field": "O105",
+              "kind": "onoff"
+            },
+            {
+              "field": "O106",
+              "kind": "onoff"
+            },
+            {
+              "field": "O107",
+              "kind": "onoff"
+            },
+            {
+              "field": "O108",
+              "kind": "onoff"
+            },
+            {
+              "field": "alarm1",
+              "kind": "onoff"
+            },
+            {
+              "field": "alarm2",
+              "kind": "onoff"
+            },
+            {
+              "field": "alarm3",
+              "kind": "onoff"
+            },
+            {
+              "field": "alarm4",
+              "kind": "onoff"
+            },
+            {
+              "field": "#1011",
+              "kind": "text"
+            },
+            {
+              "field": "#1012",
+              "kind": "text"
+            },
+            {
+              "field": "#1013",
+              "kind": "text"
+            },
+            {
+              "field": "#1014",
+              "kind": "text"
+            },
+            {
+              "field": "#1002.1",
+              "kind": "text"
+            },
+            {
+              "field": "#1002.2",
+              "kind": "text"
+            },
+            {
+              "field": "#1002.3",
+              "kind": "text"
+            },
+            {
+              "field": "#1002.4",
+              "kind": "text"
+            },
+            {
+              "field": "#1005",
+              "kind": "text"
+            },
+            {
+              "field": "#1006",
+              "kind": "text"
+            },
+            {
+              "field": "#1007",
+              "kind": "text"
+            },
+            {
+              "field": "#1008",
+              "kind": "text"
+            },
+            {
+              "field": "#1003.1",
+              "kind": "text"
+            },
+            {
+              "field": "#1003.2",
+              "kind": "text"
+            },
+            {
+              "field": "#1003.3",
+              "kind": "text"
+            },
+            {
+              "field": "#1003.4",
+              "kind": "text"
+            },
+            {
+              "field": "#1021",
+              "kind": "text"
+            },
+            {
+              "field": "#1022",
+              "kind": "text"
+            },
+            {
+              "field": "#1023",
+              "kind": "text"
+            },
+            {
+              "field": "#1024",
+              "kind": "text"
+            },
+            {
+              "field": "#1025",
+              "kind": "text"
+            },
+            {
+              "field": "#1026",
+              "kind": "text"
+            },
+            {
+              "field": "#1027",
+              "kind": "text"
+            },
+            {
+              "field": "#1028",
+              "kind": "text"
+            },
+            {
+              "field": "#1029",
+              "kind": "text"
+            },
+            {
+              "field": "#1030",
+              "kind": "text"
+            },
+            {
+              "field": "#1031",
+              "kind": "text"
+            },
+            {
+              "field": "#1032",
+              "kind": "text"
+            },
+            {
+              "field": "#1033",
+              "kind": "text"
+            },
+            {
+              "field": "#1034",
+              "kind": "text"
+            },
+            {
+              "field": "#1035",
+              "kind": "text"
+            },
+            {
+              "field": "#1036",
+              "kind": "text"
+            },
+            {
+              "field": "Voltage11_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current11_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current11_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current11_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper11",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy11_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage12_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current12_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current12_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current12_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper12",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy12_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage21_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current21_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current21_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current21_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper21",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy21_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage22_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current22_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current22_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current22_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper22",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy22_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage31_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current31_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current31_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current31_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper31",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy31_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage32_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current32_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current32_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current32_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper32",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy32_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage41_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current41_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current41_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current41_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper41",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy41_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage42_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current42_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current42_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current42_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper42",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy42_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            }
+          ]
+        },
+        "control-only": {
+          "label": "Control Only (EN)",
+          "name": "Aquaculture Control Only",
+          "description": "Overview:\nSimplified control-only variant for aquaculture pond cabinets. All configured contactors from one or more IoT devices are shown together in a single control card. Pond titles, device IDs, settings, schedules, meter popups, and charts are removed. The shared alarm/control history remains at the top and is collapsed by default.\n\nType:\ntelemetry + commands + database\n\nMain parameters used:\n- groups[].sessionId: IoT device key, supports multiple devices\n- groups[].controls[]: label, stateField, commandOn, commandOff\n- Shared IoData history macro: pond-event-history\n\nDevice API to install:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nExample telemetry command:\nD23,#801,,\"telemetry\",\"O101\"=\"O101,\"O102\"=\"O102,\"O103\"=\"O103,\"O104\"=\"O104\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- Add devices by adding more groups[] with different sessionId values.\n- Add or reorder switches by editing groups[].controls[].",
+          "html": "/sample_dashboards/monitoring-aquaculture-ponds/dashboard_control_only.html",
+          "setup": {
+            "page": "/sample_dashboards/monitoring-aquaculture-ponds/setup_control_only_en.html"
+          },
+          "default-fields": [
+            {
+              "field": "O101",
+              "kind": "onoff"
+            },
+            {
+              "field": "O102",
+              "kind": "onoff"
+            },
+            {
+              "field": "O103",
+              "kind": "onoff"
+            },
+            {
+              "field": "O104",
+              "kind": "onoff"
+            },
+            {
+              "field": "O105",
+              "kind": "onoff"
+            },
+            {
+              "field": "O106",
+              "kind": "onoff"
+            },
+            {
+              "field": "O107",
+              "kind": "onoff"
+            },
+            {
+              "field": "O108",
+              "kind": "onoff"
+            }
+          ]
+        },
+        "single-phase-control": {
+          "label": "Single Phase Control (EN)",
+          "name": "Single-Phase Aquaculture Control",
+          "description": "Overview:\nSingle-phase control variant for aquaculture pond cabinets. It keeps the control-only style, renders one or more controllers with 1-8 configured contactors each, includes one shared alarm card per controller, and adds current-only meter/settings popups plus controller-level alarm phone and schedule controls.\n\nType:\ntelemetry + commands + timeseries + database\n\nMain parameters used:\n- controllers[].sessionId: IoT device key, supports multiple controllers\n- controllers[].controls[]: 1-8 contactors with label, stateField, currentField, commandOn, commandOff\n- Current chart fields: Current1_A..Current8_A\n- Shared current threshold field: #1011 encoded as low1,high1,...,low8,high8\n- Shared run window field: #1005 encoded as start1,end1,...,start8,end8 using HHMM values\n- Alarm: alarm1, alarm phone #1002, alarm-off command N4\n- Schedule rows: #1021..#1030 encoded as HHMM,enable,ON,slot1,...,slot8 where unchecked slots are 0\n- Shared IoData history macro: pond-event-history\n\nDevice API to install:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nExample telemetry command:\nD23,#801,,\"timeseries\",\"O101\"=\"O101,\"O102\"=\"O102,\"O103\"=\"O103,\"O104\"=\"O104,\"O105\"=\"O105,\"O106\"=\"O106,\"O107\"=\"O107,\"O108\"=\"O108,\"Current1_A\"=#1.1,\"Current2_A\"=#1.2,\"Current3_A\"=#1.3,\"Current4_A\"=#1.4,\"Current5_A\"=#1.5,\"Current6_A\"=#1.6,\"Current7_A\"=#1.7,\"Current8_A\"=#1.8,\"alarm1\"=\"alarm1,\"#1011\"=\"#1011,\"#1005\"=\"#1005,\"#1002\"=\"#1002\n\nExample control commands:\nN3,1,\"ON\"\nN3,1,\"OFF\"\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- Add controllers by adding more controllers[] entries; reduce contactors by shortening each controls[] list.\n- This variant is English only. Vietnamese can be added later as a separate option.\n- Existing aquaculture 3-phase and control-only templates are unchanged.",
+          "html": "/sample_dashboards/monitoring-aquaculture-ponds/dashboard_single_phase_control.html",
+          "setup": {
+            "page": "/sample_dashboards/monitoring-aquaculture-ponds/setup_single_phase_control_en.html"
+          },
+          "default-fields": [
+            {
+              "field": "O101",
+              "kind": "onoff"
+            },
+            {
+              "field": "O102",
+              "kind": "onoff"
+            },
+            {
+              "field": "O103",
+              "kind": "onoff"
+            },
+            {
+              "field": "O104",
+              "kind": "onoff"
+            },
+            {
+              "field": "O105",
+              "kind": "onoff"
+            },
+            {
+              "field": "O106",
+              "kind": "onoff"
+            },
+            {
+              "field": "O107",
+              "kind": "onoff"
+            },
+            {
+              "field": "O108",
+              "kind": "onoff"
+            },
+            {
+              "field": "Current1_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current2_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current3_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current4_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current5_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current6_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current7_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current8_A",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "alarm1",
+              "kind": "onoff"
+            },
+            {
+              "field": "#1011",
+              "kind": "text"
+            },
+            {
+              "field": "#1005",
+              "kind": "text"
+            },
+            {
+              "field": "#1002",
+              "kind": "text"
+            },
+            {
+              "field": "#1021",
+              "kind": "text"
+            },
+            {
+              "field": "#1022",
+              "kind": "text"
+            },
+            {
+              "field": "#1023",
+              "kind": "text"
+            },
+            {
+              "field": "#1024",
+              "kind": "text"
+            },
+            {
+              "field": "#1025",
+              "kind": "text"
+            },
+            {
+              "field": "#1026",
+              "kind": "text"
+            },
+            {
+              "field": "#1027",
+              "kind": "text"
+            },
+            {
+              "field": "#1028",
+              "kind": "text"
+            },
+            {
+              "field": "#1029",
+              "kind": "text"
+            },
+            {
+              "field": "#1030",
+              "kind": "text"
+            }
+          ]
+        },
+        "control-only-vi": {
+          "label": "Control Only (VI)",
+          "name": "Aquaculture Control Only (VI)",
+          "description": "Tổng quan:\nPhiên bản rút gọn chỉ để điều khiển cho tủ ao nuôi. Tất cả công tắc được khai báo từ một hoặc nhiều thiết bị IoT hiển thị chung trong một card điều khiển. Bỏ tên ao, mã thiết bị, cài đặt, hẹn giờ, popup điện kế và biểu đồ. Lịch sử điều khiển/báo động vẫn giữ ở phía trên và mặc định thu gọn.\n\nLoại:\ntelemetry + commands + database\n\nCác tham số chính:\n- groups[].sessionId: device key của thiết bị IoT, hỗ trợ nhiều thiết bị\n- groups[].controls[]: label, stateField, commandOn, commandOff\n- Macro IoData dùng chung: pond-event-history\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ lệnh telemetry:\nD23,#801,,\"telemetry\",\"O101\"=\"O101,\"O102\"=\"O102,\"O103\"=\"O103,\"O104\"=\"O104\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ template picker.\n- Thêm thiết bị bằng cách thêm groups[] với sessionId khác.\n- Thêm hoặc đổi thứ tự công tắc bằng cách chỉnh groups[].controls[].",
+          "html": "/sample_dashboards/monitoring-aquaculture-ponds/dashboard_control_only_vi.html",
+          "setup": {
+            "page": "/sample_dashboards/monitoring-aquaculture-ponds/setup_control_only_vi.html"
+          },
+          "default-fields": [
+            {
+              "field": "O101",
+              "kind": "onoff"
+            },
+            {
+              "field": "O102",
+              "kind": "onoff"
+            },
+            {
+              "field": "O103",
+              "kind": "onoff"
+            },
+            {
+              "field": "O104",
+              "kind": "onoff"
+            },
+            {
+              "field": "O105",
+              "kind": "onoff"
+            },
+            {
+              "field": "O106",
+              "kind": "onoff"
+            },
+            {
+              "field": "O107",
+              "kind": "onoff"
+            },
+            {
+              "field": "O108",
+              "kind": "onoff"
+            }
+          ]
+        },
+        "vi": {
+          "label": "Three Phase (VI)",
+          "name": "Monitoring Aquaculture Ponds (VI)",
+          "description": "Tổng quan:\nTrang context-aware cho tủ ao nuôi, gồm lịch sử điều khiển/báo động dùng chung, telemetry điện 1 pha hoặc 3 pha, theo dõi nhiệt độ môi trường, điều khiển contactor và hẹn giờ trực tiếp trên thiết bị.\n\nLoại:\ntelemetry + timeseries + database\n\nCác tham số chính:\n- Contactor: O1, O2, O3 (chỉ hiển thị khi có field trạng thái)\n- Điện áp: Voltage1_V, Voltage2_V, Voltage3_V hoặc chỉ dùng Voltage1_V cho điện 1 pha\n- Dòng điện: Current1_A, Current2_A, Current3_A hoặc chỉ dùng Current1_A cho điện 1 pha\n- Điện năng: Energy_Wh\n- Nhiệt độ: temperature\n- Telemetry ngưỡng: #1010 cho nhiệt độ, #1011 cho dòng tổng\n- Macro IoData dùng chung: pond-event-history trả về event_time_ms, event_time, pond_name, event_type, content, email\n- Chương trình hẹn giờ: N21..N30\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ lệnh thiết bị:\nD23,#801,,\"timeseries\",\"Voltage1_V\"=#1.1,\"Voltage2_V\"=#1.2,\"Voltage3_V\"=#1.3,\"Current1_A\"=#1.4,\"Current2_A\"=#1.5,\"Current3_A\"=#1.6,\"Energy_Wh\"=#1.7,\"temperature\"=#1.8,\"O1\"=\"O1,\"O2\"=\"O2,\"O3\"=\"O3,\"#1010\"=\"#1010,\"#1011\"=\"#1011\nD23,#801,,\"data\",\"IO-pond-event-log\",\"2026-04-06 18:30:00\",\"Ao 1\",\"overload\",\"Dòng tổng vượt ngưỡng cao 3.8A\",\"operator@example.com\"\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Có thể trỏ history.sessionId sang một session khác nếu nhiều ao dùng chung một kho IoData.\n- 10 dòng hẹn giờ tương ứng N21-N30 và tự lưu khi đã chọn đủ giờ, contactor và tác vụ.",
+          "html": "/sample_dashboards/monitoring-aquaculture-ponds/dashboard_vi.html",
+          "setup": {
+            "page": "/sample_dashboards/monitoring-aquaculture-ponds/setup_three_phase_vi.html"
+          },
+          "default-fields": [
+            {
+              "field": "O101",
+              "kind": "onoff"
+            },
+            {
+              "field": "O102",
+              "kind": "onoff"
+            },
+            {
+              "field": "O103",
+              "kind": "onoff"
+            },
+            {
+              "field": "O104",
+              "kind": "onoff"
+            },
+            {
+              "field": "O105",
+              "kind": "onoff"
+            },
+            {
+              "field": "O106",
+              "kind": "onoff"
+            },
+            {
+              "field": "O107",
+              "kind": "onoff"
+            },
+            {
+              "field": "O108",
+              "kind": "onoff"
+            },
+            {
+              "field": "alarm1",
+              "kind": "onoff"
+            },
+            {
+              "field": "alarm2",
+              "kind": "onoff"
+            },
+            {
+              "field": "alarm3",
+              "kind": "onoff"
+            },
+            {
+              "field": "alarm4",
+              "kind": "onoff"
+            },
+            {
+              "field": "#1011",
+              "kind": "text"
+            },
+            {
+              "field": "#1012",
+              "kind": "text"
+            },
+            {
+              "field": "#1013",
+              "kind": "text"
+            },
+            {
+              "field": "#1014",
+              "kind": "text"
+            },
+            {
+              "field": "#1002.1",
+              "kind": "text"
+            },
+            {
+              "field": "#1002.2",
+              "kind": "text"
+            },
+            {
+              "field": "#1002.3",
+              "kind": "text"
+            },
+            {
+              "field": "#1002.4",
+              "kind": "text"
+            },
+            {
+              "field": "#1005",
+              "kind": "text"
+            },
+            {
+              "field": "#1006",
+              "kind": "text"
+            },
+            {
+              "field": "#1007",
+              "kind": "text"
+            },
+            {
+              "field": "#1008",
+              "kind": "text"
+            },
+            {
+              "field": "#1003.1",
+              "kind": "text"
+            },
+            {
+              "field": "#1003.2",
+              "kind": "text"
+            },
+            {
+              "field": "#1003.3",
+              "kind": "text"
+            },
+            {
+              "field": "#1003.4",
+              "kind": "text"
+            },
+            {
+              "field": "#1021",
+              "kind": "text"
+            },
+            {
+              "field": "#1022",
+              "kind": "text"
+            },
+            {
+              "field": "#1023",
+              "kind": "text"
+            },
+            {
+              "field": "#1024",
+              "kind": "text"
+            },
+            {
+              "field": "#1025",
+              "kind": "text"
+            },
+            {
+              "field": "#1026",
+              "kind": "text"
+            },
+            {
+              "field": "#1027",
+              "kind": "text"
+            },
+            {
+              "field": "#1028",
+              "kind": "text"
+            },
+            {
+              "field": "#1029",
+              "kind": "text"
+            },
+            {
+              "field": "#1030",
+              "kind": "text"
+            },
+            {
+              "field": "#1031",
+              "kind": "text"
+            },
+            {
+              "field": "#1032",
+              "kind": "text"
+            },
+            {
+              "field": "#1033",
+              "kind": "text"
+            },
+            {
+              "field": "#1034",
+              "kind": "text"
+            },
+            {
+              "field": "#1035",
+              "kind": "text"
+            },
+            {
+              "field": "#1036",
+              "kind": "text"
+            },
+            {
+              "field": "Voltage11_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current11_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current11_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current11_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper11",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy11_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage12_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current12_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current12_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current12_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper12",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy12_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage21_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current21_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current21_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current21_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper21",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy21_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage22_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current22_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current22_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current22_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper22",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy22_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage31_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current31_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current31_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current31_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper31",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy31_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage32_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current32_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current32_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current32_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper32",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy32_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage41_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current41_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current41_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current41_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper41",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy41_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            },
+            {
+              "field": "Voltage42_V",
+              "kind": "timeseries",
+              "min": 210,
+              "max": 230
+            },
+            {
+              "field": "Current42_A1",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current42_A2",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Current42_A3",
+              "kind": "timeseries",
+              "min": 1,
+              "max": 8
+            },
+            {
+              "field": "Temper42",
+              "kind": "timeseries",
+              "min": 25,
+              "max": 40
+            },
+            {
+              "field": "Energy42_Wh",
+              "kind": "timeseries",
+              "min": 0,
+              "max": 1000
+            }
+          ]
+        }
+      },
+      "default-fields": [
+        {
+          "field": "O101",
+          "kind": "onoff"
+        },
+        {
+          "field": "O102",
+          "kind": "onoff"
+        },
+        {
+          "field": "O103",
+          "kind": "onoff"
+        },
+        {
+          "field": "O104",
+          "kind": "onoff"
+        },
+        {
+          "field": "O105",
+          "kind": "onoff"
+        },
+        {
+          "field": "O106",
+          "kind": "onoff"
+        },
+        {
+          "field": "O107",
+          "kind": "onoff"
+        },
+        {
+          "field": "O108",
+          "kind": "onoff"
+        },
+        {
+          "field": "alarm1",
+          "kind": "onoff"
+        },
+        {
+          "field": "alarm2",
+          "kind": "onoff"
+        },
+        {
+          "field": "alarm3",
+          "kind": "onoff"
+        },
+        {
+          "field": "alarm4",
+          "kind": "onoff"
+        },
+        {
+          "field": "#1011",
+          "kind": "text"
+        },
+        {
+          "field": "#1012",
+          "kind": "text"
+        },
+        {
+          "field": "#1013",
+          "kind": "text"
+        },
+        {
+          "field": "#1014",
+          "kind": "text"
+        },
+        {
+          "field": "#1002.1",
+          "kind": "text"
+        },
+        {
+          "field": "#1002.2",
+          "kind": "text"
+        },
+        {
+          "field": "#1002.3",
+          "kind": "text"
+        },
+        {
+          "field": "#1002.4",
+          "kind": "text"
+        },
+        {
+          "field": "#1005",
+          "kind": "text"
+        },
+        {
+          "field": "#1006",
+          "kind": "text"
+        },
+        {
+          "field": "#1007",
+          "kind": "text"
+        },
+        {
+          "field": "#1008",
+          "kind": "text"
+        },
+        {
+          "field": "#1003.1",
+          "kind": "text"
+        },
+        {
+          "field": "#1003.2",
+          "kind": "text"
+        },
+        {
+          "field": "#1003.3",
+          "kind": "text"
+        },
+        {
+          "field": "#1003.4",
+          "kind": "text"
+        },
+        {
+          "field": "#1021",
+          "kind": "text"
+        },
+        {
+          "field": "#1022",
+          "kind": "text"
+        },
+        {
+          "field": "#1023",
+          "kind": "text"
+        },
+        {
+          "field": "#1024",
+          "kind": "text"
+        },
+        {
+          "field": "#1025",
+          "kind": "text"
+        },
+        {
+          "field": "#1026",
+          "kind": "text"
+        },
+        {
+          "field": "#1027",
+          "kind": "text"
+        },
+        {
+          "field": "#1028",
+          "kind": "text"
+        },
+        {
+          "field": "#1029",
+          "kind": "text"
+        },
+        {
+          "field": "#1030",
+          "kind": "text"
+        },
+        {
+          "field": "#1031",
+          "kind": "text"
+        },
+        {
+          "field": "#1032",
+          "kind": "text"
+        },
+        {
+          "field": "#1033",
+          "kind": "text"
+        },
+        {
+          "field": "#1034",
+          "kind": "text"
+        },
+        {
+          "field": "#1035",
+          "kind": "text"
+        },
+        {
+          "field": "#1036",
+          "kind": "text"
+        },
+        {
+          "field": "Voltage11_V",
+          "kind": "timeseries",
+          "min": 210,
+          "max": 230
+        },
+        {
+          "field": "Current11_A1",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current11_A2",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current11_A3",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Temper11",
+          "kind": "timeseries",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "field": "Energy11_Wh",
+          "kind": "timeseries",
+          "min": 0,
+          "max": 1000
+        },
+        {
+          "field": "Voltage12_V",
+          "kind": "timeseries",
+          "min": 210,
+          "max": 230
+        },
+        {
+          "field": "Current12_A1",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current12_A2",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current12_A3",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Temper12",
+          "kind": "timeseries",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "field": "Energy12_Wh",
+          "kind": "timeseries",
+          "min": 0,
+          "max": 1000
+        },
+        {
+          "field": "Voltage21_V",
+          "kind": "timeseries",
+          "min": 210,
+          "max": 230
+        },
+        {
+          "field": "Current21_A1",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current21_A2",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current21_A3",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Temper21",
+          "kind": "timeseries",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "field": "Energy21_Wh",
+          "kind": "timeseries",
+          "min": 0,
+          "max": 1000
+        },
+        {
+          "field": "Voltage22_V",
+          "kind": "timeseries",
+          "min": 210,
+          "max": 230
+        },
+        {
+          "field": "Current22_A1",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current22_A2",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current22_A3",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Temper22",
+          "kind": "timeseries",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "field": "Energy22_Wh",
+          "kind": "timeseries",
+          "min": 0,
+          "max": 1000
+        },
+        {
+          "field": "Voltage31_V",
+          "kind": "timeseries",
+          "min": 210,
+          "max": 230
+        },
+        {
+          "field": "Current31_A1",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current31_A2",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current31_A3",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Temper31",
+          "kind": "timeseries",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "field": "Energy31_Wh",
+          "kind": "timeseries",
+          "min": 0,
+          "max": 1000
+        },
+        {
+          "field": "Voltage32_V",
+          "kind": "timeseries",
+          "min": 210,
+          "max": 230
+        },
+        {
+          "field": "Current32_A1",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current32_A2",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current32_A3",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Temper32",
+          "kind": "timeseries",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "field": "Energy32_Wh",
+          "kind": "timeseries",
+          "min": 0,
+          "max": 1000
+        },
+        {
+          "field": "Voltage41_V",
+          "kind": "timeseries",
+          "min": 210,
+          "max": 230
+        },
+        {
+          "field": "Current41_A1",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current41_A2",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current41_A3",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Temper41",
+          "kind": "timeseries",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "field": "Energy41_Wh",
+          "kind": "timeseries",
+          "min": 0,
+          "max": 1000
+        },
+        {
+          "field": "Voltage42_V",
+          "kind": "timeseries",
+          "min": 210,
+          "max": 230
+        },
+        {
+          "field": "Current42_A1",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current42_A2",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Current42_A3",
+          "kind": "timeseries",
+          "min": 1,
+          "max": 8
+        },
+        {
+          "field": "Temper42",
+          "kind": "timeseries",
+          "min": 25,
+          "max": 40
+        },
+        {
+          "field": "Energy42_Wh",
+          "kind": "timeseries",
+          "min": 0,
+          "max": 1000
+        }
+      ],
+      "macro-examples": [
+        {
+          "label": "Log pond control event",
+          "payload": {
+            "macro": "IO-pond-event-log",
+            "t": "2026-06-01 18:30:00",
+            "c1": "Ao 1",
+            "c2": "on",
+            "c3": "Bat mo to 1",
+            "c4": "operator@example.com"
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"IO-pond-event-log\",\"2026-06-01 18:30:00\",\"Ao 1\",\"on\",\"Bat mo to 1\",\"operator@example.com\""
+        },
+        {
+          "label": "Read pond event history",
+          "payload": {
+            "macro": "pond-event-history",
+            "limit": 20,
+            "offset": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "irrigation-timer-control",
+      "name": "Irrigation Timer Control",
+      "description": "Tổng quan:\nMẫu điều khiển tưới tiêu dạng chỉ điều khiển, gồm lưới công tắc, chọn giao diện, lịch sử và popup lịch hẹn giờ riêng cho từng công tắc. Không có cảm biến, biểu đồ, báo động, ngưỡng, số điện thoại hoặc cài đặt nào khác ngoài hẹn giờ.\n\nLoại:\ntelemetry + commands + database\n\nCác tham số chính:\n- groups[].sessionId: device key của thiết bị IoT, hỗ trợ nhiều thiết bị\n- groups[].controls[]: label, stateField, commandOn, commandOff, scheduleFields\n- scheduleFields: danh sách field hẹn giờ riêng của từng công tắc\n- Định dạng hẹn giờ: HHMM,enable|disable,ON|OFF\n- Macro lịch sử: irrigation-control-history\n- Macro ghi lịch sử từ thiết bị/API gateway: IO-irrigation-log với c1 là khu tưới, c2 là loại, c3 là nội dung, c4 là người thực hiện\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ lệnh telemetry:\nD23,#801,,\"telemetry\",\"O101\"=\"O101,\"O102\"=\"O102,\"#1021\"=\"#1021,\"#1022\"=\"#1022,\"#1031\"=\"#1031\n\nVí dụ lệnh hẹn giờ gửi xuống thiết bị:\n#1021=0630,enable,ON\n#1021=0000,disable,ON\n\nVí dụ ghi lịch sử:\nD23,#801,,\"data\",\"IO-irrigation-log\",\"Van khu A\",\"on\",\"Bật tưới khu A\",\"operator@example.com\"\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Dữ liệu hẹn giờ nằm trên thiết bị qua telemetry/command, không lưu trong database.\n- Thêm thiết bị bằng cách thêm groups[]; thêm lịch của từng công tắc bằng cách sửa scheduleFields.",
+      "image": "/sample_dashboards/irrigation-timer-control/sample.png",
+      "html": "/sample_dashboards/irrigation-timer-control/dashboard_vi.html",
+      "setup": {
+        "page": "/sample_dashboards/irrigation-timer-control/setup_vi.html"
+      },
+      "sampleDatabase": "/sample_dashboards/irrigation-timer-control/sample.sqlite",
+      "tags": [
+        "irrigation",
+        "timer",
+        "control",
+        "telemetry",
+        "database"
+      ],
+      "defaultLocale": "vi",
+      "locales": {
+        "vi": {
+          "label": "Basic (VI)",
+          "name": "Irrigation Timer Control Basic (VI)",
+          "description": "Tổng quan:\nMẫu điều khiển tưới tiêu dạng chỉ điều khiển, gồm lưới công tắc, chọn giao diện, lịch sử và popup lịch hẹn giờ riêng cho từng công tắc. Không có cảm biến, biểu đồ, báo động, ngưỡng, số điện thoại hoặc cài đặt nào khác ngoài hẹn giờ.\n\nLoại:\ntelemetry + commands + database\n\nCác tham số chính:\n- groups[].sessionId: device key của thiết bị IoT, hỗ trợ nhiều thiết bị\n- groups[].controls[]: label, stateField, commandOn, commandOff, scheduleFields\n- scheduleFields: danh sách field hẹn giờ riêng của từng công tắc\n- Định dạng hẹn giờ: HHMM,enable|disable,ON|OFF\n- Macro lịch sử: irrigation-control-history\n- Macro ghi lịch sử từ thiết bị/API gateway: IO-irrigation-log với c1 là khu tưới, c2 là loại, c3 là nội dung, c4 là người thực hiện\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ lệnh telemetry:\nD23,#801,,\"telemetry\",\"O101\"=\"O101,\"O102\"=\"O102,\"#1021\"=\"#1021,\"#1022\"=\"#1022,\"#1031\"=\"#1031\n\nVí dụ lệnh hẹn giờ gửi xuống thiết bị:\n#1021=0630,enable,ON\n#1021=0000,disable,ON\n\nVí dụ ghi lịch sử:\nD23,#801,,\"data\",\"IO-irrigation-log\",\"Van khu A\",\"on\",\"Bật tưới khu A\",\"operator@example.com\"\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Dữ liệu hẹn giờ nằm trên thiết bị qua telemetry/command, không lưu trong database.\n- Thêm thiết bị bằng cách thêm groups[]; thêm lịch của từng công tắc bằng cách sửa scheduleFields.",
+          "image": "/sample_dashboards/irrigation-timer-control/sample.png",
+          "html": "/sample_dashboards/irrigation-timer-control/dashboard_vi.html",
+          "setup": {
+            "page": "/sample_dashboards/irrigation-timer-control/setup_vi.html"
+          }
+        },
+        "sequential-vi": {
+          "label": "Sequential Irrigation (VI)",
+          "name": "Sequential Irrigation Control (VI)",
+          "description": "Tổng quan:\nBiến thể tưới cây tuần tự cho một hoặc nhiều thiết bị bơm. Mỗi thiết bị có một máy bơm, lịch bật bơm chỉ dùng tác vụ ON, và tối đa 50 van năng lượng mặt trời hiển thị nối tiếp trên mô hình đường ống. Van có trạng thái ON/OFF, phần trăm pin, điều khiển tay và cài thời gian tưới trực tiếp xuống thiết bị.\n\nLoại:\ntelemetry + commands + database\n\nCác tham số chính:\n- devices[].sessionId: device key của thiết bị IoT, hỗ trợ nhiều thiết bị bơm trên một trang\n- devices[].pump: label, stateField, commandOn, commandOff, scheduleFields\n- devices[].valves: count, stateField, batteryField, durationField, commandTemplate\n- Trạng thái van: một field CSV, ví dụ O101=ON,OFF,OFF,OFF,OFF\n- Pin van: một field CSV, ví dụ B101=95,88,76,100,64\n- Thời gian tưới van: một field CSV, ví dụ #1005=60,300,300,300,300\n- Lịch bơm chỉ gửi ON: #1021=0630,enable,ON hoặc #1021=0000,disable,ON\n- Lệnh điều khiển van dùng commandTemplate, ví dụ N3,\"{action}\",{valveId}\n- Macro lịch sử: irrigation-control-history; macro ghi lịch sử: IO-irrigation-log\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ lệnh telemetry:\nD23,#801,,\"telemetry\",\"O100\"=\"O100,\"O101\"=\"O101,\"B101\"=\"B101,\"#1005\"=\"#1005,\"#1021\"=\"#1021\n\nVí dụ lệnh thời gian van:\n#1005=60,600,300,300,300\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Dữ liệu lịch bơm, trạng thái van, pin van và thời gian tưới nằm trên thiết bị qua telemetry/command, không lưu trong database.\n- Setup giới hạn tối đa 50 van cho mỗi thiết bị.",
+          "image": "/sample_dashboards/irrigation-timer-control/sample.png",
+          "html": "/sample_dashboards/irrigation-timer-control/dashboard_sequential_vi.html",
+          "setup": {
+            "page": "/sample_dashboards/irrigation-timer-control/setup_sequential_vi.html"
+          },
+          "default-fields": [
+            {
+              "field": "O100",
+              "kind": "onoff"
+            },
+            {
+              "field": "O101",
+              "kind": "onoff"
+            },
+            {
+              "field": "B101",
+              "kind": "text"
+            },
+            {
+              "field": "#1005",
+              "kind": "text"
+            },
+            {
+              "field": "#1021",
+              "kind": "text"
+            },
+            {
+              "field": "#1022",
+              "kind": "text"
+            },
+            {
+              "field": "#1023",
+              "kind": "text"
+            },
+            {
+              "field": "#1024",
+              "kind": "text"
+            },
+            {
+              "field": "#1025",
+              "kind": "text"
+            },
+            {
+              "field": "O110",
+              "kind": "onoff"
+            },
+            {
+              "field": "O111",
+              "kind": "onoff"
+            },
+            {
+              "field": "B111",
+              "kind": "text"
+            },
+            {
+              "field": "#1006",
+              "kind": "text"
+            },
+            {
+              "field": "#1031",
+              "kind": "text"
+            },
+            {
+              "field": "#1032",
+              "kind": "text"
+            },
+            {
+              "field": "#1033",
+              "kind": "text"
+            },
+            {
+              "field": "#1034",
+              "kind": "text"
+            },
+            {
+              "field": "#1035",
+              "kind": "text"
+            }
+          ]
+        }
+      },
+      "default-fields": [
+        {
+          "field": "O101",
+          "kind": "onoff"
+        },
+        {
+          "field": "O102",
+          "kind": "onoff"
+        },
+        {
+          "field": "O103",
+          "kind": "onoff"
+        },
+        {
+          "field": "O104",
+          "kind": "onoff"
+        },
+        {
+          "field": "#1021",
+          "kind": "text"
+        },
+        {
+          "field": "#1022",
+          "kind": "text"
+        },
+        {
+          "field": "#1023",
+          "kind": "text"
+        },
+        {
+          "field": "#1024",
+          "kind": "text"
+        },
+        {
+          "field": "#1025",
+          "kind": "text"
+        },
+        {
+          "field": "#1031",
+          "kind": "text"
+        },
+        {
+          "field": "#1032",
+          "kind": "text"
+        },
+        {
+          "field": "#1033",
+          "kind": "text"
+        },
+        {
+          "field": "#1034",
+          "kind": "text"
+        },
+        {
+          "field": "#1035",
+          "kind": "text"
+        },
+        {
+          "field": "#1041",
+          "kind": "text"
+        },
+        {
+          "field": "#1042",
+          "kind": "text"
+        },
+        {
+          "field": "#1043",
+          "kind": "text"
+        },
+        {
+          "field": "#1044",
+          "kind": "text"
+        },
+        {
+          "field": "#1045",
+          "kind": "text"
+        },
+        {
+          "field": "#1051",
+          "kind": "text"
+        },
+        {
+          "field": "#1052",
+          "kind": "text"
+        },
+        {
+          "field": "#1053",
+          "kind": "text"
+        },
+        {
+          "field": "#1054",
+          "kind": "text"
+        },
+        {
+          "field": "#1055",
+          "kind": "text"
+        }
+      ],
+      "macro-examples": [
+        {
+          "label": "Log irrigation control event",
+          "payload": {
+            "macro": "IO-irrigation-log",
+            "t": "2026-06-01 06:30:00",
+            "c1": "Zone A valve",
+            "c2": "on",
+            "c3": "Start irrigation zone A",
+            "c4": "operator@example.com"
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"IO-irrigation-log\",\"2026-06-01 06:30:00\",\"Zone A valve\",\"on\",\"Start irrigation zone A\",\"operator@example.com\""
+        },
+        {
+          "label": "Read irrigation history",
+          "payload": {
+            "macro": "irrigation-control-history",
+            "limit": 20,
+            "offset": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "biomass-burner-management",
+      "name": "Biomass Burner Management",
+      "description": "Tổng quan:\nTrang quản trị database-first cho lò đốt sinh khối. Danh sách lò, thời hạn thuê, phút đã mua và phút đã đốt được lưu trong SQLite; telemetry và cài đặt tham số đọc trực tiếp từ từng bộ điều khiển.\n\nLoại:\ndatabase + telemetry + timeseries + commands\n\nCác tham số chính:\n- Database: biomass_burners, biomass_burner_meter_events, biomass_setting_profiles, biomass_setting_fields\n- Macro đọc/ghi: biomass-burner-summary, biomass-burner-list, biomass-burner-detail, biomass-burner-create, biomass-burner-update-contract, biomass-burner-delete, biomass-burner-settings\n- Macro thiết bị cập nhật phút đốt: IO-biomass-update với c1 là mã lò và c2 là số phút đã đốt hiện tại\n- Response macro thiết bị: c1 là OK/FAIL, c2 là Unix timestamp giây của thời hạn thuê\n- Telemetry bảng: status, temperature theo field khai báo từng lò\n- Popup cài đặt: đọc một lần các field #1005..#1012 và gửi lệnh #field=value trực tiếp xuống thiết bị\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ lệnh thiết bị:\nD23,#801,,\"timeseries\",\"temperature\"=#1.1,\"status\"=\"status,\"#1005\"=\"#1005,\"#1006\"=\"#1006,\"#1007\"=\"#1007,\"#1008\"=\"#1008,\"#1009\"=\"#1009,\"#1010\"=\"#1010,\"#1011\"=\"#1011,\"#1012\"=\"#1012\nD23,#801,,\"data\",\"IO-biomass-update\",\"336483\",\"19488\"\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Mỗi lò lưu session_id riêng trong database; dữ liệu mẫu dùng session hiện tại để dễ thử.\n- QR/top-up tự động và bản đồ là phần mở rộng sau.",
+      "image": "/sample_dashboards/biomass-burner-management/sample.png",
+      "html": "/sample_dashboards/biomass-burner-management/dashboard_vi.html",
+      "setup": {
+        "page": "/sample_dashboards/biomass-burner-management/setup_vi.html"
+      },
+      "sampleDatabase": "/sample_dashboards/biomass-burner-management/sample.sqlite",
+      "tags": [
+        "biomass",
+        "burner",
+        "database",
+        "telemetry",
+        "timeseries"
+      ],
+      "defaultLocale": "vi",
+      "default-fields": [
+        {
+          "field": "status",
+          "kind": "onoff"
+        },
+        {
+          "field": "temperature",
+          "kind": "timeseries",
+          "min": 120,
+          "max": 480
+        },
+        {
+          "field": "#1005",
+          "kind": "number",
+          "min": 0,
+          "max": 100
+        },
+        {
+          "field": "#1006",
+          "kind": "number",
+          "min": 0,
+          "max": 100
+        },
+        {
+          "field": "#1007",
+          "kind": "number",
+          "min": 0,
+          "max": 100
+        },
+        {
+          "field": "#1008",
+          "kind": "number",
+          "min": 0,
+          "max": 100
+        },
+        {
+          "field": "#1009",
+          "kind": "number",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "field": "#1010",
+          "kind": "number",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "field": "#1011",
+          "kind": "number",
+          "min": 1,
+          "max": 60
+        },
+        {
+          "field": "#1012",
+          "kind": "number",
+          "min": 1,
+          "max": 300
+        }
+      ],
+      "macro-examples": [
+        {
+          "label": "Update burner used minutes",
+          "payload": {
+            "macro": "IO-biomass-update",
+            "c1": "336483",
+            "c2": "19488"
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"IO-biomass-update\",\"336483\",\"19488\""
+        },
+        {
+          "label": "Read burner summary",
+          "payload": {
+            "macro": "biomass-burner-summary",
+            "soon_days": 30,
+            "co2_kg_per_minute": 2.77
+          }
+        },
+        {
+          "label": "Read burner list",
+          "payload": {
+            "macro": "biomass-burner-list",
+            "page_size": 20,
+            "offset": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "factory-production",
+      "name": "Factory Production Monitoring",
+      "description": "Overview:\nContext-aware production dashboard focused on machine-by-machine throughput, Wh per unit, remaining material, declaration editing, and paged production overview.\n\nType:\ndatabase\n\nMain parameters used:\n- Read macros: factory-kpis, factory-machine-list, factory-machine-series, factory-production-overview\n- Write macro from IoT device: IO-factory-log using compact payload t, c1..c13\n- Write macro from popup editor: factory-log-declare\n- Important fields in factory summary: machine_code, order_id, mold_code, lot_code, staff, session_code, required_quantity, rated_weight, raw_materials\n\nDevice API to install:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nExample device commands:\nD23,#801,,\"data\",\"IO-factory-log\",\"2026-04-04 08:00:00\",\"IM-01\",\"ORD-240404-A\",\"MOLD-CHAU-32\",\"LOT-A\",\"120\",\"Nguyen Van Nam\",\"S0404-A1\",\"18.4\",\"42\",\"3\",\"500\",\"125.5\",\"180000\"\nD23,#801,,\"data\",\"IO-factory-log-declare\",\"2026-04-04 08:00:00\",\"IM-01\",\"ORD-240404-A\",\"MOLD-CHAU-32\",\"LOT-A\",\"Nguyen Van Nam\",\"S0404-A1\",\"2000\",\"125.5\",\"180000\"\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- factory_id defaults to the ioid portion of the active session.\n- Remaining material is reduced automatically by rated_weight as finished output increases.",
+      "image": "/sample_dashboards/factory-production/sample.png",
+      "html": "/sample_dashboards/factory-production/dashboard.html",
+      "setup": {
+        "page": "/sample_dashboards/factory-production/setup_en.html"
+      },
+      "sampleDatabase": "/sample_dashboards/factory-production/sample.sqlite",
+      "tags": [
+        "factory",
+        "production",
+        "context-aware",
+        "reporting",
+        "database"
+      ],
+      "defaultLocale": "vi",
+      "locales": {
+        "en": {
+          "name": "Factory Production Monitoring",
+          "description": "Overview:\nContext-aware production dashboard focused on machine-by-machine throughput, Wh per unit, remaining material, declaration editing, and paged production overview.\n\nType:\ndatabase\n\nMain parameters used:\n- Read macros: factory-kpis, factory-machine-list, factory-machine-series, factory-production-overview\n- Write macro from IoT device: IO-factory-log using compact payload t, c1..c13\n- Write macro from popup editor: factory-log-declare\n- Important fields in factory summary: machine_code, order_id, mold_code, lot_code, staff, session_code, required_quantity, rated_weight, raw_materials\n\nDevice API to install:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nExample device commands:\nD23,#801,,\"data\",\"IO-factory-log\",\"2026-04-04 08:00:00\",\"IM-01\",\"ORD-240404-A\",\"MOLD-CHAU-32\",\"LOT-A\",\"120\",\"Nguyen Van Nam\",\"S0404-A1\",\"18.4\",\"42\",\"3\",\"500\",\"125.5\",\"180000\"\nD23,#801,,\"data\",\"IO-factory-log-declare\",\"2026-04-04 08:00:00\",\"IM-01\",\"ORD-240404-A\",\"MOLD-CHAU-32\",\"LOT-A\",\"Nguyen Van Nam\",\"S0404-A1\",\"2000\",\"125.5\",\"180000\"\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- factory_id defaults to the ioid portion of the active session.\n- Remaining material is reduced automatically by rated_weight as finished output increases.",
+          "html": "/sample_dashboards/factory-production/dashboard.html",
+          "setup": {
+            "page": "/sample_dashboards/factory-production/setup_en.html"
+          },
+          "default-fields": []
+        },
+        "vi": {
+          "name": "Factory Production Monitoring (VI)",
+          "description": "Tổng quan:\nTrang sản xuất context-aware tập trung vào sản lượng theo từng máy, Wh trên mỗi sản phẩm, nguyên liệu còn lại, chỉnh sửa khai báo và bảng tổng quan sản xuất phân trang.\n\nLoại:\ndatabase\n\nCác tham số chính:\n- Macro đọc: factory-kpis, factory-machine-list, factory-machine-series, factory-production-overview\n- Macro ghi từ thiết bị IoT: IO-factory-log dùng payload ngắn t, c1..c13\n- Macro ghi từ popup chỉnh sửa: factory-log-declare\n- Trường quan trọng trong bảng tổng hợp: machine_code, order_id, mold_code, lot_code, staff, session_code, required_quantity, rated_weight, raw_materials\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ lệnh thiết bị:\nD23,#801,,\"data\",\"IO-factory-log\",\"2026-04-04 08:00:00\",\"IM-01\",\"ORD-240404-A\",\"MOLD-CHAU-32\",\"LOT-A\",\"120\",\"Nguyen Van Nam\",\"S0404-A1\",\"18.4\",\"42\",\"3\",\"500\",\"125.5\",\"180000\"\nD23,#801,,\"data\",\"IO-factory-log-declare\",\"2026-04-04 08:00:00\",\"IM-01\",\"ORD-240404-A\",\"MOLD-CHAU-32\",\"LOT-A\",\"Nguyen Van Nam\",\"S0404-A1\",\"2000\",\"125.5\",\"180000\"\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- factory_id mặc định lấy từ phần ioid của session đang hoạt động.\n- Nguyên liệu còn lại sẽ tự giảm theo rated_weight khi sản lượng thành phẩm tăng.",
+          "html": "/sample_dashboards/factory-production/dashboard_vi.html",
+          "setup": {
+            "page": "/sample_dashboards/factory-production/setup_vi.html"
+          },
+          "default-fields": []
+        }
+      },
+      "default-fields": [],
+      "macro-examples": [
+        {
+          "label": "Log factory production",
+          "payload": {
+            "macro": "IO-factory-log",
+            "t": "2026-06-01 08:00:00",
+            "c1": "IM-01",
+            "c2": "ORD-240404-A",
+            "c3": "MOLD-CHAU-32",
+            "c4": "LOT-A",
+            "c5": "120",
+            "c6": "Nguyen Van Nam",
+            "c7": "S0404-A1",
+            "c8": "18.4",
+            "c9": "42",
+            "c10": "3",
+            "c11": "500",
+            "c12": "125.5",
+            "c13": 180000
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"IO-factory-log\",\"2026-06-01 08:00:00\",\"IM-01\",\"ORD-240404-A\",\"MOLD-CHAU-32\",\"LOT-A\",\"120\",\"Nguyen Van Nam\",\"S0404-A1\",\"18.4\",\"42\",\"3\",\"500\",\"125.5\",\"180000\""
+        },
+        {
+          "label": "Declare factory order",
+          "payload": {
+            "macro": "IO-factory-log-declare",
+            "t": "2026-06-01 08:00:00",
+            "c1": "IM-01",
+            "c2": "ORD-240404-A",
+            "c3": "MOLD-CHAU-32",
+            "c4": "LOT-A",
+            "c5": "Nguyen Van Nam",
+            "c6": "S0404-A1",
+            "c7": "2000",
+            "c8": "125.5",
+            "c9": 180000
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"IO-factory-log-declare\",\"2026-06-01 08:00:00\",\"IM-01\",\"ORD-240404-A\",\"MOLD-CHAU-32\",\"LOT-A\",\"Nguyen Van Nam\",\"S0404-A1\",\"2000\",\"125.5\",\"180000\""
+        },
+        {
+          "label": "Read factory KPIs",
+          "payload": {
+            "macro": "factory-kpis"
+          }
+        },
+        {
+          "label": "Read factory machine list",
+          "payload": {
+            "macro": "factory-machine-list"
+          }
+        },
+        {
+          "label": "Read factory production overview",
+          "payload": {
+            "macro": "factory-production-overview",
+            "page_size": 20,
+            "offset": 0
+          }
+        }
+      ]
+    }
+  ]
+}

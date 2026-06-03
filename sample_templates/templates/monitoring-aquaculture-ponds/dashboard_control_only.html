@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aquaculture Control Only</title>
+  <link rel="stylesheet" href="../../dashboard-themes.css?v=2026.04.18" />
+  <link rel="stylesheet" href="/sample_dashboards/monitoring-aquaculture-ponds/dashboard.css?v=2026.04.28.7" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+      } catch (error) { }
+    })();
+  </script>
+</head>
+
+<body>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="page-shell">
+    <section class="hero">
+      <div>
+        <h1 id="hero-title">Aquaculture Controls</h1>
+      </div>
+      <div class="hero-tools">
+        <button class="toolbar-button" type="button" id="history-refresh">Refresh history</button>
+        <div class="hero-chip" id="control-count-chip">0 controls</div>
+      </div>
+    </section>
+
+    <section class="history-card" id="history-card">
+      <div class="section-head history-head" id="history-toggle" role="button" tabindex="0" aria-expanded="false"
+        onclick="(function(card){var content=card&&card.querySelector('#history-content');var toggle=card&&card.querySelector('#history-toggle');if(!content)return;var collapsed=!content.hidden;content.hidden=collapsed;if(toggle)toggle.setAttribute('aria-expanded',collapsed?'false':'true');if(card)card.setAttribute('data-collapsed',collapsed?'true':'false');})(this.closest('#history-card'))">
+        <div class="section-toggle history-toggle">
+          <span class="history-title"><h2>History</h2></span>
+          <span class="section-toggle-indicator">&#9662;</span>
+        </div>
+        <div class="section-toolbar">
+          <div class="hero-chip" id="history-source-chip" onclick="event.stopPropagation()">History source</div>
+        </div>
+      </div>
+      <div class="table-wrap" id="history-content" hidden>
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Pond</th>
+              <th>Type</th>
+              <th>Content</th>
+              <th>User</th>
+            </tr>
+          </thead>
+          <tbody id="history-body">
+            <tr>
+              <td colspan="5" class="empty-state">Waiting for history data.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="control-only-card" id="controls-card">
+      <div class="control-only-head">
+        <h2 id="controls-title">Controls</h2>
+        <div class="live-pill" id="controls-live" data-state="connecting">Connecting</div>
+      </div>
+      <div class="control-only-grid" id="control-grid"></div>
+    </section>
+  </main>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Choose theme"
+      aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Theme options">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism"
+        role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora
+        UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern
+        Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism"
+        role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk"
+        role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo
+        Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento
+        Grid</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script id="monitoring-aquaculture-ponds-control-only-config" type="application/json">
+{
+  "title": "Aquaculture Controls",
+  "syncId": "<<syncid>>",
+  "history": {
+    "sessionId": "<<sessionid>>",
+    "syncId": "<<syncid>>",
+    "macro": "pond-event-history",
+    "pageSize": 100
+  },
+  "groups": [
+    {
+      "sessionId": "<<sessionid>>",
+      "controls": [
+        { "label": "Motor 1", "stateField": "O101", "commandOn": "N3,1,1,\"ON\",\"<<username>>\"", "commandOff": "N3,1,1,\"OFF\",\"<<username>>\"", "meter": { "title": "Motor 1", "voltage": "Voltage11_V", "current1": "Current11_A1", "current2": "Current11_A2", "current3": "Current11_A3", "temperature": "Temper11", "energy": "Energy11_Wh" } },
+        { "label": "Motor 2", "stateField": "O102", "commandOn": "N3,1,2,\"ON\",\"<<username>>\"", "commandOff": "N3,1,2,\"OFF\",\"<<username>>\"", "meter": { "title": "Motor 2", "voltage": "Voltage12_V", "current1": "Current12_A1", "current2": "Current12_A2", "current3": "Current12_A3", "temperature": "Temper12", "energy": "Energy12_Wh" } },
+        { "label": "Motor 3", "stateField": "O103", "commandOn": "N3,2,1,\"ON\",\"<<username>>\"", "commandOff": "N3,2,1,\"OFF\",\"<<username>>\"", "meter": { "title": "Motor 3", "voltage": "Voltage21_V", "current1": "Current21_A1", "current2": "Current21_A2", "current3": "Current21_A3", "temperature": "Temper21", "energy": "Energy21_Wh" } },
+        { "label": "Motor 4", "stateField": "O104", "commandOn": "N3,2,2,\"ON\",\"<<username>>\"", "commandOff": "N3,2,2,\"OFF\",\"<<username>>\"", "meter": { "title": "Motor 4", "voltage": "Voltage22_V", "current1": "Current22_A1", "current2": "Current22_A2", "current3": "Current22_A3", "temperature": "Temper22", "energy": "Energy22_Wh" } },
+        { "label": "Motor 5", "stateField": "O105", "commandOn": "N3,3,1,\"ON\",\"<<username>>\"", "commandOff": "N3,3,1,\"OFF\",\"<<username>>\"", "meter": { "title": "Motor 5", "voltage": "Voltage31_V", "current1": "Current31_A1", "current2": "Current31_A2", "current3": "Current31_A3", "temperature": "Temper31", "energy": "Energy31_Wh" } },
+        { "label": "Motor 6", "stateField": "O106", "commandOn": "N3,3,2,\"ON\",\"<<username>>\"", "commandOff": "N3,3,2,\"OFF\",\"<<username>>\"", "meter": { "title": "Motor 6", "voltage": "Voltage32_V", "current1": "Current32_A1", "current2": "Current32_A2", "current3": "Current32_A3", "temperature": "Temper32", "energy": "Energy32_Wh" } },
+        { "label": "Motor 7", "stateField": "O107", "commandOn": "N3,4,1,\"ON\",\"<<username>>\"", "commandOff": "N3,4,1,\"OFF\",\"<<username>>\"", "meter": { "title": "Motor 7", "voltage": "Voltage41_V", "current1": "Current41_A1", "current2": "Current41_A2", "current3": "Current41_A3", "temperature": "Temper41", "energy": "Energy41_Wh" } },
+        { "label": "Motor 8", "stateField": "O108", "commandOn": "N3,4,2,\"ON\",\"<<username>>\"", "commandOff": "N3,4,2,\"OFF\",\"<<username>>\"", "meter": { "title": "Motor 8", "voltage": "Voltage42_V", "current1": "Current42_A1", "current2": "Current42_A2", "current3": "Current42_A3", "temperature": "Temper42", "energy": "Energy42_Wh" } }
+      ]
+    }
+  ],
+  "ui": {
+    "controls": {
+      "title": "Controls",
+      "countSingular": "control",
+      "countPlural": "controls",
+      "connecting": "Connecting",
+      "live": "Live",
+      "stale": "Stale",
+      "offline": "Offline"
+    },
+    "contactor": {
+      "off": "OFF",
+      "offline": "OFFLINE",
+      "error": "ERROR",
+      "meterAria": "Open electrical meter for {label}",
+      "turnOnAria": "Turn {label} on",
+      "turnOffAria": "Turn {label} off",
+      "turningOn": "Turning on",
+      "turningOff": "Turning off"
+    },
+    "commands": {
+      "sent": "Command sent.",
+      "failed": "Command failed."
+    },
+    "history": {
+      "title": "History",
+      "sourceLabel": "History source",
+      "sourceValue": "Source {ioid}",
+      "waiting": "Waiting for history data.",
+      "empty": "No history rows available.",
+      "loadFailed": "Unable to load event history.",
+      "columns": {
+        "time": "Time",
+        "pond": "Pond",
+        "type": "Type",
+        "content": "Content",
+        "email": "User"
+      },
+      "eventTypes": {
+        "shaftBreak": "Shaft break",
+        "overload": "Overload",
+        "disconnect": "Disconnected",
+        "offTime": "OFF wrong time",
+        "onTime": "ON wrong time",
+        "alarmOff": "Alarm off"
+      }
+    },
+    "meterModal": {
+      "idleTitle": "Electrical meter",
+      "title": "Electrical meter | {label}",
+      "description": "Voltage, current, temperature and energy for {label}.",
+      "closeAriaLabel": "Close dialog",
+      "energyTitle": "Energy consumption",
+      "voltageTitle": "Voltage",
+      "currentTitle": "Current",
+      "temperatureTitle": "Temperature",
+      "unavailable": "Meter data is not configured for this contactor.",
+      "loadFailed": "Unable to load meter history.",
+      "seriesLabels": {
+        "voltage": "V",
+        "current1": "I1",
+        "current2": "I2",
+        "current3": "I3",
+        "temperature": "Temp"
+      }
+    }
+  },
+  "locale": "en"
+}
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
+  <script src="/sample_dashboards/monitoring-aquaculture-ponds/pond-control-only-meter.js?v=2026.05.28.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script>
+    (function () {
+      var config = {};
+      var configNode = document.getElementById("monitoring-aquaculture-ponds-control-only-config");
+      try { config = JSON.parse(configNode ? configNode.textContent : "{}"); } catch (error) {
+        console.error("Invalid control-only aquaculture config", error);
+        config = { title: "Aquaculture Controls", syncId: "", history: {}, groups: [], ui: {} };
+      }
+
+      var syncId = String(new URLSearchParams(window.location.search).get("syncId") || new URLSearchParams(window.location.search).get("syncid") || config.syncId || "").trim();
+      var ui = config.ui || {};
+      var heroTitle = document.getElementById("hero-title");
+      var controlsTitle = document.getElementById("controls-title");
+      var controlGrid = document.getElementById("control-grid");
+      var controlCountChip = document.getElementById("control-count-chip");
+      var controlsLive = document.getElementById("controls-live");
+      var controlsCard = document.getElementById("controls-card");
+      var historyCard = document.getElementById("history-card");
+      var historyToggle = document.getElementById("history-toggle");
+      var historyContent = document.getElementById("history-content");
+      var historyBody = document.getElementById("history-body");
+      var historyRefreshButton = document.getElementById("history-refresh");
+      var historySourceChip = document.getElementById("history-source-chip");
+      var toastStack = document.getElementById("toast-stack");
+      var themePickerToggle = document.getElementById("theme-picker-toggle");
+      var themePickerMenu = document.getElementById("theme-picker-menu");
+
+      var historyConfig = config.history || {};
+      var historyState = {
+        sessionId: String(historyConfig.sessionId || "").trim(),
+        syncId: String(historyConfig.syncId || syncId || "").trim(),
+        macro: String(historyConfig.macro || "").trim(),
+        pageSize: Number(historyConfig.pageSize || 100) || 100,
+        rows: []
+      };
+      var historyRequestId = 0;
+      var historyEventSource = null;
+      var historyReconnectTimer = null;
+      var historyCooldownTimer = null;
+      var historyRefreshQueued = false;
+      var historyCooldownActive = false;
+      var sessionStates = [];
+      var allControls = [];
+      var meterManager = null;
+      var liveTimer = null;
+      var lastTelemetryAt = 0;
+
+      function getUi(path, fallback) {
+        var parts = String(path || "").split(".");
+        var node = ui;
+        for (var index = 0; index < parts.length; index += 1) {
+          if (!node || typeof node !== "object" || !(parts[index] in node)) return fallback;
+          node = node[parts[index]];
+        }
+        return typeof node === "string" ? node : fallback;
+      }
+
+      function formatUi(path, fallback, values) {
+        var text = getUi(path, fallback);
+        Object.keys(values || {}).forEach(function (key) {
+          text = text.replace(new RegExp("\\{" + key + "\\}", "g"), String(values[key]));
+        });
+        return text;
+      }
+
+      function esc(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function safeText(value, fallback) {
+        var text = String(value == null ? "" : value).trim();
+        return text || String(fallback || "");
+      }
+
+      function parseSessionContext(sessionId) {
+        var normalized = String(sessionId || "").trim();
+        if (!normalized) return null;
+        var atIndex = normalized.indexOf("@");
+        if (atIndex <= 0 || atIndex >= normalized.length - 1) {
+          return { ioid: normalized, apikey: "" };
+        }
+        return { ioid: normalized.slice(0, atIndex), apikey: normalized.slice(atIndex + 1) };
+      }
+
+      function extractIoid(sessionId) {
+        var context = parseSessionContext(sessionId);
+        return context ? context.ioid : "";
+      }
+
+      function buildCommandApiUrl(sessionId) {
+        var context = parseSessionContext(sessionId);
+        if (!context) return "";
+        return "https://iot.ioeasy.com/cmd/" + encodeURIComponent(context.ioid) + "?apiKey=" + encodeURIComponent(context.apikey);
+      }
+
+      function buildTelemetryUrl(sessionId) {
+        if (!sessionId || !syncId) return "";
+        return "/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(syncId) + "/iotelemetry";
+      }
+
+      function buildStreamUrl(sessionId, fields) {
+        var params = new URLSearchParams();
+        params.set("historyMs", "0");
+        if (fields.length) params.set("fields", fields.join(","));
+        return "/api/" + encodeURIComponent(sessionId) + "/stream?" + params.toString();
+      }
+
+      function buildIoDataUrl(sessionId, nextSyncId) {
+        if (!sessionId || !nextSyncId) return "";
+        return "/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(nextSyncId) + "/iodata";
+      }
+
+      function normalizeContactorState(value) {
+        var normalized = String(value == null ? "" : value).trim().toLowerCase();
+        if (normalized === "on" || normalized === "1" || normalized === "true") return "on";
+        if (normalized === "off" || normalized === "0" || normalized === "false") return "off";
+        return normalized ? "offline" : "offline";
+      }
+
+      function setLiveState(mode, label) {
+        if (!controlsLive) return;
+        controlsLive.setAttribute("data-state", mode);
+        controlsLive.textContent = label;
+      }
+
+      function refreshLiveState() {
+        var ageMs = lastTelemetryAt > 0 ? Date.now() - lastTelemetryAt : Infinity;
+        if (ageMs < 30000) {
+          setLiveState("live", getUi("controls.live", "Live"));
+        } else if (ageMs < 120000) {
+          setLiveState("connecting", getUi("controls.stale", "Stale"));
+        } else {
+          setLiveState("error", getUi("controls.offline", "Offline"));
+        }
+      }
+
+      function scheduleLiveCheck() {
+        if (liveTimer) window.clearTimeout(liveTimer);
+        liveTimer = window.setTimeout(function () {
+          liveTimer = null;
+          refreshLiveState();
+          scheduleLiveCheck();
+        }, 30000);
+      }
+
+      function setControlVisual(control, state, label) {
+        if (!control || !control.toggleNode || !control.stateNode) return;
+        control.state = state || "offline";
+        control.toggleNode.setAttribute("data-state", control.state);
+        control.stateNode.innerHTML = "<span>" + esc(label || getUi("contactor.offline", "OFFLINE")) + "</span>";
+      }
+
+      function showToast(message, type) {
+        if (!toastStack) return;
+        var toast = document.createElement("div");
+        toast.className = "toast " + (type || "");
+        toast.textContent = String(message || "");
+        toastStack.appendChild(toast);
+        window.setTimeout(function () { toast.remove(); }, 2600);
+      }
+
+      function setTheme(nextTheme) {
+        document.documentElement.setAttribute("data-theme", nextTheme);
+        try { window.localStorage.setItem("sample-dashboard-theme", nextTheme); } catch (error) {}
+        if (!themePickerMenu) return;
+        Array.prototype.forEach.call(themePickerMenu.querySelectorAll("[data-theme-option]"), function (button) {
+          var isActive = String(button.getAttribute("data-theme-option") || "") === nextTheme;
+          button.setAttribute("aria-pressed", isActive ? "true" : "false");
+          button.setAttribute("aria-checked", isActive ? "true" : "false");
+        });
+      }
+
+      function closeThemePickerMenu() {
+        if (!themePickerMenu || !themePickerToggle) return;
+        themePickerMenu.classList.remove("is-open");
+        themePickerToggle.setAttribute("aria-expanded", "false");
+      }
+
+      function openThemePickerMenu() {
+        if (!themePickerMenu || !themePickerToggle) return;
+        themePickerMenu.classList.add("is-open");
+        themePickerToggle.setAttribute("aria-expanded", "true");
+      }
+
+      function initializeThemePicker() {
+        if (!themePickerMenu || !themePickerToggle) return;
+        themePickerToggle.setAttribute("aria-label", getUi("theme.toggleAriaLabel", themePickerToggle.getAttribute("aria-label") || "Choose theme"));
+        themePickerMenu.setAttribute("aria-label", getUi("theme.menuAriaLabel", themePickerMenu.getAttribute("aria-label") || "Theme options"));
+        Array.prototype.forEach.call(themePickerMenu.querySelectorAll("[data-theme-option]"), function (button) {
+          var themeKey = String(button.getAttribute("data-theme-option") || "").trim();
+          button.textContent = getUi("theme.options." + themeKey, button.textContent.trim());
+        });
+        document.addEventListener("click", function (event) {
+          var themeOption = event.target && typeof event.target.closest === "function" ? event.target.closest("[data-theme-option]") : null;
+          if (themeOption) {
+            setTheme(String(themeOption.getAttribute("data-theme-option") || "neumorphism"));
+            closeThemePickerMenu();
+            return;
+          }
+          var themeToggle = event.target && typeof event.target.closest === "function" ? event.target.closest("#theme-picker-toggle") : null;
+          if (themeToggle) {
+            if (themePickerMenu.classList.contains("is-open")) closeThemePickerMenu();
+            else openThemePickerMenu();
+            return;
+          }
+          if (!themePickerMenu.contains(event.target)) closeThemePickerMenu();
+        });
+        setTheme(document.documentElement.getAttribute("data-theme") || "neumorphism");
+      }
+
+      function resolveCommandTemplate(command) {
+        var resolver = window.AIBridgeCommandTemplate;
+        var template = String(command == null ? "" : command);
+        if (resolver && typeof resolver.resolveCommandTemplate === "function") {
+          return resolver.resolveCommandTemplate(template);
+        }
+        return Promise.resolve(template.replace(/<<email>>/gi, "").replace(/<<username>>/gi, ""));
+      }
+
+      function postCommandRaw(commandApiUrl, command, timeoutMs) {
+        return resolveCommandTemplate(command).then(function (resolvedCommand) {
+          var controller = new AbortController();
+          var timeoutId = window.setTimeout(function () { controller.abort(); }, timeoutMs || 5000);
+          return fetch(commandApiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cmd: String(resolvedCommand || "") }),
+            signal: controller.signal
+          }).then(function (response) {
+            return response.text().then(function (text) {
+              if (!response.ok) throw new Error(text || "Command failed.");
+              return text || "";
+            });
+          }).finally(function () {
+            window.clearTimeout(timeoutId);
+          });
+        });
+      }
+
+      function setControlBusy(control, busy) {
+        control.busy = !!busy;
+        if (control.onButton) control.onButton.disabled = !!busy || control.readOnly;
+        if (control.offButton) control.offButton.disabled = !!busy || control.readOnly;
+      }
+
+      function sendControlCommand(control, command, pendingLabel, nextState) {
+        if (!control || !command || !control.commandApiUrl || control.busy || control.readOnly) return;
+        setControlBusy(control, true);
+        setControlVisual(control, "pending", pendingLabel);
+        postCommandRaw(control.commandApiUrl, command, 5000).then(function () {
+          setControlVisual(control, nextState, nextState === "on" ? "ON" : "OFF");
+          showToast(getUi("commands.sent", "Command sent."), "success");
+        }).catch(function (error) {
+          setControlVisual(control, "offline", getUi("contactor.error", "ERROR"));
+          showToast((error && error.message) || getUi("commands.failed", "Command failed."), "error");
+        }).finally(function () {
+          setControlBusy(control, false);
+        });
+      }
+
+      function createControlHtml(control) {
+        var meterButtonHtml = control.hasMeter
+          ? "<button class=\"icon-button contactor-meter-button control-only-meter-button\" type=\"button\" data-role=\"meter\" aria-label=\"" + esc(formatUi("contactor.meterAria", "Open electrical meter for {label}", { label: control.label })) + "\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 18h16M7 14l3-4 3 2 4-6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><circle cx=\"7\" cy=\"14\" r=\"1.4\" fill=\"currentColor\"></circle><circle cx=\"10\" cy=\"10\" r=\"1.4\" fill=\"currentColor\"></circle><circle cx=\"13\" cy=\"12\" r=\"1.4\" fill=\"currentColor\"></circle><circle cx=\"17\" cy=\"6\" r=\"1.4\" fill=\"currentColor\"></circle></svg></button>"
+          : "";
+        return ""
+          + "<section class=\"contactor-card\" data-control-id=\"" + esc(control.id) + "\" data-read-only=\"" + (control.readOnly ? "true" : "false") + "\" data-has-meter=\"" + (control.hasMeter ? "true" : "false") + "\">"
+          + meterButtonHtml
+          + "<div class=\"contactor-head\"><div class=\"contactor-label\">" + esc(control.label) + "</div></div>"
+          + "<div class=\"contactor-toggle\" data-role=\"toggle\" data-state=\"offline\">"
+          + "<button class=\"contactor-zone\" data-action=\"on\" data-role=\"on\" type=\"button\" aria-label=\"" + esc(formatUi("contactor.turnOnAria", "Turn {label} on", { label: control.label })) + "\"" + (control.readOnly ? " disabled" : "") + "></button>"
+          + "<div class=\"contactor-lever\" data-role=\"state\"><span>" + esc(getUi("contactor.offline", "OFFLINE")) + "</span></div>"
+          + "<button class=\"contactor-zone\" data-action=\"off\" data-role=\"off\" type=\"button\" aria-label=\"" + esc(formatUi("contactor.turnOffAria", "Turn {label} off", { label: control.label })) + "\"" + (control.readOnly ? " disabled" : "") + "></button>"
+          + "</div>"
+          + "</section>";
+      }
+
+      function normalizeControls() {
+        var result = [];
+        var sessions = Array.isArray(config.groups) ? config.groups : [];
+        sessions.forEach(function (group, groupIndex) {
+          var sessionId = safeText(group.sessionId, "");
+          var commandApiUrl = buildCommandApiUrl(sessionId);
+          (Array.isArray(group.controls) ? group.controls : []).forEach(function (entry, controlIndex) {
+            var stateField = safeText(entry.stateField || entry.field, "");
+            if (!sessionId || !stateField) return;
+            result.push({
+              id: "control-" + groupIndex + "-" + controlIndex,
+              label: safeText(entry.label, "Motor " + (result.length + 1)),
+              sessionId: sessionId,
+              commandApiUrl: commandApiUrl,
+              stateField: stateField,
+              stateKey: stateField.toLowerCase(),
+              commandOn: safeText(entry.commandOn, ""),
+              commandOff: safeText(entry.commandOff, ""),
+              meter: entry.meter && typeof entry.meter === "object" ? entry.meter : null,
+              hasMeter: !!(window.PondControlOnlyMeters && window.PondControlOnlyMeters.getMeterFieldsFromControl && window.PondControlOnlyMeters.getMeterFieldsFromControl(entry)),
+              readOnly: !(commandApiUrl && entry.commandOn && entry.commandOff),
+              busy: false,
+              state: "offline"
+            });
+          });
+        });
+        return result;
+      }
+
+      function groupControlsBySession(controls) {
+        var map = {};
+        controls.forEach(function (control) {
+          if (!map[control.sessionId]) {
+            map[control.sessionId] = { sessionId: control.sessionId, controls: [], eventSource: null };
+          }
+          map[control.sessionId].controls.push(control);
+        });
+        return Object.keys(map).map(function (key) { return map[key]; });
+      }
+
+      function updateTelemetryField(sessionState, field, value, timestamp) {
+        if (meterManager && typeof meterManager.updateField === "function") {
+          meterManager.updateField(sessionState.sessionId, field, value, timestamp || Date.now());
+        }
+        var key = String(field || "").trim().toLowerCase();
+        sessionState.controls.forEach(function (control) {
+          if (control.stateKey !== key) return;
+          var nextState = normalizeContactorState(value);
+          setControlVisual(control, nextState, nextState === "on" ? "ON" : nextState === "off" ? "OFF" : getUi("contactor.offline", "OFFLINE"));
+        });
+        lastTelemetryAt = Math.max(lastTelemetryAt, Number(timestamp || Date.now()));
+        refreshLiveState();
+      }
+
+      function handleStreamPayload(sessionState, payload) {
+        if (!payload || !payload.type) return;
+        if (payload.type === "telemetry" && payload.payload && typeof payload.payload === "object") {
+          Object.keys(payload.payload).forEach(function (field) {
+            updateTelemetryField(sessionState, field, payload.payload[field], payload.serverTime || Date.now());
+          });
+        } else if (payload.type === "timeseries" && Array.isArray(payload.rows)) {
+          payload.rows.forEach(function (row) {
+            updateTelemetryField(sessionState, row.field, typeof row.last !== "undefined" ? row.last : row.value, row.ts || Date.now());
+          });
+        }
+      }
+
+      function bootstrapSession(sessionState) {
+        var url = buildTelemetryUrl(sessionState.sessionId);
+        if (!url) return Promise.resolve();
+        return fetch(url, { cache: "no-store" }).then(function (response) {
+          if (!response.ok) return null;
+          return response.json();
+        }).then(function (payload) {
+          var data = payload && payload.c2 && payload.c2.payload;
+          if (!data || typeof data !== "object") return;
+          Object.keys(data).forEach(function (field) {
+            updateTelemetryField(sessionState, field, data[field], payload.c2.serverTime || Date.now());
+          });
+        }).catch(function () {});
+      }
+
+      function connectSession(sessionState) {
+        var fields = sessionState.controls.map(function (control) { return control.stateField; }).filter(Boolean);
+        fields = fields.filter(function (field, index, list) { return list.indexOf(field) === index; });
+        bootstrapSession(sessionState).finally(function () {
+          try {
+            sessionState.eventSource = new EventSource(buildStreamUrl(sessionState.sessionId, fields));
+            sessionState.eventSource.onmessage = function (event) {
+              try { handleStreamPayload(sessionState, JSON.parse(event.data)); } catch (error) {}
+            };
+            sessionState.eventSource.onerror = function () {
+              if (sessionState.eventSource) sessionState.eventSource.close();
+              sessionState.eventSource = null;
+              window.setTimeout(function () { connectSession(sessionState); }, 3000);
+            };
+          } catch (error) {
+            window.setTimeout(function () { connectSession(sessionState); }, 3000);
+          }
+        });
+      }
+
+      function postIoData(url, payload) {
+        return fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        }).then(function (response) {
+          return response.json().then(function (data) {
+            if (!response.ok) throw new Error(data && data.error ? data.error : "Request failed.");
+            return Array.isArray(data) ? data : [];
+          });
+        });
+      }
+
+      function formatTime(value) {
+        var numeric = Number(value || 0);
+        var date = numeric > 0 ? new Date(numeric) : new Date(String(value || ""));
+        if (Number.isNaN(date.getTime())) return String(value || "--");
+        return String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0") + " "
+          + String(date.getHours()).padStart(2, "0") + ":" + String(date.getMinutes()).padStart(2, "0");
+      }
+
+      function normalizeKeyword(value) {
+        return String(value == null ? "" : value).trim().toLowerCase();
+      }
+
+      function severityFromEventType(eventType) {
+        var normalized = normalizeKeyword(eventType);
+        if (!normalized) return "neutral";
+        if (normalized.indexOf("shaft_break") >= 0 || normalized.indexOf("shaft break") >= 0) return "danger";
+        if (normalized.indexOf("overload") >= 0) return "warning";
+        if (normalized.indexOf("disconnect") >= 0) return "disconnect";
+        if (normalized.indexOf("on_time") >= 0) return "control-on";
+        if (normalized.indexOf("off_time") >= 0) return "control-off";
+        if (normalized.indexOf("alarm_off") >= 0) return "info";
+        return "neutral";
+      }
+
+      function eventTypeLabel(eventType) {
+        var normalized = normalizeKeyword(eventType);
+        var key = "";
+        if (normalized.indexOf("shaft_break") >= 0 || normalized.indexOf("shaft break") >= 0) key = "shaftBreak";
+        else if (normalized.indexOf("overload") >= 0) key = "overload";
+        else if (normalized.indexOf("disconnect") >= 0) key = "disconnect";
+        else if (normalized.indexOf("off_time") >= 0) key = "offTime";
+        else if (normalized.indexOf("on_time") >= 0) key = "onTime";
+        else if (normalized.indexOf("alarm_off") >= 0) key = "alarmOff";
+        return key ? getUi("history.eventTypes." + key, eventType) : String(eventType || "--");
+      }
+
+      function scrollHistoryToLatest() {
+        if (!historyContent) return;
+        window.requestAnimationFrame(function () {
+          historyContent.scrollTop = historyContent.scrollHeight;
+        });
+      }
+
+      function renderHistoryRows(rows) {
+        if (!historyBody) return;
+        if (!rows || !rows.length) {
+          historyBody.innerHTML = "<tr><td colspan=\"5\" class=\"empty-state\">" + esc(getUi("history.empty", "No history rows available.")) + "</td></tr>";
+          return;
+        }
+        historyBody.innerHTML = rows.map(function (row) {
+          var severity = severityFromEventType(row.event_type || row.type);
+          var pond = row.pond_name || row.pond || row.c1 || "--";
+          return "<tr class=\"history-row\" data-severity=\"" + esc(severity) + "\">"
+            + "<td>" + esc(formatTime(row.event_time_ms || row.event_time || row.time || row.t)) + "</td>"
+            + "<td><span class=\"event-pond-pill\">" + esc(pond) + "</span></td>"
+            + "<td><span class=\"event-type-pill\" data-severity=\"" + esc(severity) + "\">" + esc(eventTypeLabel(row.event_type || row.type)) + "</span></td>"
+            + "<td>" + esc(row.content || row.message || "") + "</td>"
+            + "<td>" + esc(row.email || row.user || "") + "</td>"
+            + "</tr>";
+        }).join("");
+        scrollHistoryToLatest();
+      }
+
+      function refreshHistory() {
+        if (!historyState.sessionId || !historyState.syncId || !historyState.macro) {
+          if (historyCard) historyCard.style.display = "none";
+          return;
+        }
+        if (historyCard) historyCard.style.display = "";
+        var nextRequestId = ++historyRequestId;
+        var url = buildIoDataUrl(historyState.sessionId, historyState.syncId);
+        if (historySourceChip) historySourceChip.textContent = formatUi("history.sourceValue", "Source {ioid}", { ioid: extractIoid(historyState.sessionId) || "history" });
+        if (historyRefreshButton) historyRefreshButton.disabled = true;
+        postIoData(url, { macro: historyState.macro, page_size: historyState.pageSize, limit: historyState.pageSize }).then(function (rows) {
+          if (nextRequestId !== historyRequestId) return;
+          historyState.rows = (rows || []).slice().sort(function (left, right) {
+            return Number(left.event_time_ms || 0) - Number(right.event_time_ms || 0);
+          }).slice(-historyState.pageSize);
+          renderHistoryRows(historyState.rows);
+        }).catch(function (error) {
+          if (nextRequestId !== historyRequestId) return;
+          renderHistoryRows([]);
+          showToast((error && error.message) || getUi("history.loadFailed", "Unable to load event history."), "error");
+        }).finally(function () {
+          if (historyRefreshButton) historyRefreshButton.disabled = false;
+        });
+      }
+
+      function armHistoryCooldown() {
+        if (historyCooldownTimer) window.clearTimeout(historyCooldownTimer);
+        historyCooldownActive = true;
+        historyCooldownTimer = window.setTimeout(function () {
+          historyCooldownTimer = null;
+          historyCooldownActive = false;
+          if (historyRefreshQueued) {
+            historyRefreshQueued = false;
+            refreshHistory();
+            armHistoryCooldown();
+          }
+        }, 5000);
+      }
+
+      function handleHistoryChangedEvent() {
+        if (!historyCooldownActive) {
+          historyRefreshQueued = false;
+          refreshHistory();
+          armHistoryCooldown();
+          return;
+        }
+        historyRefreshQueued = true;
+      }
+
+      function connectHistoryStream() {
+        if (!historyState.sessionId || typeof EventSource === "undefined") return;
+        if (historyEventSource) historyEventSource.close();
+        if (historyReconnectTimer) window.clearTimeout(historyReconnectTimer);
+        historyEventSource = new EventSource("/api/" + encodeURIComponent(historyState.sessionId) + "/stream?historyMs=0");
+        historyEventSource.onmessage = function (event) {
+          try {
+            var payload = JSON.parse(event.data);
+            if (payload && payload.type === "iodata_changed") handleHistoryChangedEvent();
+          } catch (error) {}
+        };
+        historyEventSource.onerror = function () {
+          if (historyEventSource) historyEventSource.close();
+          historyEventSource = null;
+          historyReconnectTimer = window.setTimeout(connectHistoryStream, 3000);
+        };
+      }
+
+      function toggleHistory() {
+        if (!historyContent || !historyToggle) return;
+        var collapsed = !historyContent.hidden;
+        historyContent.hidden = collapsed;
+        historyToggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        if (historyCard) historyCard.setAttribute("data-collapsed", collapsed ? "true" : "false");
+        if (!collapsed) scrollHistoryToLatest();
+      }
+
+      function initialize() {
+        heroTitle.textContent = safeText(config.title, "Aquaculture Controls");
+        controlsTitle.textContent = getUi("controls.title", "Controls");
+        initializeThemePicker();
+
+        allControls = normalizeControls();
+        if (window.PondControlOnlyMeters && typeof window.PondControlOnlyMeters.create === "function") {
+          meterManager = window.PondControlOnlyMeters.create({ syncId: syncId, ui: ui, showToast: showToast });
+        }
+        controlGrid.innerHTML = allControls.map(createControlHtml).join("");
+        allControls.forEach(function (control) {
+          control.node = controlGrid.querySelector("[data-control-id=\"" + control.id + "\"]");
+          control.toggleNode = control.node ? control.node.querySelector("[data-role=\"toggle\"]") : null;
+          control.stateNode = control.node ? control.node.querySelector("[data-role=\"state\"]") : null;
+          control.onButton = control.node ? control.node.querySelector("[data-role=\"on\"]") : null;
+          control.offButton = control.node ? control.node.querySelector("[data-role=\"off\"]") : null;
+          control.meterButton = control.node ? control.node.querySelector("[data-role=\"meter\"]") : null;
+          if (meterManager && typeof meterManager.bindControl === "function") meterManager.bindControl(control);
+          if (control.onButton) control.onButton.addEventListener("click", function () {
+            sendControlCommand(control, control.commandOn, getUi("contactor.turningOn", "Turning on"), "on");
+          });
+          if (control.offButton) control.offButton.addEventListener("click", function () {
+            sendControlCommand(control, control.commandOff, getUi("contactor.turningOff", "Turning off"), "off");
+          });
+        });
+
+        var countText = allControls.length + " " + (allControls.length === 1 ? getUi("controls.countSingular", "control") : getUi("controls.countPlural", "controls"));
+        if (controlCountChip) controlCountChip.textContent = countText;
+        setLiveState("connecting", getUi("controls.connecting", "Connecting"));
+        scheduleLiveCheck();
+
+        sessionStates = groupControlsBySession(allControls);
+        sessionStates.forEach(connectSession);
+
+        if (historyRefreshButton) historyRefreshButton.addEventListener("click", refreshHistory);
+        if (historyToggle) {
+          if (!historyToggle.getAttribute("onclick")) {
+            historyToggle.addEventListener("click", function (event) {
+              var target = event.target;
+              if (target && typeof target.closest === "function" && target.closest("#history-source-chip")) return;
+              toggleHistory();
+            });
+          }
+          historyToggle.addEventListener("keydown", function (event) {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              toggleHistory();
+            }
+          });
+        }
+        if (historyContent) historyContent.hidden = true;
+        if (historyToggle) historyToggle.setAttribute("aria-expanded", "false");
+        if (historyCard) historyCard.setAttribute("data-collapsed", "true");
+        refreshHistory();
+        connectHistoryStream();
+      }
+
+      initialize();
+    })();
+  </script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+
+</html>
