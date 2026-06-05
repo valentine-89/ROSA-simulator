@@ -1,6 +1,21 @@
 const fs = require('fs');
 const path = require('path');
-const Database = require('better-sqlite3');
+
+function requireDatabaseModule() {
+  const bootstrapModules = process.env.ROSA_SIMULATOR_NODE_MODULES;
+  if (bootstrapModules) {
+    const bootstrapModule = path.join(bootstrapModules, 'better-sqlite3');
+    if (fs.existsSync(bootstrapModule)) return require(bootstrapModule);
+  }
+
+  const bundledModule = path.join(__dirname, '..', 'runtime', 'node_modules', 'better-sqlite3');
+  if (process.platform === 'win32' && fs.existsSync(bundledModule)) {
+    return require(bundledModule);
+  }
+  return require('better-sqlite3');
+}
+
+const Database = requireDatabaseModule();
 
 const RESERVED_MACRO_BINDINGS = new Set(['sync_id', 'syncid', 'session_id', 'sessionid', 'ioid']);
 

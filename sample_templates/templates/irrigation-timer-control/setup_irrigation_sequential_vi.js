@@ -117,12 +117,18 @@
   function normalizeTextValue(value) {
     var next = String(value == null ? "" : value).trim();
     var lowered = next.toLowerCase();
-    if (!next || next === "0" || lowered === "null" || lowered === "undefined" || lowered === "nan" || next === "[object Object]") return "";
+    if (!next || next === "0" || lowered === "null" || lowered === "undefined" || lowered === "nan" || next.indexOf("[object Object]") >= 0 || next.indexOf("NaN") >= 0) return "";
     return next;
   }
 
   function safeText(value, fallback) {
     return normalizeTextValue(value) || normalizeTextValue(fallback) || "";
+  }
+
+  function normalizeByIndex(items, factory) {
+    return (Array.isArray(items) ? items : []).map(function (item, index) {
+      return factory(index, item);
+    });
   }
 
   function numberValue(value, fallback, min, max) {
@@ -449,25 +455,25 @@
       setGeneral("subtitle", safeText(config.subtitle, ""));
       setGeneral("syncId", safeText(config.syncId, state.context.syncId || ""));
       var groups = Array.isArray(config.groups) ? config.groups : [];
-      state.items = groups.length ? groups.map(makeBasicGroup) : [makeBasicGroup(0, {})];
+      state.items = groups.length ? normalizeByIndex(groups, makeBasicGroup) : [makeBasicGroup(0, {})];
     } else if (false) {
       setGeneral("syncId", safeText(config.syncId, state.context.syncId || ""));
       var sessions = Array.isArray(config.sessions) ? config.sessions : [];
-      state.items = sessions.length ? sessions.map(makeSmartSession) : [makeSmartSession(0, {})];
+      state.items = sessions.length ? normalizeByIndex(sessions, makeSmartSession) : [makeSmartSession(0, {})];
     } else if (false) {
       setGeneral("title", safeText(config.title, "Hẹn giờ tưới tiêu"));
       var history = config.history && typeof config.history === "object" ? config.history : {};
       setGeneral("historySessionId", safeText(history.sessionId, state.context.sessionId || ""));
       setGeneral("syncId", safeText(history.syncId || config.syncId, state.context.syncId || ""));
       var irrigationGroups = Array.isArray(config.groups) ? config.groups : [];
-      state.items = irrigationGroups.length ? irrigationGroups.map(makeIrrigationGroup) : [makeIrrigationGroup(0, {})];
+      state.items = irrigationGroups.length ? normalizeByIndex(irrigationGroups, makeIrrigationGroup) : [makeIrrigationGroup(0, {})];
     } else if (true) {
       setGeneral("title", safeText(config.title, "Tưới cây tuần tự"));
       var sequentialHistory = config.history && typeof config.history === "object" ? config.history : {};
       setGeneral("historySessionId", safeText(sequentialHistory.sessionId, state.context.sessionId || ""));
       setGeneral("syncId", safeText(sequentialHistory.syncId || config.syncId, state.context.syncId || ""));
       var sequentialDevices = Array.isArray(config.devices) ? config.devices : [];
-      state.items = sequentialDevices.length ? sequentialDevices.map(makeSequentialDevice) : [makeSequentialDevice(0, {})];
+      state.items = sequentialDevices.length ? normalizeByIndex(sequentialDevices, makeSequentialDevice) : [makeSequentialDevice(0, {})];
     }
 
     els.status.textContent = text.ready;
@@ -574,10 +580,10 @@
   }
 
   function normalizeItems(preserveAdvanced) {
-    if (false) state.items = state.items.map(makeBasicGroup);
-    if (false) state.items = state.items.map(makeSmartSession);
-    if (false) state.items = state.items.map(makeIrrigationGroup);
-    if (true) state.items = state.items.map(makeSequentialDevice);
+    if (false) state.items = normalizeByIndex(state.items, makeBasicGroup);
+    if (false) state.items = normalizeByIndex(state.items, makeSmartSession);
+    if (false) state.items = normalizeByIndex(state.items, makeIrrigationGroup);
+    if (true) state.items = normalizeByIndex(state.items, makeSequentialDevice);
   }
 
   function render() {

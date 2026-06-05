@@ -134,7 +134,7 @@
   function normalizeTextValue(value) {
     var text = String(value == null ? "" : value).trim();
     var lowered = text.toLowerCase();
-    if (!text || text === "0" || lowered === "null" || lowered === "undefined" || lowered === "nan" || text === "[object Object]") return "";
+    if (!text || text === "0" || lowered === "null" || lowered === "undefined" || lowered === "nan" || text.indexOf("[object Object]") >= 0 || text.indexOf("NaN") >= 0) return "";
     return text;
   }
 

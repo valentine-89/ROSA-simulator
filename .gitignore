@@ -2,8 +2,5 @@
 logs/
 dist/
 node_modules/
-!runtime/
-!runtime/node.exe
-!runtime/node_modules/
-!runtime/node_modules/**
+runtime/
 npm-debug.log*

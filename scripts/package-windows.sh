@@ -19,28 +19,19 @@ if ! command -v wslpath >/dev/null 2>&1; then
 fi
 
 SCRIPT_WIN="$(wslpath -w "$ROOT/scripts/package-windows.ps1")"
-PACKAGE_WIN="$(wslpath -w "$PACKAGE_ROOT")"
-ZIP_WIN="$(wslpath -w "$ZIP_PATH")"
 DIST_WIN="$(wslpath -w "$ROOT/dist")"
 
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$SCRIPT_WIN" -SkipNpm -NoZip
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$SCRIPT_WIN" -NoZip
 
-NPM_BATCH="$PACKAGE_ROOT/_package-npm-ci.cmd"
-cat > "$NPM_BATCH" <<'EOF'
-@echo off
-cd /d "%~dp0"
-if exist node_modules rmdir /s /q node_modules
-npm ci --omit=dev --no-audit --no-fund
-if errorlevel 1 exit /b %ERRORLEVEL%
-npm ls --depth=0
-exit /b %ERRORLEVEL%
-EOF
-NPM_BATCH_WIN="$(wslpath -w "$NPM_BATCH")"
-cmd.exe /c "$NPM_BATCH_WIN"
-rm -f "$NPM_BATCH"
+for _ in $(seq 1 40); do
+  if [ -f "$PACKAGE_ROOT/ROSA-simulator.exe" ] && [ -f "$PACKAGE_ROOT/server.js" ]; then
+    break
+  fi
+  sleep 0.25
+done
 
-if [ ! -d "$PACKAGE_ROOT/node_modules/better-sqlite3" ]; then
-  echo "better-sqlite3 was not installed in package folder." >&2
+if [ ! -f "$PACKAGE_ROOT/ROSA-simulator.exe" ] || [ ! -f "$PACKAGE_ROOT/server.js" ]; then
+  echo "package folder is missing ROSA-simulator.exe or server.js." >&2
   exit 1
 fi
 

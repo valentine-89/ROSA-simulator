@@ -188,7 +188,11 @@
 
       function safeText(value, fallback) {
         var text = String(value == null ? "" : value).trim();
-        return text || fallback || "";
+        var lowered = text.toLowerCase();
+        if (!text || text === "0" || lowered === "null" || lowered === "undefined" || lowered === "nan" || text.indexOf("[object Object]") >= 0 || text.indexOf("NaN") >= 0) {
+          return fallback || "";
+        }
+        return text;
       }
 
       function motorCountFromSession(session) {

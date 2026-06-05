@@ -8,14 +8,6 @@ const SAMPLE_ROOT = path.join(ROOT, 'sample_templates');
 const TEMPLATE_ROOT = path.join(SAMPLE_ROOT, 'templates');
 const SHARED_ROOT = path.join(SAMPLE_ROOT, 'shared');
 const MANIFEST_PATH = path.join(SAMPLE_ROOT, 'manifest.json');
-const ALLOWED_ROOT_ASSETS = new Set([
-  '/dashboard-themes.css',
-  '/dashboard-command-template.js',
-  '/dashboard-basic-cards-engine.js',
-  '../../dashboard-themes.css',
-  '../../dashboard-command-template.js',
-  '../../dashboard-basic-cards-engine.js'
-]);
 const ALLOWED_DEFAULT_FIELD_KINDS = new Set(['timeseries', 'number', 'text', 'onoff']);
 const macroNameCache = new Map();
 
@@ -34,12 +26,15 @@ function resolvePublicPath(value) {
   const normalized = String(value || '').split('?')[0].trim();
   if (!normalized) return '';
   if (normalized === '/sample_dashboards/manifest.json') return MANIFEST_PATH;
+  if (normalized === '/sample_dashboards/setup_bridge.js') return path.join(SHARED_ROOT, 'setup_bridge.js');
+  if (normalized === '/sample_dashboards/setup_shared.css') return path.join(SHARED_ROOT, 'setup_shared.css');
   if (normalized.startsWith('/sample_dashboards/')) {
     return path.join(TEMPLATE_ROOT, normalized.replace(/^\/sample_dashboards\//, ''));
   }
-  if (normalized === '/dashboard-themes.css') return path.join(SHARED_ROOT, 'dashboard-themes.css');
-  if (normalized === '/dashboard-command-template.js') return path.join(SHARED_ROOT, 'dashboard-command-template.js');
-  if (normalized === '/dashboard-basic-cards-engine.js') return path.join(SHARED_ROOT, 'dashboard-basic-cards-engine.js');
+  const rootSharedAsset = normalized.replace(/^\.\.\/\.\.\//, '/');
+  if (/^\/dashboard-[A-Za-z0-9._-]+\.(?:js|css)$/.test(rootSharedAsset)) {
+    return path.join(SHARED_ROOT, path.basename(rootSharedAsset));
+  }
   return '';
 }
 
@@ -58,6 +53,38 @@ function collectRefs(filePath) {
   for (const match of source.matchAll(/(?:src|href)\s*=\s*["']([^"']+)["']/gi)) refs.push(match[1].split('?')[0]);
   for (const match of source.matchAll(/script\.src\s*=\s*["']([^"']+)["']/gi)) refs.push(match[1].split('?')[0]);
   return refs;
+}
+
+function validateSetupScript(filePath, publicPath) {
+  const source = fs.readFileSync(filePath, 'utf8');
+  if (/\.map\(make(?:BasicGroup|SmartSession|IrrigationGroup|SequentialDevice)\)/.test(source)) {
+    fail(`setup script uses direct factory map without index normalization: ${publicPath}`);
+  }
+  if (/(?:next|text)\s*===\s*["']\[object Object\]["']/.test(source)) {
+    fail(`setup script only rejects exact [object Object] text: ${publicPath}`);
+  }
+}
+
+function validateSetupPage(filePath, publicPath) {
+  const source = fs.readFileSync(filePath, 'utf8');
+  if (/(?:next|text)\s*===\s*["']\[object Object\]["']/.test(source)) {
+    fail(`setup page only rejects exact [object Object] text: ${publicPath}`);
+  }
+  if (/function\s+safeText[\s\S]{0,260}return\s+text\s+\|\|\s+fallback\s+\|\|\s+["']["']/.test(source)) {
+    fail(`setup page safeText does not reject placeholder object/numeric text: ${publicPath}`);
+  }
+
+  for (const ref of collectRefs(filePath)) {
+    if (ref.startsWith('http:') || ref.startsWith('https:') || ref.startsWith('data:')) continue;
+    if (ref.startsWith('/sample_dashboards/')) {
+      const refPath = assertFile(ref, `asset referenced by ${publicPath}`);
+      if (refPath && /\.js$/i.test(ref)) validateSetupScript(refPath, ref);
+      continue;
+    }
+    if (ref.startsWith('/dashboard-') || ref.startsWith('../../dashboard-')) {
+      assertFile(ref, `shared runtime referenced by ${publicPath}`);
+    }
+  }
 }
 
 function validateHtml(filePath, publicPath) {
@@ -83,7 +110,7 @@ function validateHtml(filePath, publicPath) {
       continue;
     }
     if (ref.startsWith('/dashboard-') || ref.startsWith('../../dashboard-')) {
-      if (!ALLOWED_ROOT_ASSETS.has(ref)) fail(`root runtime is not allowed in ${publicPath}: ${ref}`);
+      assertFile(ref, `shared runtime referenced by ${publicPath}`);
       continue;
     }
   }
@@ -235,7 +262,10 @@ function main() {
         if (htmlPath) validateHtml(htmlPath, html);
       }
       const setupPage = entry.setup && entry.setup.page || sample.setup && sample.setup.page;
-      if (setupPage) assertFile(setupPage, `setup page for ${sample.id}/${entry.locale}`);
+      if (setupPage) {
+        const setupPath = assertFile(setupPage, `setup page for ${sample.id}/${entry.locale}`);
+        if (setupPath) validateSetupPage(setupPath, setupPage);
+      }
       const image = entry.image || sample.image;
       if (image) assertFile(image, `image for ${sample.id}/${entry.locale}`);
       const sampleDatabase = entry.sampleDatabase || sample.sampleDatabase;

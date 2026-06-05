@@ -116,10 +116,10 @@ function staticFileFor(urlPath) {
   if (urlPath === '/' || urlPath === '/index.html') return path.join(UI_ROOT, 'index.html');
   if (urlPath.startsWith('/simulator/')) return safeJoin(UI_ROOT, urlPath.replace(/^\/simulator\//, ''));
   if (urlPath === '/sample_dashboards/manifest.json') return path.join(SAMPLE_ROOT, 'manifest.json');
+  if (urlPath === '/sample_dashboards/setup_bridge.js') return path.join(SHARED_ROOT, 'setup_bridge.js');
+  if (urlPath === '/sample_dashboards/setup_shared.css') return path.join(SHARED_ROOT, 'setup_shared.css');
   if (urlPath.startsWith('/sample_dashboards/')) return safeJoin(TEMPLATE_ROOT, urlPath.replace(/^\/sample_dashboards\//, ''));
-  if (urlPath === '/dashboard-themes.css') return path.join(SHARED_ROOT, 'dashboard-themes.css');
-  if (urlPath === '/dashboard-command-template.js') return path.join(SHARED_ROOT, 'dashboard-command-template.js');
-  if (urlPath === '/dashboard-basic-cards-engine.js') return path.join(SHARED_ROOT, 'dashboard-basic-cards-engine.js');
+  if (/^\/dashboard-[A-Za-z0-9._-]+\.(?:js|css)$/.test(urlPath)) return path.join(SHARED_ROOT, path.basename(urlPath));
   if (urlPath.startsWith('/legacy/')) return safeJoin(LEGACY_ROOT, urlPath.replace(/^\/legacy\//, ''));
   return '';
 }

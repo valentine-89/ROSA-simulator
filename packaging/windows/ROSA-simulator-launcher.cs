@@ -2,8 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 
 namespace RosaSimulatorLauncher
@@ -11,11 +15,22 @@ namespace RosaSimulatorLauncher
     internal static class Program
     {
         private const int DefaultPort = 4177;
+        private const int BoxWidth = 76;
+        private const string DefaultNodeVersion = "v24.14.0";
+        private const string DefaultNodeZipUrl = "https://nodejs.org/dist/v24.14.0/node-v24.14.0-win-x64.zip";
         private const int JobObjectExtendedLimitInformationClass = 9;
         private const uint JobObjectLimitKillOnJobClose = 0x00002000;
         private static Process serverProcess;
         private static IntPtr jobHandle = IntPtr.Zero;
         private static bool stopping;
+
+        private sealed class NodeRuntime
+        {
+            public string NodeExe = "";
+            public string NpmCmd = "";
+            public string Version = "";
+            public string Source = "";
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         private struct IoCounters
@@ -80,13 +95,19 @@ namespace RosaSimulatorLauncher
                 string url = "http://localhost:" + port;
 
                 Console.Title = "ROSA-simulator";
-                Console.OutputEncoding = System.Text.Encoding.UTF8;
-                PrintBanner(url, root);
+                Console.OutputEncoding = Encoding.UTF8;
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                PrintStep("ROSA-SIMULATOR DANG CHUAN BI", "ROSA-SIMULATOR IS PREPARING");
+                PrintInfo("THU MUC APP", "APP FOLDER", root);
+                PrintInfo("DIA CHI WEB", "WEB ADDRESS", url);
+
+                EnsureSourceFiles(root);
 
                 if (IsPortOpen(port))
                 {
-                    Console.WriteLine("Port " + port + " is already in use. Opening the existing simulator page.");
-                    Console.WriteLine("If this is not ROSA-simulator, close the other app or change PORT in ROSA-simulator.env.");
+                    PrintStep("PORT DANG DUOC SU DUNG", "PORT IS ALREADY IN USE");
+                    PrintInfo("DANG MO TRANG DANG CHAY", "OPENING EXISTING PAGE", url);
                     OpenBrowser(url);
                     Console.WriteLine();
                     Console.WriteLine("Press Enter to close this launcher window.");
@@ -94,19 +115,23 @@ namespace RosaSimulatorLauncher
                     return;
                 }
 
+                NodeRuntime node = ResolveNodeRuntime();
+                string dependenciesDir = EnsureDependencies(root, node);
+
                 RegisterShutdownHandlers();
-                serverProcess = StartServer(root, env, logPath);
-                if (!WaitForPort(port, TimeSpan.FromSeconds(12)))
+                serverProcess = StartServer(root, env, node, dependenciesDir, logPath);
+                if (!WaitForPort(port, TimeSpan.FromSeconds(18)))
                 {
                     StopServer();
-                    Console.WriteLine();
-                    Console.WriteLine("ROSA-simulator did not start. Check log file:");
-                    Console.WriteLine(logPath);
+                    PrintStep("SERVER KHONG KHOI DONG DUOC", "SERVER DID NOT START");
+                    PrintInfo("XEM LOG", "CHECK LOG", logPath);
                     Console.WriteLine("Press Enter to close.");
                     Console.ReadLine();
                     return;
                 }
 
+                PrintStep("SERVER DA SAN SANG", "SERVER IS READY");
+                PrintInfo("DANG MO TRINH DUYET", "OPENING BROWSER", url);
                 OpenBrowser(url);
                 Console.WriteLine();
                 Console.WriteLine("Server is running. Keep this terminal open while testing.");
@@ -124,8 +149,9 @@ namespace RosaSimulatorLauncher
                 {
                     // Ignore logging failures.
                 }
-                Console.WriteLine("ROSA-simulator error:");
+                PrintStep("LOI ROSA-SIMULATOR", "ROSA-SIMULATOR ERROR");
                 Console.WriteLine(ex.Message);
+                Console.WriteLine();
                 Console.WriteLine("Press Enter to close.");
                 Console.ReadLine();
             }
@@ -135,31 +161,359 @@ namespace RosaSimulatorLauncher
             }
         }
 
-        private static void PrintBanner(string url, string root)
+        private static void EnsureSourceFiles(string root)
         {
-            string[] lines = new string[]
+            PrintStep("KIEM TRA SOURCE CODE", "CHECKING SOURCE CODE");
+            string[] required = new string[]
             {
-                "ROSA-simulator is starting",
-                "Web address : " + url,
-                "App folder  : " + root,
-                "Keep this terminal open while using the simulator.",
-                "Close this terminal to stop the web server."
+                "server.js",
+                "package.json",
+                "package-lock.json",
+                Path.Combine("src", "store.js"),
+                Path.Combine("simulator_ui", "index.html"),
+                Path.Combine("sample_templates", "manifest.json")
             };
-            int width = 0;
-            foreach (string line in lines)
+            foreach (string item in required)
             {
-                if (line.Length > width) width = line.Length;
+                string filePath = Path.Combine(root, item);
+                if (!File.Exists(filePath)) throw new FileNotFoundException("Required source file was not found.", filePath);
             }
-            width += 4;
-            string border = "+" + new string('-', width) + "+";
-            Console.WriteLine();
-            Console.WriteLine(border);
-            foreach (string line in lines)
+            PrintInfo("SOURCE CODE", "SOURCE CODE", "OK");
+        }
+
+        private static NodeRuntime ResolveNodeRuntime()
+        {
+            PrintStep("KIEM TRA NODE.JS", "CHECKING NODE.JS");
+            NodeRuntime systemNode = ResolveSystemNode();
+            if (systemNode != null)
             {
-                Console.WriteLine("|  " + line.PadRight(width - 2) + "|");
+                PrintInfo("DUNG NODE DA CAI", "USING INSTALLED NODE", systemNode.Version);
+                return systemNode;
             }
-            Console.WriteLine(border);
+
+            PrintInfo("NODE CHUA CO HOAC KHONG HOP LE", "NODE IS MISSING OR INVALID", "NEED PORTABLE NODE");
+            return EnsurePortableNode();
+        }
+
+        private static NodeRuntime ResolveSystemNode()
+        {
+            string nodeExe = FindOnPath("node.exe");
+            string npmCmd = FindOnPath("npm.cmd");
+            if (String.IsNullOrWhiteSpace(nodeExe) || String.IsNullOrWhiteSpace(npmCmd)) return null;
+
+            string version = RunAndCapture(nodeExe, "-p \"process.versions.node\"", Path.GetDirectoryName(nodeExe));
+            int major = ParseMajorVersion(version);
+            if (major < 20 || major > 26) return null;
+
+            return new NodeRuntime
+            {
+                NodeExe = nodeExe,
+                NpmCmd = npmCmd,
+                Version = "v" + version.Trim().TrimStart('v'),
+                Source = "system"
+            };
+        }
+
+        private static NodeRuntime EnsurePortableNode()
+        {
+            string cacheRoot = CacheRoot();
+            string portableRoot = Path.Combine(cacheRoot, "runtime", "node-" + DefaultNodeVersion + "-win-x64");
+            string nodeExe = Path.Combine(portableRoot, "node.exe");
+            string npmCmd = Path.Combine(portableRoot, "npm.cmd");
+
+            if (File.Exists(nodeExe) && File.Exists(npmCmd))
+            {
+                PrintStep("DUNG NODE PORTABLE DA LUU", "USING CACHED PORTABLE NODE");
+                return new NodeRuntime { NodeExe = nodeExe, NpmCmd = npmCmd, Version = DefaultNodeVersion, Source = "portable-cache" };
+            }
+
+            PrintStep("TAI NODE PORTABLE", "DOWNLOADING PORTABLE NODE");
+            string nodeUrl = Environment.GetEnvironmentVariable("ROSA_NODE_ZIP_URL");
+            if (String.IsNullOrWhiteSpace(nodeUrl)) nodeUrl = DefaultNodeZipUrl;
+            PrintInfo("URL", "URL", nodeUrl);
+
+            string downloadDir = Path.Combine(cacheRoot, "downloads");
+            Directory.CreateDirectory(downloadDir);
+            string zipPath = Path.Combine(downloadDir, "node-" + DefaultNodeVersion + "-win-x64.zip");
+            using (WebClient client = new WebClient())
+            {
+                client.DownloadFile(nodeUrl, zipPath);
+            }
+
+            PrintStep("GIAI NEN NODE PORTABLE", "EXTRACTING PORTABLE NODE");
+            string tempRoot = Path.Combine(cacheRoot, "runtime", "_extract-" + Guid.NewGuid().ToString("N"));
+            RemoveTree(tempRoot);
+            Directory.CreateDirectory(tempRoot);
+            ZipFile.ExtractToDirectory(zipPath, tempRoot);
+
+            string extractedNode = FindFile(tempRoot, "node.exe");
+            if (String.IsNullOrWhiteSpace(extractedNode)) throw new FileNotFoundException("node.exe was not found in downloaded Node ZIP.");
+            string extractedRoot = Path.GetDirectoryName(extractedNode);
+
+            RemoveTree(portableRoot);
+            Directory.CreateDirectory(Path.GetDirectoryName(portableRoot));
+            Directory.Move(extractedRoot, portableRoot);
+            RemoveTree(tempRoot);
+
+            if (!File.Exists(nodeExe) || !File.Exists(npmCmd)) throw new FileNotFoundException("Portable Node was extracted but node.exe/npm.cmd was not found.");
+            PrintInfo("NODE PORTABLE", "PORTABLE NODE", portableRoot);
+            return new NodeRuntime { NodeExe = nodeExe, NpmCmd = npmCmd, Version = DefaultNodeVersion, Source = "portable-cache" };
+        }
+
+        private static string EnsureDependencies(string root, NodeRuntime node)
+        {
+            PrintStep("KIEM TRA THU VIEN NODE", "CHECKING NODE DEPENDENCIES");
+            string packageJson = Path.Combine(root, "package.json");
+            string packageLock = Path.Combine(root, "package-lock.json");
+            string dependencyKey = ShortHash(packageJson, packageLock, node.Version);
+            string depsRoot = Path.Combine(CacheRoot(), "dependencies", dependencyKey);
+            string nodeModules = Path.Combine(depsRoot, "node_modules");
+            string sqliteNative = Path.Combine(nodeModules, "better-sqlite3", "build", "Release", "better_sqlite3.node");
+
+            if (File.Exists(sqliteNative))
+            {
+                PrintInfo("THU VIEN", "DEPENDENCIES", "OK");
+                return nodeModules;
+            }
+
+            PrintStep("CAI DAT THU VIEN NODE", "INSTALLING NODE DEPENDENCIES");
+            PrintInfo("LAN DAU CAN INTERNET", "FIRST RUN REQUIRES INTERNET", depsRoot);
+            RemoveTree(depsRoot);
+            Directory.CreateDirectory(depsRoot);
+            File.Copy(packageJson, Path.Combine(depsRoot, "package.json"), true);
+            File.Copy(packageLock, Path.Combine(depsRoot, "package-lock.json"), true);
+
+            Dictionary<string, string> installEnv = NodeEnvironment(node, nodeModules);
+            RunProcess(node.NpmCmd, "ci --omit=dev --ignore-scripts --no-audit --no-fund", depsRoot, installEnv);
+
+            string prebuildScript = Path.Combine(nodeModules, "prebuild-install", "bin.js");
+            string betterSqliteDir = Path.Combine(nodeModules, "better-sqlite3");
+            if (!File.Exists(prebuildScript)) throw new FileNotFoundException("prebuild-install was not installed.", prebuildScript);
+            if (!Directory.Exists(betterSqliteDir)) throw new DirectoryNotFoundException("better-sqlite3 was not installed.");
+            RunProcess(node.NodeExe, Quote(prebuildScript), betterSqliteDir, installEnv);
+
+            if (!File.Exists(sqliteNative)) throw new FileNotFoundException("better-sqlite3 native binary was not installed.", sqliteNative);
+            PrintInfo("THU VIEN", "DEPENDENCIES", "OK");
+            return nodeModules;
+        }
+
+        private static Process StartServer(string root, Dictionary<string, string> env, NodeRuntime node, string nodeModules, string logPath)
+        {
+            PrintStep("KHOI DONG SERVER LOCAL", "STARTING LOCAL SERVER");
+            string serverPath = Path.Combine(root, "server.js");
+
+            ProcessStartInfo psi = new ProcessStartInfo();
+            psi.FileName = node.NodeExe;
+            psi.Arguments = Quote(serverPath);
+            psi.WorkingDirectory = root;
+            psi.UseShellExecute = false;
+            psi.CreateNoWindow = false;
+            psi.RedirectStandardOutput = true;
+            psi.RedirectStandardError = true;
+
+            foreach (KeyValuePair<string, string> item in env)
+            {
+                psi.EnvironmentVariables[item.Key] = item.Value;
+            }
+            foreach (KeyValuePair<string, string> item in NodeEnvironment(node, nodeModules))
+            {
+                psi.EnvironmentVariables[item.Key] = item.Value;
+            }
+
+            Process process = new Process();
+            process.StartInfo = psi;
+            process.EnableRaisingEvents = false;
+            process.OutputDataReceived += delegate(object sender, DataReceivedEventArgs args) { PrintAndLog(logPath, args.Data); };
+            process.ErrorDataReceived += delegate(object sender, DataReceivedEventArgs args) { PrintAndLog(logPath, args.Data); };
+            process.Start();
+            AttachToKillOnCloseJob(process);
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            return process;
+        }
+
+        private static Dictionary<string, string> NodeEnvironment(NodeRuntime node, string nodeModules)
+        {
+            string nodeDir = Path.GetDirectoryName(node.NodeExe);
+            string existingPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+            Dictionary<string, string> env = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            env["PATH"] = nodeDir + Path.PathSeparator + existingPath;
+            env["NODE_PATH"] = nodeModules;
+            env["ROSA_SIMULATOR_NODE_MODULES"] = nodeModules;
+            return env;
+        }
+
+        private static void PrintStep(string vi, string en)
+        {
             Console.WriteLine();
+            string border = new string('#', BoxWidth);
+            Console.WriteLine(border);
+            Console.WriteLine(BoxLine("VI: " + vi));
+            Console.WriteLine(BoxLine("EN: " + en));
+            Console.WriteLine(border);
+        }
+
+        private static void PrintInfo(string viLabel, string enLabel, string value)
+        {
+            Console.WriteLine(BoxLine("VI: " + viLabel + " = " + value));
+            Console.WriteLine(BoxLine("EN: " + enLabel + " = " + value));
+        }
+
+        private static string BoxLine(string value)
+        {
+            string text = value ?? "";
+            int inner = BoxWidth - 4;
+            if (text.Length > inner) text = text.Substring(0, Math.Max(0, inner - 3)) + "...";
+            return "# " + text.PadRight(inner) + " #";
+        }
+
+        private static string CacheRoot()
+        {
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            if (String.IsNullOrWhiteSpace(localAppData)) localAppData = Path.GetTempPath();
+            string root = Path.Combine(localAppData, "ROSA-simulator");
+            Directory.CreateDirectory(root);
+            return root;
+        }
+
+        private static string ShortHash(string packageJson, string packageLock, string nodeVersion)
+        {
+            using (SHA256 sha = SHA256.Create())
+            {
+                byte[] first = File.ReadAllBytes(packageJson);
+                byte[] second = File.ReadAllBytes(packageLock);
+                byte[] third = Encoding.UTF8.GetBytes(nodeVersion ?? "");
+                byte[] all = new byte[first.Length + second.Length + third.Length];
+                Buffer.BlockCopy(first, 0, all, 0, first.Length);
+                Buffer.BlockCopy(second, 0, all, first.Length, second.Length);
+                Buffer.BlockCopy(third, 0, all, first.Length + second.Length, third.Length);
+                byte[] hash = sha.ComputeHash(all);
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < 12; i += 1) builder.Append(hash[i].ToString("x2"));
+                return "node-" + Sanitize(nodeVersion) + "-" + builder.ToString();
+            }
+        }
+
+        private static string Sanitize(string value)
+        {
+            StringBuilder builder = new StringBuilder();
+            foreach (char ch in (value ?? ""))
+            {
+                builder.Append(Char.IsLetterOrDigit(ch) || ch == '-' || ch == '_' || ch == '.' ? ch : '_');
+            }
+            return builder.ToString();
+        }
+
+        private static string FindOnPath(string fileName)
+        {
+            string pathValue = Environment.GetEnvironmentVariable("PATH") ?? "";
+            foreach (string rawPath in pathValue.Split(Path.PathSeparator))
+            {
+                string dir = rawPath.Trim().Trim('"');
+                if (String.IsNullOrWhiteSpace(dir)) continue;
+                try
+                {
+                    string candidate = Path.Combine(dir, fileName);
+                    if (File.Exists(candidate)) return candidate;
+                }
+                catch
+                {
+                    // Ignore invalid PATH entries.
+                }
+            }
+            return "";
+        }
+
+        private static string FindFile(string root, string fileName)
+        {
+            if (!Directory.Exists(root)) return "";
+            foreach (string filePath in Directory.GetFiles(root, fileName, SearchOption.AllDirectories))
+            {
+                return filePath;
+            }
+            return "";
+        }
+
+        private static string RunAndCapture(string fileName, string arguments, string workingDirectory)
+        {
+            ProcessStartInfo psi = new ProcessStartInfo();
+            psi.FileName = fileName;
+            psi.Arguments = arguments;
+            psi.WorkingDirectory = workingDirectory;
+            psi.UseShellExecute = false;
+            psi.RedirectStandardOutput = true;
+            psi.RedirectStandardError = true;
+            psi.CreateNoWindow = true;
+
+            using (Process process = Process.Start(psi))
+            {
+                string output = process.StandardOutput.ReadToEnd();
+                process.StandardError.ReadToEnd();
+                process.WaitForExit();
+                if (process.ExitCode != 0) return "";
+                return output.Trim();
+            }
+        }
+
+        private static void RunProcess(string fileName, string arguments, string workingDirectory, Dictionary<string, string> env)
+        {
+            PrintInfo("LENH", "COMMAND", Path.GetFileName(fileName) + " " + arguments);
+            ProcessStartInfo psi = new ProcessStartInfo();
+            psi.FileName = fileName;
+            psi.Arguments = arguments;
+            psi.WorkingDirectory = workingDirectory;
+            psi.UseShellExecute = false;
+            psi.RedirectStandardOutput = true;
+            psi.RedirectStandardError = true;
+            psi.CreateNoWindow = false;
+            foreach (KeyValuePair<string, string> item in env)
+            {
+                psi.EnvironmentVariables[item.Key] = item.Value;
+            }
+
+            using (Process process = new Process())
+            {
+                process.StartInfo = psi;
+                process.OutputDataReceived += delegate(object sender, DataReceivedEventArgs args) { if (!String.IsNullOrEmpty(args.Data)) Console.WriteLine("[BOOTSTRAP] " + args.Data); };
+                process.ErrorDataReceived += delegate(object sender, DataReceivedEventArgs args) { if (!String.IsNullOrEmpty(args.Data)) Console.WriteLine("[BOOTSTRAP] " + args.Data); };
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                process.WaitForExit();
+                if (process.ExitCode != 0) throw new InvalidOperationException("Command failed: " + Path.GetFileName(fileName) + " " + arguments);
+            }
+        }
+
+        private static int ParseMajorVersion(string version)
+        {
+            string text = (version ?? "").Trim().TrimStart('v');
+            string[] parts = text.Split('.');
+            int major;
+            if (parts.Length <= 0 || !Int32.TryParse(parts[0], out major)) return 0;
+            return major;
+        }
+
+        private static string Quote(string value)
+        {
+            return "\"" + (value ?? "").Replace("\"", "\\\"") + "\"";
+        }
+
+        private static void RemoveTree(string path)
+        {
+            if (!Directory.Exists(path)) return;
+            for (int attempt = 1; attempt <= 5; attempt += 1)
+            {
+                try
+                {
+                    Directory.Delete(path, true);
+                    return;
+                }
+                catch
+                {
+                    if (attempt >= 5) throw;
+                    Thread.Sleep(250 * attempt);
+                }
+            }
         }
 
         private static void RegisterShutdownHandlers()
@@ -187,13 +541,14 @@ namespace RosaSimulatorLauncher
         private static string GetValue(Dictionary<string, string> env, string key)
         {
             string value;
-            return env.TryGetValue(key, out value) ? value : "";
+            if (env.TryGetValue(key, out value)) return value;
+            return Environment.GetEnvironmentVariable(key) ?? "";
         }
 
         private static int ParsePort(string value, int fallback)
         {
             int port;
-            if (!int.TryParse(value, out port)) return fallback;
+            if (!Int32.TryParse(value, out port)) return fallback;
             return port > 0 && port < 65536 ? port : fallback;
         }
 
@@ -213,48 +568,6 @@ namespace RosaSimulatorLauncher
                 if (key.Length > 0) result[key] = value;
             }
             return result;
-        }
-
-        private static string ResolveNodeExe(string root)
-        {
-            string bundled = Path.Combine(root, "runtime", "node.exe");
-            if (File.Exists(bundled)) return bundled;
-
-            string adjacent = Path.Combine(root, "node.exe");
-            if (File.Exists(adjacent)) return adjacent;
-
-            return "node.exe";
-        }
-
-        private static Process StartServer(string root, Dictionary<string, string> env, string logPath)
-        {
-            string serverPath = Path.Combine(root, "server.js");
-            if (!File.Exists(serverPath)) throw new FileNotFoundException("server.js was not found.", serverPath);
-
-            ProcessStartInfo psi = new ProcessStartInfo();
-            psi.FileName = ResolveNodeExe(root);
-            psi.Arguments = "\"" + serverPath + "\"";
-            psi.WorkingDirectory = root;
-            psi.UseShellExecute = false;
-            psi.CreateNoWindow = false;
-            psi.RedirectStandardOutput = true;
-            psi.RedirectStandardError = true;
-
-            foreach (KeyValuePair<string, string> item in env)
-            {
-                psi.EnvironmentVariables[item.Key] = item.Value;
-            }
-
-            Process process = new Process();
-            process.StartInfo = psi;
-            process.EnableRaisingEvents = false;
-            process.OutputDataReceived += delegate(object sender, DataReceivedEventArgs args) { PrintAndLog(logPath, args.Data); };
-            process.ErrorDataReceived += delegate(object sender, DataReceivedEventArgs args) { PrintAndLog(logPath, args.Data); };
-            process.Start();
-            AttachToKillOnCloseJob(process);
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            return process;
         }
 
         private static void AttachToKillOnCloseJob(Process process)
@@ -284,7 +597,7 @@ namespace RosaSimulatorLauncher
         private static void PrintAndLog(string logPath, string line)
         {
             if (String.IsNullOrEmpty(line)) return;
-            Console.WriteLine("[server] " + line);
+            Console.WriteLine("[SERVER] " + line);
             try
             {
                 File.AppendAllText(logPath, DateTime.Now.ToString("s") + " " + line + Environment.NewLine);
@@ -303,8 +616,7 @@ namespace RosaSimulatorLauncher
             {
                 if (serverProcess != null && !serverProcess.HasExited)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("Stopping ROSA-simulator...");
+                    PrintStep("DANG DUNG SERVER", "STOPPING SERVER");
                     serverProcess.Kill();
                     serverProcess.WaitForExit(3000);
                 }
