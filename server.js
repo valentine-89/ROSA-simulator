@@ -46,6 +46,16 @@ function text(res, status, value, contentType = 'text/plain; charset=utf-8') {
   res.end(value);
 }
 
+function binary(res, status, body, headers = {}) {
+  res.writeHead(status, {
+    'Content-Type': 'application/octet-stream',
+    'Content-Length': body.length,
+    'Cache-Control': 'no-store',
+    ...headers
+  });
+  res.end(body);
+}
+
 function errorJson(res, status, message) {
   json(res, status, { error: String(message || 'Request failed.') });
 }
@@ -96,6 +106,240 @@ function safeJoin(root, requestPath) {
     return '';
   }
   return resolved;
+}
+
+function sanitizeFileName(value, fallback = 'template') {
+  const normalized = String(value || '').trim()
+    .replace(/[^A-Za-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+  return normalized || fallback;
+}
+
+function shouldSkipExportFile(fileName) {
+  const base = path.basename(String(fileName || ''));
+  return !base
+    || base === '.DS_Store'
+    || base.endsWith('.sqlite-shm')
+    || base.endsWith('.sqlite-wal');
+}
+
+function walkFiles(root, prefix = '') {
+  if (!fs.existsSync(root)) return [];
+  const rows = [];
+  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+    const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+    const filePath = path.join(root, entry.name);
+    if (shouldSkipExportFile(relativePath)) continue;
+    if (entry.isDirectory()) {
+      rows.push(...walkFiles(filePath, relativePath));
+    } else if (entry.isFile()) {
+      rows.push({ filePath, relativePath: relativePath.split(path.sep).join('/') });
+    }
+  }
+  return rows;
+}
+
+const CRC32_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let index = 0; index < 256; index += 1) {
+    let value = index;
+    for (let bit = 0; bit < 8; bit += 1) {
+      value = (value & 1) ? (0xedb88320 ^ (value >>> 1)) : (value >>> 1);
+    }
+    table[index] = value >>> 0;
+  }
+  return table;
+})();
+
+function crc32(buffer) {
+  let crc = 0xffffffff;
+  for (let index = 0; index < buffer.length; index += 1) {
+    crc = CRC32_TABLE[(crc ^ buffer[index]) & 0xff] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function dosDateTime(date = new Date()) {
+  const year = Math.max(1980, date.getFullYear());
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = Math.floor(date.getSeconds() / 2);
+  return {
+    time: ((hours << 11) | (minutes << 5) | seconds) & 0xffff,
+    date: (((year - 1980) << 9) | (month << 5) | day) & 0xffff
+  };
+}
+
+function createZip(entries) {
+  const fileParts = [];
+  const centralParts = [];
+  let offset = 0;
+  const now = dosDateTime();
+
+  entries.forEach((entry) => {
+    const nameBuffer = Buffer.from(entry.name, 'utf8');
+    const data = Buffer.isBuffer(entry.data) ? entry.data : Buffer.from(String(entry.data || ''), 'utf8');
+    const crc = crc32(data);
+
+    if (nameBuffer.length > 0xffff) throw new Error(`ZIP file name is too long: ${entry.name}`);
+    if (data.length > 0xffffffff) throw new Error(`ZIP entry is too large: ${entry.name}`);
+    if (offset > 0xffffffff) throw new Error('ZIP package is too large.');
+
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt16LE(0, 6);
+    local.writeUInt16LE(0, 8);
+    local.writeUInt16LE(now.time, 10);
+    local.writeUInt16LE(now.date, 12);
+    local.writeUInt32LE(crc, 14);
+    local.writeUInt32LE(data.length, 18);
+    local.writeUInt32LE(data.length, 22);
+    local.writeUInt16LE(nameBuffer.length, 26);
+    local.writeUInt16LE(0, 28);
+
+    fileParts.push(local, nameBuffer, data);
+
+    const central = Buffer.alloc(46);
+    central.writeUInt32LE(0x02014b50, 0);
+    central.writeUInt16LE(20, 4);
+    central.writeUInt16LE(20, 6);
+    central.writeUInt16LE(0, 8);
+    central.writeUInt16LE(0, 10);
+    central.writeUInt16LE(now.time, 12);
+    central.writeUInt16LE(now.date, 14);
+    central.writeUInt32LE(crc, 16);
+    central.writeUInt32LE(data.length, 20);
+    central.writeUInt32LE(data.length, 24);
+    central.writeUInt16LE(nameBuffer.length, 28);
+    central.writeUInt16LE(0, 30);
+    central.writeUInt16LE(0, 32);
+    central.writeUInt16LE(0, 34);
+    central.writeUInt16LE(0, 36);
+    central.writeUInt32LE(0, 38);
+    central.writeUInt32LE(offset, 42);
+    centralParts.push(central, nameBuffer);
+
+    offset += local.length + nameBuffer.length + data.length;
+  });
+
+  const centralOffset = offset;
+  const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(0, 4);
+  end.writeUInt16LE(0, 6);
+  end.writeUInt16LE(entries.length, 8);
+  end.writeUInt16LE(entries.length, 10);
+  end.writeUInt32LE(centralSize, 12);
+  end.writeUInt32LE(centralOffset, 16);
+  end.writeUInt16LE(0, 20);
+
+  return Buffer.concat([...fileParts, ...centralParts, end]);
+}
+
+function rewritePackageManifestPaths(value) {
+  if (Array.isArray(value)) return value.map(rewritePackageManifestPaths);
+  if (value && typeof value === 'object') {
+    const next = {};
+    for (const [key, item] of Object.entries(value)) next[key] = rewritePackageManifestPaths(item);
+    return next;
+  }
+  if (typeof value !== 'string') return value;
+  return value
+    .replace(/\/sample_templates\/templates\//g, '/sample_dashboards/')
+    .replace(/\/sample_templates\/shared\/setup_bridge\.js/g, '/sample_dashboards/setup_bridge.js')
+    .replace(/\/sample_templates\/shared\/setup_shared\.css/g, '/sample_dashboards/setup_shared.css')
+    .replace(/\/sample_templates\/shared\/(dashboard-[A-Za-z0-9._-]+\.(?:js|css))/g, '/$1')
+    .replace(/\/sample_templates\/legacy\/default\//g, '/sample_dashboards/default/');
+}
+
+function templateFolderFromPublicPath(publicPath) {
+  const normalized = String(publicPath || '').split('?')[0].trim();
+  let match = normalized.match(/^\/sample_dashboards\/([^/]+)\//);
+  if (match) return match[1];
+  match = normalized.match(/^\/sample_templates\/templates\/([^/]+)\//);
+  if (match) return match[1];
+  return '';
+}
+
+function collectTemplateFolderCandidates(sample) {
+  const candidates = [];
+  function visit(value) {
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+    if (value && typeof value === 'object') {
+      Object.values(value).forEach(visit);
+      return;
+    }
+    const folder = templateFolderFromPublicPath(value);
+    if (folder) candidates.push(folder);
+  }
+  visit(sample);
+  return candidates;
+}
+
+function buildTemplatePackage(templateId) {
+  const manifest = loadManifest();
+  const sample = (manifest.samples || []).find((entry) => String(entry.id || '') === String(templateId || ''));
+  if (!sample) throw new Error('Sample template not found.');
+
+  const folderCandidates = collectTemplateFolderCandidates(sample);
+  const templateFolder = folderCandidates.find((folder) => fs.existsSync(path.join(TEMPLATE_ROOT, folder)))
+    || sanitizeFileName(sample.id, 'template');
+  const templateDir = path.join(TEMPLATE_ROOT, templateFolder);
+  if (!fs.existsSync(templateDir) || !fs.statSync(templateDir).isDirectory()) {
+    throw new Error(`Template folder not found: ${templateFolder}`);
+  }
+
+  const packageManifest = {
+    samples: [rewritePackageManifestPaths(JSON.parse(JSON.stringify(sample)))]
+  };
+  const packageMeta = {
+    format: 'rosa-template-package',
+    version: 1,
+    source: 'ROSA-simulator',
+    createdAt: new Date().toISOString(),
+    templateId: sample.id,
+    templateFolder,
+    name: sample.name || sample.id,
+    entryManifest: 'sample_templates/manifest.json',
+    pathProfile: 'sample_dashboards'
+  };
+  const entries = [
+    {
+      name: 'rosa-template-package.json',
+      data: Buffer.from(JSON.stringify(packageMeta, null, 2), 'utf8')
+    },
+    {
+      name: 'sample_templates/manifest.json',
+      data: Buffer.from(JSON.stringify(packageManifest, null, 2), 'utf8')
+    }
+  ];
+
+  walkFiles(templateDir).forEach((file) => {
+    entries.push({
+      name: `sample_templates/templates/${templateFolder}/${file.relativePath}`,
+      data: fs.readFileSync(file.filePath)
+    });
+  });
+  walkFiles(SHARED_ROOT).forEach((file) => {
+    entries.push({
+      name: `sample_templates/shared/${file.relativePath}`,
+      data: fs.readFileSync(file.filePath)
+    });
+  });
+
+  return {
+    fileName: `${sanitizeFileName(sample.name || sample.id, templateFolder)}-${sanitizeFileName(sample.id, templateFolder)}.zip`,
+    body: createZip(entries),
+    fileCount: entries.length
+  };
 }
 
 function serveFile(res, filePath) {
@@ -331,6 +575,16 @@ async function handleSimApi(req, res, url) {
   }
   if (req.method === 'GET' && url.pathname === '/sim/api/manifest') {
     json(res, 200, loadManifest());
+    return true;
+  }
+  if (req.method === 'GET' && url.pathname === '/sim/api/export-template') {
+    const templateId = String(url.searchParams.get('templateId') || '').trim();
+    const pkg = buildTemplatePackage(templateId);
+    binary(res, 200, pkg.body, {
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${pkg.fileName}"`,
+      'X-ROSA-Template-Files': String(pkg.fileCount)
+    });
     return true;
   }
   if (req.method === 'GET' && url.pathname === '/sim/api/render') {

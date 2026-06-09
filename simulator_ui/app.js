@@ -71,6 +71,7 @@
       send: '<path d="M21 3 10 14"/><path d="M21 3l-7 18-4-7-7-4 18-7Z"/>',
       trash: '<path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 14h10l1-14"/><path d="M9 7V4h6v3"/>',
       copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+      download: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
       check: '<path d="M20 6 9 17l-5-5"/>'
     };
     return '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (paths[name] || paths.preview) + '</svg>';
@@ -362,6 +363,56 @@
       toast("Sample DB loaded: " + payload.ioid);
     }).catch(function (error) {
       toast(error.message);
+    });
+  }
+
+  function fileNameFromDisposition(value) {
+    var text = String(value || "");
+    var match = text.match(/filename\*=UTF-8''([^;]+)/i);
+    if (match) return decodeURIComponent(match[1]);
+    match = text.match(/filename="?([^";]+)"?/i);
+    return match ? match[1] : "";
+  }
+
+  function exportTemplate() {
+    if (!state.activeSample) {
+      toast("Select a template first.");
+      return;
+    }
+    var templateId = String(state.activeSample.id || "").trim();
+    if (!templateId) {
+      toast("Selected template has no id.");
+      return;
+    }
+    var url = "/sim/api/export-template?templateId=" + encodeURIComponent(templateId);
+    fetch(url, { cache: "no-store" }).then(function (response) {
+      if (!response.ok) {
+        return response.text().then(function (text) {
+          var message = response.statusText;
+          try {
+            var payload = JSON.parse(text || "{}");
+            message = payload.error || message;
+          } catch (error) {
+            message = text || message;
+          }
+          throw new Error(message);
+        });
+      }
+      return response.blob().then(function (blob) {
+        var fileName = fileNameFromDisposition(response.headers.get("Content-Disposition"))
+          || (templateId + ".zip");
+        var objectUrl = URL.createObjectURL(blob);
+        var link = document.createElement("a");
+        link.href = objectUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(function () { URL.revokeObjectURL(objectUrl); }, 1000);
+        toast("Template package exported.");
+      });
+    }).catch(function (error) {
+      toast(error.message || "Export failed.");
     });
   }
 
@@ -667,6 +718,7 @@
     els.macroPanel = $("macro-panel");
     els.loadDatabase = $("load-database");
     els.openSetup = $("open-setup");
+    els.exportTemplate = $("export-template");
     els.previewState = $("preview-state");
     els.previewTitle = $("preview-title");
     els.dashboardFrame = $("dashboard-frame");
@@ -698,6 +750,7 @@
     $("refresh-manifest").addEventListener("click", loadManifest);
     $("load-template").addEventListener("click", renderDashboard);
     els.openSetup.addEventListener("click", openSetup);
+    els.exportTemplate.addEventListener("click", exportTemplate);
     els.loadDatabase.addEventListener("click", loadSampleDatabase);
     $("clear-databases").addEventListener("click", clearSimulatedDatabases);
     $("close-setup").addEventListener("click", function () { els.setupDialog.close(); });

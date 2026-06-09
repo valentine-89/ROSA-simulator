@@ -36,11 +36,13 @@ Sau đó mở `http://localhost:4177`.
 
 Khi dùng AI để tạo template mới từ một dự án sẵn có:
 
-1. Yêu cầu AI đọc `docs/template-authoring.md`.
+1. Yêu cầu AI đọc `docs/template-authoring.md` trước khi sửa file.
 2. Yêu cầu AI quét các template mẫu trong `sample_templates/templates/`.
-3. Copy template gần nhất với dự án mới thay vì viết lại từ đầu.
-4. Thêm template mới vào `sample_templates/manifest.json`.
-5. Chạy kiểm tra:
+3. Yêu cầu AI chỉ tạo template dạng HTML/CSS/browser JavaScript thuần trong `sample_templates/`.
+4. Yêu cầu AI không sửa backend, không thêm API route, không thêm npm dependency, không sửa `server.js`, `src/`, `simulator_ui/`, `scripts/`, `packaging/`, `package.json`, hoặc `package-lock.json`.
+5. Copy template gần nhất với dự án mới thay vì viết lại từ đầu.
+6. Thêm template mới vào `sample_templates/manifest.json`.
+7. Chạy kiểm tra:
 
 ```bash
 npm run validate
@@ -48,6 +50,16 @@ npm run check
 ```
 
 Template mới chưa hoàn tất nếu hai lệnh trên chưa pass.
+
+Prompt mẫu cho AI:
+
+```text
+Hãy tạo một ROSA sample dashboard template mới. Trước tiên đọc docs/template-authoring.md.
+Chỉ được làm frontend template bằng HTML/CSS/browser JavaScript trong sample_templates/.
+Không được thêm backend, không sửa server.js/src/simulator_ui/scripts/packaging/package.json/package-lock.json.
+Không được thêm npm dependency hoặc framework build. Nếu cần dữ liệu backend, hãy dùng telemetry/timeseries API sẵn có hoặc SQLite macro trong sample .sqlite.
+Copy template gần nhất trong sample_templates/templates/ rồi chỉnh theo yêu cầu, sau đó cập nhật sample_templates/manifest.json.
+```
 
 ### Thư mục quan trọng
 
@@ -97,11 +109,13 @@ Then open `http://localhost:4177`.
 
 When using AI to create a new template from an existing project:
 
-1. Ask the AI agent to read `docs/template-authoring.md`.
+1. Ask the AI agent to read `docs/template-authoring.md` before editing files.
 2. Ask it to inspect existing templates in `sample_templates/templates/`.
-3. Copy the closest working template instead of starting from scratch.
-4. Register the new template in `sample_templates/manifest.json`.
-5. Run validation:
+3. Require it to create only a plain HTML/CSS/browser JavaScript template under `sample_templates/`.
+4. Require it not to edit backend code, add API routes, add npm dependencies, or modify `server.js`, `src/`, `simulator_ui/`, `scripts/`, `packaging/`, `package.json`, or `package-lock.json`.
+5. Copy the closest working template instead of starting from scratch.
+6. Register the new template in `sample_templates/manifest.json`.
+7. Run validation:
 
 ```bash
 npm run validate
@@ -109,6 +123,16 @@ npm run check
 ```
 
 The new template is not complete until both commands pass.
+
+Suggested AI prompt:
+
+```text
+Create a new ROSA sample dashboard template. First read docs/template-authoring.md.
+Only create a frontend template using plain HTML/CSS/browser JavaScript under sample_templates/.
+Do not add backend code, do not edit server.js/src/simulator_ui/scripts/packaging/package.json/package-lock.json.
+Do not add npm dependencies or a build framework. If backend-like data is needed, use existing telemetry/timeseries APIs or SQLite macros in a sample .sqlite file.
+Copy the closest existing template from sample_templates/templates/ and adapt it, then update sample_templates/manifest.json.
+```
 
 ### Important Folders
 
