@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Server Health Monitor</title>
+  <link rel="stylesheet" href="/dashboard-themes.css" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) {
+          document.documentElement.setAttribute("data-theme", savedTheme);
+        }
+      } catch (error) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/sample_dashboards/server-health-monitor/dashboard.css?v=2026.06.11.1" />
+</head>
+<body>
+
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="shm-page" id="server-health-root">
+    <section class="shm-hero">
+      <div class="shm-title-block">
+        <span class="shm-eyebrow" id="server-health-eyebrow">ROSA Server Observability</span>
+        <h1 id="server-health-title">Server Health Monitor</h1>
+        <p id="server-health-subtitle">Monitor CPU, RAM, network traffic, and primary disk usage across multiple servers.</p>
+      </div>
+      <div class="shm-status-strip" aria-live="polite">
+        <select class="shm-range-select" id="server-health-range" aria-label="Chart time range">
+          <option value="15">15 min</option>
+          <option value="60" selected>1 hour</option>
+          <option value="360">6 hours</option>
+          <option value="1440">24 hours</option>
+        </select>
+        <div class="shm-status-pill" id="server-health-status-pill">
+          <span class="shm-dot" data-state="loading"></span>
+          <span id="server-health-status-text">Loading</span>
+        </div>
+        <div class="shm-clock" id="server-health-clock">--:--:--</div>
+      </div>
+    </section>
+
+    <section class="shm-kpi-grid" id="server-health-kpis"></section>
+
+    <section class="shm-server-grid" id="server-health-server-grid"></section>
+  </main>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Đổi theme" aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Theme options">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism" role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism" role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk" role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento Grid</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script type="application/json" id="server-health-config">
+    {
+      "locale": "en",
+      "title": "Server Health Monitor",
+      "subtitle": "Monitor CPU, RAM, network traffic, and primary disk usage across multiple servers.",
+      "eyebrow": "ROSA Server Observability",
+      "syncId": "<<syncid>>",
+      "historyMinutes": 60,
+      "servers": [
+        {
+          "name": "Server 01",
+          "sessionId": "<<sessionid>>",
+          "accent": "#2563eb",
+          "fields": {
+            "cpu": "CPU_Percent",
+            "ram": "RAM_Percent",
+            "networkIn": "Network_In_Mbps",
+            "networkOut": "Network_Out_Mbps",
+            "diskUsed": "Disk_Main_Used_GB",
+            "diskTotal": "Disk_Main_Total_GB"
+          }
+        },
+        {
+          "name": "Server 02",
+          "sessionId": "IO456efgh@simulate",
+          "accent": "#16a34a",
+          "fields": {
+            "cpu": "CPU_Percent",
+            "ram": "RAM_Percent",
+            "networkIn": "Network_In_Mbps",
+            "networkOut": "Network_Out_Mbps",
+            "diskUsed": "Disk_Main_Used_GB",
+            "diskTotal": "Disk_Main_Total_GB"
+          }
+        },
+        {
+          "name": "Server 03",
+          "sessionId": "IO789ijkl@simulate",
+          "accent": "#f59e0b",
+          "fields": {
+            "cpu": "CPU_Percent",
+            "ram": "RAM_Percent",
+            "networkIn": "Network_In_Mbps",
+            "networkOut": "Network_Out_Mbps",
+            "diskUsed": "Disk_Main_Used_GB",
+            "diskTotal": "Disk_Main_Total_GB"
+          }
+        },
+        {
+          "name": "Server 04",
+          "sessionId": "IO321mnop@simulate",
+          "accent": "#7c3aed",
+          "fields": {
+            "cpu": "CPU_Percent",
+            "ram": "RAM_Percent",
+            "networkIn": "Network_In_Mbps",
+            "networkOut": "Network_Out_Mbps",
+            "diskUsed": "Disk_Main_Used_GB",
+            "diskTotal": "Disk_Main_Total_GB"
+          }
+        }
+      ],
+      "thresholds": {
+        "cpuWarn": 70,
+        "cpuDanger": 85,
+        "ramWarn": 72,
+        "ramDanger": 88,
+        "diskWarn": 75,
+        "diskDanger": 90
+      }
+    }
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START -->
+  <script>
+    // Editable sample script slot for customer-specific labels or field aliases.
+  </script>
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script src="/sample_dashboards/server-health-monitor/dashboard-runtime.js?v=2026.06.11.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

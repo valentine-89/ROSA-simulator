@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-label="Server health monitor dashboard preview">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e8eef7"/>
+      <stop offset="1" stop-color="#d7e0ec"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#64748b" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="760" fill="url(#bg)"/>
+  <rect x="32" y="28" width="1136" height="92" rx="10" fill="#e5ebf3" stroke="#d8e0eb" filter="url(#shadow)"/>
+  <text x="56" y="60" fill="#2563eb" font-family="Segoe UI,Arial,sans-serif" font-size="16" font-weight="800">ROSA SERVER OBSERVABILITY</text>
+  <text x="56" y="92" fill="#475569" font-family="Segoe UI,Arial,sans-serif" font-size="34" font-weight="850">Server Health Monitor</text>
+  <rect x="886" y="54" width="102" height="38" rx="8" fill="#eef3f9" stroke="#cbd5e1"/>
+  <text x="908" y="79" fill="#475569" font-family="Segoe UI,Arial,sans-serif" font-size="16" font-weight="850">1 giờ</text>
+  <path d="M958 70 L964 76 L970 70" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="1010" y="54" width="118" height="38" rx="8" fill="#d7e3f4"/>
+  <circle cx="1032" cy="73" r="7" fill="#22c55e"/>
+  <text x="1048" y="80" fill="#475569" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="800">Online 4/4</text>
+
+  <g font-family="Segoe UI,Arial,sans-serif" filter="url(#shadow)">
+    <rect x="32" y="138" width="270" height="78" rx="10" fill="#e5ebf3" stroke="#d8e0eb"/>
+    <rect x="322" y="138" width="270" height="78" rx="10" fill="#e5ebf3" stroke="#d8e0eb"/>
+    <rect x="612" y="138" width="270" height="78" rx="10" fill="#e5ebf3" stroke="#d8e0eb"/>
+    <rect x="902" y="138" width="266" height="78" rx="10" fill="#e5ebf3" stroke="#d8e0eb"/>
+  </g>
+  <g font-family="Segoe UI,Arial,sans-serif">
+    <text x="54" y="170" fill="#7b8798" font-size="15" font-weight="850">SERVER ONLINE</text>
+    <text x="54" y="202" fill="#475569" font-size="30" font-weight="900">4 / 4</text>
+    <text x="344" y="170" fill="#7b8798" font-size="15" font-weight="850">CPU TRUNG BINH</text>
+    <text x="344" y="202" fill="#475569" font-size="30" font-weight="900">58%</text>
+    <text x="634" y="170" fill="#7b8798" font-size="15" font-weight="850">RAM TRUNG BINH</text>
+    <text x="634" y="202" fill="#475569" font-size="30" font-weight="900">64%</text>
+    <text x="924" y="170" fill="#7b8798" font-size="15" font-weight="850">O DIA CHINH</text>
+    <text x="924" y="202" fill="#475569" font-size="30" font-weight="900">51%</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="32" y="238" width="558" height="222" rx="10" fill="#e5ebf3" stroke="#d8e0eb"/>
+    <rect x="610" y="238" width="558" height="222" rx="10" fill="#e5ebf3" stroke="#d8e0eb"/>
+    <rect x="32" y="484" width="558" height="222" rx="10" fill="#e5ebf3" stroke="#d8e0eb"/>
+    <rect x="610" y="484" width="558" height="222" rx="10" fill="#e5ebf3" stroke="#d8e0eb"/>
+  </g>
+
+  <g font-family="Segoe UI,Arial,sans-serif">
+    <text x="54" y="275" fill="#475569" font-size="24" font-weight="850">Server 01</text>
+    <text x="632" y="275" fill="#475569" font-size="24" font-weight="850">Server 02</text>
+    <text x="54" y="521" fill="#475569" font-size="24" font-weight="850">Server 03</text>
+    <text x="632" y="521" fill="#475569" font-size="24" font-weight="850">Server 04</text>
+    <g fill="#7b8798" font-size="14" font-weight="800">
+      <text x="54" y="300">CPU 72%  RAM 51%  NET 820 Mbps  DISK 47%</text>
+      <text x="632" y="300">CPU 44%  RAM 69%  NET 1.1 Gbps  DISK 62%</text>
+      <text x="54" y="546">CPU 39%  RAM 58%  NET 360 Mbps  DISK 41%</text>
+      <text x="632" y="546">CPU 63%  RAM 74%  NET 640 Mbps  DISK 55%</text>
+    </g>
+  </g>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+    <path d="M58 404 C118 338 176 396 234 350 S350 414 410 342 S510 382 560 332" stroke="#2563eb"/>
+    <path d="M58 384 C124 372 184 352 240 370 S348 350 410 366 S510 346 560 358" stroke="#f59e0b"/>
+    <path d="M58 420 C126 414 180 408 238 412 S348 404 410 410 S510 398 560 402" stroke="#16a34a"/>
+    <path d="M58 356 C126 402 186 326 238 386 S346 328 410 396 S514 336 560 374" stroke="#0891b2"/>
+
+    <path d="M636 404 C696 388 758 342 812 374 S928 406 988 350 S1088 388 1138 360" stroke="#2563eb"/>
+    <path d="M636 378 C704 392 758 364 816 386 S928 370 990 392 S1088 356 1138 382" stroke="#f59e0b"/>
+    <path d="M636 416 C704 410 760 408 816 412 S928 406 990 410 S1088 402 1138 404" stroke="#16a34a"/>
+    <path d="M636 352 C704 408 760 338 816 398 S928 344 990 386 S1088 336 1138 370" stroke="#0891b2"/>
+
+    <path d="M58 650 C118 610 176 628 234 590 S350 640 410 584 S510 608 560 572" stroke="#2563eb"/>
+    <path d="M58 628 C124 622 184 604 240 616 S348 602 410 612 S510 592 560 604" stroke="#f59e0b"/>
+    <path d="M58 666 C126 662 180 660 238 656 S348 652 410 654 S510 648 560 646" stroke="#16a34a"/>
+    <path d="M58 598 C126 650 186 584 238 638 S346 578 410 632 S514 582 560 616" stroke="#0891b2"/>
+
+    <path d="M636 642 C696 594 758 626 812 586 S928 650 988 590 S1088 622 1138 596" stroke="#2563eb"/>
+    <path d="M636 620 C704 634 758 612 816 628 S928 604 990 620 S1088 598 1138 614" stroke="#f59e0b"/>
+    <path d="M636 660 C704 656 760 652 816 654 S928 648 990 650 S1088 644 1138 646" stroke="#16a34a"/>
+    <path d="M636 590 C704 642 760 578 816 636 S928 580 990 630 S1088 584 1138 606" stroke="#0891b2"/>
+  </g>
+
+  <g fill="#7b8798" font-family="Segoe UI,Arial,sans-serif" font-size="13" font-weight="850">
+    <text x="54" y="332">CPU</text><text x="100" y="332">RAM</text><text x="146" y="332">DISK</text><text x="194" y="332">NET</text>
+    <text x="632" y="332">CPU</text><text x="678" y="332">RAM</text><text x="724" y="332">DISK</text><text x="772" y="332">NET</text>
+    <text x="54" y="578">CPU</text><text x="100" y="578">RAM</text><text x="146" y="578">DISK</text><text x="194" y="578">NET</text>
+    <text x="632" y="578">CPU</text><text x="678" y="578">RAM</text><text x="724" y="578">DISK</text><text x="772" y="578">NET</text>
+  </g>
+</svg>
