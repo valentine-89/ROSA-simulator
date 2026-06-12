@@ -37,11 +37,18 @@
       enterValueFirst: 'Enter a value first.',
       inputCommandMissing: 'Input command is not configured.',
       inputCommandFailed: 'Input command failed.',
+      angleSetHint: 'Tap to set',
+      angleSending: 'Sending...',
+      angleFailed: 'Failed',
+      angleCommandMissing: 'Angle command is not configured.',
+      angleCommandFailed: 'Angle command failed.',
       fillBothValues: 'Fill in both values first.',
       dualInputCommandMissing: 'Dual-input command is not configured.',
       widgetSaved: '{label} saved.',
       saveFailed: 'Save failed.',
       configInvalid: 'Basic cards config is invalid.',
+      imageMissing: 'Image URL is missing.',
+      imageLoadFailed: 'Image failed to load.',
       groupFallback: 'Group {index}'
     },
     vi: {
@@ -67,11 +74,18 @@
       enterValueFirst: 'Hãy nhập giá trị trước.',
       inputCommandMissing: 'Chưa cấu hình lệnh cho ô nhập.',
       inputCommandFailed: 'Gửi lệnh nhập liệu thất bại.',
+      angleSetHint: 'Bấm để đặt',
+      angleSending: 'Đang gửi...',
+      angleFailed: 'Lỗi gửi',
+      angleCommandMissing: 'Chưa cấu hình lệnh góc.',
+      angleCommandFailed: 'Gửi lệnh góc thất bại.',
       fillBothValues: 'Hãy nhập đủ cả hai giá trị.',
       dualInputCommandMissing: 'Chưa cấu hình lệnh cho hai ô nhập.',
       widgetSaved: 'Đã lưu {label}.',
       saveFailed: 'Lưu thất bại.',
       configInvalid: 'Cấu hình basic cards không hợp lệ.',
+      imageMissing: 'Chưa có URL ảnh.',
+      imageLoadFailed: 'Không tải được ảnh.',
       groupFallback: 'Nhóm {index}'
     }
   };
@@ -658,6 +672,93 @@
     };
   }
 
+  function createAngleWidget(widget, runCommand) {
+    var node = createCardNode(widget);
+    var body = node.querySelector('.bc-card-body');
+    body.innerHTML = '' +
+      '<div class="bc-angle-shell">' +
+        '<button class="bc-angle-ring" type="button" aria-label="' + escapeHtml(widget.label || 'Angle') + '">' +
+          '<span class="bc-angle-inner">' +
+            '<span>' +
+              '<strong class="bc-angle-value">--</strong>' +
+              '<span class="bc-angle-hint">' + escapeHtml(t('angleSetHint')) + '</span>' +
+            '</span>' +
+          '</span>' +
+        '</button>' +
+      '</div>';
+    var state = {
+      widget: widget,
+      node: node,
+      ringNode: body.querySelector('.bc-angle-ring'),
+      valueNode: body.querySelector('.bc-angle-value'),
+      hintNode: body.querySelector('.bc-angle-hint'),
+      isBusy: false,
+      apply: function (store) {
+        if (this.isBusy) return;
+        setAngleVisual(this, store.latest[this.widget.fieldKey], t('angleSetHint'));
+      }
+    };
+
+    function normalizedAngle(value) {
+      var numeric = numericValue(value);
+      if (numeric === null) return null;
+      return Math.round(((numeric % 360) + 360) % 360);
+    }
+
+    function setAngleVisual(widgetState, value, hint) {
+      var angle = normalizedAngle(value);
+      if (angle === null) {
+        widgetState.valueNode.textContent = '--';
+        widgetState.ringNode.style.setProperty('--bc-angle-turn', '0deg');
+      } else {
+        widgetState.valueNode.textContent = angle + '°';
+        widgetState.ringNode.style.setProperty('--bc-angle-turn', angle + 'deg');
+      }
+      widgetState.hintNode.textContent = safeText(hint, t('angleSetHint'));
+    }
+
+    function sendAngle(angle) {
+      if (state.isBusy) return;
+      var value = String(normalizedAngle(angle));
+      var payload = { value: value };
+      payload[widget.valueKey || 'value'] = value;
+      var command = applyCommandTemplate(widget.submitCommand, payload);
+      if (!command) {
+        showToast(t('angleCommandMissing'), 'error');
+        return;
+      }
+      state.isBusy = true;
+      state.ringNode.disabled = true;
+      setAngleVisual(state, value, t('angleSending'));
+      runCommand(widget.sessionId, command)
+        .then(function () {
+          state.isBusy = false;
+          setAngleVisual(state, value, t('angleSetHint'));
+          showToast(t('commandSent', { label: widget.label }), 'success');
+        })
+        .catch(function () {
+          showToast(t('angleCommandFailed'), 'error');
+          state.hintNode.textContent = t('angleFailed');
+        })
+        .finally(function () {
+          state.isBusy = false;
+          state.ringNode.disabled = false;
+        });
+    }
+
+    state.ringNode.addEventListener('click', function (event) {
+      var rect = state.ringNode.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      var centerX = rect.left + (rect.width / 2);
+      var centerY = rect.top + (rect.height / 2);
+      var radians = Math.atan2(event.clientY - centerY, event.clientX - centerX);
+      var degrees = ((radians * 180 / Math.PI) + 90 + 360) % 360;
+      sendAngle(degrees);
+    });
+
+    return state;
+  }
+
   function createDualInputWidget(widget, runCommand) {
     var node = createCardNode(widget);
     var body = node.querySelector('.bc-card-body');
@@ -792,32 +893,57 @@
     return state;
   }
 
+  function createImageWidget(widget) {
+    var node = createCardNode(widget);
+    var body = node.querySelector('.bc-card-body');
+    if (!widget.src) {
+      body.innerHTML = '<div class="bc-image-fallback">' + escapeHtml(t('imageMissing')) + '</div>';
+      return { widget: widget, node: node, apply: function () {} };
+    }
+
+    body.innerHTML = '<img class="bc-card-image" alt="" />';
+    var image = body.querySelector('.bc-card-image');
+    image.alt = safeText(widget.alt, widget.label || '');
+    image.addEventListener('error', function () {
+      body.innerHTML = '<div class="bc-image-fallback">' + escapeHtml(t('imageLoadFailed')) + '</div>';
+    });
+    image.src = widget.src;
+    return { widget: widget, node: node, apply: function () {} };
+  }
+
   function normalizeWidget(rawWidget, groupIndex, widgetIndex, groupSessionId) {
     var widget = rawWidget && typeof rawWidget === 'object' ? rawWidget : {};
     var type = String(widget.type || 'telemetry').trim().toLowerCase();
+    var field = safeText(widget.field, '');
+    if (type === 'angle') {
+      field = safeText(widget.field || widget.valueField || (widget.input && (widget.input.field || widget.input.valueField)), '');
+    }
     var normalized = {
       id: safeText(widget.id, 'widget-' + String(groupIndex + 1) + '-' + String(widgetIndex + 1)),
       type: type,
-      label: safeText(widget.label, type),
+      label: type === 'image' ? safeText(widget.label, '') : safeText(widget.label, type),
       tone: safeText(widget.tone, 'primary'),
       sessionId: safeText(widget.sessionId, groupSessionId),
       digits: Number(widget.digits || 0),
       unit: safeText(widget.unit, ''),
-      field: safeText(widget.field, ''),
-      fieldKey: safeText(widget.field, '').toLowerCase(),
+      field: field,
+      fieldKey: field.toLowerCase(),
       stateField: safeText(widget.stateField, ''),
       stateFieldKey: safeText(widget.stateField, '').toLowerCase(),
       command: safeText(widget.command, ''),
       commandOn: safeText(widget.commandOn, ''),
       commandOff: safeText(widget.commandOff, ''),
       buttonLabel: safeText(widget.buttonLabel, ''),
-      submitCommand: safeText(widget.submitCommand, ''),
+      submitCommand: safeText(widget.submitCommand || widget.commandTemplate, ''),
+      valueKey: safeText(widget.valueKey || widget.key || (widget.input && widget.input.key), 'value'),
       input: widget.input && typeof widget.input === 'object' ? widget.input : null,
       inputs: Array.isArray(widget.inputs) ? widget.inputs : [],
       range: safeText(widget.range, '6h'),
       rangeMs: parseRangeMs(widget.range),
       yMin: Number.isFinite(Number(widget.yMin)) ? Number(widget.yMin) : null,
       yDeltaMin: Number.isFinite(Number(widget.yDeltaMin)) ? Number(widget.yDeltaMin) : null,
+      src: safeText(widget.src || widget.url || widget.imageUrl, ''),
+      alt: safeText(widget.alt, ''),
     };
     return normalized;
   }
@@ -825,9 +951,11 @@
   function createWidgetState(widget, runCommand) {
     if (widget.type === 'switch') return createSwitchWidget(widget, runCommand);
     if (widget.type === 'command') return createCommandWidget(widget, runCommand);
+    if (widget.type === 'angle') return createAngleWidget(widget, runCommand);
     if (widget.type === 'input') return createInputWidget(widget, runCommand);
     if (widget.type === 'dual-input') return createDualInputWidget(widget, runCommand);
     if (widget.type === 'line-chart') return createLineChartWidget(widget);
+    if (widget.type === 'image') return createImageWidget(widget);
     return createTelemetryWidget(widget);
   }
 
@@ -1016,6 +1144,10 @@
         var widgetState = createWidgetState(widget, runCommand);
         grid.appendChild(widgetState.node);
         totalWidgets += 1;
+
+        if (widget.type === 'image') {
+          return;
+        }
 
         var store = ensureStore(widget.sessionId);
         if (store) {

@@ -15,7 +15,7 @@
       } catch (error) {}
     })();
   </script>
-  <link rel="stylesheet" href="/sample_dashboards/basic-cards-dashboard/dashboard.css" />
+  <link rel="stylesheet" href="/sample_dashboards/basic-cards-dashboard/dashboard.css?v=2026.06.09.2" />
 </head>
 <body>
 
@@ -71,13 +71,20 @@
               "commandOff": "D2O2",
               "tone": "success"
             },
-			{
+            {
               "type": "telemetry",
               "label": "Nhiệt độ",
               "field": "temperature",
               "unit": "°C",
               "digits": 1,
               "tone": "danger"
+            },
+            {
+              "type": "image",
+              "label": "Camera",
+              "src": "/sample_dashboards/basic-cards-dashboard/sample.png",
+              "alt": "Ảnh camera",
+              "tone": "info"
             },
             {
               "type": "command",
@@ -87,15 +94,10 @@
               "tone": "primary"
             },
             {
-              "type": "input",
+              "type": "angle",
               "label": "Góc động cơ",
-              "input": {
-                "key": "value",
-                "valueType": "number",
-                "field": "O2"
-              },
+              "field": "O2",
               "submitCommand": "D1O2'{value}'",
-              "buttonLabel": "Gửi",
               "tone": "info"
             },
             {
@@ -135,7 +137,7 @@
 
   <script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
   <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
-  <script src="/sample_dashboards/basic-cards-dashboard/dashboard-runtime.js"></script>
+  <script src="/sample_dashboards/basic-cards-dashboard/dashboard-runtime.js?v=2026.06.09.2"></script>
   <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
 </body>
 </html>

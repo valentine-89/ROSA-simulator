@@ -30,7 +30,6 @@
       serverOnline: "Server online",
       avgCpu: "CPU trung bình",
       avgRam: "RAM trung bình",
-      cpuTemp: "Nhiệt CPU",
       diskMain: "Ổ đĩa chính",
       serversWithData: "server có dữ liệu",
       missingContext: "Thiếu Device key hoặc SyncID",
@@ -56,7 +55,6 @@
       serverOnline: "Servers online",
       avgCpu: "Average CPU",
       avgRam: "Average RAM",
-      cpuTemp: "CPU temp",
       diskMain: "Primary disk",
       serversWithData: "servers with data",
       missingContext: "Missing Device key or SyncID",
@@ -182,7 +180,6 @@
     return {
       cpu: String(source.cpu || "CPU_Percent").trim(),
       ram: String(source.ram || "RAM_Percent").trim(),
-      temperature: String(source.temperature || "CPU_Temperature_C").trim(),
       networkIn: String(source.networkIn || "Network_In_Mbps").trim(),
       networkOut: String(source.networkOut || "Network_Out_Mbps").trim(),
       diskUsed: String(source.diskUsed || "Disk_Main_Used_GB").trim(),
@@ -243,12 +240,12 @@
 
   function allFields(server) {
     var f = server.fields;
-    return unique([f.cpu, f.ram, f.temperature, f.networkIn, f.networkOut, f.diskUsed, f.diskTotal]);
+    return unique([f.cpu, f.ram, f.networkIn, f.networkOut, f.diskUsed, f.diskTotal]);
   }
 
   function timeseriesFields(server) {
     var f = server.fields;
-    return unique([f.cpu, f.ram, f.temperature, f.networkIn, f.networkOut, f.diskUsed]);
+    return unique([f.cpu, f.ram, f.networkIn, f.networkOut, f.diskUsed]);
   }
 
   function historyWindow(anchor) {
@@ -488,10 +485,6 @@
     return formatNumber(value, 0) + " GB";
   }
 
-  function formatCelsius(value) {
-    return value === null ? "--" : formatNumber(value, 1) + "\u00b0C";
-  }
-
   function formatTime(ts) {
     if (!ts) return "--";
     try {
@@ -646,15 +639,12 @@
 
   function combinedHealthSeries(result, diskTotal) {
     var f = result.server.fields;
-    var series = [
+    return [
       { label: "CPU", color: "#2563eb", points: getSeries(result, f.cpu) },
       { label: "RAM", color: "#f59e0b", points: getSeries(result, f.ram) },
       { label: "DISK", color: "#16a34a", points: diskPercentSeries(result, diskTotal) },
       { label: "NET", color: "#0891b2", points: normalizedNetworkSeries(result) }
     ];
-    var temperature = getSeries(result, f.temperature);
-    if (temperature.length) series.push({ label: "TEMP", color: "#ef4444", points: temperature });
-    return series;
   }
 
   function seriesLegend(series) {
@@ -776,7 +766,6 @@
       var f = server.fields;
       var cpu = metricValue(result, f.cpu);
       var ram = metricValue(result, f.ram);
-      var temperature = metricValue(result, f.temperature);
       var netIn = metricValue(result, f.networkIn);
       var netOut = metricValue(result, f.networkOut);
       var diskUsed = metricValue(result, f.diskUsed);
@@ -797,7 +786,6 @@
         + '<div class="shm-card-metrics">'
         + metricHtml("CPU", formatPercent(cpu))
         + metricHtml("RAM", formatPercent(ram))
-        + (temperature === null ? "" : metricHtml(t("cpuTemp", "CPU temp"), formatCelsius(temperature)))
         + metricHtml("Network", formatMbps((netIn || 0) + (netOut || 0)))
         + metricHtml("Disk", formatPercent(diskPercent))
         + '</div>'

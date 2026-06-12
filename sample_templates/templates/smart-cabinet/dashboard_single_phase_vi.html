@@ -302,11 +302,11 @@
     .metric-card strong, .env-card strong { display: block; font-size: 0.96rem; letter-spacing: -0.02em; text-align: center; }
     .metric-value { margin-top: 12px; font-size: clamp(2.2rem, 4vw, 4rem); font-weight: 900; line-height: 1; letter-spacing: -0.05em; text-align: center; }
     .metric-caption { margin-top: 8px; color: color-mix(in srgb, var(--theme-text) 68%, transparent); font-size: 0.84rem; text-align: center; }
-    .motor-shell { position: relative; margin-top: 12px; display: grid; place-items: center; min-height: 186px; }
+    .motor-shell { position: relative; margin-top: 12px; display: grid; place-items: center; min-height: 186px; min-width: 0; }
     .motor-ring {
       --motor-turn: 0deg;
-      width: 168px;
-      height: 168px;
+      width: min(168px, 100%);
+      aspect-ratio: 1;
       border-radius: 999px;
       background:
         radial-gradient(circle at center, var(--theme-card) 0 52%, transparent 53%),
@@ -322,8 +322,8 @@
       pointer-events: none;
     }
     .motor-inner {
-      width: 112px;
-      height: 112px;
+      width: 67%;
+      aspect-ratio: 1;
       border-radius: 999px;
       background: color-mix(in srgb, var(--theme-card) 90%, transparent);
       border: var(--theme-border);
@@ -371,6 +371,10 @@
       .switch-toggle[data-state="off"] .switch-lever { transform: translateY(64px); }
       .switch-toggle[data-state="pending"] .switch-lever,
       .switch-toggle[data-state="offline"] .switch-lever { transform: translateY(32px); }
+      .motor-shell { min-height: 128px; }
+      .motor-ring { width: min(118px, 100%); }
+      .motor-inner strong { font-size: 1.08rem; letter-spacing: 0; }
+      .motor-inner span { font-size: 0.64rem; }
       .chart-head { align-items: flex-start; flex-direction: column; }
       .chart-legend { justify-content: flex-start; }
       .chart-svg { height: 228px; }

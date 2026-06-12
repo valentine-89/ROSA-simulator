@@ -127,7 +127,9 @@
 
   function normalizeByIndex(items, factory) {
     return (Array.isArray(items) ? items : []).map(function (item, index) {
-      return factory(index, item);
+      var next = factory(index, item);
+      if (item && item._advancedOpen && next) next._advancedOpen = true;
+      return next;
     });
   }
 
@@ -267,16 +269,21 @@
   }
 
   function makeWidget(type, index, source) {
-    var label = safeText(source && source.label, (isVi ? "Thẻ " : "Card ") + (index + 1));
+    var defaultLabel = type === "angle" ? (isVi ? "Góc động cơ" : "Motor angle") : (isVi ? "Thẻ " : "Card ") + (index + 1);
+    var label = type === "image" ? safeText(source && source.label, "") : safeText(source && source.label, defaultLabel);
     var base;
     if (type === "switch") {
       base = { type: "switch", label: label, stateField: "O" + (index + 1), commandOn: "D1O" + (index + 1), commandOff: "D2O" + (index + 1), tone: "success" };
     } else if (type === "command") {
       base = { type: "command", label: label, command: "N5", buttonLabel: isVi ? "Chạy" : "Run", tone: "primary" };
+    } else if (type === "angle") {
+      base = { type: "angle", label: label, field: "O" + (index + 1), submitCommand: "D1O" + (index + 1) + "'{value}'", tone: "info" };
     } else if (type === "input") {
       base = { type: "input", label: label, input: { key: "value", valueType: "number", field: "O" + (index + 1) }, submitCommand: "D1O" + (index + 1) + "'{value}'", buttonLabel: isVi ? "Gửi" : "Send", tone: "info" };
     } else if (type === "dual-input") {
       base = { type: "dual-input", label: label, field: "#1010", inputs: [{ key: "low", label: isVi ? "Thấp" : "Low", valueType: "number" }, { key: "high", label: isVi ? "Cao" : "High", valueType: "number" }], submitCommand: "#1010={low},{high}", buttonLabel: isVi ? "Lưu" : "Save", tone: "danger" };
+    } else if (type === "image") {
+      base = { type: "image", label: label, src: safeText(source && (source.src || source.url || source.imageUrl), "/sample_dashboards/basic-cards-dashboard/sample.png"), alt: safeText(label, isVi ? "Ảnh" : "Image"), tone: "primary" };
     } else if (type === "line-chart") {
       base = { type: "line-chart", label: label, field: "temperature", unit: isVi ? "°C" : "°C", digits: 1, range: "24h", yDeltaMin: 10, tone: "warning" };
     } else {
@@ -284,13 +291,18 @@
     }
     var next = Object.assign({}, base, clone(source));
     next.type = type;
+    if (type === "image") {
+      next.src = safeText(next.src || next.url || next.imageUrl, base.src);
+      delete next.url;
+      delete next.imageUrl;
+    }
     if (base.input || source && source.input) next.input = Object.assign({}, clone(base.input), clone(source && source.input));
     if (base.inputs || source && source.inputs) next.inputs = Array.isArray(source && source.inputs) ? clone(source.inputs) : clone(base.inputs);
     return next;
   }
 
   function defaultWidgetType(index) {
-    return ["switch", "telemetry", "command", "input", "dual-input", "line-chart"][index % 6];
+    return ["switch", "telemetry", "command", "angle", "input", "dual-input", "line-chart", "image"][index % 8];
   }
 
   function makeBasicGroup(index, source) {
@@ -571,6 +583,10 @@
       });
       return group;
     });
+    state.items.forEach(function (item, index) {
+      var details = cards[index] && cards[index].querySelector("details");
+      if (item && details && details.open) item._advancedOpen = true;
+    });
   }
 
   function normalizeItems(preserveAdvanced) {
@@ -599,12 +615,13 @@
   }
 
   function cardShell(itemTitle, index, basicHtml, advancedHtml) {
+    var detailsOpen = state.items[index] && state.items[index]._advancedOpen ? " open" : "";
     return '<article class="item-card" data-item-index="' + index + '">'
       + '<div class="item-top"><div class="item-title"><span class="badge">#' + (index + 1) + '</span><strong>' + esc(itemTitle) + '</strong></div>'
       + '<div class="item-actions"><button class="secondary" type="button" data-action="clone-item" data-index="' + index + '">' + esc(text.clone) + '</button>'
       + '<button class="danger" type="button" data-action="delete-item" data-index="' + index + '">' + esc(text.remove) + '</button></div></div>'
       + basicHtml
-      + '<details><summary>' + esc(text.advanced) + '</summary><div class="advanced-body">' + advancedHtml + '</div></details>'
+      + '<details' + detailsOpen + '><summary>' + esc(text.advanced) + '</summary><div class="advanced-body">' + advancedHtml + '</div></details>'
       + '</article>';
   }
 
@@ -622,7 +639,7 @@
   }
 
   function widgetTypeOptions(selected) {
-    var types = ["telemetry", "switch", "command", "input", "dual-input", "line-chart"];
+    var types = ["telemetry", "switch", "command", "angle", "input", "dual-input", "line-chart", "image"];
     return types.map(function (type) {
       return '<option value="' + type + '"' + (type === selected ? " selected" : "") + '>' + type + '</option>';
     }).join("");
@@ -635,11 +652,15 @@
       extra = fieldLine(index, "stateField", widget.stateField) + fieldLine(index, "commandOn", widget.commandOn) + fieldLine(index, "commandOff", widget.commandOff);
     } else if (type === "command") {
       extra = fieldLine(index, "command", widget.command) + fieldLine(index, "buttonLabel", widget.buttonLabel);
+    } else if (type === "angle") {
+      extra = fieldLine(index, "field", widget.field) + fieldLine(index, "submitCommand", widget.submitCommand);
     } else if (type === "input") {
       extra = inputFieldLine(index, "field", widget.input && widget.input.field) + fieldLine(index, "submitCommand", widget.submitCommand) + fieldLine(index, "buttonLabel", widget.buttonLabel);
     } else if (type === "dual-input") {
       extra = fieldLine(index, "field", widget.field) + fieldLine(index, "submitCommand", widget.submitCommand) + fieldLine(index, "buttonLabel", widget.buttonLabel);
-    } else {
+    } else if (type === "image") {
+      extra = fieldLine(index, "src", safeText(widget.src || widget.url || widget.imageUrl, "")) + fieldLine(index, "alt", widget.alt);
+	    } else {
       extra = fieldLine(index, "field", widget.field) + fieldLine(index, "unit", widget.unit) + fieldLine(index, "digits", widget.digits);
       if (type === "line-chart") extra += fieldLine(index, "range", widget.range);
     }
@@ -969,7 +990,9 @@
       return;
     }
     if (action === "clone-item" && index >= 0) {
-      state.items.splice(index + 1, 0, cloneBasic(state.items[index] || {}));
+      var clonedItem = cloneBasic(state.items[index] || {});
+      if (state.items[index] && state.items[index]._advancedOpen) clonedItem._advancedOpen = true;
+      state.items.splice(index + 1, 0, clonedItem);
       normalizeItems(true);
       render();
       return;

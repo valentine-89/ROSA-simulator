@@ -339,23 +339,28 @@
     return next;
   }
 
+  function preserveAdvancedOpen(target, source) {
+    if (source && source._advancedOpen && target) target._advancedOpen = true;
+    return target;
+  }
+
   function normalizeItems(items, preserveAdvanced) {
     if (false) {
       return items.map(function (item, index) {
         var generated = makeControlOnlyGroup(index, item || {});
-        if (!preserveAdvanced) return generated;
+        if (!preserveAdvanced) return preserveAdvancedOpen(generated, item);
         var next = clone(generated);
         next.controls = generated.controls.map(function (control, controlIndex) {
           return mergeControl(control, item && item.controls ? item.controls[controlIndex] : null);
         });
-        return next;
+        return preserveAdvancedOpen(next, item);
       });
     }
 
     if (false) {
       return items.map(function (item, index) {
         var generated = makeSinglePhaseController(index, item || {});
-        if (!preserveAdvanced) return generated;
+        if (!preserveAdvanced) return preserveAdvancedOpen(generated, item);
         var next = clone(generated);
         next.title = generated.title;
         next.sessionId = generated.sessionId;
@@ -367,7 +372,7 @@
         next.controls = generated.controls.map(function (control, controlIndex) {
           return Object.assign({}, control, clone(item && item.controls ? item.controls[controlIndex] : null));
         });
-        return next;
+        return preserveAdvancedOpen(next, item);
       });
     }
 
@@ -375,7 +380,7 @@
     return items.map(function (item, index) {
       var generated = makeThreePhaseItem(index, item || {}, outputCursor);
       outputCursor += generated.motorCount;
-      if (!preserveAdvanced) return generated;
+      if (!preserveAdvanced) return preserveAdvancedOpen(generated, item);
       var next = clone(generated);
       next.title = generated.title;
       next.sessionId = generated.sessionId;
@@ -390,7 +395,7 @@
       Object.keys(next.meters).forEach(function (meterKey) {
         next.meters[meterKey] = Object.assign({}, next.meters[meterKey], clone(sourceMeters[meterKey]));
       });
-      return next;
+      return preserveAdvancedOpen(next, item);
     });
   }
 
@@ -466,6 +471,10 @@
       });
       return item;
     });
+    state.items.forEach(function (item, index) {
+      var details = cards[index] && cards[index].querySelector("details");
+      if (item && details && details.open) item._advancedOpen = true;
+    });
   }
 
   function readAdvancedFields(card, target) {
@@ -534,6 +543,7 @@
   function renderItem(item, index) {
     var basic = '';
     var advanced = '';
+    var detailsOpen = item && item._advancedOpen ? " open" : "";
 
     if (false) {
       basic = '<div class="grid-3">'
@@ -572,7 +582,7 @@
       + '<div class="item-actions"><button class="secondary" type="button" data-action="clone-item" data-index="' + index + '">' + esc(T.clone) + '</button>'
       + '<button class="danger" type="button" data-action="delete-item" data-index="' + index + '">' + esc(T.remove) + '</button></div></div>'
       + basic
-      + '<details><summary>' + esc(T.advanced) + '</summary><div class="advanced-body">' + advanced + '</div></details>'
+      + '<details' + detailsOpen + '><summary>' + esc(T.advanced) + '</summary><div class="advanced-body">' + advanced + '</div></details>'
       + '</article>';
   }
 
@@ -768,7 +778,9 @@
       return;
     }
     if (action === "clone-item" && index >= 0) {
-      state.items.splice(index + 1, 0, cloneBasic(state.items[index] || {}, index));
+      var clonedItem = cloneBasic(state.items[index] || {}, index);
+      if (state.items[index] && state.items[index]._advancedOpen) clonedItem._advancedOpen = true;
+      state.items.splice(index + 1, 0, clonedItem);
       state.items = normalizeItems(state.items, true);
       render();
       return;

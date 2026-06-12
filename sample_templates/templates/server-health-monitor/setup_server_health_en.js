@@ -69,7 +69,6 @@
     return {
       cpu: safeText(fields.cpu, "CPU_Percent"),
       ram: safeText(fields.ram, "RAM_Percent"),
-      temperature: safeText(fields.temperature, "CPU_Temperature_C"),
       networkIn: safeText(fields.networkIn, "Network_In_Mbps"),
       networkOut: safeText(fields.networkOut, "Network_Out_Mbps"),
       diskUsed: safeText(fields.diskUsed, "Disk_Main_Used_GB"),
@@ -219,7 +218,6 @@
       + '<details open><summary>Field telemetry</summary><div class="advanced-body"><div class="grid-3">'
       + fieldInput("CPU %", "cpu", server.fields.cpu)
       + fieldInput("RAM %", "ram", server.fields.ram)
-      + fieldInput("CPU temperature C", "temperature", server.fields.temperature)
       + fieldInput("Network In Mbps", "networkIn", server.fields.networkIn)
       + fieldInput("Network Out Mbps", "networkOut", server.fields.networkOut)
       + fieldInput("Disk used GB", "diskUsed", server.fields.diskUsed)
@@ -273,7 +271,6 @@
         fields: {
           cpu: read('[data-field-key="cpu"]', card),
           ram: read('[data-field-key="ram"]', card),
-          temperature: read('[data-field-key="temperature"]', card),
           networkIn: read('[data-field-key="networkIn"]', card),
           networkOut: read('[data-field-key="networkOut"]', card),
           diskUsed: read('[data-field-key="diskUsed"]', card),

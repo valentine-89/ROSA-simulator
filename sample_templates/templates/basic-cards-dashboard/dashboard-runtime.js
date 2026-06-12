@@ -5,6 +5,6 @@
   }
   var script = document.createElement('script');
   script.id = scriptId;
-  script.src = '/dashboard-basic-cards-engine.js';
+  script.src = '/dashboard-basic-cards-engine.js?v=2026.06.09.2';
   document.head.appendChild(script);
 })();

@@ -127,7 +127,9 @@
 
   function normalizeByIndex(items, factory) {
     return (Array.isArray(items) ? items : []).map(function (item, index) {
-      return factory(index, item);
+      var next = factory(index, item);
+      if (item && item._advancedOpen && next) next._advancedOpen = true;
+      return next;
     });
   }
 
@@ -577,6 +579,10 @@
       });
       return group;
     });
+    state.items.forEach(function (item, index) {
+      var details = cards[index] && cards[index].querySelector("details");
+      if (item && details && details.open) item._advancedOpen = true;
+    });
   }
 
   function normalizeItems(preserveAdvanced) {
@@ -605,12 +611,13 @@
   }
 
   function cardShell(itemTitle, index, basicHtml, advancedHtml) {
+    var detailsOpen = state.items[index] && state.items[index]._advancedOpen ? " open" : "";
     return '<article class="item-card" data-item-index="' + index + '">'
       + '<div class="item-top"><div class="item-title"><span class="badge">#' + (index + 1) + '</span><strong>' + esc(itemTitle) + '</strong></div>'
       + '<div class="item-actions"><button class="secondary" type="button" data-action="clone-item" data-index="' + index + '">' + esc(text.clone) + '</button>'
       + '<button class="danger" type="button" data-action="delete-item" data-index="' + index + '">' + esc(text.remove) + '</button></div></div>'
       + basicHtml
-      + '<details><summary>' + esc(text.advanced) + '</summary><div class="advanced-body">' + advancedHtml + '</div></details>'
+      + '<details' + detailsOpen + '><summary>' + esc(text.advanced) + '</summary><div class="advanced-body">' + advancedHtml + '</div></details>'
       + '</article>';
   }
 
@@ -975,7 +982,9 @@
       return;
     }
     if (action === "clone-item" && index >= 0) {
-      state.items.splice(index + 1, 0, cloneBasic(state.items[index] || {}));
+      var clonedItem = cloneBasic(state.items[index] || {});
+      if (state.items[index] && state.items[index]._advancedOpen) clonedItem._advancedOpen = true;
+      state.items.splice(index + 1, 0, clonedItem);
       normalizeItems(true);
       render();
       return;
