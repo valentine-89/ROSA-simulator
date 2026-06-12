@@ -1,0 +1,1704 @@
+{
+  "io_id": "<<ioid>>",
+  "io_source": "<<io_source>>",
+  "io_console": {
+    "consoleHistory": [
+      "#891;#892;#893",
+      "P?"
+    ],
+    "consolePinned": [
+      "#891;#892;#893"
+    ]
+  },
+  "io_objects": [
+    {
+      "ob_id": 0,
+      "ob_name": "rosa api",
+      "ob_type": "variable",
+      "ob_content": "#801",
+      "ob_value": "rosa.technology/api/<<sessionid>>/<<syncid>>",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 1,
+      "ob_name": "cài đặt ngưỡng nhiệt",
+      "ob_type": "variable",
+      "ob_content": "#1010",
+      "ob_value": "10,42",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 2,
+      "ob_name": "cài đặt ngưỡng dòng",
+      "ob_type": "variable",
+      "ob_content": "#1011",
+      "ob_value": "1,10",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 4,
+      "ob_name": "câu báo lỗi gãy trục",
+      "ob_type": "variable",
+      "ob_content": "#1051",
+      "ob_value": "Bơm hư: ",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 5,
+      "ob_name": "câu báo lỗi quá dòng",
+      "ob_type": "variable",
+      "ob_content": "#1052",
+      "ob_value": "Dòng điện cao: ",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 6,
+      "ob_name": "ds lỗi các ao",
+      "ob_type": "variable",
+      "ob_content": "#101",
+      "ob_value": null,
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 8,
+      "ob_name": "cho phép sử dụng ao 1",
+      "ob_type": "variable",
+      "ob_content": "#1003",
+      "ob_value": "ON,OFF,OFF,OFF",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 9,
+      "ob_name": "câu báo tắt báo động",
+      "ob_type": "variable",
+      "ob_content": "#1053",
+      "ob_value": "Nhân viên tắt báo động",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 10,
+      "ob_name": "mã ao",
+      "ob_type": "variable",
+      "ob_content": "#1001",
+      "ob_value": "A1,A2,A3,A4",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 11,
+      "ob_name": "số điện thoại báo động",
+      "ob_type": "variable",
+      "ob_content": "#1002",
+      "ob_value": "0123456789,0123456789,0123456789,0123456789",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 12,
+      "ob_name": "số điện thoại quản lý",
+      "ob_type": "variable",
+      "ob_content": "#1004",
+      "ob_value": "0123456789",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 13,
+      "ob_name": "thông tin hẹn giờ 1",
+      "ob_type": "variable",
+      "ob_content": "#1021",
+      "ob_value": "0000,disable,ON,1,2",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 14,
+      "ob_name": "thông tin hẹn giờ 2",
+      "ob_type": "variable",
+      "ob_content": "#1022",
+      "ob_value": "0000,disable,ON,1,2",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 15,
+      "ob_name": "thông tin hẹn giờ 3",
+      "ob_type": "variable",
+      "ob_content": "#1023",
+      "ob_value": "null",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 16,
+      "ob_name": "thông tin hẹn giờ 4",
+      "ob_type": "variable",
+      "ob_content": "#1024",
+      "ob_value": "",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 17,
+      "ob_name": "thông tin hẹn giờ 5",
+      "ob_type": "variable",
+      "ob_content": "#1025",
+      "ob_value": "",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 18,
+      "ob_name": "khung giờ chạy",
+      "ob_type": "variable",
+      "ob_content": "#1005",
+      "ob_value": "0600,0700",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 19,
+      "ob_name": "khung giờ ngừng",
+      "ob_type": "variable",
+      "ob_content": "#1006",
+      "ob_value": "0000,0500",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 20,
+      "ob_name": "công tắt 1",
+      "ob_type": "output",
+      "ob_mac": "IO26-O1",
+      "ob_content": "O1",
+      "ob_desc": "",
+      "ob_state": 1,
+      "ob_config": [
+        {
+          "ev_id": 1776421210497,
+          "ev_content": "O1",
+          "ev_key": "MODE",
+          "ev_value": "PWM",
+          "ev_state": 1
+        },
+        {
+          "ev_id": 1776421212165,
+          "ev_content": "O1",
+          "ev_key": "FREQ",
+          "ev_value": 1000,
+          "ev_state": 1
+        }
+      ]
+    },
+    {
+      "ob_id": 21,
+      "ob_name": "công tắt 2",
+      "ob_type": "output",
+      "ob_mac": "IO26-O2",
+      "ob_content": "O2",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 22,
+      "ob_name": "số hẹn giờ mỗi ao",
+      "ob_type": "variable",
+      "ob_content": "#1007",
+      "ob_value": "4",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 23,
+      "ob_name": "tham số ao 1 cũ",
+      "ob_type": "variable",
+      "ob_content": "#117",
+      "ob_value": null,
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 24,
+      "ob_name": "tham số ao 2 cũ",
+      "ob_type": "variable",
+      "ob_content": "#118",
+      "ob_value": null,
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 25,
+      "ob_name": "tham số ao 3 cũ",
+      "ob_type": "variable",
+      "ob_content": "#119",
+      "ob_value": null,
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 26,
+      "ob_name": "tham số ao 4 cũ",
+      "ob_type": "variable",
+      "ob_content": "#120",
+      "ob_value": null,
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 27,
+      "ob_name": "câu báo bật sai giờ",
+      "ob_type": "variable",
+      "ob_content": "#1054",
+      "ob_value": "bật sai khung giờ",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 28,
+      "ob_name": "câu báo tắt sai giờ",
+      "ob_type": "variable",
+      "ob_content": "#1055",
+      "ob_value": "chưa bật bơm trong khung giờ",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 29,
+      "ob_name": "ds trạng thái bơm cũ",
+      "ob_type": "variable",
+      "ob_content": "#102",
+      "ob_value": null,
+      "ob_desc": "trạng thái chung, bật 1 bơm thì vẫn xem là ao có bật",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 30,
+      "ob_name": "câu báo mất kết nối",
+      "ob_type": "variable",
+      "ob_content": "#1056",
+      "ob_value": "mất điện",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 31,
+      "ob_name": "rosa api log chung",
+      "ob_type": "variable",
+      "ob_content": "#802",
+      "ob_value": "rosa.technology/api/<<sessionid>>/<<syncid>>",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 32,
+      "ob_name": "điện kế 3 pha a11",
+      "ob_type": "input",
+      "ob_mac": "U264glftCk-EMETER",
+      "ob_content": "I101",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 33,
+      "ob_name": "mô tơ a11",
+      "ob_type": "output",
+      "ob_mac": "U264glftCk-OUT1",
+      "ob_content": "O101",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 34,
+      "ob_name": "điện kế 3 pha a12",
+      "ob_type": "input",
+      "ob_mac": "U264AbHmtC-EMETER",
+      "ob_content": "I102",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 35,
+      "ob_name": "mô tơ a12",
+      "ob_type": "output",
+      "ob_mac": "U264AbHmtC-OUT1",
+      "ob_content": "O102",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 36,
+      "ob_name": "điện kế 3 pha a21",
+      "ob_type": "input",
+      "ob_mac": "U264hlIYiK-EMETER",
+      "ob_content": "I103",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 37,
+      "ob_name": "mô tơ a21",
+      "ob_type": "output",
+      "ob_mac": "U264hlIYiK-OUT1",
+      "ob_content": "O103",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 38,
+      "ob_name": "chu kỳ quét hiện tại",
+      "ob_type": "variable",
+      "ob_content": "#103",
+      "ob_value": null,
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 39,
+      "ob_name": "điện kế 3 pha a22",
+      "ob_type": "input",
+      "ob_mac": "U264isHWBo-EMETER",
+      "ob_content": "I104",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 40,
+      "ob_name": "mô tơ a22",
+      "ob_type": "output",
+      "ob_mac": "U264isHWBo-OUT1",
+      "ob_content": "O104",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 41,
+      "ob_name": "điện kế 3 pha a31",
+      "ob_type": "input",
+      "ob_mac": "U264sxJnzo-EMETER",
+      "ob_content": "I105",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 42,
+      "ob_name": "mô tơ a31",
+      "ob_type": "output",
+      "ob_mac": "U264sxJnzo-OUT1",
+      "ob_content": "O105",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 43,
+      "ob_name": "điện kế 3 pha a32",
+      "ob_type": "input",
+      "ob_mac": "U264LlwcXr-EMETER",
+      "ob_content": "I106",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 44,
+      "ob_name": "mô tơ a32",
+      "ob_type": "output",
+      "ob_mac": "U264LlwcXr-OUT1",
+      "ob_content": "O106",
+      "ob_desc": "",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 45,
+      "ob_name": "nguồn",
+      "ob_type": "input",
+      "ob_mac": "IO26-PWR",
+      "ob_content": "I99",
+      "ob_desc": "",
+      "ob_state": 1
+    }
+  ],
+  "io_actions": [],
+  "io_events": [],
+  "io_programs": [
+    {
+      "io_group_id": 0,
+      "io_group": "Chương trình chính",
+      "io_group_desc": "",
+      "io_n_list": [
+        {
+          "n_id": "1",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "I99-1\nW5\nL(\n  D4#103,#904-#3\n  D4#3,#904\n  [#1003.1=\"ON\"](D1O1'2'D6N41,#1D2O1[#891>0](W3)(W2))\n  [#1003.2=\"ON\"](D1O1'2'D6N42,#1D2O1[#891>0](W3)(W2))\n  [#1003.3=\"ON\"](D1O1'2'D6N43,#1D2O1[#891>0](W3)(W2))\n  [#1003.4=\"ON\"](D1O1'2'D6N44,#1D2O1[#891>0](W3)(W2))\n  [#891>10](W10)\n  [#1003<>#2|#1%60=0](\n    D4#2,#1003\n    D23,#801,,\"telemetry\",\"#1003.1=\"#1003.1,\"#1003.2=\"#1003.2,\"#1003.3=\"#1003.3,\"#1003.4=\"#1003.4\n  )\n  D4#1,#1+1\n)",
+          "n_natural": "",
+          "n_name": "cập nhật chung"
+        },
+        {
+          "n_id": "2",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "//nếu 2 bơm không lỗi thì gửi chung để tiết kiệm số lần gửi\n[(#2<>\"ERROR\"&#6<>\"ERROR\")](\n  D23,#801,,\"timeseries\",\"Voltage\"#1.1\"_V=\"#2,\"Current\"#1.1\"_A1=\"#3,\"Current\"#1.1\"_A2=\"#4,\"Current\"#1.1\"_A3=\"#5,\"Voltage\"#1.2\"_V=\"#6,\"Current\"#1.2\"_A1=\"#7,\"Current\"#1.2\"_A2=\"#8,\"Current\"#1.2\"_A3=\"#9\n)(\n  [#2<>\"ERROR\"](\n    D23,#801,,\"timeseries\",\"Voltage\"#1.1\"_V=\"#2,\"Current\"#1.1\"_A1=\"#3,\"Current\"#1.1\"_A2=\"#4,\"Current\"#1.1\"_A3=\"#5\n  )\n  [#6<>\"ERROR\"](\n    D23,#801,,\"timeseries\",\"Voltage\"#1.2\"_V=\"#6,\"Current\"#1.2\"_A1=\"#7,\"Current\"#1.2\"_A2=\"#8,\"Current\"#1.2\"_A3=\"#9\n  )\n)\n",
+          "n_natural": "",
+          "n_name": "gửi timeseries",
+          "n_desc": ""
+        },
+        {
+          "n_id": "41",
+          "n_mode": "1",
+          "n_local_def": [
+            {
+              "l_id": 70896,
+              "l_type": "variable",
+              "l_cm": "#3",
+              "l_natural": "thông tin bơm 2"
+            },
+            {
+              "l_id": 75888,
+              "l_type": "variable",
+              "l_cm": "#2",
+              "l_natural": "thông tin bơm 1"
+            },
+            {
+              "l_id": 26011,
+              "l_type": "variable",
+              "l_cm": "#1",
+              "l_natural": "timer đếm tới"
+            }
+          ],
+          "n_content": "D4#2,I101\nD4#3,I102\nD6N2,\"11,12\",#2.1,#2.8,#2.9,#2.10,#3.1,#3.8,#3.9,#3.10\n//kiểm tra tình trạng và báo lỗi\nD6,#4,N102,#2.8,#2.9,#2.10,#2.11\nD6,#5,N102,#3.8,#3.9,#3.10,#3.11\n//#5 chứa lỗi chung của 2 bơm\n[#5=\"null\"](D4#5,#4)  //#5 không lỗi thì copy từ #4\nD5N7,#2.11#3.11,#5.1,#5.2\n\n//các cập nhật chậm khác\nD4#5,#2.11\",\"#3.11\",\"#1002\",\"#1003\",\"#1004\",\"#1005\",\"#1006\",\"#1010\",\"#1011\",\"#1021\",\"#1022\",\"#1023\",\"#1024\n//cập nhật khi thay đổi hoặc mỗi 5 phút (60*5)\n[(#5<>#117|#1%60=0)](\n  D4#117,#5\n  D23,#801,,\"timeseries\",\"Temper11=\"#2.12,\"Temper12=\"#3.12\n  D21,#801,\"telemetry\",\"#1021=\"#1021,\"#1022=\"#1022,\"#1023=\"#1023,\"#1024=\"#1024,\"O101=\"#2.11,\"O102=\"#3.11,\"Energy11_Wh=\"#2.6,\"Energy12_Wh=\"#3.6\n  //các tham số dùng chung nhiều ao\n  D21,#801,\"telemetry\",\"#1002=\"#1002,\"#1004=\"#1004,\"#1005=\"#1005,\"#1006=\"#1006,\"#1010=\"#1010,\"#1011=\"#1011\n)\n",
+          "n_natural": "",
+          "n_name": "cập nhật ao 1",
+          "n_desc": ""
+        },
+        {
+          "n_id": "42",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "D4#2,I103\nD4#3,I104\nD6N2,\"21,22\",#2.1,#2.8,#2.9,#2.10,#3.1,#3.8,#3.9,#3.10\n//kiểm tra tình trạng và báo lỗi\nD6,#4,N102,#2.8,#2.9,#2.10,#2.11\nD6,#5,N102,#3.8,#3.9,#3.10,#3.11\n//#6 chứa lỗi chung của 2 bơm\n[#5=\"null\"](D4#5,#4)  //#6 không lỗi thì copy từ #5\nD5N8,#2.11#3.11,#5.1,#5.2\n\nD4#5,#2.11\",\"#3.11\",\"#1002\",\"#1003\",\"#1004\",\"#1005\",\"#1006\",\"#1010\",\"#1011\",\"#1021\",\"#1022\",\"#1023\",\"#1024\n//cập nhật khi thay đổi hoặc mỗi 5 phút (60*5)\n[(#5<>#118|#1%60=0)](\n  D4#118,#5\n  D23,#801,,\"timeseries\",\"Temper21=\"#2.12,\"Temper22=\"#3.12\n  D21,#801,\"telemetry\",\"#1025=\"#1025,\"#1026=\"#1026,\"#1027=\"#1027,\"#1028=\"#1028,\"O103=\"#2.11,\"O104=\"#3.11,\"Energy21_Wh=\"#2.6,\"Energy22_Wh=\"#3.6\n)",
+          "n_natural": "",
+          "n_name": "cập nhật ao 2",
+          "n_desc": ""
+        },
+        {
+          "n_id": "43",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "D4#2,I105\nD4#3,I106\nD6N2,\"31,32\",#2.1,#2.8,#2.9,#2.10,#3.1,#3.8,#3.9,#3.10\n//kiểm tra tình trạng và báo lỗi\nD6,#4,N102,#2.8,#2.9,#2.10,#2.11\nD6,#5,N102,#3.8,#3.9,#3.10,#3.11\n//#6 chứa lỗi chung của 2 bơm\n[#5=\"null\"](D4#5,#4)  //#6 không lỗi thì copy từ #5\nD5N9,#2.11#3.11,#5.1,#5.2\n\nD4#5,#2.11\",\"#3.11\",\"#1002\",\"#1003\",\"#1004\",\"#1005\",\"#1006\",\"#1010\",\"#1011\",\"#1021\",\"#1022\",\"#1023\",\"#1024\n//cập nhật khi thay đổi hoặc mỗi 5 phút (60*5)\n[(#5<>#119|#1%60=0)](\n  D4#119,#5\n  D23,#801,,\"timeseries\",\"Temper31=\"#2.12,\"Temper32=\"#3.12\n  D21,#801,\"telemetry\",\"#1029=\"#1029,\"#1030=\"#1030,\"#1031=\"#1031,\"#1032=\"#1032,\"O105=\"#2.11,\"O106=\"#3.11,\"Energy31_Wh=\"#2.6,\"Energy32_Wh=\"#3.6\n)\n",
+          "n_natural": "",
+          "n_name": "cập nhật ao 3",
+          "n_desc": ""
+        },
+        {
+          "n_id": "44",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "D4#2,I107\nD4#3,I108\nD6N2,\"41,42\",#2.1,#2.8,#2.9,#2.10,#3.1,#3.8,#3.9,#3.10\n//kiểm tra tình trạng và báo lỗi\nD6,#4,N102,#2.8,#2.9,#2.10,#2.11\nD6,#5,N102,#3.8,#3.9,#3.10,#3.11\n//#6 chứa lỗi chung của 2 bơm\n[#5=\"null\"](D4#5,#4)  //#6 không lỗi thì copy từ #5\nD5N10,#2.11#3.11,#5.1,#5.2\n\nD4#5,#2.11\",\"#3.11\",\"#1002\",\"#1003\",\"#1004\",\"#1005\",\"#1006\",\"#1010\",\"#1011\",\"#1021\",\"#1022\",\"#1023\",\"#1024\n//cập nhật khi thay đổi hoặc mỗi 5 phút (60*5)\n[(#5<>#120|#1%60=0)](\n  D4#120,#5\n  D23,#801,,\"timeseries\",\"Temper41=\"#2.12,\"Temper42=\"#3.12\n  D21,#801,\"telemetry\",\"#1033=\"#1033,\"#1034=\"#1034,\"#1035=\"#1035,\"#1036=\"#1036,\"O107=\"#2.11,\"O108=\"#3.11,\"Energy41_Wh=\"#2.6,\"Energy42_Wh=\"#3.6\n)",
+          "n_natural": "",
+          "n_name": "cập nhật ao 4",
+          "n_desc": ""
+        }
+      ]
+    },
+    {
+      "io_group_id": 4,
+      "io_group": "API",
+      "io_group_desc": "",
+      "io_n_list": [
+        {
+          "n_id": "3",
+          "n_mode": "1",
+          "n_local_def": [
+            {
+              "l_id": 87225,
+              "l_type": "variable",
+              "l_cm": "#4",
+              "l_natural": "email"
+            },
+            {
+              "l_id": 91645,
+              "l_type": "variable",
+              "l_cm": "#3",
+              "l_natural": "loại hành động"
+            },
+            {
+              "l_id": 82886,
+              "l_type": "variable",
+              "l_cm": "#2",
+              "l_natural": "mã bơm"
+            },
+            {
+              "l_id": 52146,
+              "l_type": "variable",
+              "l_cm": "#1",
+              "l_natural": "mã ao"
+            }
+          ],
+          "n_content": "[#4=\"\"](D9\"không có quyền điều khiển\")\n//tính ra mã ngoại vi\nD4#5,(#1-1)*2+100+#2\n[#3=\"ON\"](D1O#5D5N101,#1,\"on\",\"bật bơm \"#2\" bằng tay\",#4)\n[#3=\"OFF\"](D2O#5D5N101,#1,\"off\",\"tắt O1 bằng tay\",#4)\nD21,#801,\"telemetry\",\"O\"#5\"=\"O#5\nD9\"Điều khiển thành công O\"#5",
+          "n_natural": "",
+          "n_name": "điều khiển từ xa",
+          "n_desc": "",
+          "n_returncm": true
+        },
+        {
+          "n_id": "4",
+          "n_mode": "1",
+          "n_local_def": [
+            {
+              "l_id": 77779,
+              "l_type": "variable",
+              "l_cm": "#2",
+              "l_natural": "mã ao"
+            },
+            {
+              "l_id": 45302,
+              "l_type": "variable",
+              "l_cm": "#1",
+              "l_natural": "email"
+            }
+          ],
+          "n_content": "[#1=\"\"](D9\"Cần đăng nhập\")\n[(#2=0|#2>4)](D9\"Mã ao phải 1-4\")\nD4#3,#2+10\nD15N#3\t\t    //tạm dừng quy trình báo động\nD21,#801,\"telemetry\",\"alarm\"#2\"=\"\t//xóa thông báo\nD6N101,#2,\"alarm_off\",#1053,#1",
+          "n_natural": "",
+          "n_name": "tắt báo động",
+          "n_desc": ""
+        }
+      ]
+    },
+    {
+      "io_group_id": 3,
+      "io_group": "Kiểm tra lỗi",
+      "io_group_desc": "",
+      "io_n_list": [
+        {
+          "n_id": "7",
+          "n_mode": "1",
+          "n_local_def": [
+            {
+              "l_id": 67341,
+              "l_type": "variable",
+              "l_cm": "#3",
+              "l_natural": "thông tin bổ sung ví dụ dòng điện"
+            },
+            {
+              "l_id": 38475,
+              "l_type": "variable",
+              "l_cm": "#2",
+              "l_natural": "mã lỗi"
+            },
+            {
+              "l_id": 93413,
+              "l_type": "variable",
+              "l_cm": "#1",
+              "l_natural": "trạng thái bơm cũ"
+            }
+          ],
+          "n_content": "//nếu đã bật ON và trạng thái đã từng cập nhật (sau 5 giây)\n[#1=#102.1](\n  //có lỗi thì báo động và ghi cờ\n  [#101.1<>#2](\n    [#2:\"shaft_break\",\"overload\",\"off_time\",\"on_time\",\"disconnect\"]\n    (D5N101,1,#2,#1051#3D5N11,#1001.1\" \"#1051#3)\n    (D5N101,1,#2,#1052#3D5N11,#1001.1\" \"#1052#3)\n    (D5N101,1,#2,#1054D5N11,#1001.1\" \"#1054)\n    (D5N101,1,#2,#1055D5N11,#1001.1\" \"#1055)\n    (D5N101,1,#2,#1056D5N11,#1001.1\" \"#1056)\n  )\n  //không còn lỗi nào thì xóa cờ và hủy báo động\n  [#2=\"null\"](\n    D14N11\n    [#101.1<>\"null\"](D6N103,\"alarm1=\")\n  )\n  D4#101.1,#2\n)\nD4#102.1,#1\n",
+          "n_natural": "",
+          "n_name": "kiểm tra lỗi ao 1",
+          "n_desc": ""
+        },
+        {
+          "n_id": "8",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "//nếu đã bật ON và trạng thái đã từng cập nhật (sau 5 giây)\n[#1=#102.2](\n  //có lỗi thì báo động và ghi cờ\n  [#101.2<>#2](\n    [#2:\"shaft_break\",\"overload\",\"off_time\",\"on_time\",\"disconnect\"]\n    (D5N101,2,#2,#1051#3D5N12,#1001.2\" \"#1051#3)\n    (D5N101,2,#2,#1052#3D5N12,#1001.2\" \"#1052#3)\n    (D5N101,2,#2,#1054D5N12,#1001.2\" \"#1054)\n    (D5N101,2,#2,#1055D5N12,#1001.2\" \"#1055)\n    (D5N101,2,#2,#1056D5N12,#1001.2\" \"#1056)\n  )\n  //không còn lỗi nào thì xóa cờ và hủy báo động\n  [#2=\"null\"](\n    D14N12\n    [#101.2<>\"null\"](D6N103,\"alarm2=\")\n  )\n  D4#101.2,#2\n)\nD4#102.2,#1\n",
+          "n_natural": "",
+          "n_name": "kiểm tra lỗi ao 2",
+          "n_desc": ""
+        },
+        {
+          "n_id": "9",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "//nếu đã bật ON và trạng thái đã từng cập nhật (sau 5 giây)\n[#1=#102.3](\n  //có lỗi thì báo động và ghi cờ\n  [#101.3<>#2](\n    [#2:\"shaft_break\",\"overload\",\"off_time\",\"on_time\",\"disconnect\"]\n    (D5N101,3,#2,#1051#3D5N13,#1001.3\" \"#1051#3)\n    (D5N101,3,#2,#1052#3D5N13,#1001.3\" \"#1052#3)\n    (D5N101,3,#2,#1054D5N13,#1001.3\" \"#1054)\n    (D5N101,3,#2,#1055D5N13,#1001.3\" \"#1055)\n    (D5N101,3,#2,#1056D5N13,#1001.3\" \"#1056)\n  )\n  //không còn lỗi nào thì xóa cờ và hủy báo động\n  [#2=\"null\"](\n    D14N13\n    [#101.3<>\"null\"](D6N103,\"alarm3=\")\n  )\n  D4#101.3,#2\n)\nD4#102.3,#1\n",
+          "n_natural": "",
+          "n_name": "kiểm tra lỗi ao 3",
+          "n_desc": ""
+        },
+        {
+          "n_id": "10",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "//nếu đã bật ON và trạng thái đã từng cập nhật (sau 5 giây)\n[#1=#102.4](\n  //có lỗi thì báo động và ghi cờ\n  [#101.4<>#2](\n    [#2:\"shaft_break\",\"overload\",\"off_time\",\"on_time\",\"disconnect\"]\n    (D5N101,4,#2,#1051#3D5N14,#1001.4\" \"#1051#3)\n    (D5N101,4,#2,#1052#3D5N14,#1001.4\" \"#1052#3)\n    (D5N101,4,#2,#1054D5N14,#1001.4\" \"#1054)\n    (D5N101,4,#2,#1055D5N14,#1001.4\" \"#1055)\n    (D5N101,4,#2,#1056D5N14,#1001.4\" \"#1056)\n  )\n  //không còn lỗi nào thì xóa cờ và hủy báo động\n  [#2=\"null\"](\n    D14N14\n    [#101.4<>\"null\"](D6N103,\"alarm4=\")\n  )\n  D4#101.4,#2\n)\nD4#102.4,#1\n",
+          "n_natural": "",
+          "n_name": "kiểm tra lỗi ao 4",
+          "n_desc": ""
+        },
+        {
+          "n_id": "11",
+          "n_mode": "4",
+          "n_local_def": [
+            {
+              "l_id": 44379,
+              "l_type": "variable",
+              "l_cm": "#1",
+              "l_natural": "nội dung báo động"
+            }
+          ],
+          "n_content": "D6N103,\"alarm1=\"#1\nD12,#1002.1,#1\nW10\nD13,#1002.1\nW300\nD13,#1004",
+          "n_natural": "",
+          "n_name": "báo động ao 1",
+          "n_desc": ""
+        },
+        {
+          "n_id": "12",
+          "n_mode": "4",
+          "n_local_def": [],
+          "n_content": "D6N103,\"alarm2=\"#1\nD12,#1002.2,#1\nW10\nD13,#1002.2\nW300\nD13,#1004",
+          "n_natural": "",
+          "n_name": "báo động ao 2",
+          "n_desc": ""
+        },
+        {
+          "n_id": "13",
+          "n_mode": "4",
+          "n_local_def": [],
+          "n_content": "D6N103,\"alarm3=\"#1\nD12,#1002.3,#1\nW10\nD13,#1002.3\nW300\nD13,#1004",
+          "n_natural": "",
+          "n_name": "báo động ao 3",
+          "n_desc": ""
+        },
+        {
+          "n_id": "14",
+          "n_mode": "4",
+          "n_local_def": [],
+          "n_content": "D6N103,\"alarm4=\"#1\nD12,#1002.4,#1\nW10\nD13,#1002.4\nW300\nD13,#1004",
+          "n_natural": "",
+          "n_name": "báo động ao 4",
+          "n_desc": ""
+        }
+      ]
+    },
+    {
+      "io_group_id": 2,
+      "io_group": "Chương trình con",
+      "io_group_desc": "",
+      "io_n_list": [
+        {
+          "n_id": "101",
+          "n_mode": "1",
+          "n_local_def": [
+            {
+              "l_id": 38754,
+              "l_type": "variable",
+              "l_cm": "#1",
+              "l_natural": "thứ tự ao"
+            }
+          ],
+          "n_content": "D21,#802,\"data\",\"IO-pond-event-log\",#1001.#1,#2,#3,#4\n//D23,#801,,\"telegram\",#905\": \"#1\" - \"#2\n",
+          "n_natural": "",
+          "n_name": "ghi log",
+          "n_desc": ""
+        },
+        {
+          "n_id": "102",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "[#4=\"\"](D9\"disconnect\")\n[#4=\"ON\"](\n  [(#1<#1011.1|#2<#1011.1|#3<#1011.1)](D9\"shaft_break,\"#1\"|\"#2\"|\"#3)\n  [(#1>#1011.2|#2>#1011.2|#3>#1011.2)](D9\"overload,\"#1\"|\"#2\"|\"#3)\n  D6,#5,N104,#1006[#5=\"IN\"](D9\"off_time\")\n)(\n  D6,#5,N104,#1005[#5=\"IN\"](D9\"on_time\")\n)\nD9\"null\"",
+          "n_natural": "",
+          "n_name": "kiểm tra dòng điện",
+          "n_desc": ""
+        },
+        {
+          "n_id": "103",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "D21,#801,\"telemetry\",#1,#2,#3,#4,#5,#6,#7//,#8,#9,#10",
+          "n_natural": "",
+          "n_name": "cập nhật telemetry",
+          "n_desc": ""
+        },
+        {
+          "n_id": "104",
+          "n_mode": "1",
+          "n_local_def": [
+            {
+              "l_id": 86896,
+              "l_type": "variable",
+              "l_cm": "#1",
+              "l_natural": "thời gian bắt đầu, kết thúc"
+            }
+          ],
+          "n_content": "D4#2,#911#912\t//giờ phút hiện tại\n[#1.1>#1.2](        //khung giờ xuyên ngày\n  [#1.1<#2|#1.2>#2](D9\"IN\")\n)(\n  [#1.1<#2&#1.2>#2](D9\"IN\")\n)\nD9\"OUT\"",
+          "n_natural": "",
+          "n_name": "kiểm tra khung giờ",
+          "n_desc": ""
+        }
+      ]
+    },
+    {
+      "io_group_id": 1,
+      "io_group": "Hẹn giờ điều khiển",
+      "io_group_desc": "",
+      "io_n_list": [
+        {
+          "n_id": "21",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1021[#1021.2=\"enable\"](\n  D4#1,#1021.4\n  [#1<>\"\"](\n    [#1021.3=\"ON\"](D1O101D5N101,1,\"on\",\"từ hẹn giờ 11\")(D2O101D5N101,1,\"off\",\"từ hẹn giờ 11\")\n  )\n  D4#1,#1021.5\n  [#1<>\"\"](\n    [#1021.3=\"ON\"](D1O102D5N101,1,\"on\",\"từ hẹn giờ 11\")(D2O102D5N101,1,\"off\",\"từ hẹn giờ 11\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 11"
+        },
+        {
+          "n_id": "22",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1022[#1022.2=\"enable\"](\n  D4#1,#1022.4\n  [#1<>\"\"](\n    [#1022.3=\"ON\"](D1O101D5N101,1,\"on\",\"từ hẹn giờ 12\")(D2O101D5N101,1,\"off\",\"từ hẹn giờ 12\")\n  )\n  D4#1,#1022.5\n  [#1<>\"\"](\n    [#1022.3=\"ON\"](D1O102D5N101,1,\"on\",\"từ hẹn giờ 12\")(D2O102D5N101,1,\"off\",\"từ hẹn giờ 12\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 12"
+        },
+        {
+          "n_id": "23",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1023[#1023.2=\"enable\"](\n  D4#1,#1023.4\n  [#1<>\"\"](\n    [#1023.3=\"ON\"](D1O101D5N101,1,\"on\",\"từ hẹn giờ 13\")(D2O101D5N101,1,\"off\",\"từ hẹn giờ 13\")\n  )\n  D4#1,#1023.5\n  [#1<>\"\"](\n    [#1023.3=\"ON\"](D1O102D5N101,1,\"on\",\"từ hẹn giờ 13\")(D2O102D5N101,1,\"off\",\"từ hẹn giờ 13\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 13"
+        },
+        {
+          "n_id": "24",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1024[#1024.2=\"enable\"](\n  D4#1,#1024.4\n  [#1<>\"\"](\n    [#1024.3=\"ON\"](D1O101D5N101,1,\"on\",\"từ hẹn giờ 14\")(D2O101D5N101,1,\"off\",\"từ hẹn giờ 14\")\n  )\n  D4#1,#1024.5\n  [#1<>\"\"](\n    [#1024.3=\"ON\"](D1O102D5N101,1,\"on\",\"từ hẹn giờ 14\")(D2O102D5N101,1,\"off\",\"từ hẹn giờ 14\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 14"
+        },
+        {
+          "n_id": "25",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1025[#1025.2=\"enable\"](\n  D4#1,#1025.4\n  [#1<>\"\"](\n    [#1025.3=\"ON\"](D1O103D5N101,2,\"on\",\"từ hẹn giờ 21\")(D2O103D5N101,2,\"off\",\"từ hẹn giờ 21\")\n  )\n  D4#1,#1025.5\n  [#1<>\"\"](\n    [#1025.3=\"ON\"](D1O104D5N101,2,\"on\",\"từ hẹn giờ 21\")(D2O104D5N101,2,\"off\",\"từ hẹn giờ 21\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 21",
+          "n_desc": ""
+        },
+        {
+          "n_id": "26",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1026[#1026.2=\"enable\"](\n  D4#1,#1026.4\n  [#1<>\"\"](\n    [#1026.3=\"ON\"](D1O103D5N101,2,\"on\",\"từ hẹn giờ 22\")(D2O103D5N101,2,\"off\",\"từ hẹn giờ 22\")\n  )\n  D4#1,#1026.5\n  [#1<>\"\"](\n    [#1026.3=\"ON\"](D1O104D5N101,2,\"on\",\"từ hẹn giờ 22\")(D2O104D5N101,2,\"off\",\"từ hẹn giờ 22\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 22",
+          "n_desc": ""
+        },
+        {
+          "n_id": "27",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1027[#1027.2=\"enable\"](\n  D4#1,#1027.4\n  [#1<>\"\"](\n    [#1027.3=\"ON\"](D1O103D5N101,2,\"on\",\"từ hẹn giờ 1\")(D2O103D5N101,2,\"off\",\"từ hẹn giờ 1\")\n  )\n  D4#1,#1027.5\n  [#1<>\"\"](\n    [#1027.3=\"ON\"](D1O104D5N101,2,\"on\",\"từ hẹn giờ 1\")(D2O104D5N101,2,\"off\",\"từ hẹn giờ 1\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 23",
+          "n_desc": ""
+        },
+        {
+          "n_id": "28",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1028[#1028.2=\"enable\"](\n  D4#1,#1028.4\n  [#1<>\"\"](\n    [#1028.3=\"ON\"](D1O103D5N101,2,\"on\",\"từ hẹn giờ 24\")(D2O103D5N101,2,\"off\",\"từ hẹn giờ 24\")\n  )\n  D4#1,#1028.5\n  [#1<>\"\"](\n    [#1028.3=\"ON\"](D1O104D5N101,2,\"on\",\"từ hẹn giờ 24\")(D2O104D5N101,2,\"off\",\"từ hẹn giờ 24\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 24",
+          "n_desc": ""
+        },
+        {
+          "n_id": "29",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1029[#1029.2=\"enable\"](\n  D4#1,#1029.4\n  [#1<>\"\"](\n    [#1029.3=\"ON\"](D1O105D5N101,3,\"on\",\"từ hẹn giờ 31\")(D2O105D5N101,3,\"off\",\"từ hẹn giờ 31\")\n  )\n  D4#1,#1029.5\n  [#1<>\"\"](\n    [#1029.3=\"ON\"](D1O106D5N101,3,\"on\",\"từ hẹn giờ 31\")(D2O106D5N101,3,\"off\",\"từ hẹn giờ 31\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 31",
+          "n_desc": ""
+        },
+        {
+          "n_id": "30",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1030[#1030.2=\"enable\"](\n  D4#1,#1030.4\n  [#1<>\"\"](\n    [#1030.3=\"ON\"](D1O105D5N101,3,\"on\",\"từ hẹn giờ 32\")(D2O105D5N101,3,\"off\",\"từ hẹn giờ 32\")\n  )\n  D4#1,#1030.5\n  [#1<>\"\"](\n    [#1030.3=\"ON\"](D1O106D5N101,3,\"on\",\"từ hẹn giờ 32\")(D2O106D5N101,3,\"off\",\"từ hẹn giờ 32\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 32",
+          "n_desc": ""
+        },
+        {
+          "n_id": "31",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1031[#1031.2=\"enable\"](\n  D4#1,#1031.4\n  [#1<>\"\"](\n    [#1031.3=\"ON\"](D1O105D5N101,3,\"on\",\"từ hẹn giờ 33\")(D2O105D5N101,3,\"off\",\"từ hẹn giờ 33\")\n  )\n  D4#1,#1031.5\n  [#1<>\"\"](\n    [#1031.3=\"ON\"](D1O106D5N101,3,\"on\",\"từ hẹn giờ 33\")(D2O106D5N101,3,\"off\",\"từ hẹn giờ 33\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 33",
+          "n_desc": ""
+        },
+        {
+          "n_id": "32",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1032[#1032.2=\"enable\"](\n  D4#1,#1032.4\n  [#1<>\"\"](\n    [#1032.3=\"ON\"](D1O105D5N101,3,\"on\",\"từ hẹn giờ 34\")(D2O105D5N101,3,\"off\",\"từ hẹn giờ 34\")\n  )\n  D4#1,#1032.5\n  [#1<>\"\"](\n    [#1032.3=\"ON\"](D1O106D5N101,3,\"on\",\"từ hẹn giờ 34\")(D2O106D5N101,3,\"off\",\"từ hẹn giờ 34\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 34",
+          "n_desc": ""
+        },
+        {
+          "n_id": "33",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1033[#1033.2=\"enable\"](\n  D4#1,#1033.4\n  [#1<>\"\"](\n    [#1033.3=\"ON\"](D1O107D5N101,4,\"on\",\"từ hẹn giờ 41\")(D2O107D5N101,4,\"off\",\"từ hẹn giờ 41\")\n  )\n  D4#1,#1033.5\n  [#1<>\"\"](\n    [#1033.3=\"ON\"](D1O108D5N101,4,\"on\",\"từ hẹn giờ 41\")(D2O108D5N101,4,\"off\",\"từ hẹn giờ 41\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 41",
+          "n_desc": ""
+        },
+        {
+          "n_id": "34",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1034[#1034.2=\"enable\"](\n  D4#1,#1034.4\n  [#1<>\"\"](\n    [#1034.3=\"ON\"](D1O107D5N101,4,\"on\",\"từ hẹn giờ 42\")(D2O107D5N101,4,\"off\",\"từ hẹn giờ 42\")\n  )\n  D4#1,#1034.5\n  [#1<>\"\"](\n    [#1034.3=\"ON\"](D1O108D5N101,4,\"on\",\"từ hẹn giờ 42\")(D2O108D5N101,4,\"off\",\"từ hẹn giờ 42\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 42",
+          "n_desc": ""
+        },
+        {
+          "n_id": "35",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1035[#1035.2=\"enable\"](\n  D4#1,#1035.4\n  [#1<>\"\"](\n    [#1035.3=\"ON\"](D1O107D5N101,4,\"on\",\"từ hẹn giờ 43\")(D2O107D5N101,4,\"off\",\"từ hẹn giờ 43\")\n  )\n  D4#1,#1035.5\n  [#1<>\"\"](\n    [#1035.3=\"ON\"](D1O108D5N101,4,\"on\",\"từ hẹn giờ 43\")(D2O108D5N101,4,\"off\",\"từ hẹn giờ 43\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 43",
+          "n_desc": ""
+        },
+        {
+          "n_id": "36",
+          "n_mode": "1",
+          "n_local_def": [],
+          "n_content": "T#1036[#1036.2=\"enable\"](\n  D4#1,#1036.4\n  [#1<>\"\"](\n    [#1036.3=\"ON\"](D1O107D5N101,4,\"on\",\"từ hẹn giờ 44\")(D2O107D5N101,4,\"off\",\"từ hẹn giờ 44\")\n  )\n  D4#1,#1036.5\n  [#1<>\"\"](\n    [#1036.3=\"ON\"](D1O108D5N101,4,\"on\",\"từ hẹn giờ 44\")(D2O108D5N101,4,\"off\",\"từ hẹn giờ 44\")\n  )\n)",
+          "n_natural": "",
+          "n_name": "hẹn giờ 44",
+          "n_desc": ""
+        }
+      ]
+    }
+  ],
+  "io_controls": [],
+  "io_dashboards": [],
+  "io_settings": {
+    "programParameters": []
+  },
+  "io_params": {
+    "cm_default": [],
+    "cm_define": []
+  },
+  "io_commands": {
+    "cm_default": [
+      {
+        "cm_cmn": "D1",
+        "cm_id": "1",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D1",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D2",
+        "cm_id": "2",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D2",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D3",
+        "cm_id": "3",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D3",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D4",
+        "cm_id": "4",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D4",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D5",
+        "cm_id": "5",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D5",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D6",
+        "cm_id": "6",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D6",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D7",
+        "cm_id": "7",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D7",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D8",
+        "cm_id": "8",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D8",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D9",
+        "cm_id": "9",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D9",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D10",
+        "cm_id": "10",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D10",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D11",
+        "cm_id": "11",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D11",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D12",
+        "cm_id": "12",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D12",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D13",
+        "cm_id": "13",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D13",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D14",
+        "cm_id": "14",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D14",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D15",
+        "cm_id": "15",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D15",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D16",
+        "cm_id": "16",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D16",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D17",
+        "cm_id": "17",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D17",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D18",
+        "cm_id": "18",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D18",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D19",
+        "cm_id": "19",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D19",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D20",
+        "cm_id": "20",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D20",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D21",
+        "cm_id": "21",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D21",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D22",
+        "cm_id": "22",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D22",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D23",
+        "cm_id": "23",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D23",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D24",
+        "cm_id": "24",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D24",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D25",
+        "cm_id": "25",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D25",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D27",
+        "cm_id": "27",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D27"
+      },
+      {
+        "cm_cmn": "D28",
+        "cm_id": "28",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D28",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D29",
+        "cm_id": "29",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D29",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D30",
+        "cm_id": "30",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D30",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D31",
+        "cm_id": "31",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D31",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D32",
+        "cm_id": "32",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D32",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D33",
+        "cm_id": "33",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D33",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D34",
+        "cm_id": "34",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D34",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D35",
+        "cm_id": "35",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D35",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D36",
+        "cm_id": "36",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D36",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D37",
+        "cm_id": "37",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D37",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D38",
+        "cm_id": "38",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D38",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D39",
+        "cm_id": "39",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D39",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D40",
+        "cm_id": "40",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D40",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D41",
+        "cm_id": "41",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D41",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D42",
+        "cm_id": "42",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D42",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D43",
+        "cm_id": "43",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D43",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D44",
+        "cm_id": "44",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D44",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D45",
+        "cm_id": "45",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D45",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D46",
+        "cm_id": "46",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D46",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D51",
+        "cm_id": "51",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D51",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D52",
+        "cm_id": "52",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D52",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D53",
+        "cm_id": "53",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D53",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D61",
+        "cm_id": "61",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D61",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D62",
+        "cm_id": "62",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D62",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D63",
+        "cm_id": "63",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D63",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D64",
+        "cm_id": "64",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D64",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "W",
+        "cm_id": "65",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_WAIT",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "L",
+        "cm_id": "66",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_LOOP",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "T",
+        "cm_id": "67",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "cond",
+        "cm_desc": "ACTION_TIME",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "[ ]",
+        "cm_id": "68",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "cond",
+        "cm_desc": "ACTION_IF",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": ",",
+        "cm_id": "69",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "separator",
+        "cm_desc": "SEPARATOR",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D96",
+        "cm_id": "70",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D96",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "&",
+        "cm_id": "71",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "cond",
+        "cm_desc": "ACTION_&",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "|",
+        "cm_id": "72",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "cond",
+        "cm_desc": "ACTION_|",
+        "cm_name": ""
+      }
+    ],
+    "cm_define": [
+      {
+        "cm_id": "1",
+        "cm_name": "bật"
+      },
+      {
+        "cm_id": "2",
+        "cm_name": "tắt"
+      },
+      {
+        "cm_id": "3",
+        "cm_name": "đảo"
+      },
+      {
+        "cm_id": "4",
+        "cm_name": "ghi vào,gán,cho hiện lên"
+      },
+      {
+        "cm_id": "5",
+        "cm_name": "chạy chương trình"
+      },
+      {
+        "cm_id": "6",
+        "cm_name": "gọi chương trình"
+      },
+      {
+        "cm_id": "7",
+        "cm_name": "thoát vòng lặp"
+      },
+      {
+        "cm_id": "8",
+        "cm_name": "thoát chương trình"
+      },
+      {
+        "cm_id": "9",
+        "cm_name": "trả về dữ liệu"
+      },
+      {
+        "cm_id": "10",
+        "cm_name": "khóa chương trình"
+      },
+      {
+        "cm_id": "11",
+        "cm_name": "mở khóa chương trình"
+      },
+      {
+        "cm_id": "12",
+        "cm_name": "gửi tin nhắn SMS"
+      },
+      {
+        "cm_id": "13",
+        "cm_name": "gọi điện thoại"
+      },
+      {
+        "cm_id": "14",
+        "cm_name": "ngừng chương trình"
+      },
+      {
+        "cm_id": "15",
+        "cm_name": "tạm dừng chương trình"
+      },
+      {
+        "cm_id": "16",
+        "cm_name": "hủy tạm dừng chương trình"
+      },
+      {
+        "cm_id": "17",
+        "cm_name": "đảo ngược tạm dừng"
+      },
+      {
+        "cm_id": "18",
+        "cm_name": "bắt máy cuộc gọi"
+      },
+      {
+        "cm_id": "19",
+        "cm_name": "ngắt cuộc gọi"
+      },
+      {
+        "cm_id": "20",
+        "cm_name": "gửi bảo đảm HTTP thường"
+      },
+      {
+        "cm_id": "21",
+        "cm_name": "gửi bảo đảm HTTP JSON"
+      },
+      {
+        "cm_id": "22",
+        "cm_name": "gửi http GET"
+      },
+      {
+        "cm_id": "23",
+        "cm_name": "gửi HTTP POST"
+      },
+      {
+        "cm_id": "24",
+        "cm_name": "điều khiển từ xa đến bộ IO"
+      },
+      {
+        "cm_id": "25",
+        "cm_name": "cài đặt chức năng IO"
+      },
+      {
+        "cm_id": "27",
+        "cm_name": "kết nối server"
+      },
+      {
+        "cm_id": "28",
+        "cm_name": "tìm dữ liệu"
+      },
+      {
+        "cm_id": "29",
+        "cm_name": "tìm dữ liệu khác"
+      },
+      {
+        "cm_id": "30",
+        "cm_name": "tìm dữ liệu có chứa chuỗi"
+      },
+      {
+        "cm_id": "31",
+        "cm_name": "xoá hàng loạt ô nhớ"
+      },
+      {
+        "cm_id": "32",
+        "cm_name": "dịch chuyển dãy dữ liệu"
+      },
+      {
+        "cm_id": "33",
+        "cm_name": "sao chép dãy dữ liệu"
+      },
+      {
+        "cm_id": "34",
+        "cm_name": "hoán đổi dãy dữ liệu"
+      },
+      {
+        "cm_id": "35",
+        "cm_name": "tăng thập phân"
+      },
+      {
+        "cm_id": "36",
+        "cm_name": "giảm thập phân"
+      },
+      {
+        "cm_id": "37",
+        "cm_name": "đếm chiều dài"
+      },
+      {
+        "cm_id": "38",
+        "cm_name": "lấy chuỗi từ trái"
+      },
+      {
+        "cm_id": "39",
+        "cm_name": "lấy chuỗi từ phải"
+      },
+      {
+        "cm_id": "40",
+        "cm_name": "lấy chuỗi ở giữa"
+      },
+      {
+        "cm_id": "41",
+        "cm_name": "lấy chuỗi con từ"
+      },
+      {
+        "cm_id": "42",
+        "cm_name": "bỏ viết hoa chuỗi"
+      },
+      {
+        "cm_id": "43",
+        "cm_name": "viết hoa chuỗi"
+      },
+      {
+        "cm_id": "44",
+        "cm_name": "tìm kiếm trong chuỗi"
+      },
+      {
+        "cm_id": "45",
+        "cm_name": "thay thế trong chuỗi"
+      },
+      {
+        "cm_id": "46",
+        "cm_name": "tách lấy phần số trong chuỗi"
+      },
+      {
+        "cm_id": "51",
+        "cm_name": "tạo chương trình"
+      },
+      {
+        "cm_id": "52",
+        "cm_name": "ghép chương trình"
+      },
+      {
+        "cm_id": "53",
+        "cm_name": "xóa chương trình"
+      },
+      {
+        "cm_id": "61",
+        "cm_name": "gửi lên dữ liệu"
+      },
+      {
+        "cm_id": "62",
+        "cm_name": "truy vấn dữ liệu"
+      },
+      {
+        "cm_id": "63",
+        "cm_name": "đếm dữ liệu"
+      },
+      {
+        "cm_id": "64",
+        "cm_name": "xóa dữ liệu"
+      },
+      {
+        "cm_id": "65",
+        "cm_name": "chờ"
+      },
+      {
+        "cm_id": "66",
+        "cm_name": "lặp"
+      },
+      {
+        "cm_id": "67",
+        "cm_name": "vào lúc"
+      },
+      {
+        "cm_id": "68",
+        "cm_name": "nếu"
+      },
+      {
+        "cm_id": "69",
+        "cm_name": "và,với,vào,đến,từ,trong"
+      },
+      {
+        "cm_id": "70",
+        "cm_name": "gửi bản ghi gỡ lỗi"
+      },
+      {
+        "cm_id": "71",
+        "cm_name": "&"
+      },
+      {
+        "cm_id": "72",
+        "cm_name": "hoặc"
+      }
+    ]
+  },
+  "events": [
+    {
+      "io_id": "<<ioid>>",
+      "src": "<<io_source>>",
+      "name": "Mời bạn xác nhận người chơi",
+      "cmd": "N3,\"$$input1\",\"$$input2\"",
+      "allow_input": true,
+      "redirect_home": true,
+      "require_confirm": true,
+      "required_login": false,
+      "content_confirm": "",
+      "required_payment": false,
+      "content_input": [
+        {
+          "id": 1,
+          "value": "Điền tên hoặc số điện thoại",
+          "requiredData": true
+        },
+        {
+          "id": 2,
+          "value": "Điền mã xác nhận trên màn hình",
+          "requiredData": true
+        }
+      ],
+      "ev_id": "99fa92738aa165b2f157"
+    }
+  ]
+}

@@ -432,7 +432,6 @@
       "setup": {
         "page": "/sample_dashboards/monitoring-aquaculture-ponds/setup_three_phase_en.html"
       },
-      "sampleDatabase": "/sample_dashboards/monitoring-aquaculture-ponds/sample.sqlite",
       "tags": [
         "aquaculture",
         "iot",
@@ -450,6 +449,8 @@
           "setup": {
             "page": "/sample_dashboards/monitoring-aquaculture-ponds/setup_three_phase_en.html"
           },
+          "sampleDatabase": "/sample_dashboards/monitoring-aquaculture-ponds/sample.sqlite",
+          "sampleDevice": "/sample_dashboards/monitoring-aquaculture-ponds/aquaculture-ponds-3-phases.iodata",
           "default-fields": [
             {
               "field": "O101",
@@ -1158,6 +1159,8 @@
           "setup": {
             "page": "/sample_dashboards/monitoring-aquaculture-ponds/setup_three_phase_vi.html"
           },
+          "sampleDatabase": "/sample_dashboards/monitoring-aquaculture-ponds/sample.sqlite",
+          "sampleDevice": "/sample_dashboards/monitoring-aquaculture-ponds/aquaculture-ponds-3-phases.iodata",
           "default-fields": [
             {
               "field": "O101",

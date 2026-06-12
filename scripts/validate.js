@@ -129,6 +129,37 @@ function validateSqlite(publicPath) {
   }
 }
 
+function validateIodata(publicPath) {
+  const filePath = assertFile(publicPath, 'sample device');
+  if (!filePath) return;
+  if (path.extname(filePath).toLowerCase() !== '.iodata') {
+    fail(`sample device must use .iodata extension: ${publicPath}`);
+    return;
+  }
+
+  let payload = null;
+  try {
+    payload = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (error) {
+    fail(`sample device JSON invalid ${publicPath}: ${error.message}`);
+    return;
+  }
+
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    fail(`sample device must be a JSON object: ${publicPath}`);
+    return;
+  }
+  if (!Array.isArray(payload.io_programs)) {
+    fail(`sample device io_programs must be an array: ${publicPath}`);
+  }
+  if (!Array.isArray(payload.io_objects)) {
+    fail(`sample device io_objects must be an array: ${publicPath}`);
+  }
+  if (Array.isArray(payload.io_programs) && Array.isArray(payload.io_objects)) {
+    ok(`sample device valid: ${publicPath}`);
+  }
+}
+
 function macroNamesForDatabase(publicPath) {
   if (macroNameCache.has(publicPath)) return macroNameCache.get(publicPath);
   const filePath = assertFile(publicPath, 'sample database for macro examples');
@@ -270,6 +301,8 @@ function main() {
       if (image) assertFile(image, `image for ${sample.id}/${entry.locale}`);
       const sampleDatabase = entry.sampleDatabase || sample.sampleDatabase;
       if (sampleDatabase) validateSqlite(sampleDatabase);
+      const sampleDevice = entry.sampleDevice || sample.sampleDevice;
+      if (sampleDevice) validateIodata(sampleDevice);
     }
   }
 
