@@ -2559,7 +2559,7 @@
     {
       "id": "server-health-monitor",
       "name": "Server Health Monitor",
-      "description": "Tổng quan:\nDashboard giám sát tình trạng nhiều server cùng lúc, chỉ tập trung vào các thông tin cơ bản mà hầu hết server đều có: CPU, RAM, Network In/Out và dung lượng ổ đĩa chính. Mỗi server nằm trong một card riêng, gộp nhiều tham số vào cùng một biểu đồ để trình bày được nhiều máy trên một màn hình.\n\nLoại:\ntelemetry + timeseries qua SSE\n\nCác tham số chính:\n- Cấp cao nhất: syncId, historyMinutes, thresholds, servers[]\n- historyMinutes là khung thời gian mặc định của dropdown biểu đồ, không phải chu kỳ refresh.\n- Cấp server: name, sessionId, accent, fields{}\n- Field mặc định: CPU_Percent, RAM_Percent, Network_In_Mbps, Network_Out_Mbps, Disk_Main_Used_GB, Disk_Main_Total_GB\n\nLuồng dữ liệu:\n- Dashboard đọc snapshot telemetry và lịch sử timeseries một lần khi mở trang.\n- Khi đổi dropdown khung thời gian, dashboard query lại iotimeseries với from/to tương ứng.\n- Sau đó cập nhật realtime bằng SSE stream /api/<sessionId>/stream.\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Có thể hiển thị nhiều server bằng cách thêm phần tử trong servers[].\n- Template chỉ dùng HTML/CSS/JavaScript frontend và các endpoint telemetry/timeseries có sẵn, không cần backend bổ sung.",
+      "description": "Tổng quan:\nDashboard giám sát tình trạng nhiều server cùng lúc, chỉ tập trung vào các thông tin cơ bản mà hầu hết server đều có: CPU, RAM, Network In/Out và dung lượng ổ đĩa chính. Mỗi server nằm trong một card riêng, gộp nhiều tham số vào cùng một biểu đồ để trình bày được nhiều máy trên một màn hình.\n\nLoại:\ntelemetry + timeseries qua SSE\n\nCác tham số chính:\n- Cấp cao nhất: syncId, historyMinutes, thresholds, servers[]\n- historyMinutes là khung thời gian mặc định của dropdown biểu đồ, không phải chu kỳ refresh.\n- Cấp server: name, sessionId, accent, fields{}\n- Field mặc định: CPU_Percent, RAM_Percent, CPU_Temperature_C tùy chọn, Network_In_Mbps, Network_Out_Mbps, Disk_Main_Used_GB, Disk_Main_Total_GB\n\nLuồng dữ liệu:\n- Dashboard đọc snapshot telemetry và lịch sử timeseries một lần khi mở trang.\n- Khi đổi dropdown khung thời gian, dashboard query lại iotimeseries với from/to tương ứng.\n- Sau đó cập nhật realtime bằng SSE stream /api/<sessionId>/stream.\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Có thể hiển thị nhiều server bằng cách thêm phần tử trong servers[].\n- Template chỉ dùng HTML/CSS/JavaScript frontend và các endpoint telemetry/timeseries có sẵn, không cần backend bổ sung.",
       "image": "/sample_dashboards/server-health-monitor/sample.svg",
       "html": "/sample_dashboards/server-health-monitor/dashboard_vi.html",
       "setup": {
@@ -2577,7 +2577,7 @@
         "en": {
           "label": "English",
           "name": "Server Health Monitor",
-          "description": "Overview:\nDashboard for monitoring multiple servers at the same time, focused only on the baseline metrics most servers have: CPU, RAM, Network In/Out, and primary disk capacity. Each server is shown in its own card, with several metrics combined into one chart so a single dashboard can show many machines.\n\nType:\ntelemetry + timeseries via SSE\n\nMain parameters:\n- Top level: syncId, historyMinutes, thresholds, servers[]\n- historyMinutes is the default chart time range for the dropdown, not a refresh interval.\n- Server level: name, sessionId, accent, fields{}\n- Default fields: CPU_Percent, RAM_Percent, Network_In_Mbps, Network_Out_Mbps, Disk_Main_Used_GB, Disk_Main_Total_GB\n\nData flow:\n- The dashboard reads the initial telemetry snapshot and timeseries history once when it opens.\n- When the time range dropdown changes, the dashboard queries iotimeseries again with the matching from/to window.\n- Realtime updates then arrive through SSE stream /api/<sessionId>/stream.\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- Add more servers by extending servers[].\n- This template uses only frontend HTML/CSS/JavaScript and the existing telemetry/timeseries endpoints. Do not add backend code.",
+          "description": "Overview:\nDashboard for monitoring multiple servers at the same time, focused only on the baseline metrics most servers have: CPU, RAM, Network In/Out, and primary disk capacity. Each server is shown in its own card, with several metrics combined into one chart so a single dashboard can show many machines.\n\nType:\ntelemetry + timeseries via SSE\n\nMain parameters:\n- Top level: syncId, historyMinutes, thresholds, servers[]\n- historyMinutes is the default chart time range for the dropdown, not a refresh interval.\n- Server level: name, sessionId, accent, fields{}\n- Default fields: CPU_Percent, RAM_Percent, optional CPU_Temperature_C, Network_In_Mbps, Network_Out_Mbps, Disk_Main_Used_GB, Disk_Main_Total_GB\n\nData flow:\n- The dashboard reads the initial telemetry snapshot and timeseries history once when it opens.\n- When the time range dropdown changes, the dashboard queries iotimeseries again with the matching from/to window.\n- Realtime updates then arrive through SSE stream /api/<sessionId>/stream.\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- Add more servers by extending servers[].\n- This template uses only frontend HTML/CSS/JavaScript and the existing telemetry/timeseries endpoints. Do not add backend code.",
           "html": "/sample_dashboards/server-health-monitor/dashboard_en.html",
           "setup": {
             "page": "/sample_dashboards/server-health-monitor/setup_en.html"
@@ -2586,7 +2586,7 @@
         "vi": {
           "label": "Tiếng Việt",
           "name": "Server Health Monitor (VI)",
-          "description": "Tổng quan:\nDashboard giám sát tình trạng nhiều server cùng lúc, chỉ tập trung vào các thông tin cơ bản mà hầu hết server đều có: CPU, RAM, Network In/Out và dung lượng ổ đĩa chính. Mỗi server nằm trong một card riêng, gộp nhiều tham số vào cùng một biểu đồ để trình bày được nhiều máy trên một màn hình.\n\nLoại:\ntelemetry + timeseries qua SSE\n\nCác tham số chính:\n- Cấp cao nhất: syncId, historyMinutes, thresholds, servers[]\n- historyMinutes là khung thời gian mặc định của dropdown biểu đồ, không phải chu kỳ refresh.\n- Cấp server: name, sessionId, accent, fields{}\n- Field mặc định: CPU_Percent, RAM_Percent, Network_In_Mbps, Network_Out_Mbps, Disk_Main_Used_GB, Disk_Main_Total_GB\n\nLuồng dữ liệu:\n- Dashboard đọc snapshot telemetry và lịch sử timeseries một lần khi mở trang.\n- Khi đổi dropdown khung thời gian, dashboard query lại iotimeseries với from/to tương ứng.\n- Sau đó cập nhật realtime bằng SSE stream /api/<sessionId>/stream.\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Có thể hiển thị nhiều server bằng cách thêm phần tử trong servers[].\n- Template chỉ dùng HTML/CSS/JavaScript frontend và các endpoint telemetry/timeseries có sẵn, không cần backend bổ sung.",
+          "description": "Tổng quan:\nDashboard giám sát tình trạng nhiều server cùng lúc, chỉ tập trung vào các thông tin cơ bản mà hầu hết server đều có: CPU, RAM, Network In/Out và dung lượng ổ đĩa chính. Mỗi server nằm trong một card riêng, gộp nhiều tham số vào cùng một biểu đồ để trình bày được nhiều máy trên một màn hình.\n\nLoại:\ntelemetry + timeseries qua SSE\n\nCác tham số chính:\n- Cấp cao nhất: syncId, historyMinutes, thresholds, servers[]\n- historyMinutes là khung thời gian mặc định của dropdown biểu đồ, không phải chu kỳ refresh.\n- Cấp server: name, sessionId, accent, fields{}\n- Field mặc định: CPU_Percent, RAM_Percent, CPU_Temperature_C tùy chọn, Network_In_Mbps, Network_Out_Mbps, Disk_Main_Used_GB, Disk_Main_Total_GB\n\nLuồng dữ liệu:\n- Dashboard đọc snapshot telemetry và lịch sử timeseries một lần khi mở trang.\n- Khi đổi dropdown khung thời gian, dashboard query lại iotimeseries với from/to tương ứng.\n- Sau đó cập nhật realtime bằng SSE stream /api/<sessionId>/stream.\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Có thể hiển thị nhiều server bằng cách thêm phần tử trong servers[].\n- Template chỉ dùng HTML/CSS/JavaScript frontend và các endpoint telemetry/timeseries có sẵn, không cần backend bổ sung.",
           "html": "/sample_dashboards/server-health-monitor/dashboard_vi.html",
           "setup": {
             "page": "/sample_dashboards/server-health-monitor/setup_vi.html"
@@ -2607,6 +2607,13 @@
           "kind": "timeseries",
           "min": 32,
           "max": 90
+        },
+        {
+          "sessionId": "<<sessionid>>",
+          "field": "CPU_Temperature_C",
+          "kind": "timeseries",
+          "min": 35,
+          "max": 85
         },
         {
           "sessionId": "<<sessionid>>",
@@ -2652,6 +2659,13 @@
         },
         {
           "sessionId": "IO456efgh@simulate",
+          "field": "CPU_Temperature_C",
+          "kind": "timeseries",
+          "min": 38,
+          "max": 88
+        },
+        {
+          "sessionId": "IO456efgh@simulate",
           "field": "Network_In_Mbps",
           "kind": "timeseries",
           "min": 12,
@@ -2694,6 +2708,13 @@
         },
         {
           "sessionId": "IO789ijkl@simulate",
+          "field": "CPU_Temperature_C",
+          "kind": "timeseries",
+          "min": 32,
+          "max": 76
+        },
+        {
+          "sessionId": "IO789ijkl@simulate",
           "field": "Network_In_Mbps",
           "kind": "timeseries",
           "min": 4,
@@ -2733,6 +2754,13 @@
           "kind": "timeseries",
           "min": 34,
           "max": 86
+        },
+        {
+          "sessionId": "IO321mnop@simulate",
+          "field": "CPU_Temperature_C",
+          "kind": "timeseries",
+          "min": 36,
+          "max": 82
         },
         {
           "sessionId": "IO321mnop@simulate",
