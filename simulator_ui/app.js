@@ -1,8 +1,221 @@
 (function () {
   "use strict";
 
+  var MAIN_UI_LOCALE_STORAGE_KEY = "main_ui_locale";
+  var SUPPORTED_UI_LOCALES = ["en", "vi"];
+  var I18N = {
+    en: {
+      "header.subtitle": "Local-only development environment for ROSA sample templates.",
+      "locale.label": "Language",
+      "locale.switchToEn": "Switch to English",
+      "locale.switchToVi": "Switch to Vietnamese",
+      "context.loading": "Loading...",
+      "context.value": "DeviceId: {sessionId} | SyncId: {syncId}",
+      "template.panelTitle": "Template",
+      "template.label": "Template",
+      "template.variant": "Variant",
+      "template.noneSelected": "No template selected.",
+      "template.selected": "Selected: {name}",
+      "template.previewLoaded": "Preview loaded.",
+      "template.noId": "Selected template has no id.",
+      "template.defaultVariant": "Default",
+      "action.reloadTemplates": "Reload templates",
+      "action.preview": "Preview",
+      "action.exportTemplate": "Export template package",
+      "action.loadSampleDb": "Load sample database",
+      "action.clearDatabases": "Clear simulated databases",
+      "action.copyGatewayCommand": "Copy gateway command",
+      "action.runMacro": "Run macro",
+      "action.addGenerator": "Add telemetry generator",
+      "action.refreshGenerators": "Refresh generators",
+      "action.clearTelemetry": "Clear telemetry and timeseries",
+      "action.addAllDefaultFields": "Add all default fields",
+      "action.refreshDefaultFields": "Refresh default fields",
+      "action.saveGenerator": "Save generator",
+      "action.refreshCommands": "Refresh command log",
+      "action.clearCommands": "Clear command log",
+      "action.applySetupConfig": "Apply setup config",
+      "action.edit": "Edit",
+      "action.sendOnce": "Send once",
+      "action.stop": "Stop",
+      "action.start": "Start",
+      "action.delete": "Delete",
+      "action.addField": "Add field",
+      "common.cancel": "Cancel",
+      "common.close": "Close",
+      "macro.panelTitle": "Macro runner",
+      "macro.example": "Example",
+      "macro.payload": "Macro payload JSON",
+      "macro.gatewayCommand": "Gateway command",
+      "macro.exampleFallback": "Example {number}",
+      "preview.title": "Preview",
+      "preview.waiting": "Waiting",
+      "preview.rendering": "Rendering",
+      "preview.ready": "Ready",
+      "preview.error": "Error",
+      "preview.markerError": "Marker error: {error}",
+      "preview.frameTitle": "Dashboard preview",
+      "telemetry.panelTitle": "Telemetry / timeseries",
+      "defaultFields.title": "Default fields",
+      "field.deviceId": "DeviceId",
+      "field.field": "Field",
+      "field.kind": "Kind",
+      "field.valueText": "Value / text",
+      "field.min": "Min",
+      "field.max": "Max",
+      "field.intervalMs": "Interval ms",
+      "field.autoRun": "Auto run",
+      "generator.kind.timeseries": "Timeseries number",
+      "generator.kind.number": "Telemetry number",
+      "generator.kind.text": "Text",
+      "generator.kind.onoff": "ON/OFF",
+      "generator.empty": "No generators.",
+      "generator.auto": "auto",
+      "generator.manual": "manual",
+      "generator.saved": "Generator saved.",
+      "generator.clearConfirm": "Clear all telemetry/timeseries generators and generated data?",
+      "generator.cleared": "Telemetry/timeseries cleared: {count} generators",
+      "defaultFields.missing": "missing",
+      "defaultFields.noneMissing": "No missing default fields.",
+      "defaultFields.added": "Default fields added: {count}",
+      "commands.title": "Command log",
+      "commands.empty": "No commands.",
+      "commands.cleared": "Command log cleared: {count}",
+      "setup.title": "Setup GUI",
+      "setup.frameTitle": "Template setup",
+      "setup.noSetup": "This template has no setup GUI.",
+      "setup.applied": "Setup config applied.",
+      "setup.error": "Setup error.",
+      "database.noSample": "This template has no sample database.",
+      "database.loaded": "Sample DB loaded: {ioid}",
+      "database.clearConfirm": "Clear all simulated IoData databases?",
+      "database.cleared": "Simulated DB files cleared: {count}",
+      "export.done": "Template package exported.",
+      "export.failed": "Export failed.",
+      "macro.invalidJson": "Macro payload JSON is invalid.",
+      "clipboard.unavailable": "Clipboard API is not available.",
+      "clipboard.copied": "Gateway command copied.",
+      "clipboard.failed": "Copy failed.",
+      "toast.selectTemplate": "Select a template first."
+    },
+    vi: {
+      "header.subtitle": "Môi trường local để mở, tạo và kiểm thử ROSA sample templates.",
+      "locale.label": "Ngôn ngữ",
+      "locale.switchToEn": "Chuyển sang English",
+      "locale.switchToVi": "Chuyển sang Tiếng Việt",
+      "context.loading": "Đang tải...",
+      "context.value": "DeviceId: {sessionId} | SyncId: {syncId}",
+      "template.panelTitle": "Mẫu trang",
+      "template.label": "Mẫu trang",
+      "template.variant": "Biến thể",
+      "template.noneSelected": "Chưa chọn mẫu trang.",
+      "template.selected": "Đã chọn: {name}",
+      "template.previewLoaded": "Đã tải preview.",
+      "template.noId": "Mẫu trang đang chọn không có id.",
+      "template.defaultVariant": "Mặc định",
+      "action.reloadTemplates": "Tải lại danh sách mẫu",
+      "action.preview": "Xem thử",
+      "action.exportTemplate": "Xuất gói template",
+      "action.loadSampleDb": "Nạp database mẫu",
+      "action.clearDatabases": "Xóa database giả lập",
+      "action.copyGatewayCommand": "Sao chép lệnh gateway",
+      "action.runMacro": "Chạy macro",
+      "action.addGenerator": "Thêm bộ phát telemetry",
+      "action.refreshGenerators": "Tải lại bộ phát",
+      "action.clearTelemetry": "Xóa telemetry và timeseries",
+      "action.addAllDefaultFields": "Thêm tất cả field mặc định",
+      "action.refreshDefaultFields": "Tải lại field mặc định",
+      "action.saveGenerator": "Lưu bộ phát",
+      "action.refreshCommands": "Tải lại nhật ký lệnh",
+      "action.clearCommands": "Xóa nhật ký lệnh",
+      "action.applySetupConfig": "Áp dụng cấu hình setup",
+      "action.edit": "Sửa",
+      "action.sendOnce": "Gửi một lần",
+      "action.stop": "Dừng",
+      "action.start": "Chạy",
+      "action.delete": "Xóa",
+      "action.addField": "Thêm field",
+      "common.cancel": "Hủy",
+      "common.close": "Đóng",
+      "macro.panelTitle": "Chạy macro",
+      "macro.example": "Ví dụ",
+      "macro.payload": "Payload JSON của macro",
+      "macro.gatewayCommand": "Lệnh gateway",
+      "macro.exampleFallback": "Ví dụ {number}",
+      "preview.title": "Xem thử",
+      "preview.waiting": "Đang chờ",
+      "preview.rendering": "Đang render",
+      "preview.ready": "Sẵn sàng",
+      "preview.error": "Lỗi",
+      "preview.markerError": "Lỗi marker: {error}",
+      "preview.frameTitle": "Khung xem dashboard",
+      "telemetry.panelTitle": "Telemetry / timeseries",
+      "defaultFields.title": "Field mặc định",
+      "field.deviceId": "DeviceId",
+      "field.field": "Field",
+      "field.kind": "Loại",
+      "field.valueText": "Giá trị / text",
+      "field.min": "Min",
+      "field.max": "Max",
+      "field.intervalMs": "Chu kỳ ms",
+      "field.autoRun": "Tự động chạy",
+      "generator.kind.timeseries": "Số timeseries",
+      "generator.kind.number": "Số telemetry",
+      "generator.kind.text": "Text",
+      "generator.kind.onoff": "ON/OFF",
+      "generator.empty": "Chưa có bộ phát.",
+      "generator.auto": "auto",
+      "generator.manual": "thủ công",
+      "generator.saved": "Đã lưu bộ phát.",
+      "generator.clearConfirm": "Xóa tất cả bộ phát telemetry/timeseries và dữ liệu đã tạo?",
+      "generator.cleared": "Đã xóa telemetry/timeseries: {count} bộ phát",
+      "defaultFields.missing": "đang thiếu",
+      "defaultFields.noneMissing": "Không còn field mặc định đang thiếu.",
+      "defaultFields.added": "Đã thêm field mặc định: {count}",
+      "commands.title": "Nhật ký lệnh",
+      "commands.empty": "Chưa có lệnh.",
+      "commands.cleared": "Đã xóa nhật ký lệnh: {count}",
+      "setup.title": "Setup GUI",
+      "setup.frameTitle": "Khung setup template",
+      "setup.noSetup": "Mẫu trang này không có Setup GUI.",
+      "setup.applied": "Đã áp dụng cấu hình setup.",
+      "setup.error": "Lỗi setup.",
+      "database.noSample": "Mẫu trang này không có database mẫu.",
+      "database.loaded": "Đã nạp sample DB: {ioid}",
+      "database.clearConfirm": "Xóa tất cả database IoData giả lập?",
+      "database.cleared": "Đã xóa file DB giả lập: {count}",
+      "export.done": "Đã xuất gói template.",
+      "export.failed": "Xuất template thất bại.",
+      "macro.invalidJson": "Macro payload JSON không hợp lệ.",
+      "clipboard.unavailable": "Clipboard API không khả dụng.",
+      "clipboard.copied": "Đã sao chép lệnh gateway.",
+      "clipboard.failed": "Sao chép thất bại.",
+      "toast.selectTemplate": "Hãy chọn mẫu trang trước."
+    }
+  };
+
+  function normalizeUiLocale(input) {
+    var normalized = String(input || "").trim().toLowerCase();
+    return normalized.indexOf("vi") === 0 ? "vi" : "en";
+  }
+
+  function detectUiLocale() {
+    try {
+      var stored = window.localStorage.getItem(MAIN_UI_LOCALE_STORAGE_KEY);
+      if (stored) return normalizeUiLocale(stored);
+    } catch (error) {
+      /* localStorage can be unavailable in restricted browser contexts. */
+    }
+    var browserLocale = Array.isArray(window.navigator.languages) && window.navigator.languages.length
+      ? window.navigator.languages[0]
+      : window.navigator.language;
+    return normalizeUiLocale(browserLocale);
+  }
+
   var state = {
+    uiLocale: detectUiLocale(),
     context: { sessionId: "IO123abcd@simulate", syncId: "SIM_SYNC", ioid: "IO123abcd" },
+    contextReady: false,
     manifest: { samples: [] },
     activeSample: null,
     activeLocaleKey: "",
@@ -11,13 +224,119 @@
     activeHtmlPath: "",
     setupReady: false,
     generators: [],
-    defaultFields: []
+    defaultFields: [],
+    commands: [],
+    templateStatus: { key: "template.noneSelected", fallback: "No template selected.", params: {} },
+    previewStatus: { key: "preview.waiting", fallback: "Waiting", params: {} }
   };
 
   var els = {};
   var LAST_SELECTION_KEY = "rosa-simulator:last-template-v1";
 
   function $(id) { return document.getElementById(id); }
+
+  function formatMessage(template, params) {
+    return String(template || "").replace(/\{(.*?)\}/g, function (_, key) {
+      var value = params && Object.prototype.hasOwnProperty.call(params, key) ? params[key] : "";
+      return value == null ? "" : String(value);
+    });
+  }
+
+  function t(key, fallback, params) {
+    var dict = I18N[state.uiLocale] || I18N.en;
+    return formatMessage(dict[key] || I18N.en[key] || fallback || key, params);
+  }
+
+  function persistUiLocale() {
+    try {
+      window.localStorage.setItem(MAIN_UI_LOCALE_STORAGE_KEY, state.uiLocale);
+    } catch (error) {
+      /* localStorage can be unavailable in restricted browser contexts. */
+    }
+  }
+
+  function updateIconButtonLabel(button, label) {
+    if (!button) return;
+    button.setAttribute("title", label);
+    button.setAttribute("aria-label", label);
+    var srOnly = button.querySelector(".sr-only");
+    if (srOnly) srOnly.textContent = label;
+  }
+
+  function updateContextPill() {
+    if (!els.contextPill) return;
+    if (!state.contextReady) {
+      els.contextPill.textContent = t("context.loading", "Loading...");
+      return;
+    }
+    els.contextPill.textContent = t("context.value", "DeviceId: {sessionId} | SyncId: {syncId}", {
+      sessionId: state.context.sessionId,
+      syncId: state.context.syncId
+    });
+  }
+
+  function updateLanguageToggle() {
+    if (!els.languageToggle) return;
+    els.languageToggle.setAttribute("aria-label", t("locale.label", "Language"));
+    Array.prototype.forEach.call(els.languageToggle.querySelectorAll("[data-locale-option]"), function (button) {
+      var locale = normalizeUiLocale(button.getAttribute("data-locale-option"));
+      var active = locale === state.uiLocale;
+      button.dataset.active = active ? "true" : "false";
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+      updateIconButtonLabel(button, t(locale === "vi" ? "locale.switchToVi" : "locale.switchToEn", locale === "vi" ? "Switch to Vietnamese" : "Switch to English"));
+    });
+  }
+
+  function setTemplateStatus(key, fallback, params) {
+    state.templateStatus = { key: key, fallback: fallback, params: params || {} };
+    if (els.templateStatus) {
+      els.templateStatus.textContent = t(key, fallback, params);
+    }
+  }
+
+  function renderTemplateStatus() {
+    setTemplateStatus(state.templateStatus.key, state.templateStatus.fallback, state.templateStatus.params);
+  }
+
+  function setPreviewStatus(key, fallback, params) {
+    state.previewStatus = { key: key, fallback: fallback, params: params || {} };
+    if (els.previewState) {
+      els.previewState.textContent = t(key, fallback, params);
+    }
+  }
+
+  function renderPreviewStatus() {
+    setPreviewStatus(state.previewStatus.key, state.previewStatus.fallback, state.previewStatus.params);
+  }
+
+  function applyTranslations() {
+    document.documentElement.setAttribute("lang", state.uiLocale);
+    Array.prototype.forEach.call(document.querySelectorAll("[data-i18n]"), function (node) {
+      var key = node.getAttribute("data-i18n");
+      node.textContent = t(key, node.textContent);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-title]"), function (node) {
+      var label = t(node.getAttribute("data-i18n-title"), node.getAttribute("title") || "");
+      node.setAttribute("title", label);
+      if (node.classList && node.classList.contains("icon-button")) updateIconButtonLabel(node, label);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-aria-label]"), function (node) {
+      var label = t(node.getAttribute("data-i18n-aria-label"), node.getAttribute("aria-label") || "");
+      node.setAttribute("aria-label", label);
+      if (node.classList && node.classList.contains("icon-button")) updateIconButtonLabel(node, label);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-i18n-placeholder]"), function (node) {
+      node.setAttribute("placeholder", t(node.getAttribute("data-i18n-placeholder"), node.getAttribute("placeholder") || ""));
+    });
+    updateLanguageToggle();
+    updateContextPill();
+    renderTemplateStatus();
+    renderPreviewStatus();
+    if (els.templateSelect) renderTemplates();
+    if (els.localeSelect) renderLocaleSelect();
+    if (els.generatorList) renderGenerators(state.generators);
+    if (els.commandLog) renderCommands(state.commands);
+  }
 
   function toast(message) {
     var node = $("toast");
@@ -112,11 +431,65 @@
     return entries;
   }
 
-  function activeLocaleFor(sample, requestedKey) {
+  function normalizeSampleLanguage(value) {
+    var normalized = String(value || "").trim().toLowerCase();
+    if (normalized.indexOf("vi") === 0) return "vi";
+    if (normalized.indexOf("en") === 0) return "en";
+    return "";
+  }
+
+  function inferLocaleLanguage(entry) {
+    var explicit = normalizeSampleLanguage(entry && entry.language);
+    if (explicit) return explicit;
+    var text = [
+      entry && entry.locale,
+      entry && entry.label,
+      entry && entry.name
+    ].join(" ").toLowerCase();
+    if (/(^|[-_\s(])vi($|[-_\s)])/i.test(text) || text.indexOf("tieng viet") !== -1 || text.indexOf("tiếng việt") !== -1 || text.indexOf("vietnamese") !== -1) return "vi";
+    if (/(^|[-_\s(])en($|[-_\s)])/i.test(text) || text.indexOf("english") !== -1) return "en";
+    return "en";
+  }
+
+  function localeVariantGroup(locale) {
+    var normalized = String(locale || "").trim().toLowerCase();
+    var withoutLanguage = normalized
+      .replace(/(^|[-_])(vi|en)(?=$|[-_])/g, "$1")
+      .replace(/^[-_]+|[-_]+$/g, "")
+      .replace(/[-_]{2,}/g, "-");
+    return withoutLanguage || "default";
+  }
+
+  function localeEntryByKey(sample, key) {
+    return localeEntries(sample).find(function (entry) { return entry.locale === key; }) || null;
+  }
+
+  function preferredLocaleForUi(sample, requestedKey, uiLocale) {
     var entries = localeEntries(sample);
-    return entries.find(function (entry) { return entry.locale === requestedKey; })
-      || entries.find(function (entry) { return entry.locale === sample.defaultLocale; })
-      || entries[0];
+    var requested = entries.find(function (entry) { return entry.locale === requestedKey; });
+    if (requested) return requested;
+    var normalizedUiLocale = normalizeUiLocale(uiLocale);
+    var defaultEntry = entries.find(function (entry) { return entry.locale === sample.defaultLocale; }) || entries[0];
+    if (defaultEntry && inferLocaleLanguage(defaultEntry) === normalizedUiLocale) return defaultEntry;
+    var defaultGroup = localeVariantGroup(defaultEntry && defaultEntry.locale);
+    return entries.find(function (entry) {
+      return inferLocaleLanguage(entry) === normalizedUiLocale && localeVariantGroup(entry.locale) === defaultGroup;
+    }) || entries.find(function (entry) {
+      return inferLocaleLanguage(entry) === normalizedUiLocale;
+    }) || defaultEntry || entries[0];
+  }
+
+  function activeLocaleFor(sample, requestedKey) {
+    return preferredLocaleForUi(sample, requestedKey, state.uiLocale);
+  }
+
+  function matchingLocaleForUiSwitch(sample, currentKey, uiLocale) {
+    var entries = localeEntries(sample);
+    var current = localeEntryByKey(sample, currentKey) || entries[0];
+    var currentGroup = localeVariantGroup(current && current.locale);
+    return entries.find(function (entry) {
+      return inferLocaleLanguage(entry) === normalizeUiLocale(uiLocale) && localeVariantGroup(entry.locale) === currentGroup;
+    }) || current;
   }
 
   function readLastSelection() {
@@ -225,7 +598,7 @@
     examples.forEach(function (example, index) {
       var option = document.createElement("option");
       option.value = String(index);
-      option.textContent = example.label || (example.payload && example.payload.macro) || ("Example " + (index + 1));
+      option.textContent = example.label || (example.payload && example.payload.macro) || t("macro.exampleFallback", "Example {number}", { number: index + 1 });
       els.macroExampleSelect.appendChild(option);
     });
     els.macroExampleSelect.value = "0";
@@ -246,8 +619,11 @@
     els.templateSelect.innerHTML = "";
     (state.manifest.samples || []).forEach(function (sample) {
       var option = document.createElement("option");
+      var labelLocale = state.activeSample && state.activeSample.id === sample.id
+        ? state.activeLocale
+        : preferredLocaleForUi(sample, "", state.uiLocale);
       option.value = sample.id;
-      option.textContent = sample.name || sample.id;
+      option.textContent = labelLocale && labelLocale.name || sample.name || sample.id;
       option.selected = state.activeSample && state.activeSample.id === sample.id;
       els.templateSelect.appendChild(option);
     });
@@ -259,7 +635,7 @@
     localeEntries(state.activeSample).forEach(function (entry) {
       var option = document.createElement("option");
       option.value = entry.locale;
-      option.textContent = entry.label || entry.name || entry.locale;
+      option.textContent = entry.label || entry.name || (entry.locale === "default" ? t("template.defaultVariant", "Default") : entry.locale);
       option.selected = entry.locale === state.activeLocaleKey;
       els.localeSelect.appendChild(option);
     });
@@ -274,7 +650,7 @@
     state.activeConfig = null;
     state.activeHtmlPath = state.activeLocale.html || sample.html || "";
     persistLastSelection();
-    els.templateStatus.textContent = "Selected: " + (state.activeLocale.name || sample.name || sample.id);
+    setTemplateStatus("template.selected", "Selected: {name}", { name: state.activeLocale.name || sample.name || sample.id });
     renderTemplates();
     renderLocaleSelect();
     syncTemplateTools();
@@ -284,35 +660,39 @@
 
   function renderDashboard() {
     if (!state.activeSample || !state.activeLocale) {
-      toast("Select a template first.");
+      toast(t("toast.selectTemplate", "Select a template first."));
       return Promise.resolve();
     }
     state.activeHtmlPath = state.activeLocale.html || state.activeSample.html || "";
-    els.previewState.textContent = "Rendering";
+    setPreviewStatus("preview.rendering", "Rendering");
     return postJson("/sim/api/render", {
       htmlPath: state.activeHtmlPath,
       config: state.activeConfig === null ? undefined : state.activeConfig
     }).then(function (payload) {
       state.activeConfig = payload.config || state.activeConfig || {};
       els.dashboardFrame.srcdoc = payload.html;
-      els.previewTitle.textContent = state.activeLocale.name || state.activeSample.name || "Preview";
-      els.previewState.textContent = payload.parseError ? "Marker error: " + payload.parseError : "Ready";
-      els.templateStatus.textContent = "Preview loaded.";
+      els.previewTitle.textContent = state.activeLocale.name || state.activeSample.name || t("preview.title", "Preview");
+      if (payload.parseError) {
+        setPreviewStatus("preview.markerError", "Marker error: {error}", { error: payload.parseError });
+      } else {
+        setPreviewStatus("preview.ready", "Ready");
+      }
+      setTemplateStatus("template.previewLoaded", "Preview loaded.");
       refreshDefaultFields();
     }).catch(function (error) {
-      els.previewState.textContent = "Error";
+      setPreviewStatus("preview.error", "Error");
       toast(error.message);
     });
   }
 
   function openSetup() {
     if (!state.activeSample || !state.activeLocale) {
-      toast("Select a template first.");
+      toast(t("toast.selectTemplate", "Select a template first."));
       return;
     }
     var setupPage = activeSetupPage();
     if (!setupPage) {
-      toast("This template has no setup GUI.");
+      toast(t("setup.noSetup", "This template has no setup GUI."));
       return;
     }
     state.setupReady = false;
@@ -333,7 +713,7 @@
         context: {
           sessionId: state.context.sessionId,
           syncId: state.context.syncId,
-          locale: "vi"
+          locale: state.uiLocale
         }
       }
     }, window.location.origin);
@@ -346,12 +726,12 @@
 
   function loadSampleDatabase() {
     if (!state.activeSample || !state.activeLocale) {
-      toast("Select a template first.");
+      toast(t("toast.selectTemplate", "Select a template first."));
       return;
     }
     var sampleDatabase = activeSampleDatabase();
     if (!sampleDatabase) {
-      toast("This template has no sample database.");
+      toast(t("database.noSample", "This template has no sample database."));
       return;
     }
     return postJson("/api/sample-dashboards/database", {
@@ -360,7 +740,7 @@
       sessionId: state.context.sessionId,
       overwrite: true
     }).then(function (payload) {
-      toast("Sample DB loaded: " + payload.ioid);
+      toast(t("database.loaded", "Sample DB loaded: {ioid}", { ioid: payload.ioid }));
     }).catch(function (error) {
       toast(error.message);
     });
@@ -376,12 +756,12 @@
 
   function exportTemplate() {
     if (!state.activeSample) {
-      toast("Select a template first.");
+      toast(t("toast.selectTemplate", "Select a template first."));
       return;
     }
     var templateId = String(state.activeSample.id || "").trim();
     if (!templateId) {
-      toast("Selected template has no id.");
+      toast(t("template.noId", "Selected template has no id."));
       return;
     }
     var url = "/sim/api/export-template?templateId=" + encodeURIComponent(templateId);
@@ -409,17 +789,17 @@
         link.click();
         link.remove();
         window.setTimeout(function () { URL.revokeObjectURL(objectUrl); }, 1000);
-        toast("Template package exported.");
+        toast(t("export.done", "Template package exported."));
       });
     }).catch(function (error) {
-      toast(error.message || "Export failed.");
+      toast(error.message || t("export.failed", "Export failed."));
     });
   }
 
   function clearSimulatedDatabases() {
-    if (!window.confirm("Clear all simulated IoData databases?")) return Promise.resolve();
+    if (!window.confirm(t("database.clearConfirm", "Clear all simulated IoData databases?"))) return Promise.resolve();
     return deleteJson("/sim/api/iodata").then(function (payload) {
-      toast("Simulated DB files cleared: " + (payload.deleted || 0));
+      toast(t("database.cleared", "Simulated DB files cleared: {count}", { count: payload.deleted || 0 }));
       els.macroResult.textContent = "";
     }).catch(function (error) {
       toast(error.message);
@@ -449,10 +829,10 @@
 
   function generatorKindLabel(kind) {
     return {
-      timeseries: "timeseries number",
-      number: "telemetry number",
-      text: "text",
-      onoff: "ON/OFF"
+      timeseries: t("generator.kind.timeseries", "Timeseries number").toLowerCase(),
+      number: t("generator.kind.number", "Telemetry number").toLowerCase(),
+      text: t("generator.kind.text", "Text").toLowerCase(),
+      onoff: t("generator.kind.onoff", "ON/OFF")
     }[normalizeGeneratorKind(kind)];
   }
 
@@ -524,7 +904,7 @@
     state.generators = rows || [];
     els.generatorList.innerHTML = "";
     if (!rows.length) {
-      els.generatorList.innerHTML = '<div class="status">No generators.</div>';
+      els.generatorList.innerHTML = '<div class="status">' + esc(t("generator.empty", "No generators.")) + '</div>';
       renderDefaultFields();
       return;
     }
@@ -535,13 +915,13 @@
       item.innerHTML = ""
         + '<div class="generator-copy">'
         + "<strong>" + esc(row.field) + "</strong>"
-        + "<span>" + esc(generatorKindLabel(kind)) + " | " + esc(row.sessionId) + " | " + (row.enabled ? "auto" : "manual") + " | " + esc(row.intervalMs) + "ms</span>"
+        + "<span>" + esc(generatorKindLabel(kind)) + " | " + esc(row.sessionId) + " | " + esc(row.enabled ? t("generator.auto", "auto") : t("generator.manual", "manual")) + " | " + esc(row.intervalMs) + "ms</span>"
         + "</div>"
         + '<div class="generator-actions compact-actions">'
-        + actionButton("edit", "edit", "Edit")
-        + actionButton("tick", "send", "Send once")
-        + actionButton("toggle", row.enabled ? "pause" : "play", row.enabled ? "Stop" : "Start")
-        + actionButton("delete", "trash", "Delete")
+        + actionButton("edit", "edit", t("action.edit", "Edit"))
+        + actionButton("tick", "send", t("action.sendOnce", "Send once"))
+        + actionButton("toggle", row.enabled ? "pause" : "play", row.enabled ? t("action.stop", "Stop") : t("action.start", "Start"))
+        + actionButton("delete", "trash", t("action.delete", "Delete"))
         + '</div>';
       item.querySelector('[data-action="edit"]').addEventListener("click", function () { editGenerator(row); });
       item.querySelector('[data-action="tick"]').addEventListener("click", function () {
@@ -563,9 +943,9 @@
   }
 
   function clearGenerators() {
-    if (!window.confirm("Clear all telemetry/timeseries generators and generated data?")) return Promise.resolve();
+    if (!window.confirm(t("generator.clearConfirm", "Clear all telemetry/timeseries generators and generated data?"))) return Promise.resolve();
     return deleteJson("/sim/api/generators").then(function (payload) {
-      toast("Telemetry/timeseries cleared: " + (payload.generators || 0) + " generators");
+      toast(t("generator.cleared", "Telemetry/timeseries cleared: {count} generators", { count: payload.generators || 0 }));
       state.generators = [];
       return refreshGenerators().then(refreshDefaultFields);
     }).catch(function (error) { toast(error.message); });
@@ -602,8 +982,8 @@
       item.dataset.exists = "false";
       item.innerHTML = ""
         + "<div><strong>" + esc(row.field) + " | " + esc(generatorKindLabel(row.kind)) + "</strong>"
-        + "<span>DeviceId: " + esc(row.sessionId) + " | missing</span></div>"
-        + actionButton("add-default", "plus", "Add field");
+        + "<span>" + esc(t("field.deviceId", "DeviceId")) + ": " + esc(row.sessionId) + " | " + esc(t("defaultFields.missing", "missing")) + "</span></div>"
+        + actionButton("add-default", "plus", t("action.addField", "Add field"));
       var button = item.querySelector('[data-action="add-default"]');
       button.addEventListener("click", function () { addDefaultFields([entry.index]); });
       els.defaultFieldList.appendChild(item);
@@ -638,11 +1018,11 @@
       .filter(function (row) { return row && !row.exists && !existing[generatorKey(row.sessionId, row.field)]; })
       .map(function (row) { return row.generator; });
     if (!generators.length) {
-      toast("No missing default fields.");
+      toast(t("defaultFields.noneMissing", "No missing default fields."));
       return Promise.resolve();
     }
     return postJson("/sim/api/generators/bulk", { generators: generators }).then(function (payload) {
-      toast("Default fields added: " + (payload.inserted || []).length);
+      toast(t("defaultFields.added", "Default fields added: {count}", { count: (payload.inserted || []).length }));
       return refreshGenerators().then(refreshDefaultFields);
     }).catch(function (error) { toast(error.message); });
   }
@@ -652,20 +1032,22 @@
     postJson("/sim/api/generators", generatorPayload()).then(function () {
       hideGeneratorForm();
       refreshGenerators();
-      toast("Generator saved.");
+      toast(t("generator.saved", "Generator saved."));
     }).catch(function (error) { toast(error.message); });
   }
 
   function renderCommands(rows) {
+    rows = rows || [];
+    state.commands = rows;
     els.commandLog.innerHTML = "";
     if (!rows.length) {
-      els.commandLog.innerHTML = '<div class="status">No commands.</div>';
+      els.commandLog.innerHTML = '<div class="status">' + esc(t("commands.empty", "No commands.")) + '</div>';
       return;
     }
     rows.forEach(function (row) {
       var item = document.createElement("div");
       item.className = "command-item";
-      item.innerHTML = "<strong>" + esc(row.command) + "</strong><span>" + esc(row.ioid) + " | " + new Date(row.created_at).toLocaleString() + "</span>";
+      item.innerHTML = "<strong>" + esc(row.command) + "</strong><span>" + esc(row.ioid) + " | " + new Date(row.created_at).toLocaleString(state.uiLocale === "vi" ? "vi-VN" : "en-GB") + "</span>";
       els.commandLog.appendChild(item);
     });
   }
@@ -676,7 +1058,7 @@
 
   function clearCommands() {
     return deleteJson("/sim/api/commands").then(function (payload) {
-      toast("Command log cleared: " + (payload.deleted || 0));
+      toast(t("commands.cleared", "Command log cleared: {count}", { count: payload.deleted || 0 }));
       return refreshCommands();
     }).catch(function (error) { toast(error.message); });
   }
@@ -686,7 +1068,7 @@
     try {
       payload = JSON.parse(els.macroPayload.value || "{}");
     } catch (error) {
-      toast("Macro payload JSON is invalid.");
+      toast(t("macro.invalidJson", "Macro payload JSON is invalid."));
       return;
     }
     postJson("/api/" + encodeURIComponent(state.context.sessionId) + "/" + encodeURIComponent(state.context.syncId) + "/iodata", payload)
@@ -702,16 +1084,52 @@
     var text = els.macroGatewayCommand && els.macroGatewayCommand.textContent || "";
     if (!text) return;
     if (!navigator.clipboard || !navigator.clipboard.writeText) {
-      toast("Clipboard API is not available.");
+      toast(t("clipboard.unavailable", "Clipboard API is not available."));
       return;
     }
     navigator.clipboard.writeText(text)
-      .then(function () { toast("Gateway command copied."); })
-      .catch(function (error) { toast(error.message || "Copy failed."); });
+      .then(function () { toast(t("clipboard.copied", "Gateway command copied.")); })
+      .catch(function (error) { toast(error.message || t("clipboard.failed", "Copy failed.")); });
+  }
+
+  function switchActiveLocaleForUi(uiLocale) {
+    if (!state.activeSample || !state.activeLocale) return false;
+    var nextLocale = matchingLocaleForUiSwitch(state.activeSample, state.activeLocaleKey, uiLocale);
+    if (!nextLocale || nextLocale.locale === state.activeLocaleKey) return false;
+    state.activeLocale = nextLocale;
+    state.activeLocaleKey = nextLocale.locale;
+    state.activeConfig = null;
+    state.activeHtmlPath = state.activeLocale.html || state.activeSample.html || "";
+    persistLastSelection();
+    setTemplateStatus("template.selected", "Selected: {name}", {
+      name: state.activeLocale.name || state.activeSample.name || state.activeSample.id
+    });
+    renderLocaleSelect();
+    syncTemplateTools();
+    renderMacroExamples({ resetPayload: true });
+    refreshDefaultFields();
+    return true;
+  }
+
+  function setUiLocale(locale, options) {
+    var nextLocale = normalizeUiLocale(locale);
+    if (SUPPORTED_UI_LOCALES.indexOf(nextLocale) === -1) nextLocale = "en";
+    var changed = nextLocale !== state.uiLocale;
+    state.uiLocale = nextLocale;
+    persistUiLocale();
+    applyTranslations();
+    var switchedTemplateLocale = options && options.syncTemplateLocale ? switchActiveLocaleForUi(nextLocale) : false;
+    if (switchedTemplateLocale) {
+      renderDashboard();
+    } else if (changed && state.activeLocale && els.previewTitle) {
+      els.previewTitle.textContent = state.activeLocale.name || state.activeSample.name || t("preview.title", "Preview");
+    }
   }
 
   function bind() {
     decorateIconButtons(document);
+    els.contextPill = $("context-pill");
+    els.languageToggle = $("language-toggle");
     els.templateSelect = $("template-select");
     els.localeSelect = $("locale-select");
     els.templateStatus = $("template-status");
@@ -747,6 +1165,11 @@
     els.defaultFieldsPanel = $("default-fields-panel");
     els.defaultFieldList = $("default-field-list");
 
+    Array.prototype.forEach.call(document.querySelectorAll("[data-locale-option]"), function (button) {
+      button.addEventListener("click", function () {
+        setUiLocale(button.getAttribute("data-locale-option"), { syncTemplateLocale: true });
+      });
+    });
     $("refresh-manifest").addEventListener("click", loadManifest);
     $("load-template").addEventListener("click", renderDashboard);
     els.openSetup.addEventListener("click", openSetup);
@@ -779,7 +1202,9 @@
       state.activeConfig = null;
       state.activeHtmlPath = state.activeLocale.html || state.activeSample.html || "";
       persistLastSelection();
-      els.templateStatus.textContent = "Selected: " + (state.activeLocale.name || state.activeSample.name || state.activeSample.id);
+      setTemplateStatus("template.selected", "Selected: {name}", {
+        name: state.activeLocale.name || state.activeSample.name || state.activeSample.id
+      });
       syncTemplateTools();
       renderMacroExamples({ resetPayload: true });
       refreshDefaultFields();
@@ -800,17 +1225,19 @@
         els.setupDialog.close();
         renderDashboard();
         refreshDefaultFields();
-        toast("Setup config applied.");
+        toast(t("setup.applied", "Setup config applied."));
       } else if (data.type === "dashboardSetup:error") {
-        toast(data.payload && data.payload.message || "Setup error.");
+        toast(data.payload && data.payload.message || t("setup.error", "Setup error."));
       }
     });
+    applyTranslations();
   }
 
   function loadContext() {
     return request("/sim/api/context").then(function (context) {
       state.context = context;
-      $("context-pill").textContent = "DeviceId: " + context.sessionId + " | SyncId: " + context.syncId;
+      state.contextReady = true;
+      updateContextPill();
       resetGeneratorForm();
     });
   }
