@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Theo dõi tủ locker</title>
+  <link rel="stylesheet" href="/dashboard-themes.css" />
+  <link rel="stylesheet" href="/sample_dashboards/locker-management/dashboard.css?v=2026.06.15.1" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+      } catch (error) {}
+    })();
+  </script>
+</head>
+<body>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="locker-page locker-monitor" id="locker-root">
+    <section class="locker-hero">
+      <div class="locker-title-block">
+        <span class="locker-eyebrow" id="locker-eyebrow">ROSA Locker Monitor</span>
+        <h1 id="locker-title">Theo dõi tủ locker</h1>
+        <p id="locker-subtitle">Màn hình chỉ xem trạng thái locker, SĐT được ẩn bớt và dữ liệu lấy từ database.</p>
+      </div>
+      <div class="locker-toolbar">
+        <button class="locker-button" type="button" id="locker-refresh">Tải lại</button>
+        <div class="locker-live" id="locker-live" data-state="loading">Đang tải</div>
+      </div>
+    </section>
+
+    <section class="locker-kpis" id="locker-kpis"></section>
+    <section class="locker-cabinet-list" id="locker-cabinet-list"></section>
+
+    <section class="locker-panel" id="locker-log-panel">
+      <div class="locker-panel-head">
+        <h2>Log rút gọn</h2>
+        <span id="locker-log-count">0 dòng</span>
+      </div>
+      <div class="locker-table-wrap">
+        <table class="locker-table">
+          <thead>
+            <tr>
+              <th>Thời gian</th>
+              <th>Tủ</th>
+              <th>Locker</th>
+              <th>Sự kiện</th>
+              <th>Người dùng</th>
+              <th>Nội dung</th>
+            </tr>
+          </thead>
+          <tbody id="locker-event-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="locker-toast-stack" id="locker-toast-stack" aria-live="polite"></div>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Chọn giao diện" aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Tùy chọn giao diện">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism" role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism" role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk" role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento Grid</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script id="locker-manager-config" type="application/json">
+{
+  "mode": "monitor",
+  "locale": "vi",
+  "title": "Theo dõi tủ locker",
+  "subtitle": "Màn hình chỉ xem trạng thái locker, SĐT được ẩn bớt và dữ liệu lấy từ database.",
+  "eyebrow": "ROSA Locker Monitor",
+  "databaseSessionId": "<<sessionid>>",
+  "syncId": "<<syncid>>",
+  "stateMacro": "locker-monitor-state",
+  "eventMacro": "locker-event-list",
+  "eventPageSize": 50,
+  "monitorPrivacy": "maskedPhone",
+  "kioskMode": false,
+  "stream": {
+    "enabled": true,
+    "cooldownMs": 5000
+  }
+}
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START -->
+  <script>
+    // Editable slot for site-specific labels.
+  </script>
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script src="/sample_dashboards/locker-management/dashboard-runtime.js?v=2026.06.15.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

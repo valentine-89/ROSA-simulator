@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý tủ locker</title>
+  <link rel="stylesheet" href="/dashboard-themes.css" />
+  <link rel="stylesheet" href="/sample_dashboards/locker-management/dashboard.css?v=2026.06.15.1" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+      } catch (error) {}
+    })();
+  </script>
+</head>
+<body>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="locker-page" id="locker-root">
+    <section class="locker-hero">
+      <div class="locker-title-block">
+        <span class="locker-eyebrow" id="locker-eyebrow">ROSA Locker Manager</span>
+        <h1 id="locker-title">Quản lý tủ locker</h1>
+        <p id="locker-subtitle">Theo dõi trạng thái, người đang giữ đồ, log vận hành và QR mở tủ theo từng cụm locker.</p>
+      </div>
+      <div class="locker-toolbar">
+        <button class="locker-button" type="button" id="locker-refresh">Tải lại</button>
+        <div class="locker-live" id="locker-live" data-state="loading">Đang tải</div>
+      </div>
+    </section>
+
+    <section class="locker-kpis" id="locker-kpis"></section>
+    <section class="locker-cabinet-list" id="locker-cabinet-list"></section>
+
+    <section class="locker-admin-workbench">
+      <div class="locker-panel locker-incident-panel" id="locker-incident-panel">
+        <div class="locker-panel-head">
+          <h2>Xử lý sự cố</h2>
+          <span id="locker-incident-state">Chưa chọn locker</span>
+        </div>
+        <div class="locker-detail-grid" id="locker-detail-grid"></div>
+        <div class="locker-incident-controls">
+          <button class="locker-button" type="button" id="locker-action-open" disabled>Mở locker bằng tay</button>
+          <label>Trạng thái
+            <select class="locker-input" id="locker-status-select">
+              <option value="free">Trống</option>
+              <option value="occupied">Đang dùng</option>
+              <option value="disabled">Disable</option>
+              <option value="opening">Đang mở</option>
+              <option value="error">Lỗi</option>
+            </select>
+          </label>
+          <label>SĐT khi set occupied
+            <input class="locker-input" id="locker-status-phone" type="search" placeholder="0912345678" />
+          </label>
+          <label>Ghi chú
+            <input class="locker-input" id="locker-status-note" placeholder="Lý do thao tác" />
+          </label>
+          <button class="locker-button" type="button" id="locker-status-apply" disabled>Áp dụng trạng thái</button>
+        </div>
+        <pre class="locker-command-preview" id="locker-command-preview">Chọn một locker trên lưới để thao tác.</pre>
+      </div>
+
+      <div class="locker-panel locker-user-ops">
+        <div class="locker-panel-head">
+          <h2>Người dùng</h2>
+          <span id="locker-user-count">Tìm kiếm phân trang</span>
+        </div>
+        <div class="locker-user-tools">
+          <input class="locker-input" id="locker-user-search" type="search" placeholder="Tìm tên, email hoặc SĐT" />
+          <button class="locker-button" type="button" id="locker-user-search-button">Tìm</button>
+          <button class="locker-button" type="button" id="locker-user-load-more">Tải thêm</button>
+          <button class="locker-button" type="button" id="locker-user-topup-new">Nạp user mới</button>
+        </div>
+        <div class="locker-user-workspace">
+          <div class="locker-user-results" id="locker-users"></div>
+          <div class="locker-user-detail" id="locker-user-detail">
+            <div class="locker-empty-state">Chọn một user để xem lịch sử session, ví và hoàn tiền giao dịch lỗi.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="locker-panel locker-config-panel" id="locker-config-panel">
+      <div class="locker-panel-head">
+        <div>
+          <h2>Cài đặt hệ thống</h2>
+          <span>Site, tủ, thiết bị điều khiển và số ngăn locker</span>
+        </div>
+        <div class="locker-config-actions">
+          <button class="locker-button" type="button" id="locker-config-load-db">Nạp từ DB</button>
+          <button class="locker-button" type="button" id="locker-config-load-draft">Nạp từ setup</button>
+          <button class="locker-button" type="button" id="locker-config-import">Import JSON</button>
+          <button class="locker-button" type="button" id="locker-config-export">Export JSON</button>
+          <button class="locker-button" type="button" id="locker-config-add-cabinet">Thêm tủ</button>
+        </div>
+      </div>
+      <input id="locker-config-import-file" type="file" accept="application/json,.json" hidden />
+      <div class="locker-config-site">
+        <label>Tên đơn vị<input class="locker-input" id="locker-config-site-name" /></label>
+        <label>Địa chỉ<input class="locker-input" id="locker-config-site-address" /></label>
+        <label>QR nạp tiền<input class="locker-input" id="locker-config-topup-qr" /></label>
+        <label>Hướng dẫn nạp tiền<input class="locker-input" id="locker-config-topup-note" /></label>
+        <button class="locker-button" type="button" id="locker-config-save-site">Lưu thông tin site</button>
+      </div>
+      <div class="locker-config-help">Setup page chỉ lưu cấu hình nháp trong dashboard. Bấm “Áp dụng cấu hình tủ” để ghi xuống SQLite bằng macro template.</div>
+      <div class="locker-config-list" id="locker-config-list"></div>
+      <div class="locker-config-footer">
+        <pre class="locker-command-preview" id="locker-config-preview"></pre>
+        <button class="locker-button" type="button" id="locker-config-apply">Áp dụng cấu hình tủ</button>
+      </div>
+    </section>
+
+    <section class="locker-two-col">
+      <div class="locker-panel" id="locker-log-panel">
+        <div class="locker-panel-head">
+          <h2>Log gần nhất</h2>
+          <span id="locker-log-count">0 dòng</span>
+        </div>
+        <div class="locker-log-tools">
+          <label>Loại dữ liệu
+            <select class="locker-input" id="locker-log-dataset">
+              <option value="events">Event</option>
+              <option value="sessions">Session</option>
+              <option value="wallet">Ví</option>
+            </select>
+          </label>
+          <label>Tủ<select class="locker-input" id="locker-log-cabinet"><option value="">Tất cả</option></select></label>
+          <label>Locker<input class="locker-input" id="locker-log-locker" type="search" placeholder="A-001" /></label>
+          <label>SĐT<input class="locker-input" id="locker-log-phone" type="search" placeholder="091..." /></label>
+          <label>Sự kiện/loại<input class="locker-input" id="locker-log-event-type" type="search" placeholder="deposit_success" /></label>
+          <label>Trạng thái<input class="locker-input" id="locker-log-status" type="search" placeholder="active/closed" /></label>
+          <label>Từ<input class="locker-input" id="locker-log-from" type="datetime-local" /></label>
+          <label>Đến<input class="locker-input" id="locker-log-to" type="datetime-local" /></label>
+          <button class="locker-button" type="button" id="locker-log-apply">Lọc</button>
+          <button class="locker-button" type="button" id="locker-log-reset">Xóa lọc</button>
+          <button class="locker-button" type="button" id="locker-log-load-more">Tải thêm</button>
+          <button class="locker-button" type="button" id="locker-log-export">Xuất CSV</button>
+        </div>
+        <div class="locker-table-wrap">
+          <table class="locker-table">
+            <thead>
+              <tr>
+                <th>Thời gian</th>
+                <th>Tủ</th>
+                <th>Locker</th>
+                <th>Sự kiện</th>
+                <th>Người dùng</th>
+                <th>Nội dung</th>
+              </tr>
+            </thead>
+            <tbody id="locker-event-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="locker-panel">
+        <div class="locker-panel-head">
+          <div>
+            <h2>Bảng giá</h2>
+            <span>phí/lượt gửi đồ theo nhóm user</span>
+          </div>
+          <div class="locker-rate-actions">
+            <button class="locker-button" type="button" id="locker-rate-load-setup">Nạp pricing từ setup</button>
+            <button class="locker-button" type="button" id="locker-rate-add">Thêm nhóm giá</button>
+          </div>
+        </div>
+        <div id="locker-rates" class="locker-rate-editor"></div>
+      </div>
+    </section>
+
+    <section class="locker-panel locker-notes">
+      <div class="locker-panel-head">
+        <h2>Ghi nhận cho ROSA sau</h2>
+        <span>ngoài phạm vi template</span>
+      </div>
+      <ul id="locker-notes"></ul>
+    </section>
+  </main>
+
+  <div class="locker-modal" id="locker-topup-modal" hidden>
+    <form class="locker-modal-card" id="locker-topup-form" role="dialog" aria-modal="true" aria-labelledby="locker-topup-title">
+      <div class="locker-modal-head">
+        <div>
+          <h2 id="locker-topup-title">Nạp tiền người dùng</h2>
+          <p id="locker-topup-subtitle">Ghi nhận tiền quản lý đã nhận trực tiếp.</p>
+        </div>
+        <button class="locker-icon-button" type="button" id="locker-topup-close" aria-label="Đóng">&times;</button>
+      </div>
+      <div class="locker-form-grid">
+        <label>SĐT<input class="locker-input" id="locker-topup-phone" name="phone" required /></label>
+        <label>Số tiền<input class="locker-input" id="locker-topup-amount" name="amount" type="number" min="1" step="1000" required /></label>
+        <label>Họ tên<input class="locker-input" id="locker-topup-name" name="display_name" /></label>
+        <label>Email<input class="locker-input" id="locker-topup-email" name="email" type="email" /></label>
+        <label class="locker-field-full">Ghi chú<input class="locker-input" id="locker-topup-note" name="note" /></label>
+      </div>
+      <div class="locker-modal-actions">
+        <button class="locker-button" type="submit" id="locker-topup-submit">Ghi nhận nạp tiền</button>
+      </div>
+      <pre class="locker-command-preview" id="locker-topup-preview"></pre>
+    </form>
+  </div>
+
+  <div class="locker-toast-stack" id="locker-toast-stack" aria-live="polite"></div>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Chọn giao diện" aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Tùy chọn giao diện">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism" role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism" role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk" role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento Grid</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script id="locker-manager-config" type="application/json">
+{
+  "mode": "admin",
+  "locale": "vi",
+  "title": "Quản lý tủ locker",
+  "subtitle": "Theo dõi trạng thái, người đang giữ đồ, log vận hành và QR mở tủ theo từng cụm locker.",
+  "eyebrow": "ROSA Locker Manager",
+  "databaseSessionId": "<<sessionid>>",
+  "syncId": "<<syncid>>",
+  "stateMacro": "locker-admin-state",
+  "eventMacro": "locker-event-list",
+  "adminStatusMacro": "locker-admin-set-status",
+  "adminAuditMacro": "locker-admin-audit-action",
+  "userSearchMacro": "locker-admin-user-search",
+  "userDetailMacro": "locker-admin-user-detail",
+  "topupMacro": "locker-admin-topup-user",
+  "refundMacro": "locker-admin-refund-transaction",
+  "saveRateMacro": "locker-admin-save-rate",
+  "deleteRateMacro": "locker-admin-delete-rate",
+  "setUserTierMacro": "locker-admin-set-user-tier",
+  "configStateMacro": "locker-admin-config-state",
+  "saveSiteConfigMacro": "locker-admin-save-site-config",
+  "applyCabinetConfigMacro": "locker-admin-apply-cabinet-config",
+  "openCommandId": "locker-open-auto",
+  "eventPageSize": 80,
+  "userPageSize": 50,
+  "initialSetup": {
+    "site": {
+      "name": "ROSA Locker",
+      "address": "Trường mẫu ROSA, TP.HCM",
+      "topup_note": "Nạp tiền tại quầy quản lý trước khi gửi đồ.",
+      "topup_qr_url": ""
+    },
+    "defaults": {
+      "cabinetCount": 2,
+      "defaultLockerCount": 30,
+      "defaultIoid": "<<ioid>>"
+    },
+    "rates": [
+      {
+        "tier": "guest",
+        "open_fee": 0,
+        "note": "Khách vãng lai."
+      },
+      {
+        "tier": "member",
+        "open_fee": 0,
+        "note": "Hội viên/nhân viên."
+      }
+    ],
+    "cabinets": [
+      {
+        "cabinet_id": "CAB-A",
+        "label": "Tủ A",
+        "location": "Sảnh chính",
+        "ioid": "<<ioid>>",
+        "page_id": "locker-open-cab-a",
+        "locker_count": 24,
+        "locker_prefix": "A",
+        "hardware_pattern": "{cabinet}-{slot3}",
+        "sort_order": 1,
+        "enabled": true
+      },
+      {
+        "cabinet_id": "CAB-B",
+        "label": "Tủ B",
+        "location": "Khu tự học",
+        "ioid": "<<ioid>>",
+        "page_id": "locker-open-cab-b",
+        "locker_count": 36,
+        "locker_prefix": "B",
+        "hardware_pattern": "{cabinet}-{slot3}",
+        "sort_order": 2,
+        "enabled": true
+      }
+    ]
+  },
+  "stream": {
+    "enabled": true,
+    "cooldownMs": 5000
+  }
+}
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START -->
+  <script>
+    // Editable slot for site-specific labels or command aliases.
+  </script>
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script src="/sample_dashboards/locker-management/dashboard-runtime.js?v=2026.06.15.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

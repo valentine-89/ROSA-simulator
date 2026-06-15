@@ -2151,7 +2151,7 @@
           "label": "Tưới tuần tự",
           "name": "Điều khiển tưới tuần tự",
           "description": "Tổng quan:\nBiến thể tưới cây tuần tự cho một hoặc nhiều thiết bị bơm. Mỗi thiết bị có một máy bơm, lịch bật bơm chỉ dùng tác vụ ON, và tối đa 50 van năng lượng mặt trời hiển thị nối tiếp trên mô hình đường ống. Van có trạng thái ON/OFF, phần trăm pin, điều khiển tay và cài thời gian tưới trực tiếp xuống thiết bị.\n\nLoại:\ntelemetry + commands + database\n\nCác tham số chính:\n- devices[].sessionId: device key của thiết bị IoT, hỗ trợ nhiều thiết bị bơm trên một trang\n- devices[].pump: label, stateField, commandOn, commandOff, scheduleFields\n- devices[].valves: count, stateField, batteryField, durationField, commandTemplate\n- Trạng thái van: một field CSV, ví dụ O101=ON,OFF,OFF,OFF,OFF\n- Pin van: một field CSV, ví dụ B101=95,88,76,100,64\n- Thời gian tưới van: một field CSV, ví dụ #1005=60,300,300,300,300\n- Lịch bơm chỉ gửi ON: #1021=0630,enable,ON hoặc #1021=0000,disable,ON\n- Lệnh điều khiển van dùng commandTemplate, ví dụ N3,\"{action}\",{valveId}\n- Macro lịch sử: irrigation-control-history; macro ghi lịch sử: IO-irrigation-log\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ lệnh telemetry:\nD23,#801,,\"telemetry\",\"O100\"=\"O100,\"O101\"=\"O101,\"B101\"=\"B101,\"#1005\"=\"#1005,\"#1021\"=\"#1021\n\nVí dụ lệnh thời gian van:\n#1005=60,600,300,300,300\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Dữ liệu lịch bơm, trạng thái van, pin van và thời gian tưới nằm trên thiết bị qua telemetry/command, không lưu trong database.\n- Setup giới hạn tối đa 50 van cho mỗi thiết bị.",
-          "image": "/sample_dashboards/irrigation-timer-control/sample.png",
+          "image": "/sample_dashboards/irrigation-timer-control/sample_sequential.png",
           "html": "/sample_dashboards/irrigation-timer-control/dashboard_sequential_vi.html",
           "setup": {
             "page": "/sample_dashboards/irrigation-timer-control/setup_sequential_vi.html"
@@ -2349,6 +2349,210 @@
             "macro": "irrigation-control-history",
             "limit": 20,
             "offset": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "locker-management",
+      "name": "Quản lý tủ locker",
+      "description": "Tổng quan:\nTemplate quản lý tủ locker theo hướng database-first. Dashboard quản lý hiển thị nhiều tủ/locker, vận hành desktop, có panel cài đặt site/tủ/ngăn/thiết bị, tìm user phân trang cho dữ liệu lớn, nạp tiền thủ công, hoàn phí lỗi, bảng giá editable, đổi nhóm giá user, log có filter/xuất CSV và import/export cấu hình JSON. Setup page lưu cấu hình nháp số tủ, số ngăn, IoID thiết bị, mapping phần cứng và pricing ban đầu vào dashboard config; admin dashboard apply xuống SQLite bằng macro. QR page theo từng tủ có hai nút Gửi đồ/Nhận đồ, bootstrap user 0đ nếu chưa có, kiểm tra số dư hoặc đồ trong đúng tủ theo verified phone trước khi gửi lệnh mở tủ; phí và session chỉ ghi khi thiết bị IoT báo deposit_success/pickup_success. Monitor public và landing cá nhân dùng publicApi macro không lộ API key; monitor có privacy/kiosk mode, landing hiển thị hướng dẫn/QR nạp tiền tại quầy.\n\nLoại:\ndatabase + IoT pages + public macro API + secure command mẫu\n\nCác tham số chính:\n- Database: locker_site, locker_cabinets, lockers, locker_users, locker_rates, locker_sessions, locker_events, locker_operation_requests, locker_wallet_transactions\n- Macro đọc: locker-admin-state, locker-monitor-state, locker-event-list, locker-landing-state\n- Macro admin: locker-admin-user-search, locker-admin-user-detail, locker-admin-topup-user, locker-admin-refund-transaction, locker-admin-set-status, locker-admin-audit-action, locker-admin-config-state, locker-admin-save-site-config, locker-admin-apply-cabinet-config, locker-admin-save-rate, locker-admin-delete-rate, locker-admin-set-user-tier\n- Macro QR: locker-qr-open-precheck\n- Macro thiết bị báo cáo: IO-locker-report\n- QR system_page mẫu: locker-open-cab-a, locker-open-cab-b\n- Public monitor system_page mẫu: locker-monitor-public\n- Landing system_page mẫu: locker-landing\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ thiết bị báo gửi hàng thành công:\nD23,#801,,\"data\",\"IO-locker-report\",\"deposit_success\",\"CAB-A\",\"A-001\",\"REQ123\",\"0912345678\",\"door_closed\"\n\nVí dụ thiết bị báo lấy hàng thành công:\nD23,#801,,\"data\",\"IO-locker-report\",\"pickup_success\",\"CAB-A\",\"A-001\",\"REQ124\",\"0912345678\",\"door_closed\"\n\nVí dụ thiết bị báo lỗi khóa kẹt:\nD23,#801,,\"data\",\"IO-locker-report\",\"lock_jammed\",\"CAB-A\",\"A-001\",\"REQ125\",\"0912345678\",\"motor_timeout\"\n\nGhi chú:\n- Mỗi QR/link chỉ ứng với một tủ/một bộ điều khiển; đến sai tủ để nhận đồ sẽ không tìm thấy đồ ở tủ đó.\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- User tự nạp tiền/PayOS/ROSA wallet vẫn để phase sau; v1 dùng admin nạp tiền thủ công trong DB locker.\n- ROSA core không có logic riêng cho locker; template dùng public macro, secure command và gateway iodata chung.",
+      "image": "/sample_dashboards/locker-management/sample.png",
+      "html": "/sample_dashboards/locker-management/dashboard_admin_vi.html",
+      "setup": {
+        "page": "/sample_dashboards/locker-management/setup_vi.html"
+      },
+      "sampleDatabase": "/sample_dashboards/locker-management/sample.sqlite",
+      "tags": [
+        "locker",
+        "database",
+        "iot",
+        "qr",
+        "monitoring"
+      ],
+      "defaultLocale": "admin-vi",
+      "locales": {
+        "admin-vi": {
+          "label": "Quản lý",
+          "name": "Quản lý tủ locker",
+          "description": "Tổng quan:\nDashboard quản lý chung cho locker: nhiều tủ, nhiều locker dạng ô nhỏ, trạng thái màu, SĐT đầy đủ trên locker, log có filter/xuất CSV, tìm user phân trang, xem chi tiết user, nạp tiền thủ công, hoàn phí lỗi, bảng giá editable, đổi nhóm giá user, QR từng tủ, panel xử lý sự cố và panel cài đặt site/tủ/ngăn/thiết bị có import/export JSON.\n\nLoại:\ndatabase + IoT pages + secure command mẫu\n\nMacro chính:\n- locker-admin-state\n- locker-event-list\n- locker-admin-user-search\n- locker-admin-user-detail\n- locker-admin-topup-user\n- locker-admin-refund-transaction\n- locker-admin-set-status\n- locker-admin-audit-action\n- locker-admin-config-state\n- locker-admin-save-site-config\n- locker-admin-apply-cabinet-config\n- locker-admin-save-rate\n- locker-admin-delete-rate\n- locker-admin-set-user-tier\n- IO-locker-report\n\nGhi chú:\n- Trạng thái lấy từ SQLite, không dùng telemetry.\n- Setup page chỉ lưu cấu hình nháp; dashboard admin apply topology và pricing xuống DB qua macro template.\n- Panel mở tay gọi secure command mẫu locker-open-auto nếu system_cmds đã được cài cho thiết bị, sau đó ghi audit event.\n- DB mẫu có QR Gửi đồ/Nhận đồ theo từng tủ, precheck số dư hoặc đồ trong đúng tủ, bootstrap user 0đ nếu chưa có, landing cá nhân và public monitor không lộ key.\n- QR chưa ghi nhận gửi/lấy đồ; thiết bị báo IO-locker-report mới ghi session, phí và log.",
+          "image": "/sample_dashboards/locker-management/sample.png",
+          "html": "/sample_dashboards/locker-management/dashboard_admin_vi.html",
+          "setup": {
+            "page": "/sample_dashboards/locker-management/setup_vi.html"
+          },
+          "default-fields": []
+        },
+        "monitor-vi": {
+          "label": "Theo dõi",
+          "name": "Theo dõi tủ locker",
+          "description": "Tổng quan:\nDashboard chỉ xem trạng thái locker từ database. SĐT mặc định được mask dạng 091****123, có thể đổi privacy sang ẩn SĐT, chỉ trạng thái hoặc chỉ tổng hợp; hỗ trợ kiosk mode và tự refresh khi có iodata_changed.\n\nLoại:\ndatabase\n\nMacro chính:\n- locker-monitor-state\n- locker-event-list\n\nGhi chú:\n- Khi chạy trong dashboard ROSA, trang dùng private iodata context.\n- DB mẫu có system_page locker-monitor-public để chạy public monitor qua /api/iot-page-macro/{ioid}/{pageid} và /api/iot-page-stream/{ioid}/{pageid} không lộ key.\n- Trạng thái lấy từ SQLite, không dùng telemetry.",
+          "image": "/sample_dashboards/locker-management/sample.png",
+          "html": "/sample_dashboards/locker-management/dashboard_monitor_vi.html",
+          "setup": {
+            "page": "/sample_dashboards/locker-management/setup_vi.html"
+          },
+          "default-fields": []
+        }
+      },
+      "default-fields": [],
+      "macro-examples": [
+        {
+          "label": "Thiết bị báo gửi hàng thành công",
+          "payload": {
+            "macro": "IO-locker-report",
+            "c1": "deposit_success",
+            "c2": "CAB-A",
+            "c3": "A-001",
+            "c4": "REQ123",
+            "c5": "0912345678",
+            "c6": "door_closed"
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"IO-locker-report\",\"deposit_success\",\"CAB-A\",\"A-001\",\"REQ123\",\"0912345678\",\"door_closed\""
+        },
+        {
+          "label": "Thiết bị báo lấy hàng thành công",
+          "payload": {
+            "macro": "IO-locker-report",
+            "c1": "pickup_success",
+            "c2": "CAB-A",
+            "c3": "A-001",
+            "c4": "REQ124",
+            "c5": "0912345678",
+            "c6": "door_closed"
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"IO-locker-report\",\"pickup_success\",\"CAB-A\",\"A-001\",\"REQ124\",\"0912345678\",\"door_closed\""
+        },
+        {
+          "label": "Thiết bị báo lỗi khóa kẹt",
+          "payload": {
+            "macro": "IO-locker-report",
+            "c1": "lock_jammed",
+            "c2": "CAB-A",
+            "c3": "A-001",
+            "c4": "REQ125",
+            "c5": "0912345678",
+            "c6": "motor_timeout"
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"IO-locker-report\",\"lock_jammed\",\"CAB-A\",\"A-001\",\"REQ125\",\"0912345678\",\"motor_timeout\""
+        },
+        {
+          "label": "Đọc trạng thái quản lý",
+          "payload": {
+            "macro": "locker-admin-state",
+            "limit": 80
+          }
+        },
+        {
+          "label": "Đọc trạng thái theo dõi",
+          "payload": {
+            "macro": "locker-monitor-state",
+            "limit": 50,
+            "privacy": "maskedPhone"
+          }
+        },
+        {
+          "label": "Lọc event vận hành",
+          "payload": {
+            "macro": "locker-event-list",
+            "dataset": "events",
+            "cabinet_id": "CAB-A",
+            "event_type": "deposit_success",
+            "limit": 50,
+            "offset": 0
+          }
+        },
+        {
+          "label": "Admin nạp tiền user",
+          "payload": {
+            "macro": "locker-admin-topup-user",
+            "phone": "0912345678",
+            "display_name": "Nguyen Van An",
+            "email": "an@example.edu.vn",
+            "amount": 50000,
+            "note": "Thu tiền mặt tại quầy",
+            "request_id": "TOPUP-DEMO-1"
+          }
+        },
+        {
+          "label": "Admin lưu nhóm giá",
+          "payload": {
+            "macro": "locker-admin-save-rate",
+            "tier": "member",
+            "open_fee": 3000,
+            "note": "Giá hội viên",
+            "request_id": "RATE-DEMO-1"
+          }
+        },
+        {
+          "label": "Admin đổi nhóm giá user",
+          "payload": {
+            "macro": "locker-admin-set-user-tier",
+            "phone": "0912345678",
+            "tier": "member",
+            "request_id": "TIER-DEMO-1"
+          }
+        },
+        {
+          "label": "Admin xóa nhóm giá chưa dùng",
+          "payload": {
+            "macro": "locker-admin-delete-rate",
+            "tier": "vip",
+            "request_id": "RATE-DEL-DEMO-1"
+          }
+        },
+        {
+          "label": "Admin lưu thông tin site",
+          "payload": {
+            "macro": "locker-admin-save-site-config",
+            "site_id": "default",
+            "name": "Trường THCS Nguyễn Du",
+            "address": "12 Nguyễn Du, Quận 1, TP.HCM",
+            "topup_note": "Nạp tiền tại quầy quản lý.",
+            "topup_qr_url": "",
+            "request_id": "SITE-DEMO-1"
+          }
+        },
+        {
+          "label": "Admin apply cấu hình tủ mới",
+          "payload": {
+            "macro": "locker-admin-apply-cabinet-config",
+            "cabinet_id": "CAB-C",
+            "label": "Tủ C",
+            "location": "Sảnh tầng 2",
+            "ioid": "<<ioid>>",
+            "page_id": "locker-open-cab-c",
+            "locker_count": 30,
+            "locker_prefix": "C",
+            "hardware_pattern": "{cabinet}-{slot3}",
+            "sort_order": 3,
+            "enabled": 1,
+            "request_id": "CFG-DEMO-1"
+          }
+        },
+        {
+          "label": "QR precheck gửi đồ",
+          "payload": {
+            "macro": "locker-qr-open-precheck",
+            "phone": "0912345678",
+            "cabinet_id": "CAB-A",
+            "requested_action": "deposit"
+          }
+        },
+        {
+          "label": "QR precheck nhận đồ đúng tủ",
+          "payload": {
+            "macro": "locker-qr-open-precheck",
+            "phone": "0912345678",
+            "cabinet_id": "CAB-A",
+            "requested_action": "pickup"
+          }
+        },
+        {
+          "label": "Landing cá nhân",
+          "payload": {
+            "macro": "locker-landing-state",
+            "phone": "0912345678"
           }
         }
       ]

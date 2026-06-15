@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cấu hình Locker Manager</title>
+  <link rel="stylesheet" href="/sample_dashboards/setup_shared.css" />
+  <style>
+    .setup-shell { display: grid; gap: 14px; max-width: 1120px; margin: 0 auto; }
+    .setup-card { display: grid; gap: 14px; border: 1px solid var(--line); background: var(--panel); border-radius: 18px; box-shadow: var(--shadow); padding: 16px; }
+    .setup-heading { display: grid; gap: 6px; }
+    .setup-heading h1, .setup-heading h2 { margin: 0; }
+    .setup-heading p { margin: 0; color: var(--muted); line-height: 1.45; }
+    .setup-eyebrow { color: var(--primary-strong); font-size: 0.76rem; font-weight: 900; text-transform: uppercase; }
+    .setup-section-heading { margin-top: 6px; border-top: 1px solid var(--line); padding-top: 14px; }
+    .setup-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .setup-field { display: grid; gap: 5px; min-width: 0; }
+    .setup-field.span-2 { grid-column: 1 / -1; }
+    .setup-cabinet-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+    .setup-file-input { display: none; }
+    .setup-locker-cabinets { display: grid; gap: 10px; }
+    .setup-locker-cabinet { display: grid; gap: 10px; border: 1px solid var(--line); background: var(--panel-soft); border-radius: 14px; padding: 12px; }
+    .setup-locker-cabinet-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .setup-locker-cabinet-grid { display: grid; gap: 8px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .setup-rate-grid { display: grid; gap: 8px; grid-template-columns: 160px 160px minmax(0, 1fr) auto; }
+    .setup-rate-row { display: contents; }
+    .setup-rate-row > * { min-width: 0; }
+    .setup-locker-check { align-content: end; min-height: 38px; }
+    .setup-locker-check input { width: auto; min-height: 0; }
+    .setup-secondary-button { color: var(--text); background: var(--panel); border: 1px solid var(--line); }
+    @media (max-width: 900px) {
+      .setup-grid, .setup-locker-cabinet-grid, .setup-rate-grid { grid-template-columns: 1fr; }
+      .setup-cabinet-tools, .setup-locker-cabinet-head { align-items: stretch; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="setup-shell">
+    <section class="setup-card">
+      <div class="setup-heading">
+        <span class="setup-eyebrow">ROSA template</span>
+        <h1>Cấu hình Locker Manager</h1>
+        <p>Thiết lập nhanh dashboard quản lý hoặc theo dõi tủ locker từ SQLite macro.</p>
+      </div>
+
+      <div class="setup-grid">
+        <label class="setup-field">
+          <span>Chế độ</span>
+          <select id="locker-mode">
+            <option value="admin">Quản lý chung</option>
+            <option value="monitor">Theo dõi</option>
+          </select>
+        </label>
+        <label class="setup-field">
+          <span>Tiêu đề</span>
+          <input id="locker-title" type="text" />
+        </label>
+        <label class="setup-field span-2">
+          <span>Mô tả</span>
+          <input id="locker-subtitle" type="text" />
+        </label>
+        <label class="setup-field">
+          <span>Session database</span>
+          <input id="locker-session" type="text" placeholder="<<sessionid>>" />
+        </label>
+        <label class="setup-field">
+          <span>SyncID</span>
+          <input id="locker-sync" type="text" placeholder="<<syncid>>" />
+        </label>
+        <label class="setup-field">
+          <span>Macro trạng thái</span>
+          <input id="locker-state-macro" type="text" />
+        </label>
+        <label class="setup-field">
+          <span>Số log hiển thị</span>
+          <input id="locker-page-size" type="number" min="10" max="200" step="10" />
+        </label>
+        <label class="setup-field">
+          <span>Privacy monitor</span>
+          <select id="locker-monitor-privacy">
+            <option value="maskedPhone">Mask SĐT</option>
+            <option value="hiddenPhone">Ẩn SĐT</option>
+            <option value="stateOnly">Chỉ trạng thái</option>
+            <option value="summaryOnly">Chỉ tổng hợp</option>
+          </select>
+        </label>
+        <label class="setup-field setup-locker-check">
+          <span>Monitor kiosk</span>
+          <label><input id="locker-kiosk-mode" type="checkbox" /> Tối ưu màn hình lớn</label>
+        </label>
+      </div>
+
+      <div class="setup-heading setup-section-heading">
+        <span class="setup-eyebrow">Cấu hình nháp</span>
+        <h2>Site và tủ locker</h2>
+        <p>Các thông tin dưới đây được lưu vào config dashboard. Sau khi mở dashboard quản lý, bấm “Áp dụng vào DB” trong panel Cài đặt hệ thống để tạo/cập nhật tủ và ngăn locker.</p>
+      </div>
+
+      <div class="setup-grid">
+        <label class="setup-field">
+          <span>Tên đơn vị</span>
+          <input id="locker-site-name" type="text" />
+        </label>
+        <label class="setup-field">
+          <span>Địa chỉ</span>
+          <input id="locker-site-address" type="text" />
+        </label>
+        <label class="setup-field">
+          <span>QR nạp tiền</span>
+          <input id="locker-topup-qr" type="text" placeholder="https://..." />
+        </label>
+        <label class="setup-field">
+          <span>Số tủ</span>
+          <input id="locker-cabinet-count" type="number" min="1" max="50" step="1" />
+        </label>
+        <label class="setup-field">
+          <span>Số ngăn mặc định mỗi tủ</span>
+          <input id="locker-default-count" type="number" min="1" max="200" step="1" />
+        </label>
+        <label class="setup-field">
+          <span>IoID thiết bị mặc định</span>
+          <input id="locker-default-ioid" type="text" placeholder="<<ioid>>" />
+        </label>
+        <label class="setup-field span-2">
+          <span>Hướng dẫn nạp tiền</span>
+          <input id="locker-topup-note" type="text" />
+        </label>
+      </div>
+
+      <div class="setup-cabinet-tools">
+        <button id="locker-regenerate-cabinets" type="button" class="setup-button">Tạo lại danh sách tủ</button>
+        <button id="locker-add-cabinet" type="button" class="setup-button">Thêm tủ</button>
+        <button id="locker-import-config" type="button" class="setup-button setup-secondary-button">Import JSON</button>
+        <button id="locker-export-config" type="button" class="setup-button setup-secondary-button">Export JSON</button>
+        <input id="locker-import-file" class="setup-file-input" type="file" accept="application/json,.json" />
+      </div>
+
+      <div id="locker-cabinet-editor" class="setup-locker-cabinets"></div>
+
+      <div class="setup-heading setup-section-heading">
+        <span class="setup-eyebrow">Bảng giá nháp</span>
+        <h2>Nhóm giá ban đầu</h2>
+        <p>Setup chỉ lưu pricing vào config dashboard. Trong dashboard quản lý, bấm “Nạp pricing từ setup” rồi lưu từng nhóm giá xuống SQLite.</p>
+      </div>
+
+      <div class="setup-cabinet-tools">
+        <button id="locker-add-rate" type="button" class="setup-button">Thêm nhóm giá</button>
+      </div>
+      <div id="locker-rate-editor" class="setup-rate-grid"></div>
+    </section>
+  </main>
+  <script src="/sample_dashboards/setup_bridge.js"></script>
+  <script src="/sample_dashboards/locker-management/setup_locker_vi.js?v=2026.06.15.1"></script>
+</body>
+</html>
