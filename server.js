@@ -6,7 +6,7 @@ const {
   composeDashboardEditableSections,
   parseDashboardEditableSections
 } = require('./src/dashboardEditableSections');
-const { SimulatorStore, normalizeIoDataKey, parseFieldsParam } = require('./src/store');
+const { SimulatorStore, PublicPageError, normalizeIoDataKey, parseFieldsParam } = require('./src/store');
 
 const ROOT = __dirname;
 const PORT = Number(process.env.PORT || 4177);
@@ -22,10 +22,13 @@ const DEFAULT_SYNC_ID = process.env.SIM_SYNC_ID || 'SIM_SYNC';
 const store = new SimulatorStore({
   rootDir: ROOT,
   stateDir: STATE_ROOT,
-  templateRoot: TEMPLATE_ROOT
+  templateRoot: TEMPLATE_ROOT,
+  defaultSessionId: DEFAULT_SESSION_ID,
+  defaultSyncId: DEFAULT_SYNC_ID
 });
 
 const generatorTimers = new Map();
+const publicRateBuckets = new Map();
 
 function json(res, status, value) {
   const body = JSON.stringify(value);
@@ -60,13 +63,24 @@ function errorJson(res, status, message) {
   json(res, status, { error: String(message || 'Request failed.') });
 }
 
-function readBody(req) {
+function publicErrorJson(res, error, fallbackStatus = 400) {
+  const status = error instanceof PublicPageError
+    ? error.status
+    : Number(error && error.status) || fallbackStatus;
+  json(res, status, {
+    ok: false,
+    error: error && error.code ? error.code : 'REQUEST_FAILED',
+    message: error && error.message ? error.message : 'Request failed.'
+  });
+}
+
+function readBody(req, maxBytes = 1024 * 1024) {
   return new Promise((resolve, reject) => {
     let raw = '';
     req.on('data', (chunk) => {
       raw += chunk;
-      if (Buffer.byteLength(raw) > 1024 * 1024) {
-        reject(new Error('Request body is too large.'));
+      if (Buffer.byteLength(raw) > maxBytes) {
+        reject(new PublicPageError(413, 'BODY_TOO_LARGE', `Request body exceeds ${maxBytes} bytes.`));
         req.destroy();
       }
     });
@@ -402,6 +416,90 @@ function fillPlaceholders(html, sessionId = DEFAULT_SESSION_ID, syncId = DEFAULT
     .replaceAll('<<syncId>>', syncId);
 }
 
+function requestClientKey(req) {
+  const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  return forwarded || req.socket.remoteAddress || 'local';
+}
+
+function sameOriginFromHeader(req, headerName) {
+  const value = String(req.headers[headerName] || '').trim();
+  if (!value) return true;
+  try {
+    const host = String(req.headers.host || '').trim().toLowerCase();
+    const parsed = new URL(value);
+    return parsed.host.toLowerCase() === host;
+  } catch {
+    return false;
+  }
+}
+
+function assertSameOrigin(req) {
+  if (!sameOriginFromHeader(req, 'origin') || !sameOriginFromHeader(req, 'referer')) {
+    throw new PublicPageError(403, 'CROSS_ORIGIN_REJECTED', 'Cross-origin public IoT request was rejected.');
+  }
+}
+
+function checkPublicRateLimit(key, config) {
+  const limit = Math.max(1, Math.min(600, Number(config && config.limit) || 600));
+  const windowMs = Math.max(1000, Math.min(10 * 60 * 1000, Number(config && config.windowMs) || 60 * 1000));
+  const now = Date.now();
+  let bucket = publicRateBuckets.get(key);
+  if (!bucket || bucket.resetAt <= now) {
+    bucket = { count: 0, resetAt: now + windowMs };
+  }
+  bucket.count += 1;
+  publicRateBuckets.set(key, bucket);
+  if (publicRateBuckets.size > 5000) {
+    for (const [bucketKey, item] of publicRateBuckets.entries()) {
+      if (!item || item.resetAt <= now) publicRateBuckets.delete(bucketKey);
+    }
+  }
+  if (bucket.count > limit) {
+    throw new PublicPageError(429, 'RATE_LIMITED', 'Public IoT page rate limit exceeded.');
+  }
+}
+
+function openTelemetryStream(req, res, sessionId, fields, options = {}) {
+  const fieldLookup = new Set((fields || []).map((field) => String(field || '').toLowerCase()).filter(Boolean));
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+    'Access-Control-Allow-Origin': '*'
+  });
+  const send = (event) => res.write(`data: ${JSON.stringify(event)}\n\n`);
+  const latest = store.getLatestState(sessionId, fields);
+  if (latest && latest.payload && Object.keys(latest.payload).length) {
+    send({
+      type: 'telemetry',
+      sessionId,
+      syncId: options.syncId,
+      serverTime: latest.serverTime,
+      payload: latest.payload
+    });
+  }
+  const unsubscribe = store.subscribe((event) => {
+    if (event.sessionId && event.sessionId !== sessionId) return;
+    if (event.type === 'telemetry' && fieldLookup.size > 0) {
+      const payload = {};
+      for (const [field, value] of Object.entries(event.payload || {})) {
+        if (fieldLookup.has(field.toLowerCase())) payload[field] = value;
+      }
+      if (!Object.keys(payload).length) return;
+      send({ ...event, syncId: options.syncId, payload });
+      return;
+    }
+    if (event.type === 'timeseries' && fieldLookup.size > 0) {
+      const rows = (event.rows || []).filter((row) => fieldLookup.has(String(row.field || '').toLowerCase()));
+      if (!rows.length) return;
+      send({ ...event, syncId: options.syncId, rows });
+      return;
+    }
+    send({ ...event, syncId: options.syncId });
+  });
+  req.on('close', unsubscribe);
+}
+
 function injectShim(html) {
   const snippet = `<script>window.ROSA_SIMULATOR_CONTEXT=${JSON.stringify({ sessionId: DEFAULT_SESSION_ID, syncId: DEFAULT_SYNC_ID })};</script>\n<script src="/simulator/shim.js"></script>\n`;
   if (String(html || '').includes('/simulator/shim.js')) return html;
@@ -668,6 +766,167 @@ async function handleSimApi(req, res, url) {
   return false;
 }
 
+async function handlePublicPageApi(req, res, url) {
+  const pageMatch = url.pathname.match(/^\/iot-page\/([^/]+)\/([^/]+)$/);
+  if (req.method === 'GET' && pageMatch) {
+    try {
+      const ioid = decodeURIComponent(pageMatch[1]);
+      const pageId = decodeURIComponent(pageMatch[2]);
+      const rendered = store.renderPublicPage(ioid, pageId);
+      text(res, 200, rewritePackageManifestPaths(rendered.html), 'text/html; charset=utf-8');
+    } catch (error) {
+      publicErrorJson(res, error, 404);
+    }
+    return true;
+  }
+
+  const telemetryMatch = url.pathname.match(/^\/api\/iot-page-telemetry\/([^/]+)\/([^/]+)$/);
+  if (req.method === 'GET' && telemetryMatch) {
+    try {
+      const ioid = decodeURIComponent(telemetryMatch[1]);
+      const pageId = decodeURIComponent(telemetryMatch[2]);
+      const context = store.getPublicPageReadContext(ioid, pageId);
+      const latest = store.getLatestState(context.publicSessionId, context.publicApi.fields);
+      if (!latest || !latest.payload || !Object.keys(latest.payload).length) {
+        json(res, 404, { c1: 'No telemetry available.', c2: 0 });
+        return true;
+      }
+      json(res, 200, {
+        c1: 'ok',
+        c2: {
+          sessionId: context.publicSessionId,
+          syncId: 'public-page',
+          serverTime: latest.serverTime,
+          payload: latest.payload
+        }
+      });
+    } catch (error) {
+      publicErrorJson(res, error, 400);
+    }
+    return true;
+  }
+
+  const timeseriesMatch = url.pathname.match(/^\/api\/iot-page-timeseries\/([^/]+)\/([^/]+)$/);
+  if (req.method === 'GET' && timeseriesMatch) {
+    try {
+      const ioid = decodeURIComponent(timeseriesMatch[1]);
+      const pageId = decodeURIComponent(timeseriesMatch[2]);
+      const context = store.getPublicPageReadContext(ioid, pageId);
+      const to = Number(url.searchParams.get('to') || Date.now());
+      const from = Number(url.searchParams.get('from') || (to - 60 * 60 * 1000));
+      const result = store.queryTimeseries(context.publicSessionId, from, to, context.publicApi.fields);
+      json(res, 200, {
+        c1: 'ok',
+        c2: {
+          ...result,
+          sessionId: context.publicSessionId,
+          syncId: 'public-page'
+        }
+      });
+    } catch (error) {
+      publicErrorJson(res, error, 400);
+    }
+    return true;
+  }
+
+  const realtimeMatch = url.pathname.match(/^\/api\/iot-page-realtime\/([^/]+)\/([^/]+)$/);
+  if (req.method === 'GET' && realtimeMatch) {
+    try {
+      const ioid = decodeURIComponent(realtimeMatch[1]);
+      const pageId = decodeURIComponent(realtimeMatch[2]);
+      const context = store.getPublicPageReadContext(ioid, pageId);
+      checkPublicRateLimit(
+        `realtime:${requestClientKey(req)}:${context.ioid}:${context.pageId}`,
+        context.publicApi.rateLimit
+      );
+      openTelemetryStream(req, res, context.publicSessionId, context.publicApi.fields, { syncId: 'public-page' });
+    } catch (error) {
+      publicErrorJson(res, error, 400);
+    }
+    return true;
+  }
+
+  const macroMatch = url.pathname.match(/^\/api\/iot-page-macro\/([^/]+)\/([^/]+)$/);
+  if (req.method === 'POST' && macroMatch) {
+    try {
+      assertSameOrigin(req);
+      const ioid = decodeURIComponent(macroMatch[1]);
+      const pageId = decodeURIComponent(macroMatch[2]);
+      const context = store.getPublicPageContext(ioid, pageId);
+      const body = await readBody(req, context.publicApi.maxBodyBytes);
+      const macroName = String(body && body.macro || 'macro').trim() || 'macro';
+      checkPublicRateLimit(
+        `macro:${requestClientKey(req)}:${context.ioid}:${context.pageId}:${macroName}`,
+        context.publicApi.rateLimit
+      );
+      const result = store.executePublicPageMacro(context.ioid, context.pageId, body);
+      json(res, 200, result);
+    } catch (error) {
+      publicErrorJson(res, error, 400);
+    }
+    return true;
+  }
+
+  const streamMatch = url.pathname.match(/^\/api\/iot-page-stream\/([^/]+)\/([^/]+)$/);
+  if (req.method === 'GET' && streamMatch) {
+    try {
+      const ioid = decodeURIComponent(streamMatch[1]);
+      const pageId = decodeURIComponent(streamMatch[2]);
+      const context = store.getPublicPageContext(ioid, pageId);
+      if (!context.publicApi.stream) {
+        throw new PublicPageError(403, 'PUBLIC_STREAM_DISABLED', 'Public IoData stream is not enabled for this page.');
+      }
+      checkPublicRateLimit(
+        `stream:${requestClientKey(req)}:${context.ioid}:${context.pageId}`,
+        context.publicApi.rateLimit
+      );
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+        'Access-Control-Allow-Origin': '*'
+      });
+      const send = (event) => res.write(`data: ${JSON.stringify(event)}\n\n`);
+      send({ type: 'ready', ioid: context.ioid, pageId: context.pageId, ts: Date.now() });
+      const unsubscribe = store.subscribe((event) => {
+        if (event.type !== 'iodata_changed') return;
+        if (event.sessionId && normalizeIoDataKey(event.sessionId) !== context.ioid) return;
+        if (event.macro && context.publicApi.macros.size && !context.publicApi.macros.has(event.macro)) return;
+        send({
+          type: 'iodata_changed',
+          ioid: context.ioid,
+          pageId: context.pageId,
+          macro: event.macro || '',
+          source: event.source || 'macro',
+          ts: event.ts || Date.now()
+        });
+      });
+      req.on('close', unsubscribe);
+    } catch (error) {
+      publicErrorJson(res, error, 400);
+    }
+    return true;
+  }
+
+  const cmdMatch = url.pathname.match(/^\/api\/iot-cmd\/([^/]+)\/([^/]+)$/);
+  if (req.method === 'POST' && cmdMatch) {
+    try {
+      assertSameOrigin(req);
+      const ioid = decodeURIComponent(cmdMatch[1]);
+      const cmdId = decodeURIComponent(cmdMatch[2]);
+      checkPublicRateLimit(`cmd:${requestClientKey(req)}:${ioid}:${cmdId}`, { limit: 120, windowMs: 60 * 1000 });
+      const body = await readBody(req, 64 * 1024);
+      const result = store.executeSystemCommand(ioid, cmdId, body);
+      json(res, 200, result);
+    } catch (error) {
+      publicErrorJson(res, error, 400);
+    }
+    return true;
+  }
+
+  return false;
+}
+
 async function handleRuntimeApi(req, res, url) {
   if (req.method === 'GET' && url.pathname === '/api/auth/google/status') {
     json(res, 200, {
@@ -675,7 +934,7 @@ async function handleRuntimeApi(req, res, url) {
       user: {
         email: process.env.SIM_USER_EMAIL || 'developer@rosa.local',
         name: process.env.SIM_USER_NAME || 'ROSA Developer',
-        phone: process.env.SIM_USER_PHONE || ''
+        phone: process.env.SIM_USER_PHONE || '0912345123'
       }
     });
     return true;
@@ -684,7 +943,10 @@ async function handleRuntimeApi(req, res, url) {
   if (req.method === 'POST' && url.pathname === '/api/sample-dashboards/database') {
     const body = await readBody(req);
     const source = resolveSampleDatabase(body.templateId, body.locale);
-    const result = store.replaceIoDataFile(body.sessionId || DEFAULT_SESSION_ID, source);
+    const result = store.replaceIoDataFile(body.sessionId || DEFAULT_SESSION_ID, source, {
+      syncId: body.syncId || DEFAULT_SYNC_ID
+    });
+    if (result.publicGenerators) rescheduleAllGenerators();
     json(res, 200, { ok: true, exists: false, overwritten: false, ...result });
     return true;
   }
@@ -693,38 +955,7 @@ async function handleRuntimeApi(req, res, url) {
   if (req.method === 'GET' && streamMatch) {
     const sessionId = decodeURIComponent(streamMatch[1]);
     const fields = parseFieldsParam(url.searchParams.get('fields'));
-    const fieldLookup = new Set(fields.map((field) => field.toLowerCase()));
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-      'Access-Control-Allow-Origin': '*'
-    });
-    const send = (event) => res.write(`data: ${JSON.stringify(event)}\n\n`);
-    const latest = store.getLatestState(sessionId, fields);
-    if (latest && latest.payload && Object.keys(latest.payload).length) {
-      send({ type: 'telemetry', sessionId, serverTime: latest.serverTime, payload: latest.payload });
-    }
-    const unsubscribe = store.subscribe((event) => {
-      if (event.sessionId && event.sessionId !== sessionId) return;
-      if (event.type === 'telemetry' && fieldLookup.size > 0) {
-        const payload = {};
-        for (const [field, value] of Object.entries(event.payload || {})) {
-          if (fieldLookup.has(field.toLowerCase())) payload[field] = value;
-        }
-        if (!Object.keys(payload).length) return;
-        send({ ...event, payload });
-        return;
-      }
-      if (event.type === 'timeseries' && fieldLookup.size > 0) {
-        const rows = (event.rows || []).filter((row) => fieldLookup.has(String(row.field || '').toLowerCase()));
-        if (!rows.length) return;
-        send({ ...event, rows });
-        return;
-      }
-      send(event);
-    });
-    req.on('close', unsubscribe);
+    openTelemetryStream(req, res, sessionId, fields);
     return true;
   }
 
@@ -774,6 +1005,7 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url || '/', `http://${req.headers.host || '127.0.0.1'}`);
     if (await handleSimApi(req, res, url)) return;
+    if (await handlePublicPageApi(req, res, url)) return;
     if (await handleRuntimeApi(req, res, url)) return;
     serveFile(res, staticFileFor(url.pathname));
   } catch (error) {
