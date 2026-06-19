@@ -1,15 +1,35 @@
-# Public System Page Macro API
+# Secure Public IoT Page APIs
 
-Tài liệu này dành cho template author khi cần tạo trang public chạy từ `system_pages` mà không lộ `sessionId@apiKey`.
+Tài liệu này dành cho template author khi cần tạo trang public chạy từ `system_pages` mà không lộ `sessionId@apiKey`, API key hoặc `sync_id` thật.
+
+Bản hướng dẫn đầy đủ cho AI/kỹ sư nằm ở `docs/secure-iot-page-flow.md`. File này là ghi chú nhanh đặt cạnh `sample_templates/` để AI dễ thấy khi quét template mẫu.
 
 ## Nguyên tắc
 
 - Trang public được mở qua `/iot-page/{ioid}/{pageid}`.
+- Trang public không được gọi trực tiếp `/api/{sessionId}/{syncId}/iotelemetry`, `/iotimeseries`, `/iodata` hoặc `/dataquery`.
+- JavaScript trong trang đọc telemetry/timeseries public qua `/api/iot-page-telemetry/{ioid}/{pageid}`, `/api/iot-page-timeseries/{ioid}/{pageid}` hoặc SSE `/api/iot-page-realtime/{ioid}/{pageid}`.
 - JavaScript trong trang gọi macro qua `/api/iot-page-macro/{ioid}/{pageid}`.
 - Trang có realtime DB bằng `/api/iot-page-stream/{ioid}/{pageid}` nếu bật `publicApi.stream`.
+- Trang public gửi lệnh IoT qua `/api/iot-cmd/{ioid}/{cmd_id}` và command phải được khai báo trong `system_cmds`.
 - Macro public không bị ép chỉ đọc. Macro được allowlist trong `system_pages.meta.publicApi.macros` thì được chạy; macro tự quyết định đọc hay ghi qua SQL.
 - ROSA core bảo vệ bằng allowlist, schema tham số, giới hạn dung lượng body, rate limit, billing theo `system_pages.sync_id`, same-origin, và reserved bindings.
 - Nếu page là QR/system page dẫn về landing cá nhân, có thể khai báo `meta.accountLandingPageUrl`. Khi user đã đăng nhập tải page đó, ROSA lưu landing vào account để `/iot-page` render trực tiếp landing về sau.
+- Simulator local dùng identity giả từ `SIM_USER_EMAIL`, `SIM_USER_NAME`, `SIM_USER_PHONE`; production dùng Google/phone verification thật.
+
+## Endpoint tóm tắt
+
+| Mục đích | Endpoint public | Ghi chú |
+| --- | --- | --- |
+| Render public page | `GET /iot-page/{ioid}/{pageid}` | Render HTML lưu trong cột `system_pages.html`, inject `__ROSA_IOT_PAGE_META__` và `__ROSA_IOT_PAGE_CONTEXT__`. |
+| Latest telemetry | `GET /api/iot-page-telemetry/{ioid}/{pageid}` | Chỉ trả field trong `publicApi.fields`. |
+| Timeseries | `GET /api/iot-page-timeseries/{ioid}/{pageid}?from=...&to=...` | Chỉ trả field trong `publicApi.fields`. |
+| Telemetry/timeseries SSE | `GET /api/iot-page-realtime/{ioid}/{pageid}` | Không cần refresh interval. |
+| Public macro | `POST /api/iot-page-macro/{ioid}/{pageid}` | Body `{ "macro": "...", "params": {} }`. |
+| DB change SSE | `GET /api/iot-page-stream/{ioid}/{pageid}` | Chỉ bật khi `publicApi.stream=true`. |
+| Secure command | `POST /api/iot-cmd/{ioid}/{cmd_id}` | Đọc `system_cmds`, resolve template phía server. |
+
+Public response có thể trả `sessionId` dạng sanitize như `{ioid}@public-page` và `syncId` là `public-page`. Đây không phải credential thiết bị.
 
 ## Body gọi macro
 
@@ -26,13 +46,53 @@ Tài liệu này dành cho template author khi cần tạo trang public chạy t
 
 ## Reserved keys
 
-Client không được gửi các key sau làm dữ liệu tin cậy:
+Client không được gửi các key sau làm dữ liệu tin cậy. Không khai báo các key này trong `publicApi.context`, public macro params, `system_cmds.params_schema` hoặc command body:
 
 ```text
 email, username, phone, apikey, api_key, syncid, sync_id, sessionid, session_id, ioid, macro, __proto__, prototype, constructor
 ```
 
-Nếu page có `require_email` hoặc `require_phone`, backend sẽ tự inject `email`, `username`, `phone` từ tài khoản ROSA đã xác thực. Template không nên lấy các giá trị này từ client.
+Các biến thể camel-case như `apiKey`, `syncId`, `sessionId` cũng bị xem là không an toàn vì backend normalize key trước khi validate.
+
+Nếu page có `require_email` hoặc `require_phone`, backend sẽ tự inject `email`, `username`, `phone` từ tài khoản ROSA đã xác thực. Template không được lấy các giá trị này từ client.
+
+## Public telemetry/timeseries
+
+`system_pages.meta.publicApi.fields` là allowlist duy nhất cho public telemetry/timeseries:
+
+```json
+{
+  "pageType": "queue-display",
+  "publicApi": {
+    "fields": [
+      "clinic_a_name",
+      "clinic_a_text1",
+      "clinic_a_order1",
+      "clinic_a_text2",
+      "clinic_a_order2",
+      "clinic_a_media",
+      "clinic_a_note",
+      "clinic_a_alert"
+    ]
+  }
+}
+```
+
+Trang public đọc context đã inject:
+
+```html
+<script id="rosa-iot-page-meta" type="application/json">__ROSA_IOT_PAGE_META__</script>
+<script id="rosa-iot-page-context" type="application/json">__ROSA_IOT_PAGE_CONTEXT__</script>
+```
+
+```js
+var context = JSON.parse(document.getElementById('rosa-iot-page-context').textContent || '{}');
+var es = new EventSource('/api/iot-page-realtime/' + encodeURIComponent(context.ioid) + '/' + encodeURIComponent(context.pageId));
+es.onmessage = function (event) {
+  var data = JSON.parse(event.data || '{}');
+  if (data.type === 'telemetry') render(data.payload || {});
+};
+```
 
 ## Ví dụ monitor locker chỉ đọc
 
@@ -135,6 +195,62 @@ Với `accountLandingPageUrl`, account lưu:
 ```
 
 Với macro ghi public, nên có `client_request_id` và xử lý idempotent trong SQL để chống bấm lặp hoặc retry tạo dữ liệu trùng.
+
+## Secure command bằng `system_cmds`
+
+Public page không tự tạo URL gateway và không gửi API key. Nếu cần gửi lệnh từ QR/public page, tạo row trong `system_cmds`:
+
+```sql
+INSERT INTO system_cmds (
+  cmd_id,
+  command_template,
+  require_email,
+  require_phone,
+  sync_id,
+  params_schema,
+  enabled
+) VALUES (
+  'locker-open-auto',
+  'N3,"LOCKER_OPEN","<<action>>","<<request_id>>","<<cabinet_id>>","<<locker_id>>",<<slot_no>>,"<<hardware_addr>>","<<phone>>"',
+  1,
+  1,
+  '<<syncid>>',
+  '{"action":{"type":"string","required":true,"maxLength":32,"pattern":"^[A-Za-z0-9_-]{1,32}$"},"cabinet_id":{"type":"string","required":true,"maxLength":24,"pattern":"^[A-Z0-9_-]{1,24}$"},"locker_id":{"type":"string","required":true,"maxLength":24,"pattern":"^[A-Z0-9_-]*$"},"slot_no":{"type":"integer","required":true,"min":0,"max":999},"hardware_addr":{"type":"string","required":true,"maxLength":48,"pattern":"^[A-Za-z0-9_.:-]*$"},"request_id":{"type":"string","required":true,"maxLength":48,"pattern":"^[A-Za-z0-9_.:-]{1,48}$"}}',
+  1
+);
+```
+
+Frontend gọi:
+
+```js
+fetch('/api/iot-cmd/' + encodeURIComponent(context.ioid) + '/locker-open-auto', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'same-origin',
+  body: JSON.stringify({
+    action: 'pickup',
+    request_id: 'REQ-123',
+    cabinet_id: 'CAB-A',
+    locker_id: 'A-008',
+    slot_no: 8,
+    hardware_addr: 'ADDR-A-008'
+  })
+});
+```
+
+`<<email>>`, `<<username>>`, `<<phone>>` trong `command_template` do backend resolve. Client không được gửi các khóa này.
+
+## Checklist cho template public
+
+- HTML public được lưu trong cột `system_pages.html` và mở qua `/iot-page/{ioid}/{pageid}`.
+- HTML public có `__ROSA_IOT_PAGE_META__` và `__ROSA_IOT_PAGE_CONTEXT__`.
+- HTML/JS public không chứa `@simulate`, API key, `sync_id` thật hoặc direct `/api/{sessionId}/{syncId}/...`.
+- `publicApi.fields` chỉ chứa telemetry/timeseries field được phép public.
+- `publicApi.macros` chỉ chứa macro được phép chạy public.
+- Public macro params có schema rõ ràng và không dùng reserved keys.
+- Public command dùng `system_cmds`, không build gateway command bằng API key trong browser.
+- Nếu macro ghi dữ liệu, có idempotency key như `client_request_id`.
+- Chạy `npm run validate` và `npm run check`.
 
 ## Chống spam và payload lớn
 
