@@ -1,6 +1,8 @@
 # ROSA sample template authoring guide for AI
 
-This document is written for AI agents and engineers creating a new ROSA sample dashboard template. Before creating a new template, inspect existing templates under `sample_templates/templates/` and copy the closest working template first. Prefer editing proven structure over writing a dashboard from scratch.
+This document is written for AI agents and engineers creating a new ROSA sample dashboard template. For a compact task prompt, start with `docs/ai-template-brief.md`; this file is the detailed authoring contract.
+
+Before creating a new template, inspect existing templates under `sample_templates/templates/` and copy the closest working template first. Prefer editing proven structure over writing a dashboard from scratch.
 
 If the template includes QR pages, public displays, customer self-service pages, or any `system_pages` entry, also read `docs/secure-iot-page-flow.md` before editing. Public IoT pages have a stricter security boundary than private dashboards.
 
@@ -75,6 +77,17 @@ When adding controls, inspect older templates for:
 - How setup GUI communicates through `setup_bridge.js`.
 - How private dashboards use `<<sessionid>>` and `<<syncid>>` placeholders. Public IoT pages must use `/iot-page/{ioid}/{pageid}` and the pageid-based public APIs instead.
 
+## Setup page checklist
+
+For templates with setup UI:
+
+- Create setup HTML/JS under the same template folder.
+- Use `DashboardSetupBridge` and follow the existing `setup_*_vi.js` examples.
+- Render clear editable controls for the dashboard config.
+- Return a complete config JSON that matches the dashboard runtime.
+- Keep labels, default values, and validation messages consistent with the selected template style.
+- Register the setup page through the template's `setup.page` manifest field.
+
 ## Runtime and database conventions
 
 Use telemetry endpoints for current field values and timeseries endpoints for chart history. Use SQLite macros only for actual database-backed state or history. Do not store telemetry snapshots in SQLite unless the template specifically manages historical business data.
@@ -87,8 +100,8 @@ Public IoT pages are different. If a template creates rows in `system_pages`, th
 
 - Render through `/iot-page/{ioid}/{pageid}`.
 - Read `__ROSA_IOT_PAGE_META__` and `__ROSA_IOT_PAGE_CONTEXT__` from JSON script tags.
-- Use `/api/iot-page-telemetry/{ioid}/{pageid}`, `/api/iot-page-timeseries/{ioid}/{pageid}`, and `/api/iot-page-realtime/{ioid}/{pageid}` for public telemetry/timeseries. Only fields listed in `meta.publicApi.fields` are visible.
-- Use `/api/iot-page-macro/{ioid}/{pageid}` for public SQLite macros. Only macros listed in `meta.publicApi.macros` can run.
+- Use `/api/iot-page-telemetry/{ioid}/{pageid}`, `/api/iot-page-timeseries/{ioid}/{pageid}`, and `/api/iot-page-realtime/{ioid}/{pageid}` for public telemetry/timeseries. Visible fields are configured server-side in `meta.publicApi.fields`; browser code does not send the field list.
+- Use `/api/iot-page-macro/{ioid}/{pageid}` for public SQLite macros. Runnable macros are configured server-side in `meta.publicApi.macros`.
 - Use `/api/iot-page-stream/{ioid}/{pageid}` only for database change notifications when `meta.publicApi.stream=true`.
 - Use `/api/iot-cmd/{ioid}/{cmd_id}` for public commands defined in `system_cmds`. Do not build gateway commands or API-key URLs in browser code.
 - Never ask the browser to send reserved keys: `apikey`, `api_key`, `syncid`, `sync_id`, `sessionid`, `session_id`, `ioid`, `macro`, `email`, `phone`, `username`, `__proto__`, `prototype`, or `constructor`.

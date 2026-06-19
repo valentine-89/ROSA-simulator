@@ -12,8 +12,8 @@ Bản hướng dẫn đầy đủ cho AI/kỹ sư nằm ở `docs/secure-iot-pag
 - JavaScript trong trang gọi macro qua `/api/iot-page-macro/{ioid}/{pageid}`.
 - Trang có realtime DB bằng `/api/iot-page-stream/{ioid}/{pageid}` nếu bật `publicApi.stream`.
 - Trang public gửi lệnh IoT qua `/api/iot-cmd/{ioid}/{cmd_id}` và command phải được khai báo trong `system_cmds`.
-- Macro public không bị ép chỉ đọc. Macro được allowlist trong `system_pages.meta.publicApi.macros` thì được chạy; macro tự quyết định đọc hay ghi qua SQL.
-- ROSA core bảo vệ bằng allowlist, schema tham số, giới hạn dung lượng body, rate limit, billing theo `system_pages.sync_id`, same-origin, và reserved bindings.
+- Macro public không bị ép chỉ đọc. Macro được khai báo trong `system_pages.meta.publicApi.macros` thì được chạy; macro tự quyết định đọc hay ghi qua SQL.
+- ROSA core bảo vệ bằng danh sách trường/macro cấu hình trong meta, schema tham số, giới hạn dung lượng body, tính lượt dùng theo `system_pages.sync_id`, same-origin, và reserved bindings.
 - Nếu page là QR/system page dẫn về landing cá nhân, có thể khai báo `meta.accountLandingPageUrl`. Khi user đã đăng nhập tải page đó, ROSA lưu landing vào account để `/iot-page` render trực tiếp landing về sau.
 - Simulator local dùng identity giả từ `SIM_USER_EMAIL`, `SIM_USER_NAME`, `SIM_USER_PHONE`; production dùng Google/phone verification thật.
 
@@ -58,7 +58,7 @@ Nếu page có `require_email` hoặc `require_phone`, backend sẽ tự inject 
 
 ## Public telemetry/timeseries
 
-`system_pages.meta.publicApi.fields` là allowlist duy nhất cho public telemetry/timeseries:
+`system_pages.meta.publicApi.fields` là danh sách trường công khai do server đọc từ meta cho telemetry/timeseries. Browser chỉ gọi endpoint public, không gửi danh sách field:
 
 ```json
 {
@@ -101,8 +101,6 @@ es.onmessage = function (event) {
   "pageType": "locker-monitor-public",
   "publicApi": {
     "stream": true,
-    "maxBodyBytes": 2048,
-    "rateLimit": { "limit": 60, "windowMs": 60000 },
     "macros": {
       "locker-monitor-state": {
         "params": {
@@ -132,8 +130,6 @@ Public monitor locker dùng cùng endpoint macro nhưng truyền thêm `privacy`
   "accountLandingPageUrl": "/iot-page/<<ioid>>/locker-landing",
   "publicApi": {
     "stream": false,
-    "maxBodyBytes": 1024,
-    "rateLimit": { "limit": 20, "windowMs": 60000 },
     "context": { "cabinet_id": "CAB-A" },
     "macros": {
       "locker-qr-open-precheck": {
@@ -173,8 +169,6 @@ Với `accountLandingPageUrl`, account lưu:
   "pageType": "table-order",
   "publicApi": {
     "stream": true,
-    "maxBodyBytes": 4096,
-    "rateLimit": { "limit": 20, "windowMs": 60000 },
     "context": { "table_id": "B12" },
     "macros": {
       "order-create": {
@@ -252,11 +246,10 @@ fetch('/api/iot-cmd/' + encodeURIComponent(context.ioid) + '/locker-open-auto', 
 - Nếu macro ghi dữ liệu, có idempotency key như `client_request_id`.
 - Chạy `npm run validate` và `npm run check`.
 
-## Chống spam và payload lớn
+## Bảo vệ bổ sung
 
 - Mặc định body tối đa 4096 bytes.
 - Page có thể đặt `publicApi.maxBodyBytes`, nhưng không vượt hard cap global 64KB.
-- Rate limit tính theo IP + `ioid/pageid/macro`.
-- `publicApi.rateLimit.limit` được clamp tối đa 600 request mỗi window.
-- `publicApi.rateLimit.windowMs` được clamp trong khoảng 1 giây đến 10 phút.
+- Nếu cần, ROSA/simulator có thể áp dụng `publicApi.rateLimit` theo IP + `ioid/pageid/macro`.
+- Các giá trị giới hạn request sẽ được ROSA/simulator kiểm soát trong ngưỡng an toàn.
 - POST public macro có same-origin check để trang khác không gọi bằng browser một cách tùy tiện.

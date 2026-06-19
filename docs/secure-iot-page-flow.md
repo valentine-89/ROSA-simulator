@@ -16,16 +16,16 @@ If a public page needs data, use only the pageid-based public APIs described bel
 The simulator supports the same public contract needed for local testing:
 
 - `GET /iot-page/{ioid}/{pageid}` renders the HTML stored in the `system_pages.html` column.
-- `GET /api/iot-page-telemetry/{ioid}/{pageid}` returns latest allowlisted telemetry fields.
-- `GET /api/iot-page-timeseries/{ioid}/{pageid}` returns allowlisted timeseries rows.
-- `GET /api/iot-page-realtime/{ioid}/{pageid}` streams allowlisted telemetry/timeseries by SSE.
-- `POST /api/iot-page-macro/{ioid}/{pageid}` runs only macros allowlisted in `publicApi.macros`.
+- `GET /api/iot-page-telemetry/{ioid}/{pageid}` returns latest public telemetry fields configured in page meta.
+- `GET /api/iot-page-timeseries/{ioid}/{pageid}` returns public timeseries rows configured in page meta.
+- `GET /api/iot-page-realtime/{ioid}/{pageid}` streams configured public telemetry/timeseries by SSE.
+- `POST /api/iot-page-macro/{ioid}/{pageid}` runs only macros configured in `publicApi.macros`.
 - `GET /api/iot-page-stream/{ioid}/{pageid}` streams `iodata_changed` when `publicApi.stream=true`.
 - `POST /api/iot-cmd/{ioid}/{cmd_id}` resolves `system_cmds.command_template`, logs locally, and does not call the real IoT gateway.
 
 The simulator uses fake identity values from `SIM_USER_EMAIL`, `SIM_USER_NAME`, and `SIM_USER_PHONE`. If these env vars are absent, it provides a local demo identity so QR/locker/mixer pages can be tested.
 
-Production ROSA may add real Google identity, phone verification, billing, Redis rate limiting, and account landing persistence. Templates should target the same public API contract and must not depend on simulator-only shortcuts.
+Production ROSA may add real account identity, phone verification, usage billing, and extra server-side protection. Templates should target the same public API contract and must not depend on simulator-only shortcuts.
 
 ## Required SQLite Tables
 
@@ -96,8 +96,6 @@ The injected context is intentionally small. It includes `ioid`, `pageId`, and `
   "publicApi": {
     "fields": ["clinic_a_name", "clinic_a_order1"],
     "stream": true,
-    "maxBodyBytes": 2048,
-    "rateLimit": { "limit": 60, "windowMs": 60000 },
     "context": { "station_id": "clinic-a" },
     "macros": {
       "queue-public-state": {
@@ -112,12 +110,11 @@ The injected context is intentionally small. It includes `ioid`, `pageId`, and `
 
 Rules:
 
-- `fields` is the whitelist for public telemetry/timeseries/realtime reads.
+- `fields` is the server-side public field list for telemetry/timeseries/realtime reads. Browser requests do not send this list.
 - `stream=true` enables `/api/iot-page-stream/...` for `iodata_changed`.
 - `context` is server-side page context. Client code must not send these keys.
-- `macros` is an allowlist. A macro not listed here must be rejected.
-- `maxBodyBytes` defaults to 4096 and is capped at 64KB.
-- `rateLimit.limit` is capped at 600 per window.
+- `macros` lists the public macros this page can call. A macro not listed here must be rejected.
+- `maxBodyBytes` and `rateLimit` are optional server-side safety settings handled by ROSA/simulator when configured.
 
 ## Public Telemetry And Timeseries
 
