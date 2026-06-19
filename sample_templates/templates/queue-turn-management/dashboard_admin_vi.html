@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý nhảy số</title>
+  <link rel="stylesheet" href="/dashboard-themes.css" />
+  <link rel="stylesheet" href="/sample_dashboards/queue-turn-management/dashboard.css?v=2026.06.18.2" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+      } catch (error) {}
+    })();
+  </script>
+</head>
+<body>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="qt-admin" id="queue-root">
+    <section class="qt-topbar">
+      <div class="qt-title">
+        <h1 id="qt-title">Quản lý màn hình nhảy số</h1>
+        <p id="qt-subtitle">Tạo trang hiển thị số thứ tự realtime cho các khu vực cần xếp hàng.</p>
+      </div>
+      <div class="qt-toolbar">
+        <div class="qt-live" id="qt-status" data-state="loading">Đang tải</div>
+        <button class="qt-button" type="button" id="qt-refresh">Tải lại</button>
+        <button class="qt-button primary" type="button" id="qt-apply-all">Tạo/cập nhật tất cả</button>
+        <button class="qt-button" type="button" id="qt-add-station">Thêm trạm</button>
+      </div>
+    </section>
+
+    <section class="qt-grid">
+      <section class="qt-panel">
+        <div class="qt-panel-head">
+          <div>
+            <h2>Thông tin chung</h2>
+            <span>Dùng làm tiêu đề và mặc định cho các màn hình nhảy số.</span>
+          </div>
+        </div>
+        <div class="qt-form-grid">
+          <label class="qt-field">
+            <span>Tên đơn vị</span>
+            <input class="qt-input" id="qt-site-name" />
+          </label>
+          <label class="qt-field">
+            <span>Thiết bị nguồn tự động</span>
+            <input class="qt-input" id="qt-site-ioid" readonly aria-readonly="true" placeholder="Tự động từ profile thiết bị" />
+          </label>
+          <label class="qt-field full">
+            <span>Mô tả</span>
+            <input class="qt-input" id="qt-site-note" />
+          </label>
+          <label class="qt-field">
+            <span>Giao diện mặc định</span>
+            <select class="qt-select" id="qt-default-theme">
+              <option value="medical">Khám bệnh</option>
+              <option value="bank">Ngân hàng</option>
+              <option value="pickup">Nhận hàng</option>
+              <option value="amusement">Khu vui chơi</option>
+              <option value="neutral">Kiosk chung</option>
+            </select>
+          </label>
+          <label class="qt-field">
+            <span>Bố cục mặc định</span>
+            <select class="qt-select" id="qt-default-layout">
+              <option value="two-column">2 cột số</option>
+              <option value="single-column">1 cột số</option>
+              <option value="media-top">Media phía trên</option>
+              <option value="media-side">Media bên cạnh</option>
+            </select>
+          </label>
+        </div>
+        <div class="qt-actions">
+          <button class="qt-button primary" type="button" id="qt-save-site">Lưu thông tin chung</button>
+          <button class="qt-button" type="button" id="qt-load-draft">Nạp từ setup</button>
+        </div>
+        <p class="qt-help">Thiết bị nguồn lấy tự động từ profile đang chọn. Trang public chỉ nhận dữ liệu hiển thị cần thiết cho từng trạm.</p>
+      </section>
+
+      <section class="qt-panel">
+        <div class="qt-panel-head">
+          <div>
+            <h2>Trạm nhảy số</h2>
+            <span id="qt-station-count">0 trạm</span>
+          </div>
+          <div class="qt-config-actions">
+            <button class="qt-button" type="button" id="qt-export-config">Xuất cấu hình</button>
+            <button class="qt-button" type="button" id="qt-import-config">Nạp cấu hình</button>
+            <input id="qt-import-file" type="file" accept="application/json,.json" hidden />
+          </div>
+        </div>
+        <div class="qt-station-list" id="qt-stations"></div>
+      </section>
+    </section>
+
+    <section class="qt-panel">
+      <div class="qt-panel-head">
+        <div>
+          <h2>Lệnh cho thiết bị</h2>
+          <span>Dành cho kỹ thuật cấu hình nguồn gửi số. Người vận hành thường chỉ cần copy.</span>
+        </div>
+      </div>
+      <pre class="qt-code" id="qt-gateway-example">Đang tải...</pre>
+    </section>
+  </main>
+
+  <div class="qt-modal" id="qt-station-modal" aria-hidden="true">
+    <form class="qt-modal-card" id="qt-station-form">
+      <div class="qt-modal-head">
+        <div>
+          <h2 id="qt-modal-title">Thêm trạm</h2>
+          <p class="qt-small">Mỗi trạm có một trang hiển thị riêng và một mã dữ liệu riêng.</p>
+        </div>
+        <button class="qt-icon-button" type="button" id="qt-modal-close" aria-label="Đóng">×</button>
+      </div>
+      <div class="qt-form-grid">
+        <label class="qt-field">
+          <span>Mã trạm</span>
+          <input class="qt-input" name="station_id" required placeholder="clinic-a" />
+        </label>
+        <label class="qt-field">
+          <span>Tiêu đề</span>
+          <input class="qt-input" name="title" required placeholder="Phòng khám A" />
+        </label>
+        <label class="qt-field">
+          <span>Mã trang</span>
+          <input class="qt-input" name="page_id" required placeholder="queue-clinic-a" />
+        </label>
+        <label class="qt-field">
+          <span>Mã dữ liệu</span>
+          <input class="qt-input" name="field_prefix" required placeholder="clinic_a" />
+        </label>
+        <input type="hidden" name="source_ioid" />
+        <label class="qt-field">
+          <span>Giao diện</span>
+          <select class="qt-select" name="theme_preset">
+            <option value="medical">Khám bệnh</option>
+            <option value="bank">Ngân hàng</option>
+            <option value="pickup">Nhận hàng</option>
+            <option value="amusement">Khu vui chơi</option>
+            <option value="neutral">Kiosk chung</option>
+          </select>
+        </label>
+        <label class="qt-field">
+          <span>Bố cục</span>
+          <select class="qt-select" name="layout">
+            <option value="two-column">2 cột số</option>
+            <option value="single-column">1 cột số</option>
+            <option value="media-top">Media phía trên</option>
+            <option value="media-side">Media bên cạnh</option>
+          </select>
+        </label>
+        <label class="qt-field">
+          <span>Ẩn khỏi danh sách</span>
+          <select class="qt-select" name="hide_link">
+            <option value="0">Không</option>
+            <option value="1">Có</option>
+          </select>
+        </label>
+        <label class="qt-field full">
+          <span>Ghi chú nội bộ</span>
+          <input class="qt-input" name="note" />
+        </label>
+      </div>
+      <div class="qt-actions">
+        <button class="qt-button" type="button" id="qt-modal-cancel">Hủy</button>
+        <button class="qt-button primary" type="submit" id="qt-station-submit">Áp dụng và tạo trang</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="qt-toast-stack" id="qt-toast-stack" aria-live="polite"></div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script id="queue-turn-config" type="application/json">
+{
+  "title": "Quản lý màn hình nhảy số",
+  "subtitle": "Tạo trang hiển thị số thứ tự realtime cho các khu vực cần xếp hàng.",
+  "databaseSessionId": "<<sessionid>>",
+  "syncId": "<<syncid>>",
+  "stateMacro": "queue-admin-state",
+  "saveSiteMacro": "queue-admin-save-site-config",
+  "applyStationMacro": "queue-admin-apply-station-page",
+  "setEnabledMacro": "queue-admin-set-station-enabled",
+  "deleteStationMacro": "queue-admin-delete-station",
+  "initialSetup": {
+    "site": {
+      "name": "ROSA Queue",
+      "source_ioid": "<<ioid>>",
+      "note": "Sẵn sàng phục vụ khách hàng.",
+      "default_theme": "medical",
+      "default_layout": "two-column"
+    },
+    "stations": [
+      {
+        "station_id": "clinic-a",
+        "title": "Phòng khám A",
+        "page_id": "queue-clinic-a",
+        "field_prefix": "clinic_a",
+        "source_ioid": "<<ioid>>",
+        "theme_preset": "medical",
+        "layout": "two-column",
+        "hide_link": false,
+        "enabled": true,
+        "note": "Demo khám bệnh"
+      }
+    ]
+  }
+}
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START -->
+  <script>
+    // Editable slot for site-specific station defaults.
+  </script>
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script src="/sample_dashboards/queue-turn-management/dashboard-runtime.js?v=2026.06.18.2"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

@@ -155,7 +155,9 @@
     configApply: document.getElementById("locker-config-apply"),
     toastStack: document.getElementById("locker-toast-stack"),
     themeToggle: document.getElementById("theme-picker-toggle"),
-    themeMenu: document.getElementById("theme-picker-menu")
+    themeMenu: document.getElementById("theme-picker-menu"),
+    tabButtons: Array.prototype.slice.call(document.querySelectorAll("[data-locker-tab]")),
+    tabPanels: Array.prototype.slice.call(document.querySelectorAll("[data-locker-panel]"))
   };
 
   setText(nodes.eyebrow, cfg.eyebrow || "");
@@ -481,6 +483,59 @@
     }, 3600);
   }
 
+  function confirmAction(options) {
+    options = options || {};
+    return new Promise(function (resolve) {
+      var modal = document.createElement("div");
+      modal.className = "locker-modal locker-confirm-modal";
+      modal.innerHTML =
+        '<form class="locker-modal-card" role="dialog" aria-modal="true">' +
+          '<div class="locker-modal-head">' +
+            '<div><h2>' + esc(options.title || "Xác nhận thao tác") + '</h2><p>' + esc(options.message || "Vui lòng kiểm tra lại trước khi tiếp tục.") + '</p></div>' +
+            '<button class="locker-icon-button" type="button" data-confirm-cancel aria-label="Đóng">&times;</button>' +
+          '</div>' +
+          '<div class="locker-confirm-body">' +
+            (options.detail ? '<pre class="locker-confirm-detail">' + esc(options.detail) + '</pre>' : '') +
+            (options.requireReason ? '<label>Ghi chú bắt buộc<input class="locker-input" data-confirm-reason value="' + esc(options.defaultReason || "") + '" placeholder="' + esc(options.reasonPlaceholder || "Nhập lý do thao tác") + '" /></label>' : '') +
+          '</div>' +
+          '<div class="locker-modal-actions">' +
+            '<button class="locker-button" type="button" data-confirm-cancel>Hủy</button>' +
+            '<button class="locker-button ' + (options.danger ? "locker-danger-button" : "") + '" type="submit">' + esc(options.confirmText || "Xác nhận") + '</button>' +
+          '</div>' +
+        '</form>';
+      document.body.appendChild(modal);
+      var form = modal.querySelector("form");
+      var reasonInput = modal.querySelector("[data-confirm-reason]");
+      function finish(confirmed, reason) {
+        modal.remove();
+        resolve({ confirmed: confirmed, reason: reason || "" });
+      }
+      modal.querySelectorAll("[data-confirm-cancel]").forEach(function (button) {
+        button.addEventListener("click", function () { finish(false, ""); });
+      });
+      modal.addEventListener("click", function (event) {
+        if (event.target === modal) finish(false, "");
+      });
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        var reason = reasonInput ? String(reasonInput.value || "").trim() : "";
+        if (options.requireReason && !reason) {
+          toast("Vui lòng nhập ghi chú trước khi xác nhận.", "error");
+          if (reasonInput) reasonInput.focus();
+          return;
+        }
+        finish(true, reason);
+      });
+      window.setTimeout(function () {
+        if (reasonInput) reasonInput.focus();
+        else {
+          var submit = form.querySelector("button[type='submit']");
+          if (submit) submit.focus();
+        }
+      }, 0);
+    });
+  }
+
   function refreshState() {
     var macro = String(cfg.stateMacro || (canAdmin ? "locker-admin-state" : "locker-monitor-state")).trim();
     var requestId = ++stateRequestId;
@@ -571,9 +626,9 @@
       var lockers = cabinetLockers(cabinet.cabinet_id);
       var counts = countsFor(lockers);
       var qrUrl = formatQrUrl(cabinet);
-      var qr = qrUrl
+      var qr = canAdmin && qrUrl
         ? '<a class="locker-qr-link" href="' + esc(qrUrl) + '" target="_blank" rel="noreferrer">QR mở tủ: ' + esc(qrUrl) + '</a>'
-        : '<span class="locker-qr-link">Chưa cấu hình QR</span>';
+        : (canAdmin ? '<span class="locker-qr-link">Chưa cấu hình QR</span>' : "");
       return '<section class="locker-cabinet" data-cabinet-id="' + esc(cabinet.cabinet_id) + '">' +
         '<div class="locker-cabinet-head">' +
           '<div class="locker-cabinet-title">' +
@@ -586,7 +641,7 @@
             '<span class="locker-chip">Lỗi/Tắt ' + esc((counts.error || 0) + (counts.disabled || 0)) + '</span>' +
           '</div>' +
         '</div>' +
-        '<div class="locker-qr-row">' + qr + '</div>' +
+        (canAdmin ? '<div class="locker-qr-row">' + qr + '</div>' : '') +
         '<div class="locker-grid">' + lockers.map(function (locker) { return renderLockerTile(locker, cabinet); }).join("") + '</div>' +
       '</section>';
     }).join("");
@@ -873,20 +928,26 @@
 
   function renderUsersAndRates() {
     if (nodes.users) {
-      nodes.users.innerHTML = currentState.users.length ? currentState.users.map(function (user) {
-        var subtitle = [
-          user.display_name || "Chưa đặt tên",
-          user.email || "Chưa có email",
-          (user.tier || "guest") + " | " + (user.role || "user"),
-          user.active_sessions ? ("Đang dùng: " + user.active_sessions) : ""
-        ].filter(Boolean).join(" · ");
-        return '<div class="locker-list-item locker-user-card" data-user-phone="' + esc(user.phone || "") + '" data-selected="' + esc(String(user.phone || "") === selectedUserPhone ? "true" : "false") + '">' +
-          '<div><strong>' + esc(user.phone || "") + '</strong>' +
-          '<span>' + esc(subtitle) + '</span>' +
-          '<span class="locker-user-balance">Số dư: ' + esc(formatMoney(user.balance)) + '</span></div>' +
-          (canAdmin ? '<button class="locker-button" type="button" data-topup-phone="' + esc(user.phone || "") + '">Nạp</button>' : '') +
-        '</div>';
-      }).join("") : '<div class="locker-list-item">Nhập tên, email hoặc SĐT để tìm user. Để trống và bấm Tìm sẽ tải các user cập nhật gần nhất.</div>';
+      nodes.users.innerHTML = currentState.users.length
+        ? '<div class="locker-user-table" role="table" aria-label="Kết quả tìm user">' +
+            '<div class="locker-user-head" role="row"><span>SĐT</span><span>Người dùng</span><span>Nhóm</span><span>Số dư</span><span></span></div>' +
+            currentState.users.map(function (user) {
+              var profile = [
+                user.display_name || "Chưa đặt tên",
+                user.email || "Chưa có email",
+                user.role || "user",
+                user.active_sessions ? ("Đang dùng: " + user.active_sessions) : ""
+              ].filter(Boolean).join(" · ");
+              return '<div class="locker-list-item locker-user-card" role="row" data-user-phone="' + esc(user.phone || "") + '" data-selected="' + esc(String(user.phone || "") === selectedUserPhone ? "true" : "false") + '">' +
+                '<strong class="locker-user-chip">' + esc(user.phone || "") + '</strong>' +
+                '<div class="locker-user-main"><strong>' + esc(user.display_name || "Chưa đặt tên") + '</strong><span>' + esc(profile) + '</span></div>' +
+                '<span class="locker-user-chip">' + esc(user.tier || "guest") + '</span>' +
+                '<span class="locker-user-balance">' + esc(formatMoney(user.balance)) + '</span>' +
+                (canAdmin ? '<button class="locker-button" type="button" data-topup-phone="' + esc(user.phone || "") + '">Nạp</button>' : '<span></span>') +
+              '</div>';
+            }).join("") +
+          '</div>'
+        : '<div class="locker-list-item">Nhập tên, email hoặc SĐT để tìm user. Để trống và bấm Tìm sẽ tải các user cập nhật gần nhất.</div>';
       if (canAdmin) {
         nodes.users.querySelectorAll("[data-user-phone]").forEach(function (card) {
           card.addEventListener("click", function (event) {
@@ -1237,20 +1298,30 @@
   function refundTransaction(txId) {
     txId = String(txId || "").trim();
     if (!cfg.refundMacro || !txId) return;
-    if (!window.confirm("Hoàn toàn bộ phí của giao dịch " + txId + "?")) return;
-    return postIoData({
-      macro: cfg.refundMacro,
-      tx_id: txId,
-      note: "Admin hoàn tiền giao dịch lỗi",
-      request_id: createRequestId().replace(/^REQ-/, "REFUND-")
-    }).then(function (rows) {
-      var result = rows && rows[0] || {};
-      if (String(result.c1 || "").toUpperCase() !== "OK") {
-        throw new Error(result.code || result.message || "Hoàn tiền thất bại.");
-      }
-      toast(result.code === "ALREADY_REFUNDED" ? "Giao dịch này đã được hoàn trước đó." : "Đã hoàn tiền: " + formatMoney(result.amount));
-      if (selectedUserPhone) loadUserDetail(selectedUserPhone);
-      refreshState();
+    return confirmAction({
+      title: "Hoàn tiền giao dịch",
+      message: "Hoàn full giao dịch phí lỗi. Thao tác này sẽ cộng tiền lại vào ví user.",
+      detail: "Giao dịch: " + txId + "\nUser: " + (selectedUserPhone || "--"),
+      confirmText: "Hoàn tiền",
+      danger: true,
+      requireReason: true,
+      defaultReason: "Admin hoàn tiền giao dịch lỗi"
+    }).then(function (decision) {
+      if (!decision.confirmed) return null;
+      return postIoData({
+        macro: cfg.refundMacro,
+        tx_id: txId,
+        note: decision.reason || "Admin hoàn tiền giao dịch lỗi",
+        request_id: createRequestId().replace(/^REQ-/, "REFUND-")
+      }).then(function (rows) {
+        var result = rows && rows[0] || {};
+        if (String(result.c1 || "").toUpperCase() !== "OK") {
+          throw new Error(result.code || result.message || "Hoàn tiền thất bại.");
+        }
+        toast(result.code === "ALREADY_REFUNDED" ? "Giao dịch này đã được hoàn trước đó." : "Đã hoàn tiền: " + formatMoney(result.amount));
+        if (selectedUserPhone) loadUserDetail(selectedUserPhone);
+        refreshState();
+      });
     }).catch(function (error) {
       toast(error && error.message ? error.message : "Hoàn tiền thất bại.", "error");
     });
@@ -1344,26 +1415,34 @@
       return;
     }
     if (!cfg.deleteRateMacro) return;
-    if (!window.confirm("Xóa nhóm giá " + tier + "? Chỉ xóa được khi chưa có user thuộc nhóm này.")) return;
-    var button = row.querySelector("[data-rate-delete]");
-    if (button) button.disabled = true;
-    return postIoData({
-      macro: cfg.deleteRateMacro,
-      tier: tier,
-      request_id: createRequestId().replace(/^REQ-/, "RATE-DEL-")
-    }).then(function (rows) {
-      var result = rows && rows[0] || {};
-      if (String(result.c1 || "").toUpperCase() !== "OK") {
-        throw new Error(result.code || result.message || "Xóa nhóm giá thất bại.");
-      }
-      rateEditCache = rateEditCache.filter(function (rate) { return rate.tier !== tier; });
-      clearRateEditCache();
-      toast("Đã xóa nhóm giá " + tier + ".");
-      refreshState();
+    return confirmAction({
+      title: "Xóa nhóm giá",
+      message: "Chỉ xóa được nhóm chưa có user đang sử dụng.",
+      detail: "Nhóm giá: " + tier,
+      confirmText: "Xóa nhóm giá",
+      danger: true
+    }).then(function (decision) {
+      if (!decision.confirmed) return null;
+      var button = row.querySelector("[data-rate-delete]");
+      if (button) button.disabled = true;
+      return postIoData({
+        macro: cfg.deleteRateMacro,
+        tier: tier,
+        request_id: createRequestId().replace(/^REQ-/, "RATE-DEL-")
+      }).then(function (rows) {
+        var result = rows && rows[0] || {};
+        if (String(result.c1 || "").toUpperCase() !== "OK") {
+          throw new Error(result.code || result.message || "Xóa nhóm giá thất bại.");
+        }
+        rateEditCache = rateEditCache.filter(function (rate) { return rate.tier !== tier; });
+        clearRateEditCache();
+        toast("Đã xóa nhóm giá " + tier + ".");
+        refreshState();
+      }).finally(function () {
+        if (button) button.disabled = false;
+      });
     }).catch(function (error) {
       toast(error && error.message ? error.message : "Xóa nhóm giá thất bại.", "error");
-    }).finally(function () {
-      if (button) button.disabled = false;
     });
   }
 
@@ -1377,21 +1456,28 @@
       toast("User đã ở nhóm giá " + tier + ".");
       return;
     }
-    if (!window.confirm("Đổi nhóm giá của " + phone + " sang " + tier + "?")) return;
-    return postIoData({
-      macro: cfg.setUserTierMacro,
-      phone: phone,
-      tier: tier,
-      request_id: createRequestId().replace(/^REQ-/, "TIER-")
-    }).then(function (rows) {
-      var result = rows && rows[0] || {};
-      if (String(result.c1 || "").toUpperCase() !== "OK") {
-        throw new Error(result.code || result.message || "Đổi nhóm giá thất bại.");
-      }
-      toast("Đã đổi nhóm giá user sang " + tier + ".");
-      loadUserDetail(phone);
-      performUserSearch({ append: false });
-      refreshState();
+    return confirmAction({
+      title: "Đổi nhóm giá user",
+      message: "Giá mới sẽ áp dụng ngay cho lần gửi đồ tiếp theo.",
+      detail: "User: " + phone + "\nNhóm hiện tại: " + (selectedUserDetail.user.tier || "guest") + "\nNhóm mới: " + tier,
+      confirmText: "Đổi nhóm"
+    }).then(function (decision) {
+      if (!decision.confirmed) return null;
+      return postIoData({
+        macro: cfg.setUserTierMacro,
+        phone: phone,
+        tier: tier,
+        request_id: createRequestId().replace(/^REQ-/, "TIER-")
+      }).then(function (rows) {
+        var result = rows && rows[0] || {};
+        if (String(result.c1 || "").toUpperCase() !== "OK") {
+          throw new Error(result.code || result.message || "Đổi nhóm giá thất bại.");
+        }
+        toast("Đã đổi nhóm giá user sang " + tier + ".");
+        loadUserDetail(phone);
+        performUserSearch({ append: false });
+        refreshState();
+      });
     }).catch(function (error) {
       toast(error && error.message ? error.message : "Đổi nhóm giá thất bại.", "error");
     });
@@ -1586,25 +1672,35 @@
       toast("Set occupied cần nhập SĐT.", "error");
       return;
     }
-    if (!window.confirm("Áp dụng trạng thái " + stateLabel(nextState) + " cho " + selectedLocker.locker_id + "?")) return;
-    var requestId = createRequestId().replace(/^REQ-/, "ADMIN-");
-    var payload = {
-      macro: cfg.adminStatusMacro,
-      locker_id: selectedLocker.locker_id,
-      cabinet_id: selectedLocker.cabinet_id,
-      next_state: nextState,
-      phone: phone,
-      detail: note,
-      request_id: requestId
-    };
-    if (nodes.statusApply) nodes.statusApply.disabled = true;
-    return postIoData(payload).then(function () {
-      toast("Đã cập nhật trạng thái " + selectedLocker.locker_id + ".");
-      refreshState();
+    return confirmAction({
+      title: "Set trạng thái locker",
+      message: "Thao tác này ghi trực tiếp vào database vận hành.",
+      detail: "Tủ: " + selectedLocker.cabinet_id + "\nLocker: " + selectedLocker.locker_id + "\nTrạng thái mới: " + stateLabel(nextState) + (phone ? "\nSĐT: " + phone : ""),
+      confirmText: "Áp dụng trạng thái",
+      danger: nextState === "free" || nextState === "occupied",
+      requireReason: true,
+      defaultReason: note
+    }).then(function (decision) {
+      if (!decision.confirmed) return null;
+      var requestId = createRequestId().replace(/^REQ-/, "ADMIN-");
+      var payload = {
+        macro: cfg.adminStatusMacro,
+        locker_id: selectedLocker.locker_id,
+        cabinet_id: selectedLocker.cabinet_id,
+        next_state: nextState,
+        phone: phone,
+        detail: decision.reason || note,
+        request_id: requestId
+      };
+      if (nodes.statusApply) nodes.statusApply.disabled = true;
+      return postIoData(payload).then(function () {
+        toast("Đã cập nhật trạng thái " + selectedLocker.locker_id + ".");
+        refreshState();
+      }).finally(function () {
+        if (nodes.statusApply) nodes.statusApply.disabled = false;
+      });
     }).catch(function (error) {
       toast(error && error.message ? error.message : "Không thể cập nhật trạng thái.", "error");
-    }).finally(function () {
-      if (nodes.statusApply) nodes.statusApply.disabled = false;
     });
   }
 
@@ -1720,47 +1816,58 @@
     var plannedAdded = configDrafts.reduce(function (sum, cabinet) { return sum + cabinetStats(cabinet.cabinet_id, cabinet.locker_count).add; }, 0);
     var plannedDisabled = configDrafts.reduce(function (sum, cabinet) { return sum + cabinetStats(cabinet.cabinet_id, cabinet.locker_count).disableFree; }, 0);
     var plannedKept = configDrafts.reduce(function (sum, cabinet) { return sum + cabinetStats(cabinet.cabinet_id, cabinet.locker_count).keepActive; }, 0);
-    if (!window.confirm("Áp dụng cấu hình " + configDrafts.length + " tủ xuống database? Locker đang active sẽ được giữ nguyên.")) return;
-    if (nodes.configApply) nodes.configApply.disabled = true;
-    var results = [];
-    var sequence = configDrafts.reduce(function (promise, cabinet, index) {
-      return promise.then(function () {
-        return postIoData({
-          macro: cfg.applyCabinetConfigMacro,
-          cabinet_id: cabinet.cabinet_id,
-          label: cabinet.label,
-          location: cabinet.location,
-          ioid: resolveIoid(cabinet.ioid),
-          page_id: cabinet.page_id,
-          locker_count: cabinet.locker_count,
-          locker_prefix: cabinet.locker_prefix,
-          hardware_pattern: cabinet.hardware_pattern,
-          sort_order: cabinet.sort_order,
-          enabled: cabinet.enabled ? 1 : 0,
-          request_id: createRequestId().replace(/^REQ-/, "CFG-")
-        }).then(function (rows) {
-          var result = rows && rows[0] || {};
-          results.push(result);
-          if (String(result.c1 || "").toUpperCase() !== "OK") {
-            throw new Error((result.cabinet_id || cabinet.cabinet_id) + ": " + (result.code || "APPLY_FAILED"));
-          }
-          if (nodes.configPreview) {
-            nodes.configPreview.textContent = "Đã áp dụng " + (index + 1) + "/" + configDrafts.length + " tủ...";
-          }
+    return confirmAction({
+      title: "Áp dụng cấu hình tủ",
+      message: "Cấu hình sẽ được ghi xuống SQLite bằng macro template. Locker đang active sẽ được giữ nguyên.",
+      detail: "Số tủ: " + configDrafts.length + "\nDự kiến thêm ngăn: " + plannedAdded + "\nDự kiến disable ngăn trống dư: " + plannedDisabled + "\nGiữ ngăn đang active ngoài range: " + plannedKept,
+      confirmText: "Áp dụng cấu hình",
+      requireReason: true,
+      defaultReason: "Cập nhật cấu hình tủ/ngăn"
+    }).then(function (decision) {
+      if (!decision.confirmed) return null;
+      if (nodes.configApply) nodes.configApply.disabled = true;
+      var results = [];
+      var sequence = configDrafts.reduce(function (promise, cabinet, index) {
+        return promise.then(function () {
+          return postIoData({
+            macro: cfg.applyCabinetConfigMacro,
+            cabinet_id: cabinet.cabinet_id,
+            label: cabinet.label,
+            location: cabinet.location,
+            ioid: resolveIoid(cabinet.ioid),
+            page_id: cabinet.page_id,
+            locker_count: cabinet.locker_count,
+            locker_prefix: cabinet.locker_prefix,
+            hardware_pattern: cabinet.hardware_pattern,
+            sort_order: cabinet.sort_order,
+            enabled: cabinet.enabled ? 1 : 0,
+            request_id: createRequestId().replace(/^REQ-/, "CFG-")
+          }).then(function (rows) {
+            var result = rows && rows[0] || {};
+            results.push(result);
+            if (String(result.c1 || "").toUpperCase() !== "OK") {
+              throw new Error((result.cabinet_id || cabinet.cabinet_id) + ": " + (result.code || "APPLY_FAILED"));
+            }
+            if (nodes.configPreview) {
+              nodes.configPreview.textContent = "Đã áp dụng " + (index + 1) + "/" + configDrafts.length + " tủ...";
+            }
+          });
         });
-      });
-    }, Promise.resolve());
+      }, Promise.resolve());
 
-    return sequence.then(function () {
-      var disabled = results.reduce(function (sum, row) { return sum + Number(row.disabled_count || 0); }, 0);
-      var kept = results.reduce(function (sum, row) { return sum + Number(row.kept_active_count || 0); }, 0);
-      toast("Đã áp dụng cấu hình. Dự kiến thêm " + plannedAdded + ", disable " + Math.max(plannedDisabled, disabled) + ", giữ active " + Math.max(plannedKept, kept) + ".");
-      refreshState();
+      return sequence.then(function () {
+        var disabled = results.reduce(function (sum, row) { return sum + Number(row.disabled_count || 0); }, 0);
+        var kept = results.reduce(function (sum, row) { return sum + Number(row.kept_active_count || 0); }, 0);
+        toast("Đã áp dụng cấu hình. Dự kiến thêm " + plannedAdded + ", disable " + Math.max(plannedDisabled, disabled) + ", giữ active " + Math.max(plannedKept, kept) + ".");
+        refreshState();
+      }).catch(function (error) {
+        toast(error && error.message ? error.message : "Áp dụng cấu hình thất bại.", "error");
+        refreshState();
+      }).finally(function () {
+        if (nodes.configApply) nodes.configApply.disabled = false;
+      });
     }).catch(function (error) {
       toast(error && error.message ? error.message : "Áp dụng cấu hình thất bại.", "error");
-      refreshState();
-    }).finally(function () {
-      if (nodes.configApply) nodes.configApply.disabled = false;
     });
   }
 
@@ -1893,6 +2000,28 @@
     });
   }
 
+  function setActiveTab(tab) {
+    tab = String(tab || "operations").trim() || "operations";
+    nodes.tabButtons.forEach(function (button) {
+      button.setAttribute("data-active", button.getAttribute("data-locker-tab") === tab ? "true" : "false");
+    });
+    nodes.tabPanels.forEach(function (panel) {
+      var active = panel.getAttribute("data-locker-panel") === tab;
+      panel.hidden = !active;
+      panel.classList.toggle("is-active", active);
+    });
+  }
+
+  function initTabs() {
+    if (!nodes.tabButtons.length || !nodes.tabPanels.length) return;
+    nodes.tabButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        setActiveTab(button.getAttribute("data-locker-tab"));
+      });
+    });
+    setActiveTab("operations");
+  }
+
   if (nodes.refresh) nodes.refresh.addEventListener("click", refreshState);
   if (nodes.logApply) nodes.logApply.addEventListener("click", function () { refreshLogRows({ silent: false }); });
   if (nodes.logReset) nodes.logReset.addEventListener("click", resetLogFilters);
@@ -1961,6 +2090,7 @@
   }
 
   initThemePicker();
+  initTabs();
   refreshState();
   if (canAdmin && nodes.users) performUserSearch({ append: false });
   connectStream();

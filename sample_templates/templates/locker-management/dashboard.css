@@ -5,6 +5,7 @@
   --locker-opening: #d97706;
   --locker-disabled: #71717a;
   --locker-error: #dc2626;
+  --locker-warn: #d97706;
   --locker-free-bg: color-mix(in srgb, var(--locker-ok) 12%, var(--theme-card));
   --locker-busy-bg: color-mix(in srgb, var(--locker-busy) 12%, var(--theme-card));
   --locker-opening-bg: color-mix(in srgb, var(--locker-opening) 14%, var(--theme-card));
@@ -177,6 +178,45 @@ body {
   gap: 14px;
 }
 
+.locker-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px;
+  border: var(--theme-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--theme-card) 90%, var(--theme-bg));
+  box-shadow: var(--theme-shadow);
+}
+
+.locker-tab {
+  min-height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: color-mix(in srgb, var(--theme-text) 72%, transparent);
+  padding: 0 13px;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.locker-tab[data-active="true"] {
+  background: var(--theme-btn-bg);
+  color: var(--theme-btn-text);
+  box-shadow: var(--theme-shadow);
+}
+
+.locker-tab-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.locker-tab-panel[hidden] {
+  display: none;
+}
+
 .locker-cabinet {
   padding: 12px;
   display: grid;
@@ -346,7 +386,7 @@ body {
 
 .locker-admin-workbench {
   display: grid;
-  grid-template-columns: minmax(420px, 0.8fr) minmax(680px, 1.2fr);
+  grid-template-columns: minmax(420px, 720px);
   gap: 14px;
   align-items: start;
 }
@@ -386,9 +426,13 @@ body {
   max-height: 440px;
 }
 
+.locker-table-wrap-tall {
+  max-height: 650px;
+}
+
 .locker-log-tools {
   display: grid;
-  grid-template-columns: repeat(8, minmax(112px, 1fr)) repeat(4, auto);
+  grid-template-columns: repeat(4, minmax(130px, 1fr));
   gap: 8px;
   align-items: end;
   margin-bottom: 10px;
@@ -476,13 +520,15 @@ body {
 }
 
 .locker-user-card {
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 118px minmax(150px, 1fr) 76px 92px 58px;
   align-items: center;
+  gap: 10px;
   cursor: pointer;
 }
 
 .locker-user-card[data-selected="true"] {
   outline: 2px solid color-mix(in srgb, var(--theme-primary) 64%, transparent);
+  background: color-mix(in srgb, var(--theme-card) 78%, var(--theme-primary));
 }
 
 .locker-user-card strong,
@@ -498,6 +544,51 @@ body {
 
 .locker-user-card .locker-button {
   min-height: 32px;
+}
+
+.locker-user-table {
+  display: grid;
+  gap: 6px;
+}
+
+.locker-user-head,
+.locker-user-card {
+  display: grid;
+  grid-template-columns: 118px minmax(150px, 1fr) 76px 92px 58px;
+  gap: 10px;
+}
+
+.locker-user-head {
+  color: color-mix(in srgb, var(--theme-text) 62%, transparent);
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 0 9px;
+  text-transform: uppercase;
+}
+
+.locker-user-main {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.locker-user-main strong,
+.locker-user-main span {
+  display: block;
+}
+
+.locker-user-main span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.locker-user-chip {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 900;
 }
 
 .locker-user-balance {
@@ -934,6 +1025,36 @@ body {
   margin-top: 14px;
 }
 
+.locker-confirm-body {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.locker-confirm-body label {
+  display: grid;
+  gap: 5px;
+  color: color-mix(in srgb, var(--theme-text) 68%, transparent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.locker-confirm-detail {
+  margin: 0;
+  padding: 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--theme-bg) 88%, var(--theme-primary));
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.82rem;
+}
+
+.locker-danger-button {
+  border-color: color-mix(in srgb, var(--locker-error) 55%, var(--theme-text));
+  background: color-mix(in srgb, var(--locker-error) 88%, black);
+  color: white;
+}
+
 .locker-command-preview {
   margin: 12px 0 0;
   padding: 10px;
@@ -1002,6 +1123,8 @@ body {
   .locker-rate-head,
   .locker-rate-row,
   .locker-tier-row,
+  .locker-user-head,
+  .locker-user-card,
   .locker-config-site,
   .locker-config-grid,
   .locker-config-card-head,

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cấu hình nhảy số</title>
+  <link rel="stylesheet" href="/sample_dashboards/setup_shared.css" />
+  <style>
+    .setup-shell { max-width: 1120px; margin: 0 auto; display: grid; gap: 14px; }
+    .setup-card { display: grid; gap: 14px; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; box-shadow: var(--shadow); padding: 16px; }
+    .setup-heading { display: grid; gap: 6px; }
+    .setup-heading h1, .setup-heading h2 { margin: 0; }
+    .setup-heading p { margin: 0; color: var(--muted); line-height: 1.45; }
+    .setup-eyebrow { color: var(--primary-strong); font-size: 0.76rem; font-weight: 900; text-transform: uppercase; }
+    .setup-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .setup-field { display: grid; gap: 5px; min-width: 0; }
+    .setup-field.span-2 { grid-column: 1 / -1; }
+    .setup-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+    .setup-stations { display: grid; gap: 10px; }
+    .setup-station { display: grid; gap: 10px; border: 1px solid var(--line); background: var(--panel-soft); border-radius: 8px; padding: 12px; }
+    .setup-station-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+    .setup-station-grid { display: grid; gap: 8px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .setup-secondary-button { color: var(--text); background: var(--panel); border: 1px solid var(--line); }
+    .setup-file-input { display: none; }
+    @media (max-width: 820px) {
+      .setup-grid, .setup-station-grid { grid-template-columns: 1fr; }
+      .setup-station-head { align-items: stretch; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="setup-shell">
+    <section class="setup-card">
+      <div class="setup-heading">
+        <span class="setup-eyebrow">ROSA template</span>
+        <h1>Cấu hình nhảy số realtime</h1>
+        <p>Chọn thông tin chung và danh sách trạm. Sau setup, vào trang quản lý để tạo/cập nhật các màn hình hiển thị.</p>
+      </div>
+
+      <div class="setup-grid">
+        <label class="setup-field">
+          <span>Tên đơn vị</span>
+          <input id="qt-site-name" />
+        </label>
+        <label class="setup-field">
+          <span>Thiết bị nguồn tự động</span>
+          <input id="qt-source-ioid" readonly aria-readonly="true" placeholder="Tự động từ profile thiết bị" />
+        </label>
+        <label class="setup-field span-2">
+          <span>Mô tả</span>
+          <input id="qt-site-note" />
+        </label>
+        <label class="setup-field">
+          <span>Giao diện mặc định</span>
+          <select id="qt-default-theme">
+            <option value="medical">Khám bệnh</option>
+            <option value="bank">Ngân hàng</option>
+            <option value="pickup">Nhận hàng</option>
+            <option value="amusement">Khu vui chơi</option>
+            <option value="neutral">Kiosk chung</option>
+          </select>
+        </label>
+        <label class="setup-field">
+          <span>Bố cục mặc định</span>
+          <select id="qt-default-layout">
+            <option value="two-column">2 cột số</option>
+            <option value="single-column">1 cột số</option>
+            <option value="media-top">Media phía trên</option>
+            <option value="media-side">Media bên cạnh</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="setup-heading">
+        <span class="setup-eyebrow">Trạm</span>
+        <h2>Danh sách màn hình cần tạo</h2>
+        <p>Mỗi trạm sẽ có một trang hiển thị riêng và một mã dữ liệu riêng.</p>
+      </div>
+
+      <div class="setup-tools">
+        <button id="qt-add-station" type="button" class="setup-button">Thêm trạm</button>
+        <button id="qt-regenerate" type="button" class="setup-button setup-secondary-button">Tạo lại danh sách</button>
+        <button id="qt-import" type="button" class="setup-button setup-secondary-button">Nạp cấu hình</button>
+        <button id="qt-export" type="button" class="setup-button setup-secondary-button">Xuất cấu hình</button>
+        <input id="qt-import-file" class="setup-file-input" type="file" accept="application/json,.json" />
+      </div>
+
+      <div class="setup-grid">
+        <label class="setup-field">
+          <span>Số trạm mẫu</span>
+          <input id="qt-station-count" type="number" min="1" max="40" step="1" />
+        </label>
+        <label class="setup-field">
+          <span>Mã dữ liệu gốc</span>
+          <input id="qt-prefix-base" placeholder="queue" />
+        </label>
+      </div>
+
+      <div id="qt-stations" class="setup-stations"></div>
+    </section>
+  </main>
+  <script src="/sample_dashboards/setup_bridge.js"></script>
+  <script src="/sample_dashboards/queue-turn-management/setup_queue_vi.js?v=2026.06.18.2"></script>
+</body>
+</html>

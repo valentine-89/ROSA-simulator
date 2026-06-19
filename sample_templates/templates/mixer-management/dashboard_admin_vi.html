@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý máy pha chế</title>
+  <link rel="stylesheet" href="/dashboard-themes.css" />
+  <link rel="stylesheet" href="/sample_dashboards/mixer-management/dashboard.css?v=2026.06.18.1" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+        if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+      } catch (error) {}
+    })();
+  </script>
+</head>
+<body>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="mixer-page" id="mixer-root">
+    <section class="mixer-hero">
+      <div class="mixer-title-block">
+        <span class="mixer-eyebrow" id="mixer-eyebrow">ROSA Mixer Manager</span>
+        <h1 id="mixer-title">Quản lý máy pha chế</h1>
+        <p id="mixer-subtitle">Quản lý máy pha chế, nguyên liệu, công thức, link public và API thiết bị theo batch.</p>
+      </div>
+      <div class="mixer-toolbar">
+        <button class="mixer-button" type="button" id="mixer-refresh">Tải lại</button>
+        <div class="mixer-live" id="mixer-live" data-state="idle">Sẵn sàng</div>
+      </div>
+    </section>
+
+    <section class="mixer-kpis" id="mixer-kpis"></section>
+
+    <section class="mixer-panel">
+      <div class="mixer-panel-head">
+        <div>
+          <h2>Lọc dữ liệu</h2>
+          <span>Tập trung theo distributor, loại dữ liệu hoặc từ khóa ID/tên.</span>
+        </div>
+        <button class="mixer-inline-button" type="button" id="mixer-filter-clear">Xóa lọc</button>
+      </div>
+      <div class="mixer-filter-tools">
+        <label>Distributor
+          <select class="mixer-input" id="mixer-filter-distributor">
+            <option value="">Tất cả distributor</option>
+          </select>
+        </label>
+        <label>Loại bảng
+          <select class="mixer-input" id="mixer-filter-entity">
+            <option value="all">Tất cả bảng</option>
+          </select>
+        </label>
+        <label>Tìm kiếm
+          <input class="mixer-input" id="mixer-filter-search" type="search" placeholder="Tên, ID, IoID, SĐT..." />
+        </label>
+      </div>
+    </section>
+
+    <section class="mixer-panel">
+      <div class="mixer-panel-head">
+        <div>
+          <h2>Cảnh báo cấu hình</h2>
+          <span id="mixer-warning-count">Chưa kiểm tra</span>
+        </div>
+      </div>
+      <div class="mixer-warning-list" id="mixer-warning-list"></div>
+    </section>
+
+    <section class="mixer-panel">
+      <div class="mixer-panel-head">
+        <div>
+          <h2>Cấu hình & nhập xuất</h2>
+          <span>Distributor, máy, nhân viên, nguyên liệu, công thức, vị trí và link mixer</span>
+        </div>
+        <div class="mixer-actions">
+          <button class="mixer-button" type="button" id="mixer-export-config">Export JSON</button>
+          <button class="mixer-button" type="button" id="mixer-import-config">Import JSON</button>
+          <input id="mixer-import-file" type="file" accept="application/json,.json" hidden />
+        </div>
+      </div>
+      <div class="mixer-admin-forms" id="mixer-admin-forms"></div>
+      <datalist id="mixer-distributor-options"></datalist>
+      <datalist id="mixer-machine-options"></datalist>
+      <datalist id="mixer-staff-options"></datalist>
+      <datalist id="mixer-stage-options"></datalist>
+      <datalist id="mixer-menu-options"></datalist>
+    </section>
+
+    <section class="mixer-panel">
+      <div class="mixer-panel-head">
+        <div>
+          <h2>Dữ liệu quản trị</h2>
+          <span id="mixer-admin-table-state">Chưa tải dữ liệu</span>
+        </div>
+      </div>
+      <div class="mixer-admin-tables" id="mixer-admin-tables"></div>
+    </section>
+
+    <section class="mixer-grid">
+      <div class="mixer-panel">
+        <div class="mixer-panel-head">
+          <div>
+            <h2>Máy pha chế</h2>
+            <span id="mixer-machine-count">0 máy</span>
+          </div>
+        </div>
+        <div class="mixer-list" id="mixer-machine-list"></div>
+      </div>
+
+      <div class="mixer-panel">
+        <div class="mixer-panel-head">
+          <div>
+            <h2>Vị trí nguyên liệu</h2>
+            <span>macro `mixer-io-get-positions-8`</span>
+          </div>
+        </div>
+        <div class="mixer-form-row">
+          <label>IoID máy
+            <input class="mixer-input" id="mixer-position-ioid" type="text" />
+          </label>
+          <label>Vị trí 1
+            <input class="mixer-input" id="mixer-position-offset" type="number" min="1" max="999" value="1" />
+          </label>
+          <button class="mixer-button" type="button" id="mixer-load-positions">Đọc batch</button>
+        </div>
+        <pre class="mixer-code" id="mixer-positions-result">Chưa đọc dữ liệu.</pre>
+      </div>
+    </section>
+
+    <section class="mixer-grid">
+      <div class="mixer-panel">
+        <div class="mixer-panel-head">
+          <div>
+            <h2>Nguyên liệu theo batch</h2>
+            <span>macro `mixer-io-get-allstages-8`</span>
+          </div>
+        </div>
+        <div class="mixer-form-row">
+          <label>IoID máy
+            <input class="mixer-input" id="mixer-stage-ioid" type="text" />
+          </label>
+          <label>ID đầu
+            <input class="mixer-input" id="mixer-stage-offset" type="number" min="1" max="999" value="1" />
+          </label>
+          <button class="mixer-button" type="button" id="mixer-load-stages">Đọc batch</button>
+        </div>
+        <pre class="mixer-code" id="mixer-stages-result">Chưa đọc dữ liệu.</pre>
+      </div>
+
+      <div class="mixer-panel">
+        <div class="mixer-panel-head">
+          <div>
+            <h2>Tra công thức</h2>
+            <span>macro `mixer-io-query-menu-bynum`</span>
+          </div>
+        </div>
+        <div class="mixer-form-row">
+          <label>IoID máy
+            <input class="mixer-input" id="mixer-menu-ioid" type="text" />
+          </label>
+          <label>Menu index
+            <input class="mixer-input" id="mixer-menu-index" type="number" min="1" max="999" value="1" />
+          </label>
+          <button class="mixer-button" type="button" id="mixer-load-menu">Tra công thức</button>
+        </div>
+        <pre class="mixer-code" id="mixer-menu-result">Chưa đọc dữ liệu.</pre>
+      </div>
+    </section>
+
+    <section class="mixer-panel">
+      <div class="mixer-panel-head">
+        <div>
+          <h2>Work, giao dịch và event</h2>
+          <span id="mixer-event-count">0 dòng</span>
+        </div>
+      </div>
+      <div class="mixer-log-tools">
+        <label>Loại dữ liệu
+          <select class="mixer-input" id="mixer-event-dataset">
+            <option value="events">Event</option>
+            <option value="works">Work</option>
+            <option value="transactions">Giao dịch</option>
+          </select>
+        </label>
+        <label>Máy
+          <input class="mixer-input" id="mixer-event-machine" type="search" placeholder="MIXER-01" list="mixer-machine-options" />
+        </label>
+        <label>Trạng thái/sự kiện
+          <input class="mixer-input" id="mixer-event-type" type="search" placeholder="đang pha chế" />
+        </label>
+        <label>Limit
+          <input class="mixer-input" id="mixer-event-limit" type="number" min="1" max="500" value="50" />
+        </label>
+        <label>Offset
+          <input class="mixer-input" id="mixer-event-offset" type="number" min="0" value="0" />
+        </label>
+        <button class="mixer-button" type="button" id="mixer-event-load">Tải log</button>
+        <button class="mixer-button" type="button" id="mixer-event-prev">Trước</button>
+        <button class="mixer-button" type="button" id="mixer-event-next">Sau</button>
+      </div>
+      <div class="mixer-table-wrap">
+        <table class="mixer-table">
+          <thead>
+            <tr>
+              <th>Thời gian</th>
+              <th>Loại</th>
+              <th>Máy</th>
+              <th>Order</th>
+              <th>Nhân viên</th>
+              <th>Nội dung</th>
+            </tr>
+          </thead>
+          <tbody id="mixer-event-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mixer-panel">
+      <div class="mixer-panel-head">
+        <div>
+          <h2>Contract API</h2>
+          <span>các macro API cũ đã có trong sample database</span>
+        </div>
+      </div>
+      <div class="mixer-table-wrap">
+        <table class="mixer-table">
+          <thead>
+            <tr>
+              <th>Macro</th>
+              <th>Mục đích</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody id="mixer-contract-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="mixer-toast-stack" id="mixer-toast-stack" aria-live="polite"></div>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Chọn giao diện" aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Tùy chọn giao diện">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism" role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism" role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk" role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento Grid</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script id="mixer-config" type="application/json">
+{
+  "mode": "admin",
+  "locale": "vi",
+  "title": "Quản lý máy pha chế",
+  "subtitle": "Quản lý máy pha chế, nguyên liệu, công thức, link public và API thiết bị theo batch.",
+  "eyebrow": "ROSA Mixer Manager",
+  "databaseSessionId": "<<sessionid>>",
+  "syncId": "<<syncid>>",
+  "defaultIoid": "<<ioid>>",
+  "stateMacro": "mixer-admin-state",
+  "eventMacro": "mixer-admin-event-list",
+  "warningMacro": "mixer-admin-warning-list",
+  "saveMacros": {
+    "distributor": "mixer-admin-save-distributor",
+    "machine": "mixer-admin-save-machine",
+    "staff": "mixer-admin-save-staff",
+    "stage": "mixer-admin-save-stage",
+    "menu": "mixer-admin-save-menu",
+    "ingredient": "mixer-admin-save-menu-ingredient",
+    "position": "mixer-admin-save-position",
+    "link": "mixer-admin-save-link"
+  },
+  "deleteMacros": {
+    "machine": "mixer-admin-delete-machine",
+    "staff": "mixer-admin-delete-staff",
+    "stage": "mixer-admin-delete-stage",
+    "menu": "mixer-admin-delete-menu",
+    "ingredient": "mixer-admin-delete-menu-ingredient",
+    "position": "mixer-admin-delete-position",
+    "link": "mixer-admin-delete-link"
+  },
+  "positionsMacro": "mixer-io-get-positions-8",
+  "stagesMacro": "mixer-io-get-allstages-8",
+  "menuByNumberMacro": "mixer-io-query-menu-bynum",
+  "initialSetup": {
+    "distributorName": "ROSA Mixer Demo",
+    "machineName": "Mixer 01",
+    "ioid": "<<ioid>>",
+    "pageId": "mixer-link-demo"
+  }
+}
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START -->
+  <script>
+    window.MIXER_SAMPLE_NOTE = "Mixer management template: admin CRUD, public /mixer order flow, Bubble-compatible macro contract, smoke/build validated.";
+  </script>
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script src="/sample_dashboards/mixer-management/dashboard-runtime.js?v=2026.06.18.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

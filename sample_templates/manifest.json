@@ -2354,6 +2354,322 @@
       ]
     },
     {
+      "id": "queue-turn-management",
+      "name": "Quản lý màn hình nhảy số",
+      "description": "Tổng quan:\nTemplate quản lý màn hình nhảy số realtime cho các dịch vụ cần xếp hàng chờ số như khám bệnh, nhận hàng, khu vui chơi và ngân hàng. Trang chính là dashboard quản lý để tạo/cập nhật các system page public theo từng trạm. Thiết bị gọi số thông qua gateway telemetry chung; mỗi trạm dùng field prefix riêng trên cùng một IOID. Trang public đọc telemetry qua /api/iot-page-telemetry và /api/iot-page-realtime dựa trên publicApi.fields trong system_pages.meta, không đưa IO...@apikey hoặc sync_id thật ra trình duyệt.\n\nLoại:\ntelemetry + database + IoT pages public read\n\nCác tham số chính:\n- Database: queue_site, queue_stations, queue_events, queue_display_templates, system_pages\n- Macro admin: queue-admin-state, queue-admin-save-site-config, queue-admin-apply-station-page, queue-admin-set-station-enabled, queue-admin-audit-action\n- Telemetry prefix mẫu: clinic_a\n- Field public theo trạm: {prefix}_name, {prefix}_text1, {prefix}_order1, {prefix}_text2, {prefix}_order2, {prefix}_media, {prefix}_note, {prefix}_alert\n- Theme preset: medical, bank, pickup, amusement, neutral\n- Layout: single-column, two-column, media-top, media-side\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ gọi số:\nD23,#801,,\"telemetry\",\"clinic_a_name=Phòng khám A\",\"clinic_a_text1=Quầy 1\",\"clinic_a_order1=001,002,003\",\"clinic_a_text2=Quầy 2\",\"clinic_a_order2=004,005\"\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Setup page chỉ lưu cấu hình nháp; dashboard quản lý mới apply cấu hình vào SQLite và tạo system_pages.\n- system_pages.meta.publicApi.fields là danh sách whitelist duy nhất cho public telemetry read.\n- Nên dùng IOID chuyên cho dữ liệu nhảy số public, dù có thể chứa nhiều trạm bằng field prefix.",
+      "image": "/sample_dashboards/queue-turn-management/sample.svg",
+      "html": "/sample_dashboards/queue-turn-management/dashboard_admin_vi.html",
+      "setup": {
+        "page": "/sample_dashboards/queue-turn-management/setup_vi.html"
+      },
+      "sampleDatabase": "/sample_dashboards/queue-turn-management/sample.sqlite",
+      "tags": [
+        "queue",
+        "telemetry",
+        "iot-page",
+        "public-read",
+        "kiosk"
+      ],
+      "defaultLocale": "admin-vi",
+      "locales": {
+        "admin-vi": {
+          "label": "Quản lý",
+          "name": "Quản lý màn hình nhảy số",
+          "description": "Tổng quan:\nDashboard quản lý tạo/cập nhật màn hình nhảy số realtime. Mỗi trạm tạo một system page public, đọc telemetry bằng route /api/iot-page-realtime/{ioid}/{pageid}; browser không thấy API key, sync_id hoặc danh sách field tự chọn. Template hỗ trợ nhiều trạm trên cùng IOID bằng field prefix, các preset theme theo dịch vụ và layout có media.\n\nLoại:\ntelemetry + database + IoT pages public read\n\nMacro chính:\n- queue-admin-state\n- queue-admin-save-site-config\n- queue-admin-apply-station-page\n- queue-admin-set-station-enabled\n- queue-admin-audit-action\n\nGhi chú:\n- Setup page chỉ lưu cấu hình nháp.\n- Trang quản lý apply cấu hình xuống DB và tạo system_pages.meta.publicApi.fields.\n- Public display nhận realtime qua SSE public telemetry read, không gọi /api/{sessionId@apikey}/stream.",
+          "image": "/sample_dashboards/queue-turn-management/sample.svg",
+          "html": "/sample_dashboards/queue-turn-management/dashboard_admin_vi.html",
+          "setup": {
+            "page": "/sample_dashboards/queue-turn-management/setup_vi.html"
+          },
+          "default-fields": [
+            {
+              "field": "clinic_a_name",
+              "kind": "text"
+            },
+            {
+              "field": "clinic_a_text1",
+              "kind": "text"
+            },
+            {
+              "field": "clinic_a_order1",
+              "kind": "text"
+            },
+            {
+              "field": "clinic_a_text2",
+              "kind": "text"
+            },
+            {
+              "field": "clinic_a_order2",
+              "kind": "text"
+            },
+            {
+              "field": "clinic_a_media",
+              "kind": "text"
+            },
+            {
+              "field": "clinic_a_note",
+              "kind": "text"
+            },
+            {
+              "field": "clinic_a_alert",
+              "kind": "text"
+            }
+          ]
+        }
+      },
+      "default-fields": [
+        {
+          "field": "clinic_a_name",
+          "kind": "text"
+        },
+        {
+          "field": "clinic_a_text1",
+          "kind": "text"
+        },
+        {
+          "field": "clinic_a_order1",
+          "kind": "text"
+        },
+        {
+          "field": "clinic_a_text2",
+          "kind": "text"
+        },
+        {
+          "field": "clinic_a_order2",
+          "kind": "text"
+        },
+        {
+          "field": "clinic_a_media",
+          "kind": "text"
+        },
+        {
+          "field": "clinic_a_note",
+          "kind": "text"
+        },
+        {
+          "field": "clinic_a_alert",
+          "kind": "text"
+        }
+      ],
+      "macro-examples": [
+        {
+          "label": "Đọc cấu hình nhảy số",
+          "payload": {
+            "macro": "queue-admin-state"
+          }
+        },
+        {
+          "label": "Tạo/cập nhật trạm khám bệnh",
+          "payload": {
+            "macro": "queue-admin-apply-station-page",
+            "station_id": "clinic-a",
+            "title": "Phòng khám A",
+            "page_id": "queue-clinic-a",
+            "field_prefix": "clinic_a",
+            "theme_preset": "medical",
+            "layout": "two-column",
+            "hide_link": "0",
+            "enabled": "1"
+          }
+        },
+        {
+          "label": "Thiết bị gọi số qua telemetry",
+          "payload": {
+            "macro": "queue-admin-audit-action",
+            "event_type": "telemetry_example",
+            "station_id": "clinic-a",
+            "page_id": "queue-clinic-a",
+            "detail": "D23,#801,,\"telemetry\",\"clinic_a_name=Phòng khám A\",\"clinic_a_text1=Quầy 1\",\"clinic_a_order1=001,002,003\""
+          },
+          "gatewayCommand": "D23,#801,,\"telemetry\",\"clinic_a_name=Phòng khám A\",\"clinic_a_text1=Quầy 1\",\"clinic_a_order1=001,002,003\",\"clinic_a_text2=Quầy 2\",\"clinic_a_order2=004,005\""
+        }
+      ]
+    },
+    {
+      "id": "mixer-management",
+      "name": "Quản lý máy pha chế",
+      "description": "Tổng quan:\nTemplate quản lý máy pha chế tự động theo hướng database-first, dựng lại từ Bubble `/mixer_admin` và `/mixer`. Admin cấu hình distributor, máy, nhân viên, nguyên liệu, vị trí, menu, định lượng và link public; thiết bị đọc nguyên liệu/công thức theo batch thay vì tải toàn bộ một lần. Trang `/mixer` chạy qua iot-page và public macro, không render API key.\n\nLoại:\ndatabase + IoT pages + public macro API + secure command mẫu\n\nCác bảng chính:\n- mixer_distributors, mixer_machines, mixer_stages, mixer_machine_positions\n- mixer_menus, mixer_menu_ingredients, mixer_staff, mixer_links\n- mixer_works, mixer_transactions, mixer_events\n\nMacro Bubble-compatible:\n- mixer-io-get-positions\n- mixer-io-get-positions-8\n- mixer-io-get-allstages-8\n- mixer-io-query-menu\n- mixer-io-query-menu-bynum\n- mixer-io-done, mixer-io-done-noorder, mixer-io-cancel, mixer-io-update-consume\n\nMacro admin/public:\n- mixer-admin-state, mixer-admin-event-list, mixer-admin-warning-list\n- mixer-admin-save-*, mixer-admin-delete-*\n- mixer-link-state, mixer-link-create-order\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ đọc vị trí theo batch:\nD23,#801,,\"data\",\"mixer-io-get-positions-8\",\"<<ioid>>\",1,2,3,4,5,6,7,8\n\nVí dụ đọc nguyên liệu theo batch:\nD23,#801,,\"data\",\"mixer-io-get-allstages-8\",\"<<ioid>>\",1,2,3,4,5,6,7,8\n\nGhi chú:\n- Context-aware: <<sessionid>>, <<syncid>> và <<ioid>> được thay tự động khi nạp template.\n- Có CRUD admin, import/export JSON, filter dữ liệu, cảnh báo cấu hình, phân trang log và public mobile order flow.\n- `io_key` chỉ là field legacy/admin, không render ở public `/mixer`.",
+      "image": "/sample_dashboards/mixer-management/sample.svg",
+      "html": "/sample_dashboards/mixer-management/dashboard_admin_vi.html",
+      "setup": {
+        "page": "/sample_dashboards/mixer-management/setup_vi.html"
+      },
+      "sampleDatabase": "/sample_dashboards/mixer-management/sample.sqlite",
+      "tags": [
+        "mixer",
+        "database",
+        "iot-page",
+        "batch-api",
+        "bubble-rebuild"
+      ],
+      "defaultLocale": "admin-vi",
+      "locales": {
+        "admin-vi": {
+          "label": "Quản lý",
+          "name": "Quản lý máy pha chế",
+          "description": "Tổng quan:\nDashboard quản lý máy pha chế tự động. Trang đọc SQLite macro để hiển thị máy, nguyên liệu, công thức và link mixer; có CRUD cho distributor/machine/staff/stage/menu/ingredient/position/link, import/export JSON cấu hình, filter theo distributor/từ khóa, cảnh báo cấu hình, phân trang event/work/transaction và public `/mixer` mobile order flow trong `system_pages`.\n\nLoại:\ndatabase + IoT pages + secure command mẫu\n\nMacro chính:\n- mixer-admin-state\n- mixer-admin-event-list\n- mixer-admin-warning-list\n- mixer-admin-save-*, mixer-admin-delete-*\n- mixer-link-state, mixer-link-create-order\n- mixer-io-get-positions\n- mixer-io-get-positions-8\n- mixer-io-get-allstages-8\n- mixer-io-query-menu\n- mixer-io-query-menu-bynum\n- mixer-io-done\n- mixer-io-done-noorder\n- mixer-io-cancel\n- mixer-io-update-consume\n\nGhi chú:\n- Setup page lưu cấu hình nháp cho dashboard.\n- DB mẫu có `system_pages.mixer-link-demo` với public macro allowlist để xác nhận public `/mixer` không lộ key.",
+          "image": "/sample_dashboards/mixer-management/sample.svg",
+          "html": "/sample_dashboards/mixer-management/dashboard_admin_vi.html",
+          "setup": {
+            "page": "/sample_dashboards/mixer-management/setup_vi.html"
+          },
+          "default-fields": []
+        }
+      },
+      "default-fields": [],
+      "macro-examples": [
+        {
+          "label": "Đọc trạng thái quản lý",
+          "payload": {
+            "macro": "mixer-admin-state"
+          }
+        },
+        {
+          "label": "Đọc vị trí nguyên liệu",
+          "payload": {
+            "macro": "mixer-io-get-positions",
+            "c1": "<<ioid>>",
+            "c2": 1
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"mixer-io-get-positions\",\"<<ioid>>\",1"
+        },
+        {
+          "label": "Đọc vị trí theo batch 8",
+          "payload": {
+            "macro": "mixer-io-get-positions-8",
+            "c1": "<<ioid>>",
+            "c2": 1,
+            "c3": 2,
+            "c4": 3,
+            "c5": 4,
+            "c6": 5,
+            "c7": 6,
+            "c8": 7,
+            "c9": 8
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"mixer-io-get-positions-8\",\"<<ioid>>\",1,2,3,4,5,6,7,8"
+        },
+        {
+          "label": "Đọc nguyên liệu theo batch 8",
+          "payload": {
+            "macro": "mixer-io-get-allstages-8",
+            "c1": "<<ioid>>",
+            "c2": 1,
+            "c3": 2,
+            "c4": 3,
+            "c5": 4,
+            "c6": 5,
+            "c7": 6,
+            "c8": 7,
+            "c9": 8
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"mixer-io-get-allstages-8\",\"<<ioid>>\",1,2,3,4,5,6,7,8"
+        },
+        {
+          "label": "Tra công thức theo tên",
+          "payload": {
+            "macro": "mixer-io-query-menu",
+            "c1": "<<ioid>>",
+            "c2": "Cà phê"
+          }
+        },
+        {
+          "label": "Tra công thức theo số",
+          "payload": {
+            "macro": "mixer-io-query-menu-bynum",
+            "c1": "<<ioid>>",
+            "c2": 1
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"mixer-io-query-menu-bynum\",\"<<ioid>>\",1"
+        },
+        {
+          "label": "Thiết bị báo xong đơn",
+          "payload": {
+            "macro": "mixer-io-done",
+            "c1": "<<ioid>>",
+            "c2": 1,
+            "c3": "12,30"
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"mixer-io-done\",\"<<ioid>>\",1,\"12,30\""
+        },
+        {
+          "label": "Thiết bị cập nhật tiêu hao",
+          "payload": {
+            "macro": "mixer-io-update-consume",
+            "c1": "<<ioid>>",
+            "c2": "12,30,18,8"
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"mixer-io-update-consume\",\"<<ioid>>\",\"12,30,18,8\""
+        },
+        {
+          "label": "Admin lưu máy",
+          "payload": {
+            "macro": "mixer-admin-save-machine",
+            "machine_id": "MIXER-01",
+            "distributor_id": "DIST-DEMO",
+            "name": "Mixer 01",
+            "ioid": "<<ioid>>",
+            "io_key": "",
+            "realtime_url": "",
+            "last_order_no": 0,
+            "enabled": 1
+          }
+        },
+        {
+          "label": "Admin lưu vị trí máy",
+          "payload": {
+            "macro": "mixer-admin-save-position",
+            "machine_id": "MIXER-01",
+            "position_number": 1,
+            "stage_id": 1,
+            "sort_order": 1
+          }
+        },
+        {
+          "label": "Admin apply link /mixer",
+          "payload": {
+            "macro": "mixer-admin-save-link",
+            "link_id": "LINK-DEMO",
+            "distributor_id": "DIST-DEMO",
+            "machine_id": "MIXER-01",
+            "staff_id": "STAFF-DEMO",
+            "page_id": "mixer-link-demo",
+            "title": "Mixer 01",
+            "enabled": 1
+          }
+        },
+        {
+          "label": "Admin phân trang work",
+          "payload": {
+            "macro": "mixer-admin-event-list",
+            "dataset": "works",
+            "limit": 10,
+            "offset": 0
+          }
+        },
+        {
+          "label": "Public link state",
+          "payload": {
+            "macro": "mixer-link-state",
+            "link_id": "LINK-DEMO",
+            "machine_id": "MIXER-01",
+            "staff_id": "STAFF-DEMO"
+          }
+        },
+        {
+          "label": "Public tạo order",
+          "payload": {
+            "macro": "mixer-link-create-order",
+            "link_id": "LINK-DEMO",
+            "machine_id": "MIXER-01",
+            "staff_id": "STAFF-DEMO",
+            "menu_id": "MENU-COFFEE-MILK",
+            "client_request_id": "REQ-DEMO-001"
+          }
+        }
+      ]
+    },
+    {
       "id": "locker-management",
       "name": "Quản lý tủ locker",
       "description": "Tổng quan:\nTemplate quản lý tủ locker theo hướng database-first. Dashboard quản lý hiển thị nhiều tủ/locker, vận hành desktop, có panel cài đặt site/tủ/ngăn/thiết bị, tìm user phân trang cho dữ liệu lớn, nạp tiền thủ công, hoàn phí lỗi, bảng giá editable, đổi nhóm giá user, log có filter/xuất CSV và import/export cấu hình JSON. Setup page lưu cấu hình nháp số tủ, số ngăn, IoID thiết bị, mapping phần cứng và pricing ban đầu vào dashboard config; admin dashboard apply xuống SQLite bằng macro. QR page theo từng tủ có hai nút Gửi đồ/Nhận đồ, bootstrap user 0đ nếu chưa có, kiểm tra số dư hoặc đồ trong đúng tủ theo verified phone trước khi gửi lệnh mở tủ; phí và session chỉ ghi khi thiết bị IoT báo deposit_success/pickup_success. Monitor public và landing cá nhân dùng publicApi macro không lộ API key; monitor có privacy/kiosk mode, landing hiển thị hướng dẫn/QR nạp tiền tại quầy.\n\nLoại:\ndatabase + IoT pages + public macro API + secure command mẫu\n\nCác tham số chính:\n- Database: locker_site, locker_cabinets, lockers, locker_users, locker_rates, locker_sessions, locker_events, locker_operation_requests, locker_wallet_transactions\n- Macro đọc: locker-admin-state, locker-monitor-state, locker-event-list, locker-landing-state\n- Macro admin: locker-admin-user-search, locker-admin-user-detail, locker-admin-topup-user, locker-admin-refund-transaction, locker-admin-set-status, locker-admin-audit-action, locker-admin-config-state, locker-admin-save-site-config, locker-admin-apply-cabinet-config, locker-admin-save-rate, locker-admin-delete-rate, locker-admin-set-user-tier\n- Macro QR: locker-qr-open-precheck\n- Macro thiết bị báo cáo: IO-locker-report\n- QR system_page mẫu: locker-open-cab-a, locker-open-cab-b\n- Public monitor system_page mẫu: locker-monitor-public\n- Landing system_page mẫu: locker-landing\n\nAPI cài vào thiết bị:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nVí dụ thiết bị báo gửi hàng thành công:\nD23,#801,,\"data\",\"IO-locker-report\",\"deposit_success\",\"CAB-A\",\"A-001\",\"REQ123\",\"0912345678\",\"door_closed\"\n\nVí dụ thiết bị báo lấy hàng thành công:\nD23,#801,,\"data\",\"IO-locker-report\",\"pickup_success\",\"CAB-A\",\"A-001\",\"REQ124\",\"0912345678\",\"door_closed\"\n\nVí dụ thiết bị báo lỗi khóa kẹt:\nD23,#801,,\"data\",\"IO-locker-report\",\"lock_jammed\",\"CAB-A\",\"A-001\",\"REQ125\",\"0912345678\",\"motor_timeout\"\n\nGhi chú:\n- Mỗi QR/link chỉ ứng với một tủ/một bộ điều khiển; đến sai tủ để nhận đồ sẽ không tìm thấy đồ ở tủ đó.\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- User tự nạp tiền/PayOS/ROSA wallet vẫn để phase sau; v1 dùng admin nạp tiền thủ công trong DB locker.\n- ROSA core không có logic riêng cho locker; template dùng public macro, secure command và gateway iodata chung.",

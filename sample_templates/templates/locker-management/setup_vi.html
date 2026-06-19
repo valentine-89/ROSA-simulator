@@ -28,6 +28,9 @@
     .setup-locker-check { align-content: end; min-height: 38px; }
     .setup-locker-check input { width: auto; min-height: 0; }
     .setup-secondary-button { color: var(--text); background: var(--panel); border: 1px solid var(--line); }
+    .setup-advanced { border-top: 1px solid var(--line); padding-top: 12px; }
+    .setup-advanced summary { cursor: pointer; font-weight: 900; color: var(--primary-strong); }
+    .setup-advanced .setup-grid { margin-top: 12px; }
     @media (max-width: 900px) {
       .setup-grid, .setup-locker-cabinet-grid, .setup-rate-grid { grid-template-columns: 1fr; }
       .setup-cabinet-tools, .setup-locker-cabinet-head { align-items: stretch; flex-direction: column; }
@@ -59,36 +62,42 @@
           <span>Mô tả</span>
           <input id="locker-subtitle" type="text" />
         </label>
-        <label class="setup-field">
-          <span>Session database</span>
-          <input id="locker-session" type="text" placeholder="<<sessionid>>" />
-        </label>
-        <label class="setup-field">
-          <span>SyncID</span>
-          <input id="locker-sync" type="text" placeholder="<<syncid>>" />
-        </label>
-        <label class="setup-field">
-          <span>Macro trạng thái</span>
-          <input id="locker-state-macro" type="text" />
-        </label>
-        <label class="setup-field">
-          <span>Số log hiển thị</span>
-          <input id="locker-page-size" type="number" min="10" max="200" step="10" />
-        </label>
-        <label class="setup-field">
-          <span>Privacy monitor</span>
-          <select id="locker-monitor-privacy">
-            <option value="maskedPhone">Mask SĐT</option>
-            <option value="hiddenPhone">Ẩn SĐT</option>
-            <option value="stateOnly">Chỉ trạng thái</option>
-            <option value="summaryOnly">Chỉ tổng hợp</option>
-          </select>
-        </label>
-        <label class="setup-field setup-locker-check">
-          <span>Monitor kiosk</span>
-          <label><input id="locker-kiosk-mode" type="checkbox" /> Tối ưu màn hình lớn</label>
-        </label>
       </div>
+
+      <details class="setup-advanced">
+        <summary>Nâng cao: database, macro và monitor</summary>
+        <div class="setup-grid">
+          <label class="setup-field">
+            <span>Session database</span>
+            <input id="locker-session" type="text" placeholder="<<sessionid>>" />
+          </label>
+          <label class="setup-field">
+            <span>SyncID</span>
+            <input id="locker-sync" type="text" placeholder="<<syncid>>" />
+          </label>
+          <label class="setup-field">
+            <span>Macro trạng thái</span>
+            <input id="locker-state-macro" type="text" />
+          </label>
+          <label class="setup-field">
+            <span>Số log hiển thị</span>
+            <input id="locker-page-size" type="number" min="10" max="200" step="10" />
+          </label>
+          <label class="setup-field">
+            <span>Privacy monitor</span>
+            <select id="locker-monitor-privacy">
+              <option value="maskedPhone">Mask SĐT</option>
+              <option value="hiddenPhone">Ẩn SĐT</option>
+              <option value="stateOnly">Chỉ trạng thái</option>
+              <option value="summaryOnly">Chỉ tổng hợp</option>
+            </select>
+          </label>
+          <label class="setup-field setup-locker-check">
+            <span>Monitor kiosk</span>
+            <label><input id="locker-kiosk-mode" type="checkbox" /> Tối ưu màn hình lớn</label>
+          </label>
+        </div>
+      </details>
 
       <div class="setup-heading setup-section-heading">
         <span class="setup-eyebrow">Cấu hình nháp</span>

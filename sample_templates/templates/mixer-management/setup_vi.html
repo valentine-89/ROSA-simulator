@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thiết lập máy pha chế</title>
+  <link rel="stylesheet" href="/sample_dashboards/setup_shared.css" />
+  <link rel="stylesheet" href="/sample_dashboards/mixer-management/dashboard.css?v=2026.06.18.1" />
+</head>
+<body>
+  <main class="setup-shell">
+    <section class="setup-hero">
+      <div>
+        <h1>Thiết lập máy pha chế</h1>
+        <p>Lưu cấu hình dashboard, dùng database mẫu có admin CRUD, public /mixer và macro thiết bị theo batch.</p>
+      </div>
+    </section>
+
+    <section class="setup-section">
+      <h2>Thông tin dashboard</h2>
+      <div class="setup-grid">
+        <label>Tiêu đề
+          <input id="mixer-title-input" type="text" />
+        </label>
+        <label>Eyebrow
+          <input id="mixer-eyebrow-input" type="text" />
+        </label>
+        <label class="setup-wide">Mô tả
+          <textarea id="mixer-subtitle-input" rows="3"></textarea>
+        </label>
+      </div>
+    </section>
+
+    <section class="setup-section">
+      <h2>Thiết bị mẫu</h2>
+      <div class="setup-grid">
+        <label>Tên distributor
+          <input id="mixer-distributor-input" type="text" />
+        </label>
+        <label>Tên máy
+          <input id="mixer-machine-input" type="text" />
+        </label>
+        <label>IoID mặc định
+          <input id="mixer-ioid-input" type="text" />
+        </label>
+        <label>Page ID `/mixer`
+          <input id="mixer-pageid-input" type="text" />
+        </label>
+      </div>
+    </section>
+
+    <section class="setup-section">
+      <h2>Macro contract</h2>
+      <div class="setup-grid">
+        <label>State macro
+          <input id="mixer-state-macro-input" type="text" />
+        </label>
+        <label>Positions macro
+          <input id="mixer-positions-macro-input" type="text" />
+        </label>
+        <label>Stages macro
+          <input id="mixer-stages-macro-input" type="text" />
+        </label>
+        <label>Menu by number macro
+          <input id="mixer-menu-macro-input" type="text" />
+        </label>
+      </div>
+    </section>
+  </main>
+
+  <script src="/sample_dashboards/setup_bridge.js"></script>
+  <script src="/sample_dashboards/mixer-management/setup_mixer_vi.js?v=2026.06.18.1"></script>
+</body>
+</html>

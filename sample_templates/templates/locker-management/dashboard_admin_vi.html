@@ -31,37 +31,50 @@
     </section>
 
     <section class="locker-kpis" id="locker-kpis"></section>
-    <section class="locker-cabinet-list" id="locker-cabinet-list"></section>
 
-    <section class="locker-admin-workbench">
-      <div class="locker-panel locker-incident-panel" id="locker-incident-panel">
-        <div class="locker-panel-head">
-          <h2>Xử lý sự cố</h2>
-          <span id="locker-incident-state">Chưa chọn locker</span>
-        </div>
-        <div class="locker-detail-grid" id="locker-detail-grid"></div>
-        <div class="locker-incident-controls">
-          <button class="locker-button" type="button" id="locker-action-open" disabled>Mở locker bằng tay</button>
-          <label>Trạng thái
-            <select class="locker-input" id="locker-status-select">
-              <option value="free">Trống</option>
-              <option value="occupied">Đang dùng</option>
-              <option value="disabled">Disable</option>
-              <option value="opening">Đang mở</option>
-              <option value="error">Lỗi</option>
-            </select>
-          </label>
-          <label>SĐT khi set occupied
-            <input class="locker-input" id="locker-status-phone" type="search" placeholder="0912345678" />
-          </label>
-          <label>Ghi chú
-            <input class="locker-input" id="locker-status-note" placeholder="Lý do thao tác" />
-          </label>
-          <button class="locker-button" type="button" id="locker-status-apply" disabled>Áp dụng trạng thái</button>
-        </div>
-        <pre class="locker-command-preview" id="locker-command-preview">Chọn một locker trên lưới để thao tác.</pre>
-      </div>
+    <nav class="locker-tabs" aria-label="Khu vực vận hành locker">
+      <button class="locker-tab" type="button" data-locker-tab="operations" data-active="true">Vận hành</button>
+      <button class="locker-tab" type="button" data-locker-tab="users">Người dùng & ví</button>
+      <button class="locker-tab" type="button" data-locker-tab="logs">Log</button>
+      <button class="locker-tab" type="button" data-locker-tab="pricing">Bảng giá</button>
+      <button class="locker-tab" type="button" data-locker-tab="config">Cài đặt</button>
+      <button class="locker-tab" type="button" data-locker-tab="notes">Ghi chú</button>
+    </nav>
 
+    <section class="locker-tab-panel is-active" data-locker-panel="operations">
+      <section class="locker-cabinet-list" id="locker-cabinet-list"></section>
+      <section class="locker-admin-workbench">
+        <div class="locker-panel locker-incident-panel" id="locker-incident-panel">
+          <div class="locker-panel-head">
+            <h2>Xử lý sự cố</h2>
+            <span id="locker-incident-state">Chưa chọn locker</span>
+          </div>
+          <div class="locker-detail-grid" id="locker-detail-grid"></div>
+          <div class="locker-incident-controls">
+            <button class="locker-button" type="button" id="locker-action-open" disabled>Mở locker bằng tay</button>
+            <label>Trạng thái
+              <select class="locker-input" id="locker-status-select">
+                <option value="free">Trống</option>
+                <option value="occupied">Đang dùng</option>
+                <option value="disabled">Disable</option>
+                <option value="opening">Đang mở</option>
+                <option value="error">Lỗi</option>
+              </select>
+            </label>
+            <label>SĐT khi set occupied
+              <input class="locker-input" id="locker-status-phone" type="search" placeholder="0912345678" />
+            </label>
+            <label>Ghi chú
+              <input class="locker-input" id="locker-status-note" placeholder="Lý do thao tác" />
+            </label>
+            <button class="locker-button" type="button" id="locker-status-apply" disabled>Áp dụng trạng thái</button>
+          </div>
+          <pre class="locker-command-preview" id="locker-command-preview">Chọn một locker trên lưới để thao tác.</pre>
+        </div>
+      </section>
+    </section>
+
+    <section class="locker-tab-panel" data-locker-panel="users" hidden>
       <div class="locker-panel locker-user-ops">
         <div class="locker-panel-head">
           <h2>Người dùng</h2>
@@ -82,7 +95,68 @@
       </div>
     </section>
 
-    <section class="locker-panel locker-config-panel" id="locker-config-panel">
+    <section class="locker-tab-panel" data-locker-panel="logs" hidden>
+      <div class="locker-panel" id="locker-log-panel">
+        <div class="locker-panel-head">
+          <h2>Log vận hành</h2>
+          <span id="locker-log-count">0 dòng</span>
+        </div>
+        <div class="locker-log-tools">
+          <label>Loại dữ liệu
+            <select class="locker-input" id="locker-log-dataset">
+              <option value="events">Event</option>
+              <option value="sessions">Session</option>
+              <option value="wallet">Ví</option>
+            </select>
+          </label>
+          <label>Tủ<select class="locker-input" id="locker-log-cabinet"><option value="">Tất cả</option></select></label>
+          <label>Locker<input class="locker-input" id="locker-log-locker" type="search" placeholder="A-001" /></label>
+          <label>SĐT<input class="locker-input" id="locker-log-phone" type="search" placeholder="091..." /></label>
+          <label>Sự kiện/loại<input class="locker-input" id="locker-log-event-type" type="search" placeholder="deposit_success" /></label>
+          <label>Trạng thái<input class="locker-input" id="locker-log-status" type="search" placeholder="active/closed" /></label>
+          <label>Từ<input class="locker-input" id="locker-log-from" type="datetime-local" /></label>
+          <label>Đến<input class="locker-input" id="locker-log-to" type="datetime-local" /></label>
+          <button class="locker-button" type="button" id="locker-log-apply">Lọc</button>
+          <button class="locker-button" type="button" id="locker-log-reset">Xóa lọc</button>
+          <button class="locker-button" type="button" id="locker-log-load-more">Tải thêm</button>
+          <button class="locker-button" type="button" id="locker-log-export">Xuất CSV</button>
+        </div>
+        <div class="locker-table-wrap locker-table-wrap-tall">
+          <table class="locker-table">
+            <thead>
+              <tr>
+                <th>Thời gian</th>
+                <th>Tủ</th>
+                <th>Locker</th>
+                <th>Sự kiện</th>
+                <th>Người dùng</th>
+                <th>Nội dung</th>
+              </tr>
+            </thead>
+            <tbody id="locker-event-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="locker-tab-panel" data-locker-panel="pricing" hidden>
+      <div class="locker-panel">
+        <div class="locker-panel-head">
+          <div>
+            <h2>Bảng giá</h2>
+            <span>phí/lượt gửi đồ theo nhóm user</span>
+          </div>
+          <div class="locker-rate-actions">
+            <button class="locker-button" type="button" id="locker-rate-load-setup">Nạp pricing từ setup</button>
+            <button class="locker-button" type="button" id="locker-rate-add">Thêm nhóm giá</button>
+          </div>
+        </div>
+        <div id="locker-rates" class="locker-rate-editor"></div>
+      </div>
+    </section>
+
+    <section class="locker-tab-panel" data-locker-panel="config" hidden>
+      <div class="locker-panel locker-config-panel" id="locker-config-panel">
       <div class="locker-panel-head">
         <div>
           <h2>Cài đặt hệ thống</h2>
@@ -110,72 +184,17 @@
         <pre class="locker-command-preview" id="locker-config-preview"></pre>
         <button class="locker-button" type="button" id="locker-config-apply">Áp dụng cấu hình tủ</button>
       </div>
-    </section>
-
-    <section class="locker-two-col">
-      <div class="locker-panel" id="locker-log-panel">
-        <div class="locker-panel-head">
-          <h2>Log gần nhất</h2>
-          <span id="locker-log-count">0 dòng</span>
-        </div>
-        <div class="locker-log-tools">
-          <label>Loại dữ liệu
-            <select class="locker-input" id="locker-log-dataset">
-              <option value="events">Event</option>
-              <option value="sessions">Session</option>
-              <option value="wallet">Ví</option>
-            </select>
-          </label>
-          <label>Tủ<select class="locker-input" id="locker-log-cabinet"><option value="">Tất cả</option></select></label>
-          <label>Locker<input class="locker-input" id="locker-log-locker" type="search" placeholder="A-001" /></label>
-          <label>SĐT<input class="locker-input" id="locker-log-phone" type="search" placeholder="091..." /></label>
-          <label>Sự kiện/loại<input class="locker-input" id="locker-log-event-type" type="search" placeholder="deposit_success" /></label>
-          <label>Trạng thái<input class="locker-input" id="locker-log-status" type="search" placeholder="active/closed" /></label>
-          <label>Từ<input class="locker-input" id="locker-log-from" type="datetime-local" /></label>
-          <label>Đến<input class="locker-input" id="locker-log-to" type="datetime-local" /></label>
-          <button class="locker-button" type="button" id="locker-log-apply">Lọc</button>
-          <button class="locker-button" type="button" id="locker-log-reset">Xóa lọc</button>
-          <button class="locker-button" type="button" id="locker-log-load-more">Tải thêm</button>
-          <button class="locker-button" type="button" id="locker-log-export">Xuất CSV</button>
-        </div>
-        <div class="locker-table-wrap">
-          <table class="locker-table">
-            <thead>
-              <tr>
-                <th>Thời gian</th>
-                <th>Tủ</th>
-                <th>Locker</th>
-                <th>Sự kiện</th>
-                <th>Người dùng</th>
-                <th>Nội dung</th>
-              </tr>
-            </thead>
-            <tbody id="locker-event-body"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="locker-panel">
-        <div class="locker-panel-head">
-          <div>
-            <h2>Bảng giá</h2>
-            <span>phí/lượt gửi đồ theo nhóm user</span>
-          </div>
-          <div class="locker-rate-actions">
-            <button class="locker-button" type="button" id="locker-rate-load-setup">Nạp pricing từ setup</button>
-            <button class="locker-button" type="button" id="locker-rate-add">Thêm nhóm giá</button>
-          </div>
-        </div>
-        <div id="locker-rates" class="locker-rate-editor"></div>
       </div>
     </section>
 
-    <section class="locker-panel locker-notes">
+    <section class="locker-tab-panel" data-locker-panel="notes" hidden>
+      <div class="locker-panel locker-notes">
       <div class="locker-panel-head">
         <h2>Ghi nhận cho ROSA sau</h2>
         <span>ngoài phạm vi template</span>
       </div>
       <ul id="locker-notes"></ul>
+      </div>
     </section>
   </main>
 

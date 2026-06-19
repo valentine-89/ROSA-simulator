@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Queue turn display preview">
+  <rect width="1280" height="720" fill="#f5fbff"/>
+  <rect x="0" y="0" width="1280" height="112" fill="#ffffff"/>
+  <rect x="0" y="107" width="1280" height="5" fill="#087f8c"/>
+  <text x="48" y="70" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="800" fill="#123048">PHÒNG KHÁM A</text>
+  <text x="48" y="98" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#4b6b83">Cập nhật số thứ tự theo thời gian thực</text>
+  <rect x="1080" y="36" width="132" height="40" rx="8" fill="#16a34a"/>
+  <text x="1146" y="62" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" fill="#052e16">Trực tuyến</text>
+  <g transform="translate(40 142)">
+    <rect x="0" y="0" width="580" height="530" rx="8" fill="#ffffff" stroke="#087f8c" stroke-width="8"/>
+    <rect x="0" y="0" width="580" height="76" rx="6" fill="#e7f5ff"/>
+    <text x="290" y="50" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="800" fill="#087f8c">QUẦY 1</text>
+    <text x="145" y="190" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="96" font-weight="900" fill="#b91c1c">001</text>
+    <text x="435" y="190" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="96" font-weight="900" fill="#b91c1c">002</text>
+    <text x="145" y="335" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="96" font-weight="900" fill="#16a34a">003</text>
+    <text x="435" y="335" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="96" font-weight="900" fill="#b91c1c">004</text>
+  </g>
+  <g transform="translate(660 142)">
+    <rect x="0" y="0" width="580" height="530" rx="8" fill="#ffffff" stroke="#087f8c" stroke-width="8"/>
+    <rect x="0" y="0" width="580" height="76" rx="6" fill="#e7f5ff"/>
+    <text x="290" y="50" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="800" fill="#087f8c">QUẦY 2</text>
+    <text x="145" y="190" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="96" font-weight="900" fill="#b91c1c">005</text>
+    <text x="435" y="190" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="96" font-weight="900" fill="#b91c1c">006</text>
+    <text x="145" y="335" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="96" font-weight="900" fill="#b91c1c">007</text>
+    <text x="435" y="335" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="96" font-weight="900" fill="#b91c1c">008</text>
+  </g>
+</svg>
