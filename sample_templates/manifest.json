@@ -3080,6 +3080,132 @@
       ]
     },
     {
+      "id": "retail-chain",
+      "name": "ROSA Retail Chain",
+      "description": "Tổng quan:\nTemplate vận hành chuỗi bán lẻ database-first trên SQLite theo IOID. Bộ trang gồm tổng quan, quản lý máy bán hàng, tồn kho, báo cáo bán hàng, link đặt mua hàng bảo mật và người dùng. Storefront public chạy qua iot-page với macro allowlist, context cố định theo link, xác thực SĐT và request id chống tạo đơn trùng. Thiết bị bán hàng và thiết bị kho cập nhật dữ liệu qua macro idempotent.\n\nLoại:\ndatabase + IoT pages + public macro API + device macro API\n\nCác bảng chính:\n- retail_stores, retail_categories, retail_products, retail_store_products\n- retail_machines, retail_machine_positions\n- retail_orders, retail_order_items, retail_sales, retail_sale_items\n- retail_inventory_movements, retail_device_requests, retail_users, retail_order_links\n\nAPI thiết bị chính:\n- retail-io-catalog, retail-io-order-next, retail-io-order-complete\n- retail-io-sale-report, retail-io-machine-restock\n- retail-io-stock-levels, retail-io-stock-report\n\nGhi chú:\n- Context-aware: <<sessionid>>, <<syncid>> và <<ioid>> được thay khi nạp template.\n- Không dùng procedure, event hoặc scheduler; mọi nghiệp vụ chạy bằng macro SQLite transaction.\n- Phiên bản đầu không có cho vay hoặc tạm ứng.",
+      "image": "/sample_dashboards/retail-chain/sample.png",
+      "html": "/sample_dashboards/retail-chain/dashboard_overview_vi.html",
+      "setup": {
+        "page": "/sample_dashboards/retail-chain/setup_vi.html"
+      },
+      "sampleDatabase": "/sample_dashboards/retail-chain/sample.sqlite",
+      "tags": [
+        "retail",
+        "database",
+        "inventory",
+        "vending",
+        "iot-page",
+        "sales"
+      ],
+      "defaultLocale": "overview-vi",
+      "locales": {
+        "overview-vi": {
+          "label": "Tổng quan",
+          "name": "Retail Chain - Tổng quan",
+          "description": "Tổng quan doanh thu, đơn hàng, máy online, cảnh báo tồn kho, hiệu quả cửa hàng và hoạt động mới nhất.",
+          "image": "/sample_dashboards/retail-chain/sample.png",
+          "html": "/sample_dashboards/retail-chain/dashboard_overview_vi.html",
+          "setup": { "page": "/sample_dashboards/retail-chain/setup_vi.html" },
+          "default-fields": []
+        },
+        "machines-vi": {
+          "label": "Máy bán hàng",
+          "name": "Retail Chain - Máy bán hàng",
+          "description": "Theo dõi trạng thái máy, vị trí sản phẩm, sức chứa và lượng hàng khả dụng theo từng ngăn.",
+          "image": "/sample_dashboards/retail-chain/sample.png",
+          "html": "/sample_dashboards/retail-chain/dashboard_machines_vi.html",
+          "setup": { "page": "/sample_dashboards/retail-chain/setup_vi.html" },
+          "default-fields": []
+        },
+        "inventory-vi": {
+          "label": "Tồn kho",
+          "name": "Retail Chain - Tồn kho",
+          "description": "Quản lý danh mục, SKU, barcode, hình ảnh, giá bán, giá vốn, tồn khả dụng và ngưỡng nhập hàng.",
+          "image": "/sample_dashboards/retail-chain/sample.png",
+          "html": "/sample_dashboards/retail-chain/dashboard_inventory_vi.html",
+          "setup": { "page": "/sample_dashboards/retail-chain/setup_vi.html" },
+          "default-fields": []
+        },
+        "sales-vi": {
+          "label": "Bán hàng",
+          "name": "Retail Chain - Báo cáo bán hàng",
+          "description": "Doanh thu 14 ngày, giá trị đơn trung bình, sản phẩm bán chạy và bảng trạng thái đơn hàng.",
+          "image": "/sample_dashboards/retail-chain/sample.png",
+          "html": "/sample_dashboards/retail-chain/dashboard_sales_vi.html",
+          "setup": { "page": "/sample_dashboards/retail-chain/setup_vi.html" },
+          "default-fields": []
+        },
+        "links-vi": {
+          "label": "Link đặt hàng",
+          "name": "Retail Chain - Trang đặt mua hàng",
+          "description": "Tạo iot-page mua hàng theo cửa hàng hoặc máy, có context cố định, macro allowlist, xác thực SĐT và rate limit.",
+          "image": "/sample_dashboards/retail-chain/sample.png",
+          "html": "/sample_dashboards/retail-chain/dashboard_links_vi.html",
+          "setup": { "page": "/sample_dashboards/retail-chain/setup_vi.html" },
+          "default-fields": []
+        },
+        "users-vi": {
+          "label": "Người dùng",
+          "name": "Retail Chain - Người dùng",
+          "description": "Tìm kiếm và quản lý khách hàng, nhân viên, quản trị viên cùng tổng hợp đơn hàng và chi tiêu.",
+          "image": "/sample_dashboards/retail-chain/sample.png",
+          "html": "/sample_dashboards/retail-chain/dashboard_users_vi.html",
+          "setup": { "page": "/sample_dashboards/retail-chain/setup_vi.html" },
+          "default-fields": []
+        }
+      },
+      "default-fields": [],
+      "macro-examples": [
+        {
+          "label": "Đọc tổng quan retail",
+          "payload": { "macro": "retail-admin-overview", "store_id": "" }
+        },
+        {
+          "label": "Thiết bị đọc vị trí máy",
+          "payload": { "macro": "retail-io-catalog", "c1": "VM-HCM-01" },
+          "gatewayCommand": "D23,#801,,\"data\",\"retail-io-catalog\",\"VM-HCM-01\""
+        },
+        {
+          "label": "Thiết bị kho đọc tồn",
+          "payload": { "macro": "retail-io-stock-levels", "c1": "STORE-HCM", "c2": "DRK-WATER-500" },
+          "gatewayCommand": "D23,#801,,\"data\",\"retail-io-stock-levels\",\"STORE-HCM\",\"DRK-WATER-500\""
+        },
+        {
+          "label": "Thiết bị kho nhập hàng",
+          "payload": { "macro": "retail-io-stock-report", "c1": "WH-REQ-001", "c2": "STORE-HCM", "c3": "DRK-WATER-500", "c4": 12, "c5": "stock_in", "c6": "PO-001", "c7": "Nhập kho tự động" },
+          "gatewayCommand": "D23,#801,,\"data\",\"retail-io-stock-report\",\"WH-REQ-001\",\"STORE-HCM\",\"DRK-WATER-500\",12,\"stock_in\",\"PO-001\",\"Nhập kho tự động\""
+        },
+        {
+          "label": "Thiết bị tiếp hàng vào máy",
+          "payload": { "macro": "retail-io-machine-restock", "c1": "RESTOCK-001", "c2": "VM-HCM-01", "c3": 1, "c4": 2, "c5": "Tiếp hàng vị trí 1" },
+          "gatewayCommand": "D23,#801,,\"data\",\"retail-io-machine-restock\",\"RESTOCK-001\",\"VM-HCM-01\",1,2,\"Tiếp hàng vị trí 1\""
+        },
+        {
+          "label": "Máy báo bán hàng trực tiếp",
+          "payload": { "macro": "retail-io-sale-report", "c1": "SALE-REQ-001", "c2": "VM-HCM-01", "c3": "[{\"position\":1,\"qty\":1}]", "c4": "cash", "c5": "Bán tại máy" },
+          "gatewayCommand": "D23,#801,,\"data\",\"retail-io-sale-report\",\"SALE-REQ-001\",\"VM-HCM-01\",\"[{\\\"position\\\":1,\\\"qty\\\":1}]\",\"cash\",\"Bán tại máy\""
+        },
+        {
+          "label": "Máy đọc đơn tiếp theo",
+          "payload": { "macro": "retail-io-order-next", "c1": "VM-HCM-01" },
+          "gatewayCommand": "D23,#801,,\"data\",\"retail-io-order-next\",\"VM-HCM-01\""
+        },
+        {
+          "label": "Máy xác nhận hoàn tất đơn",
+          "payload": { "macro": "retail-io-order-complete", "c1": "DONE-REQ-001", "c2": "VM-HCM-01", "c3": "R-DEMO-001", "c4": "fulfilled", "c5": "Đã nhả hàng" },
+          "gatewayCommand": "D23,#801,,\"data\",\"retail-io-order-complete\",\"DONE-REQ-001\",\"VM-HCM-01\",\"R-DEMO-001\",\"fulfilled\",\"Đã nhả hàng\""
+        },
+        {
+          "label": "Public đọc cửa hàng",
+          "payload": { "macro": "retail-link-state", "link_id": "SHOP-HCM", "store_id": "STORE-HCM", "machine_id": "" }
+        },
+        {
+          "label": "Public tạo đơn mẫu",
+          "payload": { "macro": "retail-link-create-order", "link_id": "SHOP-HCM", "store_id": "STORE-HCM", "machine_id": "", "cart_json": "[{\"product_id\":\"P-WATER\",\"qty\":1}]", "client_request_id": "WEB-DEMO-001", "payment_method": "cod", "note": "", "phone": "0912345678", "username": "Phạm Gia Huy" }
+        }
+      ]
+    },
+    {
       "id": "server-health-monitor",
       "name": "Giám sát server",
       "description": "Tổng quan:\nDashboard giám sát tình trạng nhiều server cùng lúc, chỉ tập trung vào các thông tin cơ bản mà hầu hết server đều có: CPU, RAM, Network In/Out và dung lượng ổ đĩa chính. Mỗi server nằm trong một card riêng, gộp nhiều tham số vào cùng một biểu đồ để trình bày được nhiều máy trên một màn hình.\n\nLoại:\ntelemetry + timeseries qua SSE\n\nCác tham số chính:\n- Cấp cao nhất: syncId, historyMinutes, thresholds, servers[]\n- historyMinutes là khung thời gian mặc định của dropdown biểu đồ, không phải chu kỳ refresh.\n- Cấp server: name, sessionId, accent, fields{}\n- Field mặc định: CPU_Percent, RAM_Percent, Network_In_Mbps, Network_Out_Mbps, Disk_Main_Used_GB, Disk_Main_Total_GB\n\nLuồng dữ liệu:\n- Dashboard đọc snapshot telemetry và lịch sử timeseries một lần khi mở trang.\n- Khi đổi dropdown khung thời gian, dashboard query lại iotimeseries với from/to tương ứng.\n- Sau đó cập nhật realtime bằng SSE stream /api/<sessionId>/stream.\n\nGhi chú:\n- Context-aware: <<sessionid>> và <<syncid>> được thay tự động khi tải từ bộ chọn trang mẫu.\n- Có thể hiển thị nhiều server bằng cách thêm phần tử trong servers[].\n- Template chỉ dùng HTML/CSS/JavaScript frontend và các endpoint telemetry/timeseries có sẵn, không cần backend bổ sung.",

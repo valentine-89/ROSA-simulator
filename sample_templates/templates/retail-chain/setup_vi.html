@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cài đặt Retail Chain</title>
+  <link rel="stylesheet" href="/sample_dashboards/setup_shared.css?v=2026.05.30.1">
+  <style>
+    .retail-note{margin-top:12px;border-left:3px solid #16734a;background:#eef7f2;padding:10px 12px;color:#40534a;font-size:12px;line-height:1.5}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="head"><div><h1>Cài đặt Retail Chain</h1><div class="status" id="status">Đang chờ dữ liệu từ ứng dụng.</div></div></header>
+    <section class="panel">
+      <h2>Thông tin dashboard</h2>
+      <div class="grid">
+        <label class="full">Tên hệ thống<input id="title"></label>
+        <label class="full">Mô tả ngắn<textarea id="subtitle"></textarea></label>
+        <label>Device key lưu SQLite<input id="databaseSessionId"></label>
+        <label>AccountID tính phí<input id="syncId"></label>
+        <label>Cửa hàng mặc định<input id="storeId" placeholder="Để trống để xem toàn chuỗi"></label>
+        <label>Trang mở mặc định<select id="defaultView"><option value="overview">Tổng quan</option><option value="machines">Máy bán hàng</option><option value="inventory">Tồn kho</option><option value="sales">Bán hàng</option><option value="links">Link đặt hàng</option><option value="users">Người dùng</option></select></label>
+        <label>Số dòng mỗi trang<input id="pageSize" type="number" min="20" max="300" step="10"></label>
+      </div>
+      <div class="retail-note">Cấu hình này chỉ thay đổi dashboard. Cửa hàng, máy, sản phẩm và link iot-page được quản lý trong dashboard rồi ghi xuống SQLite bằng macro.</div>
+    </section>
+  </main>
+  <script src="/sample_dashboards/setup_bridge.js?v=2026.05.30.1"></script>
+  <script src="/sample_dashboards/retail-chain/setup_retail_vi.js?v=2026.06.22.1"></script>
+</body>
+</html>
