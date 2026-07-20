@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Điện nước nhà trọ</title>
+  <link rel="stylesheet" href="/dashboard-themes.css" />
+  <script>(function(){try{var t=localStorage.getItem("sample-dashboard-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}})();</script>
+  <link rel="stylesheet" href="/sample_dashboards/rental-utilities/dashboard.css?v=2026.07.14.1" />
+</head>
+<body>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="ru-page" id="rental-utilities-root">
+    <header class="ru-hero">
+      <div class="ru-brand"><div class="ru-logo">₫</div><div><span class="ru-eyebrow">ROSA PROPERTY</span><h1 id="ru-title">Điện nước nhà trọ</h1><p id="ru-subtitle">Theo dõi chỉ số, tiền phòng và thanh toán theo thời gian thực</p></div></div>
+      <div class="ru-hero-actions"><div class="ru-live"><i id="ru-live-dot"></i><span id="ru-live-text">Đang kết nối</span></div><div class="ru-month" id="ru-month">--/----</div></div>
+    </header>
+    <section class="ru-kpis" id="ru-kpis"></section>
+    <section class="ru-toolbar"><div><h2>Danh sách phòng</h2><p id="ru-summary-text">Đang tải dữ liệu...</p></div><div class="ru-filter"><button type="button" data-filter="all" class="is-active">Tất cả</button><button type="button" data-filter="unpaid">Chưa thu</button><button type="button" data-filter="paid">Đã thu</button></div></section>
+    <section class="ru-room-grid" id="ru-room-grid"></section>
+  </main>
+  <div class="ru-toast-stack" id="ru-toast-stack" aria-live="polite"></div>
+  <div class="theme-picker" id="theme-picker"><button class="theme-picker-toggle" id="theme-picker-toggle" type="button" aria-label="Chọn màu giao diện" title="Chọn màu giao diện" aria-expanded="false">🎨</button><div class="theme-picker-menu" id="theme-picker-menu">
+    <button type="button" data-theme-option="modern-flat">Modern Flat</button><button type="button" data-theme-option="aurora-ui">Aurora UI</button><button type="button" data-theme-option="glassmorphism">Glassmorphism</button><button type="button" data-theme-option="neumorphism">Neumorphism</button><button type="button" data-theme-option="bento-grid">Bento Grid</button>
+  </div></div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script type="application/json" id="rental-utilities-config">
+  {
+    "locale":"vi","title":"Điện nước nhà trọ","subtitle":"Theo dõi chỉ số, tiền phòng và thanh toán theo thời gian thực","syncId":"<<syncid>>","electricRate":3500,"waterRate":15000,"serviceFee":100000,"dueDay":5,
+    "rooms":[
+      {"code":"P101","tenant":"Nguyễn Văn An","sessionId":"<<sessionid>>","rent":2500000,"electricStart":1250,"waterStart":86,"fields":{"electricity":"p101_electricity_kwh","water":"p101_water_m3","power":"p101_power_w","paid":"p101_paid","relay":"O101"},"commands":{"on":"D1O101","off":"D2O101"}},
+      {"code":"P102","tenant":"Trần Minh Châu","sessionId":"<<sessionid>>","rent":2800000,"electricStart":980,"waterStart":63,"fields":{"electricity":"p102_electricity_kwh","water":"p102_water_m3","power":"p102_power_w","paid":"p102_paid","relay":"O102"},"commands":{"on":"D1O102","off":"D2O102"}},
+      {"code":"P201","tenant":"Lê Hoàng Nam","sessionId":"<<sessionid>>","rent":2600000,"electricStart":1440,"waterStart":102,"fields":{"electricity":"p201_electricity_kwh","water":"p201_water_m3","power":"p201_power_w","paid":"p201_paid","relay":"O201"},"commands":{"on":"D1O201","off":"D2O201"}},
+      {"code":"P202","tenant":"Phạm Thu Hà","sessionId":"<<sessionid>>","rent":3000000,"electricStart":720,"waterStart":48,"fields":{"electricity":"p202_electricity_kwh","water":"p202_water_m3","power":"p202_power_w","paid":"p202_paid","relay":"O202"},"commands":{"on":"D1O202","off":"D2O202"}}
+    ]
+  }
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START --><script>// Chỗ dành cho tùy biến riêng của chủ nhà.</script><!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+  <script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START --><script src="/sample_dashboards/rental-utilities/dashboard-runtime.js?v=2026.07.14.1"></script><!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#eef4ff"/><stop offset="1" stop-color="#e7f8f5"/></linearGradient>
+    <linearGradient id="hero" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#172554"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="10" stdDeviation="15" flood-color="#0f172a" flood-opacity=".12"/></filter>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <g font-family="Segoe UI,Arial,sans-serif">
+    <rect x="48" y="32" width="1184" height="145" rx="28" fill="url(#hero)" filter="url(#shadow)"/>
+    <rect x="78" y="67" width="72" height="72" rx="20" fill="#fff" fill-opacity=".14"/>
+    <path d="M116 78 91 113h22l-7 23 31-39h-23z" fill="#fbbf24"/>
+    <text x="174" y="75" font-size="14" font-weight="800" fill="#67e8f9" letter-spacing="3">ROSA FACTORY ENERGY</text>
+    <text x="174" y="111" font-size="30" font-weight="800" fill="#fff">Giám sát điện năng nhà xưởng</text>
+    <text x="174" y="140" font-size="16" fill="#cbd5e1">Phụ tải, chất lượng điện và chi phí theo từng khu vực</text>
+    <rect x="983" y="74" width="105" height="44" rx="22" fill="#fff" fill-opacity=".13"/><circle cx="1005" cy="96" r="6" fill="#22c55e"/><text x="1020" y="102" font-size="14" font-weight="700" fill="#fff">Trực tuyến</text>
+    <rect x="1100" y="74" width="100" height="44" rx="22" fill="#fff" fill-opacity=".13"/><text x="1122" y="102" font-size="14" font-weight="700" fill="#fff">10:58:25</text>
+    <g fill="#fff" filter="url(#shadow)">
+      <rect x="48" y="199" width="278" height="105" rx="22"/><rect x="350" y="199" width="278" height="105" rx="22"/><rect x="652" y="199" width="278" height="105" rx="22"/><rect x="954" y="199" width="278" height="105" rx="22"/>
+    </g>
+    <g font-size="13" font-weight="700" fill="#64748b"><text x="74" y="229">TỔNG CÔNG SUẤT</text><text x="376" y="229">ĐIỆN NĂNG HÔM NAY</text><text x="678" y="229">CHI PHÍ TẠM TÍNH</text><text x="980" y="229">HỆ SỐ CÔNG SUẤT</text></g>
+    <g font-size="29" font-weight="800" fill="#172554"><text x="74" y="273">104.8 kW</text><text x="376" y="273">752.6 kWh</text><text x="678" y="273">1.580.460 đ</text><text x="980" y="273">0.92</text></g>
+    <rect x="48" y="328" width="408" height="165" rx="24" fill="#fff" filter="url(#shadow)"/>
+    <text x="74" y="364" font-size="18" font-weight="800" fill="#172554">Phân bổ phụ tải</text>
+    <g font-size="13" fill="#475569"><text x="74" y="402">Xưởng ép nhựa</text><text x="74" y="438">Xưởng đóng gói</text><text x="74" y="474">Hệ thống phụ trợ</text></g>
+    <g fill="#e2e8f0"><rect x="214" y="389" width="212" height="13" rx="7"/><rect x="214" y="425" width="212" height="13" rx="7"/><rect x="214" y="461" width="212" height="13" rx="7"/></g>
+    <rect x="214" y="389" width="170" height="13" rx="7" fill="#2563eb"/><rect x="214" y="425" width="112" height="13" rx="7" fill="#8b5cf6"/><rect x="214" y="461" width="139" height="13" rx="7" fill="#14b8a6"/>
+    <rect x="480" y="328" width="752" height="165" rx="24" fill="#fff" filter="url(#shadow)"/>
+    <text x="506" y="364" font-size="18" font-weight="800" fill="#172554">Công suất tác dụng</text>
+    <path d="M510 454 C570 420 618 447 676 406 S790 450 852 394 966 446 1035 400 1130 427 1200 378" fill="none" stroke="#2563eb" stroke-width="4"/>
+    <path d="M510 463 C580 450 624 422 684 447 S802 420 868 441 978 402 1041 431 1130 400 1200 416" fill="none" stroke="#8b5cf6" stroke-width="3"/>
+    <g fill="#fff" filter="url(#shadow)"><rect x="48" y="519" width="376" height="164" rx="24"/><rect x="452" y="519" width="376" height="164" rx="24"/><rect x="856" y="519" width="376" height="164" rx="24"/></g>
+    <rect x="48" y="519" width="8" height="164" rx="4" fill="#2563eb"/><rect x="452" y="519" width="8" height="164" rx="4" fill="#8b5cf6"/><rect x="856" y="519" width="8" height="164" rx="4" fill="#14b8a6"/>
+    <g font-size="18" font-weight="800" fill="#172554"><text x="76" y="555">Xưởng ép nhựa</text><text x="480" y="555">Xưởng đóng gói</text><text x="884" y="555">Hệ thống phụ trợ</text></g>
+    <g font-size="13" fill="#64748b"><text x="76" y="583">L1  221.4 V   63.2 A</text><text x="76" y="611">L2  219.8 V   59.8 A</text><text x="76" y="639">L3  222.1 V   61.5 A</text><text x="480" y="583">L1  222.0 V   31.4 A</text><text x="480" y="611">L2  221.2 V   30.1 A</text><text x="480" y="639">L3  220.7 V   32.0 A</text><text x="884" y="583">L1  220.9 V   42.7 A</text><text x="884" y="611">L2  221.6 V   40.8 A</text><text x="884" y="639">L3  219.9 V   41.5 A</text></g>
+    <g font-size="12" font-weight="800" fill="#15803d"><text x="337" y="555">ỔN ĐỊNH</text><text x="741" y="555">ỔN ĐỊNH</text><text x="1145" y="555">ỔN ĐỊNH</text></g>
+  </g>
+</svg>

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quản lý lò đốt sinh khối</title>
   <link rel="stylesheet" href="/dashboard-themes.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous" />
   <script>
     (function () {
       try {
@@ -15,7 +16,7 @@
       } catch (error) {}
     })();
   </script>
-  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/dashboard.css?v=2026.05.24.1" />
+  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/dashboard.css?v=2026.07.20.2" />
 </head>
 <body>
   <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
@@ -39,6 +40,39 @@
       <article class="bb-kpi"><span>Phút còn lại</span><strong id="bb-kpi-remaining">--</strong><em>ước tính theo DB</em></article>
       <article class="bb-kpi"><span>Sắp hết hạn</span><strong id="bb-kpi-expiring">--</strong><em id="bb-kpi-expiring-note">30 ngày tới</em></article>
       <article class="bb-kpi"><span>CO2 giảm</span><strong id="bb-kpi-co2">--</strong><em>kg ước tính</em></article>
+    </section>
+
+    <section class="bb-map-layout" aria-label="Bản đồ vị trí lò đốt">
+      <article class="bb-panel bb-map-panel">
+        <div class="bb-panel-head">
+          <div>
+            <span class="bb-eyebrow">Bản đồ vận hành</span>
+            <h2>Vị trí lò đốt</h2>
+            <p>Marker đổi màu theo trạng thái telemetry của từng bộ điều khiển.</p>
+          </div>
+          <button class="bb-btn" id="bb-map-fit" type="button">Xem tất cả</button>
+        </div>
+        <div class="bb-map" id="bb-map" role="application" aria-label="Bản đồ OpenStreetMap hiển thị vị trí lò đốt">
+          <div class="bb-map-loading" id="bb-map-loading">Đang tải bản đồ...</div>
+        </div>
+        <div class="bb-map-legend" aria-label="Chú thích trạng thái">
+          <span><i data-state="on"></i>Đang đốt</span>
+          <span><i data-state="off"></i>Đang dừng</span>
+          <span><i data-state="warning"></i>Sắp hết phút / hết hạn</span>
+          <span><i data-state="unknown"></i>Chưa có dữ liệu</span>
+        </div>
+      </article>
+
+      <article class="bb-panel bb-map-list-panel">
+        <div class="bb-panel-head">
+          <div>
+            <span class="bb-eyebrow">Danh sách nhanh</span>
+            <h2>Lò trên bản đồ</h2>
+            <p id="bb-map-count">Chưa có vị trí hợp lệ.</p>
+          </div>
+        </div>
+        <div class="bb-map-list" id="bb-map-list"></div>
+      </article>
     </section>
 
     <section class="bb-panel bb-filters">
@@ -103,6 +137,8 @@
             <div class="bb-field bb-field-full"><label for="add-session-id">Session thiết bị</label><input class="bb-input" id="add-session-id" name="session_id" placeholder="IO...@apiKey" required /></div>
             <div class="bb-field"><label for="add-customer">Khách hàng</label><input class="bb-input" id="add-customer" name="customer_name" /></div>
             <div class="bb-field"><label for="add-site">Vị trí</label><input class="bb-input" id="add-site" name="site_name" /></div>
+            <div class="bb-field"><label for="add-lat">Vĩ độ</label><input class="bb-input" id="add-lat" name="lat" type="number" min="-90" max="90" step="0.000001" placeholder="21.028511" /></div>
+            <div class="bb-field"><label for="add-lng">Kinh độ</label><input class="bb-input" id="add-lng" name="lng" type="number" min="-180" max="180" step="0.000001" placeholder="105.804817" /></div>
             <div class="bb-field"><label for="add-lease">Ngày hết hạn</label><input class="bb-input" id="add-lease" name="lease_expires_at" type="date" /></div>
             <div class="bb-field"><label for="add-purchased">Phút đã mua</label><input class="bb-input" id="add-purchased" name="purchased_minutes" inputmode="numeric" value="0" /></div>
             <div class="bb-field"><label for="add-burned">Phút đã đốt ban đầu</label><input class="bb-input" id="add-burned" name="burned_minutes_current" inputmode="numeric" value="0" /></div>
@@ -136,6 +172,8 @@
               <div class="bb-field"><label for="settings-display-name">Tên hiển thị</label><input class="bb-input" id="settings-display-name" name="display_name" required /></div>
               <div class="bb-field"><label for="settings-customer">Khách hàng</label><input class="bb-input" id="settings-customer" name="customer_name" /></div>
               <div class="bb-field"><label for="settings-site">Vị trí</label><input class="bb-input" id="settings-site" name="site_name" /></div>
+              <div class="bb-field"><label for="settings-lat">Vĩ độ</label><input class="bb-input" id="settings-lat" name="lat" type="number" min="-90" max="90" step="0.000001" /></div>
+              <div class="bb-field"><label for="settings-lng">Kinh độ</label><input class="bb-input" id="settings-lng" name="lng" type="number" min="-180" max="180" step="0.000001" /></div>
               <div class="bb-field"><label for="settings-lease">Ngày hết hạn</label><input class="bb-input" id="settings-lease" name="lease_expires_at" type="date" /></div>
               <div class="bb-field"><label for="settings-purchased">Phút đã mua</label><input class="bb-input" id="settings-purchased" name="purchased_minutes" inputmode="numeric" /></div>
               <div class="bb-field"><label for="settings-burned">Phút đã đốt</label><input class="bb-input" id="settings-burned" name="burned_minutes_current" inputmode="numeric" /></div>
@@ -211,7 +249,10 @@
       "pageSize": 50,
       "telemetryRefreshMs": 30000,
       "expirySoonDays": 30,
-      "co2KgPerBurnMinute": 2.77
+      "co2KgPerBurnMinute": 2.77,
+      "mapCenterLat": 21.35,
+      "mapCenterLng": 105.72,
+      "mapZoom": 8
     }
   </script>
   <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
@@ -223,8 +264,9 @@
   <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
 
   <script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
   <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
-  <script src="/sample_dashboards/biomass-burner-management/dashboard-runtime.js?v=2026.05.24.1"></script>
+  <script src="/sample_dashboards/biomass-burner-management/dashboard-runtime.js?v=2026.07.20.2"></script>
   <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
 </body>
 </html>
