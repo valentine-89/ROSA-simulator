@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Quản lý bảng giá xăng dầu</title>
+  <link rel="stylesheet" href="/dashboard-themes.css">
+  <script>(function(){try{var t=localStorage.getItem("sample-dashboard-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}})();</script>
+  <link rel="stylesheet" href="/sample_dashboards/fuel-price-network/dashboard.css?v=2026.07.17.10">
+  <link rel="stylesheet" href="/sample_dashboards/fuel-price-network/dashboard-settings.css?v=2026.07.17.10">
+</head>
+<body>
+<!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+<main class="fp-page">
+  <header class="fp-hero">
+    <div class="fp-brand">
+      <div class="fp-logo">⛽</div>
+      <div>
+        <span class="fp-eyebrow">ROSA FUEL PRICE NETWORK</span>
+        <h1 id="fp-title">Quản lý bảng giá xăng dầu</h1>
+        <p id="fp-subtitle">Cập nhật bảng LED và đồng bộ giá thanh toán của trạm</p>
+      </div>
+    </div>
+    <div class="fp-hero-tools">
+      <span class="fp-source-state" id="fp-source-state">Giá nhập tay</span>
+      <span class="fp-clock" id="fp-clock">--:--:--</span>
+    </div>
+  </header>
+
+  <section class="fp-alert" id="fp-alert" hidden></section>
+
+  <section class="fp-workspace">
+    <article class="fp-panel fp-editor">
+      <div class="fp-panel-head">
+        <div>
+          <span class="fp-section-label">NGUỒN GIÁ</span>
+          <h2>Chuẩn bị bảng giá</h2>
+        </div>
+        <div class="fp-mode" role="group" aria-label="Chế độ nguồn giá">
+          <button type="button" data-price-mode="manual" class="is-active">Nhập số</button>
+          <button type="button" data-price-mode="online">Online</button>
+        </div>
+      </div>
+      <div class="fp-online-tools" id="fp-online-tools" hidden>
+        <label>Khu vực
+          <select id="fp-region"><option value="1">Vùng 1</option><option value="2">Vùng 2</option></select>
+        </label>
+        <button type="button" class="fp-button primary" id="fp-fetch-online">Lấy lại giá Petrolimex</button>
+        <a id="fp-source-link" href="https://www.petrolimex.com.vn/" target="_blank" rel="noreferrer">Mở nguồn chính thức ↗</a>
+      </div>
+      <p class="fp-source-note" id="fp-source-note">Nhập giá bán lẻ, tối đa 5 chữ số cho mỗi dòng LED.</p>
+      <div class="fp-price-inputs" id="fp-price-inputs"></div>
+    </article>
+
+    <article class="fp-led-panel">
+      <div class="fp-led-top"><span>PVOIL</span><small>XEM TRƯỚC BẢNG LED · VNĐ/LÍT</small></div>
+      <div class="fp-led-board" id="fp-led-board"></div>
+      <div class="fp-led-foot"><i></i><span id="fp-preview-state">Dữ liệu đang chờ gửi</span></div>
+    </article>
+  </section>
+
+  <section class="fp-station-toolbar">
+    <div>
+      <span class="fp-section-label">TRẠM ĐANG ĐĂNG NHẬP</span>
+      <h2 id="fp-station-name">Trạm trung tâm</h2>
+      <p id="fp-station-summary">Đang tải trạng thái thiết bị...</p>
+    </div>
+    <div class="fp-station-actions">
+      <button type="button" class="fp-icon-action eye" id="fp-board-show" title="Bật hiển thị toàn bảng" aria-label="Bật hiển thị toàn bảng">👁</button>
+      <button type="button" class="fp-icon-action danger" id="fp-board-off" title="Tắt hiển thị toàn bảng" aria-label="Tắt hiển thị toàn bảng">✕</button>
+      <button type="button" class="fp-icon-action" id="fp-open-settings" title="Mở cài đặt" aria-label="Mở cài đặt">⚙</button>
+      <button type="button" class="fp-button send" id="fp-open-confirm">Gửi bảng giá xuống thiết bị</button>
+    </div>
+  </section>
+  <section class="fp-station-card" id="fp-station-card"></section>
+
+  <div class="fp-settings-page" id="fp-settings-page" hidden>
+  <section class="fp-panel fp-device-settings" role="dialog" aria-modal="true" aria-label="Cài đặt bảng LED">
+    <div class="fp-panel-head">
+      <div>
+        <span class="fp-section-label">CÀI ĐẶT BẢNG LED</span>
+        <h2>Bộ điều khiển trung tâm và từng hàng số</h2>
+      </div>
+      <div class="fp-settings-actions">
+        <button type="button" class="fp-button muted" id="fp-close-settings">Đóng</button>
+        <button type="button" class="fp-button muted" id="fp-save-settings">Lưu cài đặt</button>
+        <button type="button" class="fp-button primary" id="fp-send-settings">Gửi xuống thiết bị</button>
+      </div>
+    </div>
+    <p class="fp-source-note">Theo hồ sơ kỹ thuật BGX4-26: bộ điều khiển 2.4 GHz quản lý các bảng LED, hỗ trợ 1/2 mặt, điều khiển và tạm OFF từng hàng độc lập. Kênh RF phải được đối chiếu với firmware RX-7Seg thực tế.</p>
+    <div class="fp-settings-state" id="fp-settings-state">Cài đặt đã lưu · chưa có lệnh đang chờ</div>
+    <div class="fp-settings-dirty" id="fp-settings-dirty" hidden>● Có thay đổi chưa lưu hoặc chưa gửi xuống thiết bị</div>
+    <div class="fp-settings-form">
+      <label>Địa chỉ bộ điều khiển<input id="fp-controller-address" type="number" min="1" max="255"></label>
+      <label>Kênh RF 2.4 GHz (theo firmware)<input id="fp-rf-channel" type="number" min="1" max="125"></label>
+      <label>Chế độ mặt hiển thị<select id="fp-face-mode"><option value="two_same">2 mặt cùng nội dung</option><option value="one">1 mặt</option></select></label>
+      <label>Quạt làm mát<select id="fp-fan-mode"><option value="continuous">Chạy liên tục theo hồ sơ BGX4-26</option></select></label>
+      <label>Kiểu kết nối<select id="fp-transport"><option value="2.4g_usb_uart">2.4 GHz qua USB-UART</option><option value="usb_uart">USB-UART trực tiếp</option></select></label>
+    </div>
+    <div class="fp-row-settings" id="fp-row-settings"></div>
+  </section>
+  </div>
+
+  <section class="fp-bottom-grid">
+    <article class="fp-panel">
+      <div class="fp-panel-head">
+        <div><span class="fp-section-label">CÀI ĐẶT ĐỘ SÁNG</span><h2>Lịch thay đổi theo giờ</h2></div>
+        <button type="button" class="fp-button primary" id="fp-send-schedule">Gửi lịch xuống thiết bị</button>
+      </div>
+      <p class="fp-source-note">Thiết bị tự đổi độ sáng theo giờ địa phương của trạm. Mức 1 là tối nhất, mức 10 là sáng nhất; không được trùng mốc giờ.</p>
+      <div class="fp-schedule" id="fp-schedule"></div>
+    </article>
+    <article class="fp-panel fp-log-panel">
+      <div class="fp-panel-head">
+        <div><span class="fp-section-label">NOTICE</span><h2>Nhật ký vận hành</h2></div>
+        <button type="button" class="fp-button muted" id="fp-clear-log">Xóa log</button>
+      </div>
+      <label class="fp-log-filter">Lọc nhật ký
+        <select id="fp-log-filter"><option value="">Tất cả</option><option value="control">Điều khiển</option><option value="setting">Cài đặt</option><option value="price_source">Nguồn giá</option><option value="system">Hệ thống</option></select>
+      </label>
+      <div class="fp-log" id="fp-log"></div>
+    </article>
+  </section>
+</main>
+
+<div class="fp-modal" id="fp-confirm-modal" hidden>
+  <div class="fp-modal-card" role="dialog" aria-modal="true" aria-labelledby="fp-confirm-title">
+    <span class="fp-section-label">XÁC NHẬN PHÁT HÀNH</span>
+    <h2 id="fp-confirm-title">Gửi bảng giá mới?</h2>
+    <p id="fp-confirm-copy"></p>
+    <div class="fp-confirm-meta" id="fp-confirm-meta"></div>
+    <div class="fp-confirm-prices" id="fp-confirm-prices"></div>
+    <label class="fp-confirm-check"><input type="checkbox" id="fp-confirm-check"> Tôi đã kiểm tra giá và hiểu rằng thiết bị sẽ dùng bảng giá này để tính tiền.</label>
+    <div class="fp-modal-actions">
+      <button type="button" class="fp-button muted" id="fp-cancel-send">Hủy</button>
+      <button type="button" class="fp-button send" id="fp-confirm-send" disabled>Xác nhận gửi</button>
+    </div>
+  </div>
+</div>
+
+<div class="fp-toasts" id="fp-toasts" aria-live="polite"></div>
+<div class="theme-picker" id="theme-picker">
+  <button class="theme-picker-toggle" id="theme-picker-toggle" type="button" title="Chọn màu giao diện" aria-label="Chọn màu giao diện">🎨</button>
+  <div class="theme-picker-menu" id="theme-picker-menu">
+    <button data-theme-option="modern-flat">Modern Flat</button>
+    <button data-theme-option="aurora-ui">Aurora UI</button>
+    <button data-theme-option="glassmorphism">Glassmorphism</button>
+    <button data-theme-option="neumorphism">Neumorphism</button>
+    <button data-theme-option="bento-grid">Bento Grid</button>
+  </div>
+</div>
+<!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+<!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+<script type="application/json" id="fuel-price-config">
+{
+  "locale": "vi",
+  "title": "Quản lý bảng giá xăng dầu",
+  "subtitle": "Cập nhật bảng LED và đồng bộ giá thanh toán của trạm",
+  "syncId": "<<syncid>>",
+  "priceMode": "manual",
+  "region": 1,
+  "onlineSource": {
+    "name": "Petrolimex",
+    "url": "https://portals.petrolimex.com.vn/~apis/portals/cms.item/search?x-request=eyJGaWx0ZXJCeSI6eyJBbmQiOlt7IlN5c3RlbUlEIjp7IkVxdWFscyI6IjY3ODNkYzEyNzFmZjQ0OWU5NWI3NGE5NTIwOTY0MTY5In19LHsiUmVwb3NpdG9yeUlEIjp7IkVxdWFscyI6ImE5NTQ1MWUyM2I0NzRmZTU4ODZiZmI3Y2Y4NDNmNTNjIn19LHsiUmVwb3NpdG9yeUVudGl0eUlEIjp7IkVxdWFscyI6IjM4MDEzNzhmZTFlMDQ1YjFhZmExMGRlN2M1Nzc2MTI0In19LHsiU3RhdHVzIjp7IkVxdWFscyI6IlB1Ymxpc2hlZCJ9fV19LCJTb3J0QnkiOnsiTGFzdE1vZGlmaWVkIjoiRGVzY2VuZGluZyJ9LCJQYWdpbmF0aW9uIjp7IlRvdGFsUmVjb3JkcyI6LTEsIlRvdGFsUGFnZXMiOjAsIlBhZ2VTaXplIjowLCJQYWdlTnVtYmVyIjowfX0&language=vi-VN",
+    "homepage": "https://www.petrolimex.com.vn/"
+  },
+  "products": [
+    {"code":"E10_95V","label":"E10 RON 95-V","officialTitle":"Xăng E10 RON 95-V","unit":"đồng/lít","onlineAvailable":true,"color":"#fbbf24","manualPrice":21750},
+    {"code":"E10_95III","label":"E10 RON 95-III","officialTitle":"Xăng E10 RON 95-III","unit":"đồng/lít","onlineAvailable":true,"color":"#38bdf8","manualPrice":20550},
+    {"code":"E5_92II","label":"E5 RON 92-II","officialTitle":"Xăng E5 RON 92-II","unit":"đồng/lít","onlineAvailable":true,"color":"#4ade80","manualPrice":19820},
+    {"code":"DO_0001V","label":"DO 0,001S-V","officialTitle":"DO 0,001S-V","unit":"đồng/lít","onlineAvailable":true,"color":"#fb7185","manualPrice":25420},
+    {"code":"DO_005II","label":"DO 0,05S-II","officialTitle":"DO 0,05S-II","unit":"đồng/lít","onlineAvailable":true,"color":"#fb923c","manualPrice":23320}
+  ],
+  "station": {
+    "name":"Trạm trung tâm",
+    "location":"TP. Hồ Chí Minh",
+    "sessionId":"<<sessionid>>",
+    "accent":"#ef4444",
+    "commandTemplate":"PRICESET,{version},{payload},\"<<username>>\"",
+    "brightnessTemplate":"BRIGHT,{value},\"<<username>>\"",
+    "scheduleTemplate":"BRIGHTSCHEDULE,{payload},\"<<username>>\"",
+    "settingsTemplate":"LEDCONFIG,{payload},\"<<username>>\"",
+    "fields":{"online":"fuel_online","ackVersion":"fuel_ack_version","settingsAckVersion":"fuel_settings_ack","brightness":"fuel_brightness","controllerTemp":"fuel_controller_temp"}
+  },
+  "ledSettings":{"stationId":"default","controllerAddress":1,"rfChannel":1,"faceMode":"two_same","fanMode":"continuous","transport":"2.4g_usb_uart"},
+  "audit":{"writeMacro":"fuel-audit-write","listMacro":"fuel-audit-list","clearMacro":"fuel-audit-clear","settingsStateMacro":"fuel-settings-state","settingsSaveMacro":"fuel-settings-save"},
+  "brightnessSchedule":[
+    {"enabled":true,"hour":6,"minute":0,"brightness":6},
+    {"enabled":true,"hour":11,"minute":30,"brightness":10},
+    {"enabled":true,"hour":17,"minute":30,"brightness":8},
+    {"enabled":true,"hour":22,"minute":0,"brightness":3}
+  ]
+}
+</script>
+<!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+<!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START --><script>// Có thể bổ sung quy tắc nghiệp vụ riêng của đơn vị tại đây.</script><!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+<script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
+<!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START --><script src="/sample_dashboards/fuel-price-network/dashboard-runtime.js?v=2026.07.17.10"></script><!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

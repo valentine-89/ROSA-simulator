@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07172c"/><stop offset="1" stop-color="#173b53"/></linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#183c54"/><stop offset="1" stop-color="#102b42"/></linearGradient>
+  </defs>
+  <rect width="1200" height="675" rx="34" fill="url(#bg)"/>
+  <circle cx="1080" cy="90" r="170" fill="#2dd4bf" opacity=".08"/>
+  <g font-family="Segoe UI,Arial,sans-serif" fill="#f5fbff">
+    <text x="70" y="82" font-size="18" font-weight="700" fill="#6ee7d8" letter-spacing="3">ROSA SMART LIVING</text>
+    <text x="70" y="132" font-size="42" font-weight="800">Nhà thông minh</text>
+    <text x="70" y="168" font-size="18" fill="#a9c3d4">Mọi không gian trong nhà, luôn ở trong tầm tay</text>
+    <g transform="translate(70 220)">
+      <rect width="1060" height="375" rx="28" fill="#102a40" stroke="#31556d"/>
+      <text x="30" y="48" font-size="22" font-weight="700">Không gian sống</text>
+      <g transform="translate(30 75)">
+        <g><rect width="235" height="125" rx="20" fill="url(#card)"/><text x="20" y="34" font-size="14" fill="#a9c3d4">NHIỆT ĐỘ</text><text x="20" y="91" font-size="38" font-weight="800">27.4°C</text></g>
+        <g transform="translate(255)"><rect width="235" height="125" rx="20" fill="url(#card)"/><text x="20" y="34" font-size="14" fill="#a9c3d4">ĐỘ ẨM</text><text x="20" y="91" font-size="38" font-weight="800">62%</text></g>
+        <g transform="translate(510)"><rect width="235" height="125" rx="20" fill="url(#card)"/><text x="20" y="34" font-size="14" fill="#a9c3d4">KHÔNG KHÍ</text><text x="20" y="91" font-size="38" font-weight="800">42 AQI</text></g>
+        <g transform="translate(765)"><rect width="235" height="125" rx="20" fill="url(#card)"/><text x="20" y="34" font-size="14" fill="#a9c3d4">ĐÈN PHÒNG KHÁCH</text><rect x="20" y="62" width="92" height="42" rx="21" fill="#2dd4bf"/><circle cx="91" cy="83" r="16" fill="#fff"/><text x="130" y="90" font-size="17" fill="#6ee7d8">Đang bật</text></g>
+      </g>
+      <g transform="translate(30 220)">
+        <g><rect width="320" height="120" rx="20" fill="url(#card)"/><text x="20" y="34" font-size="14" fill="#a9c3d4">ĐIỀU HÒA</text><text x="20" y="86" font-size="30" font-weight="800" fill="#6ee7d8">ON · 24°C</text></g>
+        <g transform="translate(340)"><rect width="320" height="120" rx="20" fill="url(#card)"/><text x="20" y="34" font-size="14" fill="#a9c3d4">CÔNG SUẤT</text><text x="20" y="86" font-size="30" font-weight="800">1,240 W</text></g>
+        <g transform="translate(680)"><rect width="320" height="120" rx="20" fill="url(#card)"/><text x="20" y="34" font-size="14" fill="#a9c3d4">AN NINH</text><circle cx="32" cy="78" r="9" fill="#2dd4bf"/><text x="52" y="86" font-size="24" font-weight="700">An toàn</text></g>
+      </g>
+    </g>
+  </g>
+</svg>

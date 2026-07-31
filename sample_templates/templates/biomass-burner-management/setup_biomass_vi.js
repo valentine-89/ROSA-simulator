@@ -22,6 +22,9 @@
     telemetryRefreshMs: "Chu kỳ telemetry (ms)",
     expirySoonDays: "Số ngày cảnh báo hết hạn",
     co2KgPerBurnMinute: "kg CO2 / phút đốt",
+    mapCenterLat: "Vĩ độ tâm bản đồ",
+    mapCenterLng: "Kinh độ tâm bản đồ",
+    mapZoom: "Mức thu phóng mặc định (3-18)",
     databaseSessionId: "Device key lưu database",
     mediaField: "Field media",
     defaultSignal: "Nội dung chờ mặc định",
@@ -69,6 +72,9 @@
     telemetryRefreshMs: "Telemetry interval (ms)",
     expirySoonDays: "Expiry warning days",
     co2KgPerBurnMinute: "kg CO2 / burn minute",
+    mapCenterLat: "Default map latitude",
+    mapCenterLng: "Default map longitude",
+    mapZoom: "Default map zoom (3-18)",
     databaseSessionId: "Database device key",
     mediaField: "Media field",
     defaultSignal: "Default waiting content",
@@ -210,7 +216,10 @@
         { key: "pageSize", label: text.pageSize, type: "number" },
         { key: "telemetryRefreshMs", label: text.telemetryRefreshMs, type: "number" },
         { key: "expirySoonDays", label: text.expirySoonDays, type: "number" },
-        { key: "co2KgPerBurnMinute", label: text.co2KgPerBurnMinute, type: "number", step: "0.01" }
+        { key: "co2KgPerBurnMinute", label: text.co2KgPerBurnMinute, type: "number", step: "0.01" },
+        { key: "mapCenterLat", label: text.mapCenterLat, type: "number", step: "0.000001" },
+        { key: "mapCenterLng", label: text.mapCenterLng, type: "number", step: "0.000001" },
+        { key: "mapZoom", label: text.mapZoom, type: "number" }
       ];
     }
     if (false) {
@@ -446,6 +455,9 @@
       setGeneral("telemetryRefreshMs", intValue(config.telemetryRefreshMs, 30000, 5000, 3600000));
       setGeneral("expirySoonDays", intValue(config.expirySoonDays, 30, 1, 365));
       setGeneral("co2KgPerBurnMinute", numberValue(config.co2KgPerBurnMinute, 2.77, 0));
+      setGeneral("mapCenterLat", numberValue(config.mapCenterLat, 21.35, -90, 90));
+      setGeneral("mapCenterLng", numberValue(config.mapCenterLng, 105.72, -180, 180));
+      setGeneral("mapZoom", intValue(config.mapZoom, 8, 3, 18));
     } else if (false) {
       setGeneral("title", safeText(config.title, isVi ? "Trang thẻ cơ bản" : "Basic Cards Dashboard"));
       setGeneral("subtitle", safeText(config.subtitle, ""));
@@ -790,6 +802,9 @@
       next.telemetryRefreshMs = intValue(getGeneral("telemetryRefreshMs"), 30000, 5000, 3600000);
       next.expirySoonDays = intValue(getGeneral("expirySoonDays"), 30, 1, 365);
       next.co2KgPerBurnMinute = numberValue(getGeneral("co2KgPerBurnMinute"), 2.77, 0);
+      next.mapCenterLat = numberValue(getGeneral("mapCenterLat"), 21.35, -90, 90);
+      next.mapCenterLng = numberValue(getGeneral("mapCenterLng"), 105.72, -180, 180);
+      next.mapZoom = intValue(getGeneral("mapZoom"), 8, 3, 18);
       return next;
     }
 

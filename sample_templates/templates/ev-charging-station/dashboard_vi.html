@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Trạm sạc xe điện</title>
+  <link rel="stylesheet" href="/dashboard-themes.css" />
+  <script>(function(){try{var t=localStorage.getItem("sample-dashboard-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}})();</script>
+  <link rel="stylesheet" href="/sample_dashboards/ev-charging-station/dashboard.css?v=2026.07.16.2" />
+</head>
+<body>
+<!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+<main class="ev-page">
+  <header class="ev-hero"><div class="ev-brand"><div class="ev-logo">ϟ</div><div><span class="ev-eyebrow">ROSA EV CHARGING</span><h1 id="ev-title">Trạm sạc xe điện</h1><p id="ev-subtitle">Vận hành trụ sạc, phụ tải và năng lượng theo thời gian thực</p></div></div><div class="ev-tools"><select id="ev-range" aria-label="Khoảng biểu đồ"><option value="60">1 giờ</option><option value="360">6 giờ</option><option value="1440" selected>24 giờ</option><option value="10080">7 ngày</option></select><div class="ev-live"><i id="ev-live-dot"></i><span id="ev-live-text">Đang kết nối</span></div><div class="ev-clock" id="ev-clock">--:--:--</div></div></header>
+  <section class="ev-alert" id="ev-alert" hidden></section>
+  <section class="ev-kpis" id="ev-kpis"></section>
+  <section class="ev-overview">
+    <article class="ev-panel"><div class="ev-panel-head"><div><span class="ev-section-label">NGUỒN NĂNG LƯỢNG</span><h2>Cân bằng công suất</h2></div><span class="ev-note" id="ev-limit-note">--</span></div><div class="ev-flow" id="ev-flow"></div></article>
+    <article class="ev-panel"><div class="ev-panel-head"><div><span class="ev-section-label">BIỂU ĐỒ PHỤ TẢI</span><h2>Công suất trạm</h2></div><div class="ev-legend"><span><i style="background:#2563eb"></i>Nguồn lưới</span><span><i style="background:#22c55e"></i>Điện mặt trời</span></div></div><svg class="ev-chart" viewBox="0 0 680 240" preserveAspectRatio="none" aria-label="Biểu đồ công suất trạm"><line x1="24" y1="42" x2="656" y2="42"/><line x1="24" y1="112" x2="656" y2="112"/><line x1="24" y1="182" x2="656" y2="182"/><g id="ev-chart-paths"></g></svg></article>
+  </section>
+  <section class="ev-toolbar"><div><span class="ev-section-label">ĐIỂM SẠC</span><h2>Trạng thái trụ sạc</h2></div><p id="ev-summary">Đang tải dữ liệu...</p></section>
+  <section class="ev-chargers" id="ev-chargers"></section>
+</main>
+<div class="ev-toasts" id="ev-toasts"></div>
+<div class="theme-picker" id="theme-picker"><button class="theme-picker-toggle" id="theme-picker-toggle" type="button" aria-label="Chọn màu giao diện" title="Chọn màu giao diện" aria-haspopup="true" aria-expanded="false">🎨</button><div class="theme-picker-menu" id="theme-picker-menu"><button type="button" data-theme-option="modern-flat">Modern Flat</button><button type="button" data-theme-option="aurora-ui">Aurora UI</button><button type="button" data-theme-option="glassmorphism">Glassmorphism</button><button type="button" data-theme-option="neumorphism">Neumorphism</button><button type="button" data-theme-option="bento-grid">Bento Grid</button></div></div>
+<!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+<!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+<script type="application/json" id="ev-charging-config">
+{
+  "locale":"vi","title":"Trạm sạc xe điện","subtitle":"Vận hành trụ sạc, phụ tải và năng lượng theo thời gian thực","sessionId":"<<sessionid>>","syncId":"<<syncid>>","historyMinutes":1440,"electricityRate":3200,"stationPowerLimitKw":220,"temperatureWarnC":65,
+  "fields":{"gridPower":"ev_grid_power_kw","solarPower":"ev_solar_power_kw","energyToday":"ev_energy_today_kwh","revenueToday":"ev_revenue_today","sessionsToday":"ev_sessions_today","emergency":"ev_emergency"},
+  "chargers":[
+    {"name":"DC-01","type":"DC nhanh · CCS2","ratedPowerKw":120,"accent":"#2563eb","fields":{"connected":"ev_dc01_connected","charging":"ev_dc01_charging","power":"ev_dc01_power_kw","energySession":"ev_dc01_session_kwh","soc":"ev_dc01_soc_pct","duration":"ev_dc01_duration_min","temperature":"ev_dc01_temp_c","fault":"ev_dc01_fault"},"commands":{"start":"D1O1","stop":"D2O1"}},
+    {"name":"DC-02","type":"DC nhanh · CCS2","ratedPowerKw":120,"accent":"#8b5cf6","fields":{"connected":"ev_dc02_connected","charging":"ev_dc02_charging","power":"ev_dc02_power_kw","energySession":"ev_dc02_session_kwh","soc":"ev_dc02_soc_pct","duration":"ev_dc02_duration_min","temperature":"ev_dc02_temp_c","fault":"ev_dc02_fault"},"commands":{"start":"D1O2","stop":"D2O2"}},
+    {"name":"AC-01","type":"AC · Type 2","ratedPowerKw":22,"accent":"#14b8a6","fields":{"connected":"ev_ac01_connected","charging":"ev_ac01_charging","power":"ev_ac01_power_kw","energySession":"ev_ac01_session_kwh","soc":"ev_ac01_soc_pct","duration":"ev_ac01_duration_min","temperature":"ev_ac01_temp_c","fault":"ev_ac01_fault"},"commands":{"start":"D1O3","stop":"D2O3"}},
+    {"name":"AC-02","type":"AC · Type 2","ratedPowerKw":22,"accent":"#f59e0b","fields":{"connected":"ev_ac02_connected","charging":"ev_ac02_charging","power":"ev_ac02_power_kw","energySession":"ev_ac02_session_kwh","soc":"ev_ac02_soc_pct","duration":"ev_ac02_duration_min","temperature":"ev_ac02_temp_c","fault":"ev_ac02_fault"},"commands":{"start":"D1O4","stop":"D2O4"}}
+  ]
+}
+</script>
+<!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+<!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START --><script>// Khu vực dành cho biểu giá hoặc quy tắc điều độ riêng của trạm.</script><!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+<script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
+<!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START --><script src="/sample_dashboards/ev-charging-station/dashboard-runtime.js?v=2026.07.16.2"></script><!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Giám sát điện năng nhà xưởng</title>
+  <link rel="stylesheet" href="/dashboard-themes.css" />
+  <script>(function(){try{var t=localStorage.getItem("sample-dashboard-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}})();</script>
+  <link rel="stylesheet" href="/sample_dashboards/factory-energy-monitor/dashboard.css?v=2026.07.16.1" />
+</head>
+<body>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="fe-page" id="factory-energy-root">
+    <header class="fe-hero">
+      <div class="fe-brand"><div class="fe-logo" aria-hidden="true">ϟ</div><div><span class="fe-eyebrow">ROSA ENERGY OPERATIONS</span><h1 id="fe-title">Giám sát điện năng nhà xưởng</h1><p id="fe-subtitle">Phụ tải, chất lượng điện và chi phí theo từng khu vực</p></div></div>
+      <div class="fe-hero-tools"><select id="fe-range" aria-label="Khoảng biểu đồ"><option value="60">1 giờ</option><option value="360">6 giờ</option><option value="1440" selected>24 giờ</option><option value="10080">7 ngày</option></select><div class="fe-live"><i id="fe-live-dot"></i><span id="fe-live-text">Đang kết nối</span></div><div class="fe-clock" id="fe-clock">--:--:--</div></div>
+    </header>
+    <section class="fe-alert" id="fe-alert" hidden></section>
+    <section class="fe-kpis" id="fe-kpis"></section>
+    <section class="fe-overview-grid">
+      <article class="fe-panel"><div class="fe-panel-head"><div><span class="fe-section-label">PHÂN BỔ PHỤ TẢI</span><h2>Công suất theo khu vực</h2></div><span class="fe-small" id="fe-load-note">--</span></div><div class="fe-load-list" id="fe-load-list"></div></article>
+      <article class="fe-panel"><div class="fe-panel-head"><div><span class="fe-section-label">BIỂU ĐỒ PHỤ TẢI</span><h2>Công suất tác dụng</h2></div><div class="fe-chart-legend" id="fe-chart-legend"></div></div><svg class="fe-chart" id="fe-chart" viewBox="0 0 680 240" preserveAspectRatio="none" aria-label="Biểu đồ công suất từng khu vực"><line x1="24" y1="42" x2="656" y2="42"/><line x1="24" y1="112" x2="656" y2="112"/><line x1="24" y1="182" x2="656" y2="182"/><g id="fe-chart-paths"></g></svg></article>
+    </section>
+    <section class="fe-toolbar"><div><span class="fe-section-label">TỦ ĐIỆN KHU VỰC</span><h2>Chất lượng điện ba pha</h2></div><p id="fe-meter-summary">Đang tải dữ liệu...</p></section>
+    <section class="fe-meter-grid" id="fe-meters"></section>
+  </main>
+  <div class="theme-picker" id="theme-picker"><button class="theme-picker-toggle" id="theme-picker-toggle" type="button" aria-label="Chọn màu giao diện" title="Chọn màu giao diện" aria-haspopup="true" aria-expanded="false">🎨</button><div class="theme-picker-menu" id="theme-picker-menu"><button type="button" data-theme-option="modern-flat">Modern Flat</button><button type="button" data-theme-option="aurora-ui">Aurora UI</button><button type="button" data-theme-option="glassmorphism">Glassmorphism</button><button type="button" data-theme-option="neumorphism">Neumorphism</button><button type="button" data-theme-option="bento-grid">Bento Grid</button></div></div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script type="application/json" id="factory-energy-config">
+  {
+    "locale":"vi","title":"Giám sát điện năng nhà xưởng","subtitle":"Phụ tải, chất lượng điện và chi phí theo từng khu vực","syncId":"<<syncid>>","historyMinutes":1440,"electricityRate":2100,
+    "thresholds":{"voltageLow":205,"voltageHigh":235,"currentImbalanceWarn":12,"powerFactorMin":0.85,"frequencyLow":49,"frequencyHigh":51,"powerWarnKw":55},
+    "meters":[
+      {"name":"Xưởng ép nhựa","description":"Máy ép và gia nhiệt","sessionId":"<<sessionid>>","accent":"#2563eb","fields":{"voltage1":"press_voltage_l1","voltage2":"press_voltage_l2","voltage3":"press_voltage_l3","current1":"press_current_l1","current2":"press_current_l2","current3":"press_current_l3","power":"press_power_kw","energyToday":"press_energy_today_kwh","powerFactor":"press_power_factor","frequency":"press_frequency_hz"}},
+      {"name":"Xưởng đóng gói","description":"Băng tải và máy đóng gói","sessionId":"<<sessionid>>","accent":"#8b5cf6","fields":{"voltage1":"pack_voltage_l1","voltage2":"pack_voltage_l2","voltage3":"pack_voltage_l3","current1":"pack_current_l1","current2":"pack_current_l2","current3":"pack_current_l3","power":"pack_power_kw","energyToday":"pack_energy_today_kwh","powerFactor":"pack_power_factor","frequency":"pack_frequency_hz"}},
+      {"name":"Hệ thống phụ trợ","description":"Khí nén, bơm và HVAC","sessionId":"<<sessionid>>","accent":"#14b8a6","fields":{"voltage1":"utility_voltage_l1","voltage2":"utility_voltage_l2","voltage3":"utility_voltage_l3","current1":"utility_current_l1","current2":"utility_current_l2","current3":"utility_current_l3","power":"utility_power_kw","energyToday":"utility_energy_today_kwh","powerFactor":"utility_power_factor","frequency":"utility_frequency_hz"}}
+    ]
+  }
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START --><script>// Khu vực dành cho biểu giá và quy tắc cảnh báo riêng của nhà máy.</script><!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START --><script src="/sample_dashboards/factory-energy-monitor/dashboard-runtime.js?v=2026.07.16.1"></script><!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>

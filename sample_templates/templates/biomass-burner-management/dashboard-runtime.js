@@ -8,7 +8,10 @@
     pageSize: 50,
     telemetryRefreshMs: 30000,
     expirySoonDays: 30,
-    co2KgPerBurnMinute: 2.77
+    co2KgPerBurnMinute: 2.77,
+    mapCenterLat: 21.35,
+    mapCenterLng: 105.72,
+    mapZoom: 8
   };
 
   try {
@@ -44,6 +47,11 @@
     kpiExpiring: document.getElementById("bb-kpi-expiring"),
     kpiExpiringNote: document.getElementById("bb-kpi-expiring-note"),
     kpiCo2: document.getElementById("bb-kpi-co2"),
+    map: document.getElementById("bb-map"),
+    mapLoading: document.getElementById("bb-map-loading"),
+    mapFit: document.getElementById("bb-map-fit"),
+    mapList: document.getElementById("bb-map-list"),
+    mapCount: document.getElementById("bb-map-count"),
     addModal: document.getElementById("bb-add-modal"),
     addForm: document.getElementById("bb-add-form"),
     addClose: document.getElementById("bb-add-close"),
@@ -80,6 +88,11 @@
     currentBurner: null,
     settingsRows: [],
     settingTelemetry: {},
+    telemetryByCode: {},
+    mapInstance: null,
+    mapLayer: null,
+    mapMarkers: {},
+    mapHasFitted: false,
     searchTimer: null
   };
 
@@ -120,6 +133,139 @@
   function formatTemperature(value) {
     var parsed = numberValue(value);
     return parsed === null ? "--" : formatNumber(parsed, 1) + " °C";
+  }
+
+  function validCoordinates(row) {
+    if (!row || row.lat === null || row.lat === undefined || row.lat === "" || row.lng === null || row.lng === undefined || row.lng === "") return false;
+    var lat = Number(row && row.lat);
+    var lng = Number(row && row.lng);
+    return Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+  }
+
+  function normalizeLiveState(value) {
+    var normalized = String(value == null ? "" : value).trim().toLowerCase();
+    if (value === true || Number(value) > 0 || ["on", "true", "yes", "bat", "bật", "1"].indexOf(normalized) >= 0) return "on";
+    if (value === false || ["off", "false", "0", "tat", "tắt"].indexOf(normalized) >= 0) return "off";
+    return "unknown";
+  }
+
+  function getMapState(row) {
+    if (Number(row && row.is_expired || 0) || Number(row && row.remaining_minutes || 0) <= 0) return "warning";
+    var live = state.telemetryByCode[String(row && row.burner_code)] || {};
+    return live.state || "unknown";
+  }
+
+  function mapStateLabel(mapState) {
+    if (mapState === "on") return "ĐANG ĐỐT";
+    if (mapState === "off") return "ĐANG DỪNG";
+    if (mapState === "warning") return "CẦN XỬ LÝ";
+    return "CHƯA CÓ DỮ LIỆU";
+  }
+
+  function mapPopupHtml(row) {
+    var live = state.telemetryByCode[String(row.burner_code)] || {};
+    var mapState = getMapState(row);
+    return ""
+      + "<div class=\"bb-map-popup\">"
+      + "<div class=\"bb-map-popup-head\"><strong>" + esc(row.burner_code + " · " + (row.display_name || "Lò đốt")) + "</strong><span class=\"bb-map-popup-status\" data-state=\"" + esc(mapState) + "\">" + esc(mapStateLabel(mapState)) + "</span></div>"
+      + "<div class=\"bb-map-popup-grid\">"
+      + "<span>Vị trí</span><b>" + esc(row.site_name || "Chưa đặt tên") + "</b>"
+      + "<span>Tọa độ</span><b>" + esc(Number(row.lat).toFixed(6) + ", " + Number(row.lng).toFixed(6)) + "</b>"
+      + "<span>Còn lại</span><b>" + esc(formatMinutes(row.remaining_minutes) + " phút") + "</b>"
+      + "<span>Nhiệt độ</span><b>" + esc(live.temperature == null ? "--" : formatTemperature(live.temperature)) + "</b>"
+      + "</div></div>";
+  }
+
+  function markerIcon(row) {
+    return window.L.divIcon({
+      className: "bb-map-marker-wrap",
+      html: "<div class=\"bb-map-marker\" data-state=\"" + esc(getMapState(row)) + "\"><img src=\"/sample_dashboards/biomass-burner-management/burner-marker.png\" alt=\"\" /><i aria-hidden=\"true\"></i></div>",
+      iconSize: [50, 50],
+      iconAnchor: [20, 50],
+      popupAnchor: [5, -45]
+    });
+  }
+
+  function ensureMap() {
+    if (state.mapInstance || !nodes.map) return Boolean(state.mapInstance);
+    if (!window.L || typeof window.L.map !== "function") {
+      nodes.mapLoading.hidden = false;
+      nodes.mapLoading.textContent = "Không thể tải bản đồ. Danh sách vị trí vẫn có thể sử dụng ở bên phải.";
+      return false;
+    }
+    state.mapInstance = window.L.map(nodes.map, { zoomControl: true, scrollWheelZoom: true }).setView([
+      Number(cfg.mapCenterLat) || 21.35,
+      Number(cfg.mapCenterLng) || 105.72
+    ], Math.max(3, Math.min(18, Number(cfg.mapZoom) || 8)));
+    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(state.mapInstance);
+    state.mapLayer = window.L.layerGroup().addTo(state.mapInstance);
+    nodes.mapLoading.hidden = true;
+    window.setTimeout(function () { state.mapInstance.invalidateSize(); }, 0);
+    return true;
+  }
+
+  function renderMapList(rows) {
+    var located = rows.filter(validCoordinates);
+    nodes.mapCount.textContent = located.length
+      ? located.length + " lò có tọa độ trong danh sách đang lọc."
+      : "Chưa có lò nào có tọa độ hợp lệ.";
+    nodes.mapList.innerHTML = located.length ? located.map(function (row) {
+      var mapState = getMapState(row);
+      return ""
+        + "<button class=\"bb-map-item\" type=\"button\" data-map-code=\"" + esc(row.burner_code) + "\" data-state=\"" + esc(mapState) + "\">"
+        + "<span class=\"bb-map-item-dot\"></span>"
+        + "<span class=\"bb-map-item-main\"><strong>" + esc(row.burner_code + " · " + (row.display_name || "Lò đốt")) + "</strong><span>" + esc(row.site_name || Number(row.lat).toFixed(4) + ", " + Number(row.lng).toFixed(4)) + "</span></span>"
+        + "<span class=\"bb-map-item-metric\"><b>" + esc(formatMinutes(row.remaining_minutes)) + " phút</b><small>" + esc(mapStateLabel(mapState)) + "</small></span>"
+        + "</button>";
+    }).join("") : "<div class=\"bb-empty\">Thêm vĩ độ và kinh độ trong phần cài đặt lò để hiển thị marker.</div>";
+  }
+
+  function fitMapToRows() {
+    if (!state.mapInstance) return;
+    var located = (state.rows || []).filter(validCoordinates);
+    if (!located.length) {
+      state.mapInstance.setView([Number(cfg.mapCenterLat) || 21.35, Number(cfg.mapCenterLng) || 105.72], Number(cfg.mapZoom) || 8);
+      return;
+    }
+    var bounds = window.L.latLngBounds(located.map(function (row) { return [Number(row.lat), Number(row.lng)]; }));
+    state.mapInstance.fitBounds(bounds, { padding: [34, 34], maxZoom: 13 });
+  }
+
+  function renderMap() {
+    var rows = state.rows || [];
+    renderMapList(rows);
+    if (!ensureMap()) return;
+    state.mapLayer.clearLayers();
+    state.mapMarkers = {};
+    rows.filter(validCoordinates).forEach(function (row) {
+      var marker = window.L.marker([Number(row.lat), Number(row.lng)], { icon: markerIcon(row), title: String(row.burner_code) })
+        .bindPopup(mapPopupHtml(row), { maxWidth: 320 })
+        .addTo(state.mapLayer);
+      state.mapMarkers[String(row.burner_code)] = marker;
+    });
+    if (!state.mapHasFitted) {
+      fitMapToRows();
+      state.mapHasFitted = true;
+    }
+  }
+
+  function updateMapBurner(row) {
+    if (!row) return;
+    var marker = state.mapMarkers[String(row.burner_code)];
+    if (marker) {
+      marker.setIcon(markerIcon(row));
+      marker.setPopupContent(mapPopupHtml(row));
+    }
+    var item = nodes.mapList.querySelector("[data-map-code=\"" + CSS.escape(String(row.burner_code)) + "\"]");
+    if (item) {
+      var mapState = getMapState(row);
+      item.setAttribute("data-state", mapState);
+      var small = item.querySelector("small");
+      if (small) small.textContent = mapStateLabel(mapState);
+    }
   }
 
   function formatDate(value) {
@@ -365,17 +511,24 @@
     var updatedCell = tr.querySelector("[data-role='updated-cell']");
     var tempValue = payload[tempField];
     var statusValue = payload[statusField];
+    var liveState = normalizeLiveState(statusValue);
+
+    state.telemetryByCode[String(row.burner_code)] = {
+      state: liveState,
+      temperature: tempValue,
+      serverTime: latest && latest.serverTime ? latest.serverTime : null
+    };
 
     if (tempCell) tempCell.textContent = tempValue == null ? "--" : formatTemperature(tempValue);
     if (statusCell) {
-      var normalized = String(statusValue == null ? "" : statusValue).trim().toLowerCase();
-      var on = statusValue === true || Number(statusValue) > 0 || ["on", "true", "yes", "bat", "bật", "1"].indexOf(normalized) >= 0;
-      var off = statusValue === false || normalized === "off" || normalized === "false" || normalized === "0" || normalized === "tat" || normalized === "tắt";
+      var on = liveState === "on";
+      var off = liveState === "off";
       statusCell.textContent = on ? "ON" : off ? "OFF" : "--";
       statusCell.setAttribute("data-state", on ? "on" : off ? "off" : "unknown");
       tr.setAttribute("data-row-state", getRowState(row, on));
     }
     if (updatedCell && latest && latest.serverTime) updatedCell.textContent = formatDateTime(latest.serverTime);
+    updateMapBurner(row);
   }
 
   function hydrateVisibleTelemetry() {
@@ -416,6 +569,7 @@
       if (!state.totalRows && listRows.length) state.totalRows = listRows.length;
       renderSummary(summaryRows[0] || {});
       renderTable();
+      renderMap();
       setStatus("Sẵn sàng", "ready");
       hydrateVisibleTelemetry();
     }).catch(function (error) {
@@ -445,6 +599,15 @@
     return payload;
   }
 
+  function coordinatesAreValid(payload) {
+    var latText = String(payload.lat || "").trim();
+    var lngText = String(payload.lng || "").trim();
+    if (!latText && !lngText) return true;
+    var lat = Number(latText);
+    var lng = Number(lngText);
+    return Boolean(latText && lngText && Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180);
+  }
+
   function openAddModal() {
     nodes.addForm.reset();
     nodes.addForm.elements.session_id.value = databaseSessionId;
@@ -463,6 +626,10 @@
     var payload = formToPayload(nodes.addForm);
     payload.macro = "biomass-burner-create";
     payload.burner_code = normalizeBurnerCode(payload.burner_code);
+    if (!coordinatesAreValid(payload)) {
+      toast("Hãy nhập đủ vĩ độ (-90 đến 90) và kinh độ (-180 đến 180).", "error");
+      return;
+    }
     postIoData(payload).then(function () {
       toast("Đã thêm lò " + payload.burner_code + ".");
       closeModal(nodes.addModal);
@@ -478,6 +645,8 @@
     form.elements.display_name.value = row.display_name || "";
     form.elements.customer_name.value = row.customer_name || "";
     form.elements.site_name.value = row.site_name || "";
+    form.elements.lat.value = row.lat == null ? "" : row.lat;
+    form.elements.lng.value = row.lng == null ? "" : row.lng;
     form.elements.lease_expires_at.value = normalizeDateInput(row.lease_expires_at);
     form.elements.purchased_minutes.value = row.purchased_minutes || 0;
     form.elements.burned_minutes_current.value = row.burned_minutes_current || 0;
@@ -561,6 +730,10 @@
     var payload = formToPayload(nodes.contractForm);
     payload.macro = "biomass-burner-update-contract";
     payload.burner_code = state.currentBurner.burner_code;
+    if (!coordinatesAreValid(payload)) {
+      toast("Hãy nhập đủ vĩ độ (-90 đến 90) và kinh độ (-180 đến 180).", "error");
+      return;
+    }
     postIoData(payload).then(function () {
       toast("Đã lưu thông tin lò " + state.currentBurner.burner_code + ".");
       closeModal(nodes.settingsModal);
@@ -736,6 +909,18 @@
     if (button.getAttribute("data-action") === "chart") openChart(code);
   });
 
+  nodes.mapFit.addEventListener("click", fitMapToRows);
+  nodes.mapList.addEventListener("click", function (event) {
+    var item = event.target.closest("[data-map-code]");
+    if (!item || !state.mapInstance) return;
+    var code = item.getAttribute("data-map-code");
+    var row = findRow(code);
+    var marker = state.mapMarkers[String(code)];
+    if (!row || !marker) return;
+    state.mapInstance.setView([Number(row.lat), Number(row.lng)], Math.max(12, state.mapInstance.getZoom()));
+    marker.openPopup();
+  });
+
   nodes.addOpen.addEventListener("click", openAddModal);
   nodes.addClose.addEventListener("click", function () { closeModal(nodes.addModal); });
   nodes.addCancel.addEventListener("click", function () { closeModal(nodes.addModal); });
@@ -772,6 +957,10 @@
     [nodes.addModal, nodes.settingsModal, nodes.chartModal].forEach(function (modal) {
       if (modal.classList.contains("is-open")) closeModal(modal);
     });
+  });
+
+  window.addEventListener("resize", function () {
+    if (state.mapInstance) state.mapInstance.invalidateSize();
   });
 
   if (nodes.themeToggle && nodes.themePicker) {

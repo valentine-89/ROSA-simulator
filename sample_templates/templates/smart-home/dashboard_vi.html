@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nhà thông minh</title>
+  <link rel="stylesheet" href="/dashboard-themes.css" />
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem("sample-dashboard-theme");
+        if (theme) document.documentElement.setAttribute("data-theme", theme);
+      } catch (error) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/sample_dashboards/smart-home/dashboard.css?v=2026.07.13.1" />
+</head>
+<body>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+  <main class="bc-page smart-home-page" id="basic-cards-root">
+    <header class="bc-topbar">
+      <div class="home-mark" aria-hidden="true">⌂</div>
+      <div class="bc-topbar-title">
+        <span class="eyebrow">ROSA SMART LIVING</span>
+        <h1 id="basic-cards-title">Nhà thông minh</h1>
+        <p id="basic-cards-subtitle">Mọi không gian trong nhà, luôn ở trong tầm tay</p>
+      </div>
+      <div class="bc-topbar-tools">
+        <div class="bc-chip"><span class="status-dot"></span> Đang kết nối</div>
+        <div class="bc-chip" id="basic-cards-groups-chip">0 khu vực</div>
+        <div class="bc-chip" id="basic-cards-widgets-chip">0 thiết bị</div>
+      </div>
+    </header>
+    <section class="home-welcome">
+      <div>
+        <strong>Xin chào!</strong>
+        <span>Ngôi nhà của bạn đang vận hành ổn định.</span>
+      </div>
+      <div class="home-mode"><span>Chế độ</span><strong>Ở nhà</strong></div>
+    </section>
+    <section class="bc-groups" id="basic-cards-groups"></section>
+  </main>
+
+  <div class="bc-toast-stack" id="basic-cards-toast-stack" aria-live="polite" aria-atomic="true"></div>
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" id="theme-picker-toggle" type="button" aria-label="Chọn màu giao diện" title="Chọn màu giao diện" aria-haspopup="true" aria-expanded="false">🎨</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Giao diện">
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism" role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism" role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento Grid</button>
+    </div>
+  </div>
+  <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+  <script type="application/json" id="basic-cards-config">
+  {
+    "locale": "vi",
+    "title": "Nhà thông minh",
+    "subtitle": "Mọi không gian trong nhà, luôn ở trong tầm tay",
+    "syncId": "<<syncid>>",
+    "groups": [
+      {
+        "title": "Không gian sống",
+        "sessionId": "<<sessionid>>",
+        "widgets": [
+          { "type": "telemetry", "label": "Nhiệt độ", "field": "temperature", "unit": "°C", "digits": 1, "tone": "danger" },
+          { "type": "telemetry", "label": "Độ ẩm", "field": "humidity", "unit": "%", "digits": 0, "tone": "info" },
+          { "type": "telemetry", "label": "Chất lượng không khí", "field": "air_quality", "unit": "AQI", "digits": 0, "tone": "success" },
+          { "type": "switch", "label": "Đèn phòng khách", "stateField": "O1", "commandOn": "D1O1", "commandOff": "D2O1", "tone": "warning" },
+          { "type": "switch", "label": "Điều hòa", "stateField": "O2", "commandOn": "D1O2", "commandOff": "D2O2", "tone": "info" },
+          { "type": "angle", "label": "Rèm cửa", "field": "curtain", "submitCommand": "D1O3'{value}'", "tone": "primary" }
+        ]
+      },
+      {
+        "title": "An ninh & năng lượng",
+        "sessionId": "<<sessionid>>",
+        "widgets": [
+          { "type": "switch", "label": "Cửa chính", "stateField": "door_status", "commandOn": "", "commandOff": "", "tone": "sensor" },
+          { "type": "switch", "label": "Cảnh báo khói", "stateField": "smoke", "commandOn": "", "commandOff": "", "tone": "alarm" },
+          { "type": "telemetry", "label": "Công suất", "field": "power_w", "unit": "W", "digits": 0, "tone": "warning" },
+          { "type": "telemetry", "label": "Điện năng hôm nay", "field": "energy_kwh", "unit": "kWh", "digits": 2, "tone": "success" },
+          { "type": "command", "label": "Tắt toàn bộ đèn", "command": "D2O1,D2O4,D2O5", "buttonLabel": "Tắt tất cả", "tone": "danger" },
+          { "type": "line-chart", "label": "Nhiệt độ 24 giờ", "field": "temperature", "unit": "°C", "digits": 1, "range": "24h", "yDeltaMin": 8, "tone": "info" }
+        ]
+      }
+    ]
+  }
+  </script>
+  <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START -->
+  <script>
+    // Khu vực dành cho tùy biến nhỏ theo từng công trình nhà thông minh.
+  </script>
+  <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
+
+  <script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script src="/sample_dashboards/smart-home/dashboard-runtime.js?v=2026.07.13.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body>
+</html>
