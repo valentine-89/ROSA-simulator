@@ -10,17 +10,18 @@
     *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#f8fafc;color:#0f172a}
     body{font-family:Segoe UI,Tahoma,Arial,sans-serif;padding:16px 16px 32px}.shell{display:grid;gap:14px;max-width:1080px;margin:auto}
     .head,.panel,.item-card{border:1px solid #e2e8f0;background:#fff;border-radius:18px}.head,.panel,.item-card{padding:16px}
-    .head,.item-top{display:flex;justify-content:space-between;gap:12px}.status{color:#64748b;font-size:13px;margin-top:5px}
+    .head,.toolbar,.item-top,.item-actions{display:flex;align-items:center;justify-content:space-between;gap:12px}.status{color:#64748b;font-size:13px;margin-top:5px}
     h1,h2,h3{margin:0}h1{font-size:18px}h2{font-size:16px}.badge{padding:6px 10px;border-radius:99px;background:#ccfbf1;color:#0f766e;font-size:12px;font-weight:800}
-    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.full{grid-column:1/-1}
-    label{display:grid;gap:6px;color:#475569;font-size:12px;font-weight:700}input{width:100%;min-height:40px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#0f172a}
-    .item-list,.advanced-section{display:grid;gap:12px;margin-top:12px}.advanced-section{padding-top:12px;border-top:1px solid #e2e8f0}
-    @media(max-width:640px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.full{grid-column:1/-1}
+    label{display:grid;gap:6px;color:#475569;font-size:12px;font-weight:700}input,select,textarea{width:100%;min-height:40px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#0f172a}textarea{min-height:120px;resize:vertical;font-family:Consolas,monospace;font-size:12px}
+    button{border:0;border-radius:10px;padding:9px 12px;background:#0f766e;color:#fff;font-weight:800;cursor:pointer}.secondary{background:#e2e8f0;color:#334155}.danger{background:#fee2e2;color:#b91c1c}
+    .item-list,.advanced-section,.widget-list{display:grid;gap:12px;margin-top:12px}.advanced-section{padding-top:12px;border-top:1px solid #e2e8f0}.widget-card{padding:12px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc}.item-title{display:flex;align-items:center;gap:8px}
+    @media(max-width:760px){.grid,.grid-3{grid-template-columns:1fr}.full{grid-column:auto}.head,.toolbar,.item-top{align-items:flex-start;flex-direction:column}.item-actions{width:100%;justify-content:flex-end}}
   </style>
 </head>
 <body>
   <noscript>GUI cấu hình cần JavaScript để hoạt động.</noscript>
   <script src="./setup_bridge_compat.js?v=2026.07.14.1"></script>
-  <script src="./setup_smart_home_vi.js?v=2026.07.14.1"></script>
+  <script src="./setup_smart_home_vi.js?v=2026.07.31.1"></script>
 </body>
 </html>
