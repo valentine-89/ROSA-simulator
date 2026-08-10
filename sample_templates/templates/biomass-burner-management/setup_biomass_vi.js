@@ -19,13 +19,13 @@
     factoryId: "Mã nhà máy",
     refreshMs: "Chu kỳ làm mới (ms)",
     pageSize: "Số dòng mỗi trang",
-    telemetryRefreshMs: "Chu kỳ telemetry (ms)",
+    refreshMs: "Chu kỳ làm mới (ms)",
     expirySoonDays: "Số ngày cảnh báo hết hạn",
     co2KgPerBurnMinute: "kg CO2 / phút đốt",
     mapCenterLat: "Vĩ độ tâm bản đồ",
     mapCenterLng: "Kinh độ tâm bản đồ",
     mapZoom: "Mức thu phóng mặc định (3-18)",
-    databaseSessionId: "Device key lưu database",
+    fleetIoid: "IOID fleet",
     mediaField: "Field media",
     defaultSignal: "Nội dung chờ mặc định",
     historyMs: "Khoảng đọc stream (ms)",
@@ -69,13 +69,13 @@
     factoryId: "Factory ID",
     refreshMs: "Refresh interval (ms)",
     pageSize: "Rows per page",
-    telemetryRefreshMs: "Telemetry interval (ms)",
+    refreshMs: "Refresh interval (ms)",
     expirySoonDays: "Expiry warning days",
     co2KgPerBurnMinute: "kg CO2 / burn minute",
     mapCenterLat: "Default map latitude",
     mapCenterLng: "Default map longitude",
     mapZoom: "Default map zoom (3-18)",
-    databaseSessionId: "Database device key",
+    fleetIoid: "Fleet IOID",
     mediaField: "Media field",
     defaultSignal: "Default waiting content",
     historyMs: "Stream history window (ms)",
@@ -211,12 +211,10 @@
       return [
         { key: "title", label: text.dashboardTitle, full: true },
         { key: "subtitle", label: text.subtitle, full: true, textarea: true },
-        { key: "databaseSessionId", label: text.databaseSessionId },
+        { key: "fleetIoid", label: text.fleetIoid },
         { key: "syncId", label: text.billingAccount },
         { key: "pageSize", label: text.pageSize, type: "number" },
-        { key: "telemetryRefreshMs", label: text.telemetryRefreshMs, type: "number" },
-        { key: "expirySoonDays", label: text.expirySoonDays, type: "number" },
-        { key: "co2KgPerBurnMinute", label: text.co2KgPerBurnMinute, type: "number", step: "0.01" },
+        { key: "refreshMs", label: text.refreshMs, type: "number" },
         { key: "mapCenterLat", label: text.mapCenterLat, type: "number", step: "0.000001" },
         { key: "mapCenterLng", label: text.mapCenterLng, type: "number", step: "0.000001" },
         { key: "mapZoom", label: text.mapZoom, type: "number" }
@@ -449,12 +447,10 @@
     } else if (true) {
       setGeneral("title", safeText(config.title, "Quản lý lò đốt sinh khối"));
       setGeneral("subtitle", safeText(config.subtitle, ""));
-      setGeneral("databaseSessionId", safeText(config.databaseSessionId, state.context.sessionId || ""));
+      setGeneral("fleetIoid", safeText(config.fleetIoid, String(state.context.sessionId || "").split("@")[0]));
       setGeneral("syncId", safeText(config.syncId, state.context.syncId || ""));
       setGeneral("pageSize", intValue(config.pageSize, 50, 1, 500));
-      setGeneral("telemetryRefreshMs", intValue(config.telemetryRefreshMs, 30000, 5000, 3600000));
-      setGeneral("expirySoonDays", intValue(config.expirySoonDays, 30, 1, 365));
-      setGeneral("co2KgPerBurnMinute", numberValue(config.co2KgPerBurnMinute, 2.77, 0));
+      setGeneral("refreshMs", intValue(config.refreshMs, 60000, 60000, 3600000));
       setGeneral("mapCenterLat", numberValue(config.mapCenterLat, 21.35, -90, 90));
       setGeneral("mapCenterLng", numberValue(config.mapCenterLng, 105.72, -180, 180));
       setGeneral("mapZoom", intValue(config.mapZoom, 8, 3, 18));
@@ -796,12 +792,10 @@
       next.title = safeText(getGeneral("title"), "");
       if (!next.title) throw new Error(text.enterTitle);
       next.subtitle = getGeneral("subtitle");
-      next.databaseSessionId = safeText(getGeneral("databaseSessionId"), state.context.sessionId || "");
+      next.fleetIoid = safeText(getGeneral("fleetIoid"), String(state.context.sessionId || "").split("@")[0]);
       next.syncId = safeText(getGeneral("syncId"), state.context.syncId || "");
       next.pageSize = intValue(getGeneral("pageSize"), 50, 1, 500);
-      next.telemetryRefreshMs = intValue(getGeneral("telemetryRefreshMs"), 30000, 5000, 3600000);
-      next.expirySoonDays = intValue(getGeneral("expirySoonDays"), 30, 1, 365);
-      next.co2KgPerBurnMinute = numberValue(getGeneral("co2KgPerBurnMinute"), 2.77, 0);
+      next.refreshMs = intValue(getGeneral("refreshMs"), 60000, 60000, 3600000);
       next.mapCenterLat = numberValue(getGeneral("mapCenterLat"), 21.35, -90, 90);
       next.mapCenterLng = numberValue(getGeneral("mapCenterLng"), 105.72, -180, 180);
       next.mapZoom = intValue(getGeneral("mapZoom"), 8, 3, 18);
