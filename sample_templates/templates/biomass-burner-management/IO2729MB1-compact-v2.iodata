@@ -1,7 +1,7 @@
 {
   "type": "PROGRAM_FULL",
   "profile": "compact-v2",
-  "program_version": "compact-v2.1.0",
+  "program_version": "compact-v2.2.0",
   "io_id": "<<ioid>>",
   "io_source": "<<io_source>>",
   "io_objects": [
@@ -16,13 +16,13 @@
     {"ob_id":14,"ob_content":"I3","ob_type":"input","ob_name":"núm vặn vị trí 3","ob_desc":"","ob_mac":"IO27-I3","ob_value":null,"ob_state":1,"ob_config":[{"ev_id":1786385935477,"ev_content":"I3","ev_key":"MODE","ev_value":"0","ev_state":1},{"ev_id":1786385935786,"ev_content":"I3","ev_key":"INIT_TIME","ev_value":0.02,"ev_state":1}]},
     {"ob_id":15,"ob_content":"I4","ob_type":"input","ob_name":"núm vặn vị trí 4","ob_desc":"","ob_mac":"IO27-I4","ob_value":null,"ob_state":1,"ob_config":[{"ev_id":1786385936176,"ev_content":"I4","ev_key":"MODE","ev_value":"0","ev_state":1},{"ev_id":1786385936516,"ev_content":"I4","ev_key":"INIT_TIME","ev_value":0.02,"ev_state":1}]},
     {"ob_id":801,"ob_content":"#801","ob_type":"variable","ob_name":"ROSA report URL","ob_desc":"","ob_mac":null,"ob_value":"rosa.technology/api/<<sessionid>>/<<syncid>>","ob_state":1,"ob_config":null},
-    {"ob_id":894,"ob_content":"#894","ob_type":"variable","ob_name":"tổng phút đốt","ob_desc":"","ob_mac":null,"ob_value":"0","ob_state":1,"ob_config":null},
-    {"ob_id":895,"ob_content":"#895","ob_type":"variable","ob_name":"mode 0-4","ob_desc":"","ob_mac":null,"ob_value":"0","ob_state":1,"ob_config":null},
-    {"ob_id":896,"ob_content":"#896","ob_type":"variable","ob_name":"quạt sơ cấp hiện tại","ob_desc":"","ob_mac":null,"ob_value":"30","ob_state":1,"ob_config":null},
-    {"ob_id":897,"ob_content":"#897","ob_type":"variable","ob_name":"quạt thứ cấp hiện tại","ob_desc":"","ob_mac":null,"ob_value":"30","ob_state":1,"ob_config":null},
-    {"ob_id":898,"ob_content":"#898","ob_type":"variable","ob_name":"version chương trình","ob_desc":"","ob_mac":null,"ob_value":"compact-v2.1.0","ob_state":1,"ob_config":null},
-    {"ob_id":899,"ob_content":"#899","ob_type":"variable","ob_name":"phút từ lần báo cáo","ob_desc":"","ob_mac":null,"ob_value":"0","ob_state":1,"ob_config":null},
+    {"ob_id":101,"ob_content":"#101","ob_type":"variable","ob_name":"mode 0-4","ob_desc":"","ob_mac":null,"ob_value":"0","ob_state":1,"ob_config":null},
+    {"ob_id":102,"ob_content":"#102","ob_type":"variable","ob_name":"quạt sơ cấp hiện tại","ob_desc":"","ob_mac":null,"ob_value":"30","ob_state":1,"ob_config":null},
+    {"ob_id":103,"ob_content":"#103","ob_type":"variable","ob_name":"quạt thứ cấp hiện tại","ob_desc":"","ob_mac":null,"ob_value":"30","ob_state":1,"ob_config":null},
+    {"ob_id":104,"ob_content":"#104","ob_type":"variable","ob_name":"phút từ lần báo cáo","ob_desc":"","ob_mac":null,"ob_value":"0","ob_state":1,"ob_config":null},
     {"ob_id":1001,"ob_content":"#1001","ob_type":"variable","ob_name":"IOID lò","ob_desc":"","ob_mac":null,"ob_value":"<<ioid>>","ob_state":1,"ob_config":null},
+    {"ob_id":1002,"ob_content":"#1002","ob_type":"variable","ob_name":"tổng phút đốt","ob_desc":"","ob_mac":null,"ob_value":"0","ob_state":1,"ob_config":null},
+    {"ob_id":1003,"ob_content":"#1003","ob_type":"variable","ob_name":"version chương trình","ob_desc":"","ob_mac":null,"ob_value":"compact-v2.2.0","ob_state":1,"ob_config":null},
     {"ob_id":1005,"ob_content":"#1005","ob_type":"variable","ob_name":"điện trở mồi giây","ob_desc":"","ob_mac":null,"ob_value":"60","ob_state":1,"ob_config":null},
     {"ob_id":1006,"ob_content":"#1006","ob_type":"variable","ob_name":"quạt mồi giây","ob_desc":"","ob_mac":null,"ob_value":"120","ob_state":1,"ob_config":null},
     {"ob_id":1007,"ob_content":"#1007","ob_type":"variable","ob_name":"lửa lớn sơ cấp","ob_desc":"","ob_mac":null,"ob_value":"100","ob_state":1,"ob_config":null},
@@ -35,17 +35,17 @@
   ],
   "io_programs": [
     {"io_group_id":0,"io_group":"Quy trình","io_group_desc":"","io_n_list":[
-      {"n_id":"1","n_mode":"1","n_content":"D1O1      //đun nhiệt trở\nW#1005\nD1O2D2O3  //mở van\nW3\nD1O6      //mở quạt mồi\nW#1006\nD4O7,#1007 //bật sơ cấp\nD4#896,#1007\nD2O1      //tắt nhiệt trở\nD2O2D1O3  //tắt van\nW4\nD1O6      //tắt quạt mồi\nD4O8,#1010 //bật thứ cấp min\nD4#897,#1010","n_natural":"","n_name":"khởi động lò","n_desc":""},
-      {"n_id":"2","n_mode":"1","n_content":"D4O7,#1007\nD4O8,#1008\nD4#896,#1007\nD4#897,#1008","n_natural":"","n_name":"chạy lửa lớn","n_desc":""},
-      {"n_id":"3","n_mode":"1","n_content":"D4O7,#1009\nD4O8,#1011\nD4#896,#1009\nD4#897,#1011","n_natural":"","n_name":"chạy lửa vừa","n_desc":""},
-      {"n_id":"4","n_mode":"1","n_content":"D4O7,#1012\nD4O8,#1013\nD4#896,#1012\nD4#897,#1013","n_natural":"","n_name":"chạy lửa nhỏ","n_desc":""},
-      {"n_id":"10","n_mode":"4","n_content":"I(1:4,#1)-1\nW1\nD6N101\nD4#895,#1\nD4#899,0\nD5N20\n[#1:1,2,3,4]\n(D5N1)\n(D5N2)\n(D5N3)\n(D5N4)","n_natural":"","n_name":"kiểm tra nút gạt và đổi mode","n_desc":"","n_local_def":[]}
+      {"n_id":"1","n_mode":"1","n_content":"D1O1      //đun nhiệt trở\nW#1005\nD1O2D2O3  //mở van\nW3\nD1O6      //mở quạt mồi\nW#1006\nD4O7,#1007 //bật sơ cấp\nD4#102,#1007\nD2O1      //tắt nhiệt trở\nD2O2D1O3  //tắt van\nW4\nD1O6      //tắt quạt mồi\nD4O8,#1010 //bật thứ cấp min\nD4#103,#1010","n_natural":"","n_name":"khởi động lò","n_desc":""},
+      {"n_id":"2","n_mode":"1","n_content":"D4O7,#1007\nD4O8,#1008\nD4#102,#1007\nD4#103,#1008","n_natural":"","n_name":"chạy lửa lớn","n_desc":""},
+      {"n_id":"3","n_mode":"1","n_content":"D4O7,#1009\nD4O8,#1011\nD4#102,#1009\nD4#103,#1011","n_natural":"","n_name":"chạy lửa vừa","n_desc":""},
+      {"n_id":"4","n_mode":"1","n_content":"D4O7,#1012\nD4O8,#1013\nD4#102,#1012\nD4#103,#1013","n_natural":"","n_name":"chạy lửa nhỏ","n_desc":""},
+      {"n_id":"10","n_mode":"4","n_content":"I(1:4,#1)-1\nW1\nD6N101\nD4#101,#1\nD4#104,0\nD5N20\n[#1:1,2,3,4]\n(D5N1)\n(D5N2)\n(D5N3)\n(D5N4)","n_natural":"","n_name":"kiểm tra nút gạt và đổi mode","n_desc":"","n_local_def":[]}
     ]},
     {"io_group_id":1,"io_group":"Chương trình con","io_group_desc":"","io_n_list":[
-      {"n_id":"20","n_mode":"1","n_content":"D23,#801,,\"biomass-report\",#1001,#894,#895,#896,#897,\"\",#898,\"\"#1005\",\"#1006\",\"#1007\",\"#1008\",\"#1009\",\"#1010\",\"#1011\",\"#1012\",\"#1013","n_natural":"","n_name":"gửi báo cáo ROSA","n_desc":""},
-      {"n_id":"21","n_mode":"4","n_content":"W60\nD4#899,#899+1\n[#895>0](D4#894,#894+1)\n[#895>0&#899>=10](D4#899,0D5N20)\n[#895=0&#899>=30](D4#899,0D5N20)","n_natural":"","n_name":"đếm phút và lịch báo cáo","n_desc":""},
-      {"n_id":"22","n_mode":"1","n_content":"[#1005<30](D4#1005,30)\n[#1005>180](D4#1005,180)\n[#1006<30](D4#1006,30)\n[#1006>300](D4#1006,300)\n[#1007<30](D4#1007,30)\n[#1007>100](D4#1007,100)\n[#1008<30](D4#1008,30)\n[#1008>100](D4#1008,100)\n[#1009<30](D4#1009,30)\n[#1009>100](D4#1009,100)\n[#1010<30](D4#1010,30)\n[#1010>100](D4#1010,100)\n[#1011<30](D4#1011,30)\n[#1011>100](D4#1011,100)\n[#1012<30](D4#1012,30)\n[#1012>100](D4#1012,100)\n[#1013<30](D4#1013,30)\n[#1013>100](D4#1013,100)\n[#895=1](D4O7,#1007D4O8,#1010D4#896,#1007D4#897,#1010)\n[#895=2](D5N2)\n[#895=3](D5N3)\n[#895=4](D5N4)","n_natural":"","n_name":"áp dụng cấu hình","n_desc":""},
-      {"n_id":"101","n_mode":"1","n_content":"D14N1N2N3N4\nD2O2D1O3\nD2O1O4O5O6O7O8\nD4#896,30\nD4#897,30","n_natural":"","n_name":"tắt tất cả quy trình","n_desc":"","n_local_def":[]}
+      {"n_id":"20","n_mode":"1","n_content":"D23,#801,,\"biomass-report\",#1001,#1002,#101,#102,#103,\"\",#1003,\"\"#1005\",\"#1006\",\"#1007\",\"#1008\",\"#1009\",\"#1010\",\"#1011\",\"#1012\",\"#1013","n_natural":"","n_name":"gửi báo cáo ROSA","n_desc":""},
+      {"n_id":"21","n_mode":"1","n_content":"I99-1\nW1\n[#1002=\"\"](D4#1002,0)\n[#101=\"\"](D4#101,0)\n[#102=\"\"](D4#102,30)\n[#103=\"\"](D4#103,30)\nD4#104,0\nD5N20\nL(\nW60\nD4#104,#104+1\n[#101>0](D4#1002,#1002+1)\n[#101>0&#104>=10](D4#104,0D5N20)\n[#101=0&#104>=30](D4#104,0D5N20)\n)","n_natural":"","n_name":"đếm phút và lịch báo cáo","n_desc":""},
+      {"n_id":"22","n_mode":"1","n_content":"D4#1,0\n[#1005<30](D4#1005,30)\n[#1005>180](D4#1005,180)\n[#1006<30](D4#1006,30)\n[#1006>300](D4#1006,300)\n[#1007<30](D4#1007,30)\n[#1007>100](D4#1007,100)\n[#1008<30](D4#1008,30)\n[#1008>100](D4#1008,100)\n[#1009<30](D4#1009,30)\n[#1009>100](D4#1009,100)\n[#1010<30](D4#1010,30)\n[#1010>100](D4#1010,100)\n[#1011<30](D4#1011,30)\n[#1011>100](D4#1011,100)\n[#1012<30](D4#1012,30)\n[#1012>100](D4#1012,100)\n[#1013<30](D4#1013,30)\n[#1013>100](D4#1013,100)\n[#101=1](D4O7,#1007D4O8,#1010D4#102,#1007D4#103,#1010)\n[#101=2](D5N2)\n[#101=3](D5N3)\n[#101=4](D5N4)","n_natural":"","n_name":"áp dụng cấu hình","n_desc":""},
+      {"n_id":"101","n_mode":"1","n_content":"D14N1N2N3N4\nD2O2D1O3\nD2O1O4O5O6O7O8\nD4#102,30\nD4#103,30","n_natural":"","n_name":"tắt tất cả quy trình","n_desc":"","n_local_def":[]}
     ]}
   ]
 }
