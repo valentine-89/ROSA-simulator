@@ -253,8 +253,8 @@ addPage.run('biomass-fleet-view', pageHtml, 0, 'Biomass fleet view', JSON.string
 addPage.run('biomass-fleet-admin', pageHtml, 1, 'Biomass fleet admin', JSON.stringify({ publicApi: { macros: writeMacros, rateLimit: { limit: 120, windowMs: 60000 } } }));
 
 const settingDefs = [
-  ['1005', 30, 180], ['1006', 30, 300], ['1007', 30, 100], ['1008', 30, 100],
-  ['1009', 30, 100], ['1010', 30, 100], ['1011', 30, 100], ['1012', 30, 100], ['1013', 30, 100]
+  ['1005', 30, 180], ['1006', 30, 300], ['1007', 45, 100], ['1008', 45, 100],
+  ['1009', 45, 100], ['1010', 45, 100], ['1011', 45, 100], ['1012', 45, 100], ['1013', 45, 100]
 ];
 const addCommand = db.prepare(`INSERT INTO system_cmds(cmd_id, command_template, require_email, require_phone, sync_id, params_schema, enabled)
   VALUES (?, ?, 1, 0, '<<syncid>>', ?, 1)`);

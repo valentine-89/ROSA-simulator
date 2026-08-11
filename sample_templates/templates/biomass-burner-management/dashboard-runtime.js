@@ -18,13 +18,13 @@
   var settingDefinitions = [
     { key: "1005", label: "Điện trở mồi", minimum: 30, maximum: 180, unit: "s" },
     { key: "1006", label: "Quạt mồi", minimum: 30, maximum: 300, unit: "s" },
-    { key: "1007", label: "Lớn - sơ cấp", minimum: 30, maximum: 100, unit: "%" },
-    { key: "1008", label: "Lớn - thứ cấp", minimum: 30, maximum: 100, unit: "%" },
-    { key: "1009", label: "Vừa - sơ cấp", minimum: 30, maximum: 100, unit: "%" },
-    { key: "1010", label: "Khởi động - thứ cấp", minimum: 30, maximum: 100, unit: "%" },
-    { key: "1011", label: "Vừa - thứ cấp", minimum: 30, maximum: 100, unit: "%" },
-    { key: "1012", label: "Nhỏ - sơ cấp", minimum: 30, maximum: 100, unit: "%" },
-    { key: "1013", label: "Nhỏ - thứ cấp", minimum: 30, maximum: 100, unit: "%" }
+    { key: "1007", label: "Lớn - sơ cấp", minimum: 45, maximum: 100, unit: "%" },
+    { key: "1008", label: "Lớn - thứ cấp", minimum: 45, maximum: 100, unit: "%" },
+    { key: "1009", label: "Vừa - sơ cấp", minimum: 45, maximum: 100, unit: "%" },
+    { key: "1010", label: "Khởi động - thứ cấp", minimum: 45, maximum: 100, unit: "%" },
+    { key: "1011", label: "Vừa - thứ cấp", minimum: 45, maximum: 100, unit: "%" },
+    { key: "1012", label: "Nhỏ - sơ cấp", minimum: 45, maximum: 100, unit: "%" },
+    { key: "1013", label: "Nhỏ - thứ cấp", minimum: 45, maximum: 100, unit: "%" }
   ];
   var cfg = {
     title: "Quản lý lò sinh khối", subtitle: "", fleetIoid: "", pageSize: 50, refreshMs: 60000,
@@ -74,7 +74,7 @@
     var gps = validCoordinates(payload.latitude, payload.longitude);
     return Object.assign({}, row, {
       mode: mode, stale: stale, lastReportedAt: lastReportedAt || null,
-      burnedMinutes: Number(payload.burned_minutes || 0), primaryFanPct: Number(payload.primary_fan_pct || 30), secondaryFanPct: Number(payload.secondary_fan_pct || 30),
+      burnedMinutes: Number(payload.burned_minutes || 0), primaryFanPct: Number(payload.primary_fan_pct || 45), secondaryFanPct: Number(payload.secondary_fan_pct || 45),
       temperature: payload.temperature == null || payload.temperature === "" ? null : Number(payload.temperature), programVersion: String(payload.program_version || ""),
       latitude: gps ? Number(payload.latitude) : Number(row.latitude), longitude: gps ? Number(payload.longitude) : Number(row.longitude), coordinateSource: gps ? "gps" : String(row.coordinate_source || "default"), payload: payload
     });

@@ -1,7 +1,7 @@
 {
   "type": "PROGRAM_FULL",
   "profile": "compact-v2",
-  "program_version": "compact-v2.4.2",
+  "program_version": "compact-v2.4.3",
   "io_id": "<<ioid>>",
   "io_source": "<<io_source>>",
   "io_objects": [
@@ -17,24 +17,24 @@
     {"ob_id":15,"ob_content":"I4","ob_type":"input","ob_name":"núm vặn vị trí 4","ob_desc":"","ob_mac":"IO27-I4","ob_value":null,"ob_state":1,"ob_config":[{"ev_id":1786385936176,"ev_content":"I4","ev_key":"MODE","ev_value":"0","ev_state":1},{"ev_id":1786385936516,"ev_content":"I4","ev_key":"INIT_TIME","ev_value":0.02,"ev_state":1}]},
     {"ob_id":801,"ob_content":"#801","ob_type":"variable","ob_name":"ROSA report URL","ob_desc":"","ob_mac":null,"ob_value":"rosa.technology/api/<<sessionid>>/<<syncid>>","ob_state":1,"ob_config":null},
     {"ob_id":101,"ob_content":"#101","ob_type":"variable","ob_name":"mode 0-4","ob_desc":"","ob_mac":null,"ob_value":"0","ob_state":1,"ob_config":null},
-    {"ob_id":102,"ob_content":"#102","ob_type":"variable","ob_name":"quạt sơ cấp hiện tại","ob_desc":"","ob_mac":null,"ob_value":"30","ob_state":1,"ob_config":null},
-    {"ob_id":103,"ob_content":"#103","ob_type":"variable","ob_name":"quạt thứ cấp hiện tại","ob_desc":"","ob_mac":null,"ob_value":"30","ob_state":1,"ob_config":null},
+    {"ob_id":102,"ob_content":"#102","ob_type":"variable","ob_name":"quạt sơ cấp hiện tại","ob_desc":"","ob_mac":null,"ob_value":"45","ob_state":1,"ob_config":null},
+    {"ob_id":103,"ob_content":"#103","ob_type":"variable","ob_name":"quạt thứ cấp hiện tại","ob_desc":"","ob_mac":null,"ob_value":"45","ob_state":1,"ob_config":null},
     {"ob_id":104,"ob_content":"#104","ob_type":"variable","ob_name":"phút từ lần báo cáo","ob_desc":"","ob_mac":null,"ob_value":"0","ob_state":1,"ob_config":null},
     {"ob_id":105,"ob_content":"#105","ob_type":"variable","ob_name":"GPS latitude cache","ob_desc":"","ob_mac":null,"ob_value":"","ob_state":1,"ob_config":null},
     {"ob_id":106,"ob_content":"#106","ob_type":"variable","ob_name":"GPS longitude cache","ob_desc":"","ob_mac":null,"ob_value":"","ob_state":1,"ob_config":null},
     {"ob_id":107,"ob_content":"#107","ob_type":"variable","ob_name":"phút từ lần gửi GPS","ob_desc":"","ob_mac":null,"ob_value":"10","ob_state":1,"ob_config":null},
     {"ob_id":1001,"ob_content":"#1001","ob_type":"variable","ob_name":"IOID lò","ob_desc":"","ob_mac":null,"ob_value":"<<ioid>>","ob_state":1,"ob_config":null},
     {"ob_id":894,"ob_content":"#894","ob_type":"variable","ob_name":"tổng phút đốt journal","ob_desc":"","ob_mac":null,"ob_value":"0","ob_state":1,"ob_config":null},
-    {"ob_id":1003,"ob_content":"#1003","ob_type":"variable","ob_name":"version chương trình","ob_desc":"","ob_mac":null,"ob_value":"compact-v2.4.2","ob_state":1,"ob_config":null},
+    {"ob_id":1003,"ob_content":"#1003","ob_type":"variable","ob_name":"version chương trình","ob_desc":"","ob_mac":null,"ob_value":"compact-v2.4.3","ob_state":1,"ob_config":null},
     {"ob_id":1005,"ob_content":"#1005","ob_type":"variable","ob_name":"điện trở mồi giây","ob_desc":"","ob_mac":null,"ob_value":"60","ob_state":1,"ob_config":null},
     {"ob_id":1006,"ob_content":"#1006","ob_type":"variable","ob_name":"quạt mồi giây","ob_desc":"","ob_mac":null,"ob_value":"120","ob_state":1,"ob_config":null},
     {"ob_id":1007,"ob_content":"#1007","ob_type":"variable","ob_name":"lửa lớn sơ cấp","ob_desc":"","ob_mac":null,"ob_value":"100","ob_state":1,"ob_config":null},
     {"ob_id":1008,"ob_content":"#1008","ob_type":"variable","ob_name":"lửa lớn thứ cấp","ob_desc":"","ob_mac":null,"ob_value":"100","ob_state":1,"ob_config":null},
     {"ob_id":1009,"ob_content":"#1009","ob_type":"variable","ob_name":"lửa vừa sơ cấp","ob_desc":"","ob_mac":null,"ob_value":"90","ob_state":1,"ob_config":null},
-    {"ob_id":1010,"ob_content":"#1010","ob_type":"variable","ob_name":"khởi động thứ cấp","ob_desc":"","ob_mac":null,"ob_value":"40","ob_state":1,"ob_config":null},
+    {"ob_id":1010,"ob_content":"#1010","ob_type":"variable","ob_name":"khởi động thứ cấp","ob_desc":"","ob_mac":null,"ob_value":"45","ob_state":1,"ob_config":null},
     {"ob_id":1011,"ob_content":"#1011","ob_type":"variable","ob_name":"lửa vừa thứ cấp","ob_desc":"","ob_mac":null,"ob_value":"80","ob_state":1,"ob_config":null},
     {"ob_id":1012,"ob_content":"#1012","ob_type":"variable","ob_name":"lửa nhỏ sơ cấp","ob_desc":"","ob_mac":null,"ob_value":"70","ob_state":1,"ob_config":null},
-    {"ob_id":1013,"ob_content":"#1013","ob_type":"variable","ob_name":"lửa nhỏ thứ cấp","ob_desc":"","ob_mac":null,"ob_value":"40","ob_state":1,"ob_config":null}
+    {"ob_id":1013,"ob_content":"#1013","ob_type":"variable","ob_name":"lửa nhỏ thứ cấp","ob_desc":"","ob_mac":null,"ob_value":"45","ob_state":1,"ob_config":null}
   ],
   "io_programs": [
     {"io_group_id":0,"io_group":"Quy trình","io_group_desc":"","io_n_list":[
@@ -46,11 +46,11 @@
     ]},
     {"io_group_id":1,"io_group":"Chương trình con","io_group_desc":"","io_n_list":[
       {"n_id":"20","n_mode":"1","n_content":"D23,#801,,\"telemetry\",#101,#894,#102,#103,\"\",#1003,#1005,#1006,#1007,#1008,#1009,#1010,#1011,#1012,#1013,#105,#106","n_natural":"","n_name":"gửi telemetry ROSA","n_desc":"c1..c17 là mode, phút đốt, hai quạt, nhiệt độ, version, chín cấu hình và GPS; chỉ dùng telemetry D23 chuẩn, không tạo luồng riêng trong ROSA"},
-      {"n_id":"21","n_mode":"1","n_content":"I99-1\nW1\n[#894=\"\"](D4#894,0)\n[#101=\"\"](D4#101,0)\n[#102=\"\"](D4#102,30)\n[#103=\"\"](D4#103,30)\n[#107=\"\"](D4#107,10)\nD4#104,0\nD5N20\nD5N24\nL(\nW60\nD4#104,#104+1\nD4#107,#107+1\n[#101>0](D4#894,#894+1)\n[#101>0&#104>=10](D4#104,0D5N20D5N24)\n[#101=0&#104>=30](D4#104,0D5N20D5N24)\n)","n_natural":"","n_name":"đếm phút và lịch báo cáo","n_desc":"telemetry hiện tại và data snapshot dùng hai lệnh ROSA chuẩn"},
+      {"n_id":"21","n_mode":"1","n_content":"I99-1\nW1\n[#894=\"\"](D4#894,0)\n[#101=\"\"](D4#101,0)\n[#102=\"\"](D4#102,45)\n[#103=\"\"](D4#103,45)\n[#107=\"\"](D4#107,10)\nD4#104,0\nD5N20\nD5N24\nL(\nW60\nD4#104,#104+1\nD4#107,#107+1\n[#101>0](D4#894,#894+1)\n[#101>0&#104>=10](D4#104,0D5N20D5N24)\n[#101=0&#104>=30](D4#104,0D5N20D5N24)\n)","n_natural":"","n_name":"đếm phút và lịch báo cáo","n_desc":"telemetry hiện tại và data snapshot dùng hai lệnh ROSA chuẩn"},
       {"n_id":"23","n_mode":"4","n_content":"I95-1\nD4#1,I95\n[(#1.1<>\"\"&#1.2<>\"\"&(#105=\"\"|#106=\"\"|#107>=10))](D4#105,#1.1D4#106,#1.2D4#107,0D5N20D5N25)","n_natural":"","n_name":"cập nhật GPS khi có tín hiệu","n_desc":"GPS gửi bằng telemetry và data macro chuẩn"},
       {"n_id":"24","n_mode":"1","n_content":"D23,#801,,\"data\",\"IO-biomass-meter\",#894,#101","n_natural":"","n_name":"lưu meter ROSA","n_desc":"dùng c1 data và system_macros chuẩn; meter chỉ tăng"},
       {"n_id":"25","n_mode":"1","n_content":"D23,#801,,\"data\",\"IO-biomass-gps\",#105,#106","n_natural":"","n_name":"lưu GPS ROSA","n_desc":"dùng c1 data và system_macros chuẩn"},
-      {"n_id":"101","n_mode":"1","n_content":"D14N1N2N3N4\nD2O2D1O3\nD2O1O4O5O6O7O8\nD4#102,30\nD4#103,30","n_natural":"","n_name":"tắt tất cả quy trình","n_desc":"","n_local_def":[]}
+      {"n_id":"101","n_mode":"1","n_content":"D14N1N2N3N4\nD2O2D1O3\nD2O1O4O5O6O7O8\nD4#102,45\nD4#103,45","n_natural":"","n_name":"tắt tất cả quy trình","n_desc":"","n_local_def":[]}
     ]}
   ]
 }

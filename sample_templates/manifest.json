@@ -3118,13 +3118,13 @@
         {
           "field": "primary_fan_pct",
           "kind": "number",
-          "min": 30,
+          "min": 45,
           "max": 100
         },
         {
           "field": "secondary_fan_pct",
           "kind": "number",
-          "min": 30,
+          "min": 45,
           "max": 100
         },
         {
@@ -3146,13 +3146,13 @@
         {
           "field": "cfg_1007",
           "kind": "number",
-          "min": 30,
+          "min": 45,
           "max": 100
         },
         {
           "field": "cfg_1013",
           "kind": "number",
-          "min": 30,
+          "min": 45,
           "max": 100
         }
       ],
