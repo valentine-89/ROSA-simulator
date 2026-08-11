@@ -1,6 +1,13 @@
 (function () {
   "use strict";
   var node = document.getElementById("biomass-burner-config");
+  var runtimeScript = document.currentScript;
+  var assetBase = runtimeScript && runtimeScript.src ? new URL(".", runtimeScript.src).href : "";
+  var iconUrls = {
+    offline: assetBase + "burner-offline.svg",
+    online: assetBase + "burner-online.svg",
+    burning: assetBase + "burner-burning.svg"
+  };
   var cfg = { title: "Quản lý lò sinh khối", subtitle: "", fleetIoid: "", syncId: "", pageSize: 50, refreshMs: 60000, mapCenterLat: 21.35, mapCenterLng: 105.72, mapZoom: 8 };
   try { cfg = Object.assign(cfg, JSON.parse(node && node.textContent || "{}")); } catch (_) {}
   var query = new URLSearchParams(location.search);
@@ -10,7 +17,7 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var els = { title: $("bb-title"), subtitle: $("bb-subtitle"), status: $("bb-status"), refresh: $("bb-refresh"), settingsOpen: $("bb-settings-open"), addOpen: $("bb-add-open"), addModal: $("bb-add-modal"), addForm: $("bb-add-form"), addClose: $("bb-add-close"), addCancel: $("bb-add-cancel"), search: $("bb-search"), pageSize: $("bb-page-size"), apply: $("bb-apply-filter"), body: $("bb-table-body"), empty: $("bb-empty"), prev: $("bb-prev"), next: $("bb-next"), pageInfo: $("bb-page-info"), total: $("bb-kpi-total"), active: $("bb-kpi-active"), stale: $("bb-kpi-stale"), burned: $("bb-kpi-burned"), map: $("bb-map"), mapLoading: $("bb-map-loading"), mapFit: $("bb-map-fit"), mapList: $("bb-map-list"), mapCount: $("bb-map-count"), settingsModal: $("bb-settings-modal"), settingsTitle: $("bb-settings-title"), settingsSubtitle: $("bb-settings-subtitle"), settingsClose: $("bb-settings-close"), coordinateSource: $("bb-coordinate-source"), deviceForm: $("bb-device-form"), settingsGrid: $("bb-settings-grid"), settingsState: $("bb-settings-read-state"), deleteBurner: $("bb-delete-burner"), toast: $("bb-toast-stack") };
-  var state = { page: 1, pageSize: Math.max(1, Number(cfg.pageSize) || 50), total: 0, loading: false, timer: 0, current: null, visibleItems: [], definitions: [], map: null, markers: null, mapItems: [], temperatureEnabled: false };
+  var state = { page: 1, pageSize: Math.max(1, Number(cfg.pageSize) || 50), total: 0, loading: false, timer: 0, current: null, visibleItems: [], definitions: [], map: null, markers: null, mapIcons: {}, mapItems: [], temperatureEnabled: false };
   els.title.textContent = cfg.title;
   els.subtitle.textContent = cfg.subtitle;
   els.pageSize.value = String(state.pageSize);
@@ -18,6 +25,9 @@
   function esc(value) { return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
   function number(value) { return Number(value || 0).toLocaleString("vi-VN"); }
   function modeLabel(mode) { return ["OFF", "START", "HIGH", "MEDIUM", "LOW"][Number(mode)] || "OFF"; }
+  function deviceState(item) { return item && item.stale ? "offline" : Number(item && item.mode) > 0 ? "burning" : "online"; }
+  function deviceStateLabel(item) { var visualState = deviceState(item); return visualState === "offline" ? "Mất kết nối" : visualState === "burning" ? "Đang đốt" : "Online"; }
+  function iconUrl(itemOrState) { var visualState = typeof itemOrState === "string" ? itemOrState : deviceState(itemOrState); return iconUrls[visualState] || iconUrls.offline; }
   function coordinateSourceLabel(source) { return source === "gps" ? "GPS" : source === "manual" ? "Thủ công" : "Mặc định"; }
   function dateTime(value) { if (!value) return "--"; return new Date(Number(value)).toLocaleString("vi-VN"); }
   function showModal(modal, visible) { modal.setAttribute("aria-hidden", visible ? "false" : "true"); modal.classList.toggle("is-open", visible); }
@@ -31,7 +41,9 @@
   function renderTable(items) {
     els.empty.hidden = items.length > 0;
     els.body.innerHTML = items.map(function (item) {
-      return "<tr data-ioid=\"" + esc(item.ioid) + "\"><td><strong>" + esc(item.ioid) + "</strong><small>" + esc(item.programVersion || "--") + "</small></td><td><strong>" + esc(item.name || "--") + "</strong><small>" + esc(item.location || "--") + "</small></td><td><span class=\"bb-live-pill\" data-state=\"" + (item.stale ? "unknown" : Number(item.mode) ? "on" : "off") + "\">" + (item.stale ? "MẤT KẾT NỐI" : modeLabel(item.mode)) + "</span></td><td>" + number(item.burnedMinutes) + "</td><td>" + number(item.primaryFanPct) + "%</td><td>" + number(item.secondaryFanPct) + "%</td>" + (state.temperatureEnabled ? "<td class=\"bb-temperature-column\">" + (item.temperature == null ? "--" : esc(item.temperature) + " °C") + "</td>" : "") + "<td>" + esc(dateTime(item.lastReportedAt)) + "</td><td><button class=\"bb-btn\" data-settings=\"" + esc(item.ioid) + "\">Cài đặt</button></td></tr>";
+      var visualState = deviceState(item);
+      var modeText = visualState === "burning" ? " · " + modeLabel(item.mode) : "";
+      return "<tr data-ioid=\"" + esc(item.ioid) + "\" data-row-state=\"" + visualState + "\"><td><strong>" + esc(item.ioid) + "</strong><small>" + esc(item.programVersion || "--") + "</small></td><td><strong>" + esc(item.name || "--") + "</strong><small>" + esc(item.location || "--") + "</small></td><td><span class=\"bb-live-pill\" data-state=\"" + visualState + "\">" + esc(deviceStateLabel(item) + modeText) + "</span></td><td>" + number(item.burnedMinutes) + "</td><td>" + number(item.primaryFanPct) + "%</td><td>" + number(item.secondaryFanPct) + "%</td>" + (state.temperatureEnabled ? "<td class=\"bb-temperature-column\">" + (item.temperature == null ? "--" : esc(item.temperature) + " °C") + "</td>" : "") + "<td>" + esc(dateTime(item.lastReportedAt)) + "</td><td><button class=\"bb-btn\" data-settings=\"" + esc(item.ioid) + "\">Cài đặt</button></td></tr>";
     }).join("");
     var pages = Math.max(1, Math.ceil(state.total / state.pageSize));
     els.pageInfo.textContent = "Trang " + state.page + " / " + pages;
@@ -45,11 +57,16 @@
     state.markers = window.L.markerClusterGroup ? window.L.markerClusterGroup({ chunkedLoading: true }) : window.L.layerGroup();
     state.map.addLayer(state.markers); els.mapLoading.hidden = true;
   }
+  function leafletIcon(visualState) {
+    if (!window.L) return null;
+    if (!state.mapIcons[visualState]) state.mapIcons[visualState] = window.L.icon({ iconUrl: iconUrl(visualState), iconSize: [46, 58], iconAnchor: [23, 56], popupAnchor: [0, -50] });
+    return state.mapIcons[visualState];
+  }
   function renderMap(items) {
     state.mapItems = items; ensureMap(); if (!state.map) return; state.markers.clearLayers();
     els.mapCount.textContent = items.length + " lò có tọa độ";
-    els.mapList.innerHTML = items.slice(0, 100).map(function (item) { return "<button class=\"bb-map-item\" data-map-ioid=\"" + esc(item.ioid) + "\"><span class=\"bb-map-item-dot\"></span><span class=\"bb-map-item-main\"><strong>" + esc(item.ioid) + "</strong><span>" + esc(item.location || item.name || coordinateSourceLabel(item.coordinateSource)) + "</span></span></button>"; }).join("");
-    items.forEach(function (item) { var marker = window.L.marker([item.latitude, item.longitude], { title: item.ioid }); marker.bindPopup("<strong>" + esc(item.ioid) + "</strong><br>" + esc(item.stale ? "Mất kết nối" : modeLabel(item.mode)) + " · " + esc(coordinateSourceLabel(item.coordinateSource)) + "<br><button class=\"bb-btn\" data-settings=\"" + esc(item.ioid) + "\">Cài đặt</button>"); marker._biomassIoid = item.ioid; state.markers.addLayer(marker); });
+    els.mapList.innerHTML = items.slice(0, 100).map(function (item) { var visualState = deviceState(item); return "<button class=\"bb-map-item\" data-state=\"" + visualState + "\" data-map-ioid=\"" + esc(item.ioid) + "\"><img class=\"bb-map-item-icon\" src=\"" + esc(iconUrl(visualState)) + "\" alt=\"\"><span class=\"bb-map-item-main\"><strong>" + esc(item.ioid) + "</strong><span>" + esc(item.location || item.name || coordinateSourceLabel(item.coordinateSource)) + "</span></span><span class=\"bb-map-item-state\">" + esc(deviceStateLabel(item)) + "</span></button>"; }).join("");
+    items.forEach(function (item) { var visualState = deviceState(item); var marker = window.L.marker([item.latitude, item.longitude], { title: item.ioid, icon: leafletIcon(visualState) }); marker.bindPopup("<div class=\"bb-map-popup\"><div class=\"bb-map-popup-head\"><strong>" + esc(item.ioid) + "</strong><span class=\"bb-map-popup-status\" data-state=\"" + visualState + "\">" + esc(deviceStateLabel(item)) + "</span></div><div class=\"bb-map-popup-grid\"><span>Chế độ</span><b>" + esc(modeLabel(item.mode)) + "</b><span>Tọa độ</span><b>" + esc(coordinateSourceLabel(item.coordinateSource)) + "</b></div><button class=\"bb-btn\" data-settings=\"" + esc(item.ioid) + "\">Cài đặt</button></div>"); marker._biomassIoid = item.ioid; state.markers.addLayer(marker); });
   }
   function fitMap() { if (!state.map || !state.mapItems.length) return; state.map.fitBounds(window.L.latLngBounds(state.mapItems.map(function (item) { return [item.latitude, item.longitude]; })), { padding: [30, 30], maxZoom: 13 }); }
 
@@ -68,11 +85,11 @@
   async function openSettings(ioid) {
     try {
       var data = await api(baseUrl() + "?action=device&ioid=" + encodeURIComponent(ioid)); state.current = data.device;
-      els.settingsTitle.textContent = "Cài đặt " + ioid; els.settingsSubtitle.textContent = modeLabel(data.device.mode) + " · rev " + data.device.configRevision;
+      els.settingsTitle.textContent = "Cài đặt " + ioid; els.settingsSubtitle.textContent = deviceStateLabel(data.device) + (Number(data.device.mode) > 0 ? " · " + modeLabel(data.device.mode) : "") + " · rev " + data.device.configRevision;
       els.coordinateSource.textContent = coordinateSourceLabel(data.device.coordinateSource);
       ["name", "location", "latitude", "longitude"].forEach(function (key) { els.deviceForm.elements[key].value = data.device[key] == null ? "" : data.device[key]; });
       var byKey = {}; (data.device.settings || []).forEach(function (setting) { byKey[String(setting.key)] = setting; });
-      els.settingsGrid.innerHTML = state.definitions.map(function (definition) { var current = byKey[String(definition.key)] || {}; var value = current.reportedValue == null ? current.desiredValue : current.reportedValue; return "<form class=\"bb-setting-card\" data-setting-key=\"" + esc(definition.key) + "\"><label>#" + esc(definition.key) + " · " + esc(definition.label) + "</label><div class=\"bb-setting-control\"><input class=\"bb-input\" name=\"value\" type=\"number\" min=\"" + definition.minimum + "\" max=\"" + definition.maximum + "\" value=\"" + esc(value) + "\"><span>" + esc(definition.unit) + "</span><button class=\"bb-btn\" type=\"submit\">Ghi</button></div></form>"; }).join("");
+      els.settingsGrid.innerHTML = state.definitions.map(function (definition) { var current = byKey[String(definition.key)] || {}; var value = current.reportedValue == null ? current.desiredValue : current.reportedValue; return "<form class=\"bb-setting-card\" data-setting-key=\"" + esc(definition.key) + "\"><label><span>" + esc(definition.label) + "</span><code>#" + esc(definition.key) + "</code></label><div class=\"bb-setting-control\"><input class=\"bb-input\" name=\"value\" type=\"number\" min=\"" + definition.minimum + "\" max=\"" + definition.maximum + "\" value=\"" + esc(value) + "\"><span>" + esc(definition.unit) + "</span><button class=\"bb-btn\" type=\"submit\">Ghi</button></div></form>"; }).join("");
       els.settingsState.textContent = "Đã đọc"; showModal(els.settingsModal, true);
     } catch (error) { notify(error.message, true); }
   }
@@ -93,5 +110,6 @@
   els.settingsGrid.onsubmit = async function (event) { event.preventDefault(); var form = event.target.closest("[data-setting-key]"); if (!form || !state.current) return; var button = form.querySelector("button"); button.disabled = true; els.settingsState.textContent = "Đang ghi"; try { var result = await api(baseUrl() + "/devices/" + encodeURIComponent(state.current.ioid) + "/settings/" + encodeURIComponent(form.dataset.settingKey), { method: "POST", body: JSON.stringify({ value: form.elements.value.value }) }); form.elements.value.value = result.value; els.settingsState.textContent = "Đã đọc lại"; notify("Đã cập nhật #" + form.dataset.settingKey); } catch (error) { els.settingsState.textContent = "Ghi lỗi"; notify(error.message, true); } finally { button.disabled = false; } };
   els.deleteBurner.onclick = async function () { if (!state.current || !confirm("Xóa " + state.current.ioid + "?")) return; try { await mutate({ action: "delete", ioid: state.current.ioid }); showModal(els.settingsModal, false); notify("Đã xóa lò"); refresh(); } catch (error) { notify(error.message, true); } };
   window.addEventListener("beforeunload", function () { clearTimeout(state.timer); });
+  document.querySelectorAll("[data-burner-icon]").forEach(function (image) { image.src = iconUrl(image.dataset.burnerIcon); });
   refresh();
 })();

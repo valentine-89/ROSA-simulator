@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="anonymous" />
-  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/dashboard.css?v=2026.08.11.2" />
+  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/dashboard.css?v=2026.08.11.3" />
 </head>
 <body>
   <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
@@ -20,7 +20,7 @@
 
     <section class="bb-kpi-grid" aria-label="Tổng quan">
       <article class="bb-kpi"><span>Tổng lò</span><strong id="bb-kpi-total">--</strong><em>thiết bị</em></article>
-      <article class="bb-kpi"><span>Đang chạy</span><strong id="bb-kpi-active">--</strong><em>lò</em></article>
+      <article class="bb-kpi"><span>Đang đốt</span><strong id="bb-kpi-active">--</strong><em>lò</em></article>
       <article class="bb-kpi"><span>Mất kết nối</span><strong id="bb-kpi-stale">--</strong><em>lò</em></article>
       <article class="bb-kpi"><span>Phút đã đốt</span><strong id="bb-kpi-burned">--</strong><em>phút</em></article>
     </section>
@@ -29,7 +29,7 @@
       <article class="bb-panel bb-map-panel">
         <div class="bb-panel-head"><div><span class="bb-eyebrow">Bản đồ</span><h2>Vị trí lò</h2></div><button class="bb-btn" id="bb-map-fit" type="button">Xem tất cả</button></div>
         <div class="bb-map" id="bb-map"><div class="bb-map-loading" id="bb-map-loading">Đang tải bản đồ...</div></div>
-        <div class="bb-map-legend"><span><i data-state="on"></i>Đang chạy</span><span><i data-state="off"></i>Đang dừng</span><span><i data-state="unknown"></i>Mất kết nối</span></div>
+        <div class="bb-map-legend"><span><img data-burner-icon="burning" alt="" />Đang đốt</span><span><img data-burner-icon="online" alt="" />Online</span><span><img data-burner-icon="offline" alt="" />Mất kết nối</span></div>
       </article>
       <article class="bb-panel bb-map-list-panel"><div class="bb-panel-head"><div><span class="bb-eyebrow">Thiết bị</span><h2>Trên bản đồ</h2><p id="bb-map-count">--</p></div></div><div class="bb-map-list" id="bb-map-list"></div></article>
     </section>
@@ -48,7 +48,7 @@
 
   <div class="bb-modal" id="bb-add-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-sm"><div class="bb-modal-head"><h2>Thêm lò</h2><button class="bb-icon-btn" id="bb-add-close" type="button">×</button></div><div class="bb-modal-body"><form id="bb-add-form" class="bb-section"><div class="bb-form-grid"><div class="bb-field"><label for="add-ioid">IOID</label><input class="bb-input" id="add-ioid" name="ioid" required /></div><div class="bb-field"><label for="add-name">Tên</label><input class="bb-input" id="add-name" name="name" /></div><div class="bb-field bb-field-full"><label for="add-location">Vị trí</label><input class="bb-input" id="add-location" name="location" /></div><div class="bb-field"><label for="add-latitude">Vĩ độ</label><input class="bb-input" id="add-latitude" name="latitude" type="number" step="0.000001" /></div><div class="bb-field"><label for="add-longitude">Kinh độ</label><input class="bb-input" id="add-longitude" name="longitude" type="number" step="0.000001" /></div></div><div class="bb-form-actions"><button class="bb-btn" id="bb-add-cancel" type="button">Hủy</button><button class="bb-btn bb-btn-primary" type="submit">Lưu</button></div></form></div></div></div>
 
-  <div class="bb-modal" id="bb-settings-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-wide"><div class="bb-modal-head"><div><h2 id="bb-settings-title">Cài đặt lò</h2><p id="bb-settings-subtitle"></p></div><button class="bb-icon-btn" id="bb-settings-close" type="button">×</button></div><div class="bb-modal-body"><form id="bb-device-form" class="bb-section"><div class="bb-form-grid"><div class="bb-field"><label for="device-name">Tên</label><input class="bb-input" id="device-name" name="name" /></div><div class="bb-field"><label for="device-location">Vị trí</label><input class="bb-input" id="device-location" name="location" /></div><div class="bb-field"><label for="device-latitude">Vĩ độ</label><input class="bb-input" id="device-latitude" name="latitude" type="number" step="0.000001" /></div><div class="bb-field"><label for="device-longitude">Kinh độ</label><input class="bb-input" id="device-longitude" name="longitude" type="number" step="0.000001" /></div></div><div class="bb-form-actions"><span class="bb-small-chip" id="bb-coordinate-source">Mặc định</span><button class="bb-btn bb-btn-primary" type="submit">Lưu thông tin</button></div></form><section class="bb-section"><div class="bb-section-title"><strong>Tham số compact-v2</strong><span class="bb-small-chip" id="bb-settings-read-state">--</span></div><div class="bb-setting-grid" id="bb-settings-grid"></div></section><section class="bb-danger-zone"><button class="bb-btn bb-btn-danger" id="bb-delete-burner" type="button">Xóa lò</button></section></div></div></div>
+  <div class="bb-modal" id="bb-settings-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-wide"><div class="bb-modal-head"><div><h2 id="bb-settings-title">Cài đặt lò</h2><p id="bb-settings-subtitle"></p></div><button class="bb-icon-btn" id="bb-settings-close" type="button">×</button></div><div class="bb-modal-body"><form id="bb-device-form" class="bb-section bb-device-form"><div class="bb-section-title"><strong>Thông tin lò</strong><span class="bb-small-chip" id="bb-coordinate-source">Mặc định</span></div><div class="bb-form-grid bb-device-grid"><div class="bb-field bb-device-name"><label for="device-name">Tên</label><input class="bb-input" id="device-name" name="name" /></div><div class="bb-field bb-device-location"><label for="device-location">Vị trí</label><input class="bb-input" id="device-location" name="location" /></div><div class="bb-field"><label for="device-latitude">Vĩ độ</label><input class="bb-input" id="device-latitude" name="latitude" type="number" step="0.000001" /></div><div class="bb-field"><label for="device-longitude">Kinh độ</label><input class="bb-input" id="device-longitude" name="longitude" type="number" step="0.000001" /></div></div><div class="bb-form-actions"><button class="bb-btn bb-btn-primary" type="submit">Lưu thông tin</button></div></form><section class="bb-section"><div class="bb-section-title"><strong>Thông số vận hành</strong><span class="bb-small-chip" id="bb-settings-read-state">--</span></div><div class="bb-setting-grid" id="bb-settings-grid"></div></section><section class="bb-danger-zone"><button class="bb-btn bb-btn-danger" id="bb-delete-burner" type="button">Xóa lò</button></section></div></div></div>
 
   <div class="bb-toast-stack" id="bb-toast-stack" aria-live="polite"></div>
   <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
@@ -59,6 +59,6 @@
   <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START --><script></script><!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin="anonymous"></script>
-  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START --><script src="/sample_dashboards/biomass-burner-management/dashboard-runtime.js?v=2026.08.11.2"></script><!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START --><script src="/sample_dashboards/biomass-burner-management/dashboard-runtime.js?v=2026.08.11.3"></script><!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
 </body>
 </html>
