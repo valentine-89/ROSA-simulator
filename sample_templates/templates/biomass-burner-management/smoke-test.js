@@ -33,6 +33,14 @@ try {
   if (!statusMeta.publicApi.fields.includes('temperature') || statusMeta.publicApi.stream !== true) {
     throw new Error('Nullable temperature or realtime telemetry is missing');
   }
+  for (const page of pages) {
+    const publicApi = JSON.parse(page.meta).publicApi || {};
+    for (const macro of Object.values(publicApi.macros || {})) {
+      if (macro.params && Object.prototype.hasOwnProperty.call(macro.params, 'ioid')) {
+        throw new Error('Public page macro must not redeclare reserved ioid');
+      }
+    }
+  }
   if (db.prepare('SELECT COUNT(*) AS count FROM system_cmds').get().count !== 9) {
     throw new Error('Expected nine compact-v2 setting commands');
   }
@@ -52,6 +60,8 @@ try {
 
   const list = runMacro('biomass-fleet-list', { ...context, search: '', page_size: '50', offset: '0' });
   if (list.length !== 1 || list[0].ioid !== 'IO2729MB1') throw new Error('Fleet list failed');
+  const device = runMacro('biomass-fleet-device', { ...context, burner_id: 'IO2729MB1' });
+  if (device.length !== 1 || device[0].ioid !== 'IO2729MB1') throw new Error('Fleet device read failed');
   console.log('biomass compact-v2 smoke test passed');
 } finally {
   db.close();

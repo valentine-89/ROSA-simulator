@@ -113,14 +113,14 @@ ORDER BY ioid;
 addMacro.run('biomass-fleet-device', 'One fleet device metadata row.', `
 SELECT ioid, name, location, latitude, longitude, coordinate_source, created_at, updated_at
 FROM biomass_burners
-WHERE ioid = :ioid
+WHERE ioid = :burner_id
 LIMIT 1;
 `);
 
 addMacro.run('biomass-fleet-create', 'Register a compact-v2 burner with default or manual coordinates.', `
 INSERT INTO biomass_burners(ioid, name, location, latitude, longitude, coordinate_source, created_at, updated_at)
 VALUES (
-  :ioid,
+  :burner_id,
   COALESCE(:name, ''),
   COALESCE(:location, ''),
   CASE WHEN TRIM(COALESCE(:latitude, '')) = '' THEN 21.35 ELSE CAST(:latitude AS REAL) END,
@@ -129,7 +129,7 @@ VALUES (
   CAST(strftime('%s','now') AS INTEGER) * 1000,
   CAST(strftime('%s','now') AS INTEGER) * 1000
 );
-SELECT :ioid AS ioid;
+SELECT :burner_id AS ioid;
 `);
 
 addMacro.run('biomass-fleet-update', 'Update burner metadata and manual coordinates.', `
@@ -140,13 +140,13 @@ SET name = COALESCE(:name, ''),
     longitude = CASE WHEN TRIM(COALESCE(:longitude, '')) = '' THEN longitude ELSE CAST(:longitude AS REAL) END,
     coordinate_source = CASE WHEN TRIM(COALESCE(:latitude, '')) = '' OR TRIM(COALESCE(:longitude, '')) = '' THEN coordinate_source ELSE 'manual' END,
     updated_at = CAST(strftime('%s','now') AS INTEGER) * 1000
-WHERE ioid = :ioid;
-SELECT :ioid AS ioid WHERE changes() > 0;
+WHERE ioid = :burner_id;
+SELECT :burner_id AS ioid WHERE changes() > 0;
 `);
 
 addMacro.run('biomass-fleet-delete', 'Delete one burner from the fleet registry.', `
-DELETE FROM biomass_burners WHERE ioid = :ioid;
-SELECT :ioid AS ioid WHERE changes() > 0;
+DELETE FROM biomass_burners WHERE ioid = :burner_id;
+SELECT :burner_id AS ioid WHERE changes() > 0;
 `);
 
 addMacro.run('biomass-fleet-cache-gps', 'Persist a valid GPS fix observed through standard telemetry.', `
@@ -155,13 +155,13 @@ SET latitude = CAST(:latitude AS REAL),
     longitude = CAST(:longitude AS REAL),
     coordinate_source = 'gps',
     updated_at = CAST(strftime('%s','now') AS INTEGER) * 1000
-WHERE ioid = :ioid;
-SELECT :ioid AS ioid WHERE changes() > 0;
+WHERE ioid = :burner_id;
+SELECT :burner_id AS ioid WHERE changes() > 0;
 `);
 
 addMacro.run('biomass-setting-audit', 'Record the result of a standard system_cmds setting request.', `
 INSERT INTO biomass_setting_audit(ioid, setting_key, requested_value, state, actor, created_at)
-VALUES (:ioid, :setting_key, CAST(:value AS INTEGER), :state, COALESCE(:email, ''), CAST(strftime('%s','now') AS INTEGER) * 1000);
+VALUES (:burner_id, :setting_key, CAST(:value AS INTEGER), :state, COALESCE(:email, ''), CAST(strftime('%s','now') AS INTEGER) * 1000);
 SELECT last_insert_rowid() AS id;
 `);
 
@@ -216,29 +216,29 @@ const readMacros = {
     offset: { type: 'integer', min: 0, max: 1000000 }
   } },
   'biomass-fleet-map': { params: {} },
-  'biomass-fleet-device': { params: { ioid: { type: 'string', required: true, pattern: '^[A-Za-z0-9._-]{3,64}$' } } }
+  'biomass-fleet-device': { params: { burner_id: { type: 'string', required: true, pattern: '^[A-Za-z0-9._-]{3,64}$' } } }
 };
 const writeMacros = {
   'biomass-fleet-create': { params: {
-    ioid: { type: 'string', required: true, pattern: '^[A-Za-z0-9._-]{3,64}$' },
+    burner_id: { type: 'string', required: true, pattern: '^[A-Za-z0-9._-]{3,64}$' },
     name: { type: 'string', maxLength: 120 }, location: { type: 'string', maxLength: 240 },
     latitude: { type: 'number', min: -90, max: 90 },
     longitude: { type: 'number', min: -180, max: 180 }
   } },
   'biomass-fleet-update': { params: {
-    ioid: { type: 'string', required: true, pattern: '^[A-Za-z0-9._-]{3,64}$' },
+    burner_id: { type: 'string', required: true, pattern: '^[A-Za-z0-9._-]{3,64}$' },
     name: { type: 'string', maxLength: 120 }, location: { type: 'string', maxLength: 240 },
     latitude: { type: 'number', min: -90, max: 90 },
     longitude: { type: 'number', min: -180, max: 180 }
   } },
-  'biomass-fleet-delete': { params: { ioid: { type: 'string', required: true, pattern: '^[A-Za-z0-9._-]{3,64}$' } } },
+  'biomass-fleet-delete': { params: { burner_id: { type: 'string', required: true, pattern: '^[A-Za-z0-9._-]{3,64}$' } } },
   'biomass-fleet-cache-gps': { params: {
-    ioid: { type: 'string', required: true, pattern: '^[A-Za-z0-9._-]{3,64}$' },
+    burner_id: { type: 'string', required: true, pattern: '^[A-Za-z0-9._-]{3,64}$' },
     latitude: { type: 'number', required: true, min: -90, max: 90 },
     longitude: { type: 'number', required: true, min: -180, max: 180 }
   } },
   'biomass-setting-audit': { params: {
-    ioid: { type: 'string', required: true, pattern: '^[A-Za-z0-9._-]{3,64}$' },
+    burner_id: { type: 'string', required: true, pattern: '^[A-Za-z0-9._-]{3,64}$' },
     setting_key: { type: 'string', required: true, enum: ['1005','1006','1007','1008','1009','1010','1011','1012','1013'] },
     value: { type: 'integer', required: true, min: 30, max: 300 },
     state: { type: 'string', required: true, enum: ['confirmed', 'failed'] }
