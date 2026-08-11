@@ -9,15 +9,27 @@ fs.copyFileSync(source, temp);
 
 const db = new Database(temp);
 
+// Match ROSA's named-binding compilation so comments and literals are tested
+// against the same parameter behavior as the production macro runner.
+function compileNamedSql(sql, bindings) {
+  const params = [];
+  const compiledSql = sql.replace(/:([A-Za-z_][A-Za-z0-9_]*)/g, (_match, name) => {
+    params.push(Object.prototype.hasOwnProperty.call(bindings, name) ? bindings[name] : null);
+    return '?';
+  });
+  return { sql: compiledSql, params };
+}
+
 function runMacro(name, bindings) {
   const row = db.prepare('SELECT source FROM system_macros WHERE name = ? AND enabled = 1').get(name);
   if (!row) throw new Error(`Missing macro ${name}`);
   let rows = [];
   const transaction = db.transaction(() => {
     for (const statement of String(row.source).split(';').map((item) => item.trim()).filter(Boolean)) {
-      const prepared = db.prepare(statement);
-      if (/^(SELECT|WITH|PRAGMA)\b/i.test(statement)) rows = prepared.all(bindings);
-      else prepared.run(bindings);
+      const compiled = compileNamedSql(statement, bindings);
+      const prepared = db.prepare(compiled.sql);
+      if (/^(SELECT|WITH|PRAGMA)\b/i.test(statement)) rows = prepared.all(compiled.params);
+      else prepared.run(compiled.params);
     }
   });
   transaction();

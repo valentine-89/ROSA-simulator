@@ -171,7 +171,7 @@ INSERT INTO biomass_device_meter(ioid, burned_minutes, mode, reported_at)
 VALUES (
   CASE WHEN instr(:session_id, '@') > 0 THEN substr(:session_id, 1, instr(:session_id, '@') - 1) ELSE :session_id END,
   -- The standard device gateway removes c1="data" and the macro name,
-  -- then exposes the first two device values as :c1 and :c2.
+  -- then exposes the first two device values as c1 and c2 bindings.
   MAX(0, CAST(COALESCE(NULLIF(:c1, ''), '0') AS INTEGER)),
   MAX(0, MIN(4, CAST(COALESCE(NULLIF(:c2, ''), '0') AS INTEGER))),
   CAST(strftime('%s','now') AS INTEGER) * 1000
