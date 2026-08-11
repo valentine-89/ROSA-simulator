@@ -8,14 +8,14 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="anonymous" />
-  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/dashboard.css?v=2026.08.11.1" />
+  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/dashboard.css?v=2026.08.11.2" />
 </head>
 <body>
   <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
   <main class="bb-page" id="biomass-burner-root">
     <section class="bb-panel bb-topbar">
       <div class="bb-title"><h1 id="bb-title">Quản lý lò sinh khối</h1><p id="bb-subtitle"></p></div>
-      <div class="bb-toolbar"><div class="bb-status-chip" id="bb-status" data-state="loading">Đang tải</div><button class="bb-btn" id="bb-refresh" type="button">Làm mới</button><button class="bb-btn bb-btn-primary" id="bb-add-open" type="button">+ Thêm lò</button></div>
+      <div class="bb-toolbar"><div class="bb-status-chip" id="bb-status" data-state="loading">Đang tải</div><button class="bb-btn" id="bb-refresh" type="button">Làm mới</button><button class="bb-btn" id="bb-settings-open" type="button">Cài đặt lò</button><button class="bb-btn bb-btn-primary" id="bb-add-open" type="button">+ Thêm lò</button></div>
     </section>
 
     <section class="bb-kpi-grid" aria-label="Tổng quan">
@@ -48,7 +48,7 @@
 
   <div class="bb-modal" id="bb-add-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-sm"><div class="bb-modal-head"><h2>Thêm lò</h2><button class="bb-icon-btn" id="bb-add-close" type="button">×</button></div><div class="bb-modal-body"><form id="bb-add-form" class="bb-section"><div class="bb-form-grid"><div class="bb-field"><label for="add-ioid">IOID</label><input class="bb-input" id="add-ioid" name="ioid" required /></div><div class="bb-field"><label for="add-name">Tên</label><input class="bb-input" id="add-name" name="name" /></div><div class="bb-field bb-field-full"><label for="add-location">Vị trí</label><input class="bb-input" id="add-location" name="location" /></div><div class="bb-field"><label for="add-latitude">Vĩ độ</label><input class="bb-input" id="add-latitude" name="latitude" type="number" step="0.000001" /></div><div class="bb-field"><label for="add-longitude">Kinh độ</label><input class="bb-input" id="add-longitude" name="longitude" type="number" step="0.000001" /></div></div><div class="bb-form-actions"><button class="bb-btn" id="bb-add-cancel" type="button">Hủy</button><button class="bb-btn bb-btn-primary" type="submit">Lưu</button></div></form></div></div></div>
 
-  <div class="bb-modal" id="bb-settings-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-wide"><div class="bb-modal-head"><div><h2 id="bb-settings-title">Cài đặt lò</h2><p id="bb-settings-subtitle"></p></div><button class="bb-icon-btn" id="bb-settings-close" type="button">×</button></div><div class="bb-modal-body"><form id="bb-device-form" class="bb-section"><div class="bb-form-grid"><div class="bb-field"><label for="device-name">Tên</label><input class="bb-input" id="device-name" name="name" /></div><div class="bb-field"><label for="device-location">Vị trí</label><input class="bb-input" id="device-location" name="location" /></div><div class="bb-field"><label for="device-latitude">Vĩ độ</label><input class="bb-input" id="device-latitude" name="latitude" type="number" step="0.000001" /></div><div class="bb-field"><label for="device-longitude">Kinh độ</label><input class="bb-input" id="device-longitude" name="longitude" type="number" step="0.000001" /></div></div><div class="bb-form-actions"><button class="bb-btn bb-btn-primary" type="submit">Lưu thông tin</button></div></form><section class="bb-section"><div class="bb-section-title"><strong>Tham số compact-v2</strong><span class="bb-small-chip" id="bb-settings-read-state">--</span></div><div class="bb-setting-grid" id="bb-settings-grid"></div></section><section class="bb-danger-zone"><button class="bb-btn bb-btn-danger" id="bb-delete-burner" type="button">Xóa lò</button></section></div></div></div>
+  <div class="bb-modal" id="bb-settings-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-wide"><div class="bb-modal-head"><div><h2 id="bb-settings-title">Cài đặt lò</h2><p id="bb-settings-subtitle"></p></div><button class="bb-icon-btn" id="bb-settings-close" type="button">×</button></div><div class="bb-modal-body"><form id="bb-device-form" class="bb-section"><div class="bb-form-grid"><div class="bb-field"><label for="device-name">Tên</label><input class="bb-input" id="device-name" name="name" /></div><div class="bb-field"><label for="device-location">Vị trí</label><input class="bb-input" id="device-location" name="location" /></div><div class="bb-field"><label for="device-latitude">Vĩ độ</label><input class="bb-input" id="device-latitude" name="latitude" type="number" step="0.000001" /></div><div class="bb-field"><label for="device-longitude">Kinh độ</label><input class="bb-input" id="device-longitude" name="longitude" type="number" step="0.000001" /></div></div><div class="bb-form-actions"><span class="bb-small-chip" id="bb-coordinate-source">Mặc định</span><button class="bb-btn bb-btn-primary" type="submit">Lưu thông tin</button></div></form><section class="bb-section"><div class="bb-section-title"><strong>Tham số compact-v2</strong><span class="bb-small-chip" id="bb-settings-read-state">--</span></div><div class="bb-setting-grid" id="bb-settings-grid"></div></section><section class="bb-danger-zone"><button class="bb-btn bb-btn-danger" id="bb-delete-burner" type="button">Xóa lò</button></section></div></div></div>
 
   <div class="bb-toast-stack" id="bb-toast-stack" aria-live="polite"></div>
   <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
@@ -59,6 +59,6 @@
   <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START --><script></script><!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin="anonymous"></script>
-  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START --><script src="/sample_dashboards/biomass-burner-management/dashboard-runtime.js?v=2026.08.11.1"></script><!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START --><script src="/sample_dashboards/biomass-burner-management/dashboard-runtime.js?v=2026.08.11.2"></script><!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
 </body>
 </html>
