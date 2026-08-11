@@ -71,7 +71,8 @@ db.exec(`
   );
 `);
 
-const now = Date.now();
+// Keep the committed sample byte-reproducible across ROSA and simulator.
+const now = 1786400000000;
 db.prepare(`INSERT INTO biomass_burners(ioid, name, location, latitude, longitude, coordinate_source, created_at, updated_at)
   VALUES ('IO2729MB1', '', '', 21.35, 105.72, 'default', ?, ?)`).run(now, now);
 db.prepare(`INSERT INTO biomass_device_meter(ioid, burned_minutes, mode, reported_at)
@@ -203,11 +204,9 @@ WHERE ioid = CASE WHEN instr(:session_id, '@') > 0 THEN substr(:session_id, 1, i
 SELECT CASE WHEN changes() > 0 THEN 'OK' ELSE 'IGNORED' END AS c1;
 `);
 
-const telemetryFields = [
-  'mode', 'burned_minutes', 'primary_fan_pct', 'secondary_fan_pct', 'temperature', 'program_version',
-  'cfg_1005', 'cfg_1006', 'cfg_1007', 'cfg_1008', 'cfg_1009',
-  'cfg_1010', 'cfg_1011', 'cfg_1012', 'cfg_1013', 'latitude', 'longitude'
-];
+// Production D23 emits positional telemetry. This mapping belongs to the
+// template only; never add a biomass parser or action to ROSA core.
+const telemetryFields = Array.from({ length: 17 }, (_, index) => `c${index + 1}`);
 const readMacros = {
   'biomass-fleet-summary': { params: {} },
   'biomass-fleet-list': { params: {

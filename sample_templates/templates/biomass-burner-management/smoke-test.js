@@ -30,7 +30,7 @@ try {
     throw new Error('Public/admin page policy is invalid');
   }
   const statusMeta = JSON.parse(pages.find((row) => row.page_id === 'biomass-status').meta);
-  if (!statusMeta.publicApi.fields.includes('temperature') || statusMeta.publicApi.stream !== true) {
+  if (!statusMeta.publicApi.fields.includes('c5') || statusMeta.publicApi.fields.length !== 17 || statusMeta.publicApi.stream !== true) {
     throw new Error('Nullable temperature or realtime telemetry is missing');
   }
   for (const page of pages) {

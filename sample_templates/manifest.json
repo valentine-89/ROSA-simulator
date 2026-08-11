@@ -3084,7 +3084,7 @@
     {
       "id": "biomass-burner-management",
       "name": "Quản lý lò đốt sinh khối",
-      "description": "Dashboard production cho fleet lò sinh khối compact-v2, chỉ dùng các luồng chuẩn sẵn có của ROSA. Trạng thái hiện tại gửi bằng telemetry; meter bền vững và GPS cache gửi bằng các data macro riêng; dashboard quản lý fleet bằng system_macros, nhận cập nhật tức thời qua telemetry/realtime và ghi tham số qua iot-cmd/system_cmds rồi xác nhận bằng telemetry đọc lại. Không có API, manager, action c1, auth hay billing riêng cho template. Điều khiển đốt luôn chạy cục bộ và không phụ thuộc cloud.\n\nLệnh thiết bị chuẩn:\nD23,#801,,\"telemetry\",\"mode\"=#101,\"burned_minutes\"=#894,...\nD23,#801,,\"data\",\"IO-biomass-meter\",#894,#101",
+      "description": "Dashboard production cho fleet lò sinh khối compact-v2, chỉ dùng các luồng chuẩn sẵn có của ROSA. Trạng thái hiện tại gửi bằng telemetry; meter bền vững và GPS cache gửi bằng các data macro riêng; dashboard quản lý fleet bằng system_macros, nhận cập nhật tức thời qua telemetry/realtime và ghi tham số qua iot-cmd/system_cmds rồi xác nhận bằng telemetry đọc lại. Không có API, manager, action c1, auth hay billing riêng cho template. Điều khiển đốt luôn chạy cục bộ và không phụ thuộc cloud.\n\nLệnh thiết bị chuẩn (telemetry vị trí c1..c17):\nD23,#801,,\"telemetry\",#101,#894,#102,#103,\"\",#1003,...,#105,#106\nD23,#801,,\"data\",\"IO-biomass-meter\",#894,#101",
       "image": "/sample_dashboards/biomass-burner-management/sample.png",
       "html": "/sample_dashboards/biomass-burner-management/dashboard_vi.html",
       "setup": {
