@@ -1,0 +1,33 @@
+# Lò sinh khối compact-v2 trên ROSA
+
+## Ranh giới bắt buộc
+
+Template này tuyệt đối không được tạo route, manager, action `c1`, cơ chế xác thực, tính phí, cache hoặc realtime riêng trong ROSA core. Mọi thay đổi của template phải ghép từ các capability dùng chung đã có của ROSA. Nếu capability hiện có chưa đáp ứng được yêu cầu, phải dừng và thiết kế lại template; không sửa core chỉ để phục vụ lò sinh khối.
+
+## Luồng chuẩn
+
+- Trạng thái hiện tại: thiết bị gửi `c1="telemetry"` gồm mode, meter, quạt, version, cấu hình đã áp dụng và GPS tùy chọn.
+- Meter bền vững: thiết bị gửi riêng `c1="data"`, macro `IO-biomass-meter`. Macro chỉ upsert meter đơn điệu trong database riêng của thiết bị, không tạo bảng event cho heartbeat.
+- Fleet metadata: `biomass_burners` chỉ giữ IOID, tên, vị trí và tọa độ cache. Dashboard đọc/ghi bằng `system_macros` qua public IoT page macro API; trạng thái mỗi thiết bị được đọc bằng IoT page telemetry chuẩn với concurrency giới hạn.
+- Realtime: dashboard dùng `/api/iot-page-realtime/{ioid}/biomass-status` cho tối đa 50 lò trên trang hiện tại và đối soát toàn fleet mỗi 60 giây bằng public telemetry API có sẵn.
+- GPS: thiết bị có fix hợp lệ gửi riêng macro chuẩn `IO-biomass-gps`; thiết bị không có GPS hoặc chưa bắt sóng tiếp tục dùng tọa độ mặc định/thủ công đã cache trong SQLite.
+- Cài đặt: dashboard gọi `/api/iot-cmd/{ioid}/biomass-set-{key}`. `system_cmds` ghi biến rồi chạy N20; dashboard chỉ báo thành công khi telemetry đọc lại đúng giá trị.
+- Nhiệt độ: field tùy chọn. Khi thiết bị không gửi, dashboard không tạo giá trị giả.
+
+## Chương trình thiết bị
+
+- N10 gửi ngay telemetry và data meter sau khi mode thay đổi.
+- N20 chỉ gửi telemetry chuẩn.
+- N21 chạy từ `I99-1`, đếm phút bền ở `#894`, gửi mỗi 10 phút khi mode lớn hơn 0 và mỗi 30 phút khi OFF.
+- N24 chỉ gửi data macro cho meter; N25 chỉ gửi data macro GPS khi có fix hợp lệ.
+- Lỗi mạng chỉ làm mất lần gửi; không được chặn N1-N4/N101 hoặc điều khiển cục bộ.
+
+## Cấp phát thiết bị
+
+Mỗi lò phải được nạp database mẫu ở chế độ merge để có `system_pages`, `system_cmds`, `IO-biomass-meter` và `IO-biomass-gps`. Placeholder `<<syncid>>` phải được ROSA thay bằng SyncID của chính thiết bị. Không chia sẻ API key giữa các lò và không đưa API key vào dashboard/database/template.
+
+Chạy lại database mẫu:
+
+```bash
+node sample_templates/templates/biomass-burner-management/build-sample-db.js
+```

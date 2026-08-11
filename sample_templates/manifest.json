@@ -3084,7 +3084,7 @@
     {
       "id": "biomass-burner-management",
       "name": "Quản lý lò đốt sinh khối",
-      "description": "Dashboard production cho fleet lò sinh khối compact-v2. Thiết bị tự xác thực, báo snapshot theo lô vào SQLite và luôn giữ điều khiển đốt cục bộ. Nhiệt độ là tùy chọn; bảng tự ẩn cột khi fleet không có cảm biến. API fleet dùng tài khoản đăng nhập và credential thiết bị chỉ được lưu phía server.\n\nThiết bị báo cáo bằng c1=biomass-report, c2=fleet IOID, c3=tổng phút, c4=mode 0-4, c5/c6=quạt, c7=nhiệt độ hoặc rỗng, c8=version và c9=9 giá trị cấu hình.",
+      "description": "Dashboard production cho fleet lò sinh khối compact-v2, chỉ dùng các luồng chuẩn sẵn có của ROSA. Trạng thái hiện tại gửi bằng telemetry; meter bền vững và GPS cache gửi bằng các data macro riêng; dashboard quản lý fleet bằng system_macros, nhận cập nhật tức thời qua telemetry/realtime và ghi tham số qua iot-cmd/system_cmds rồi xác nhận bằng telemetry đọc lại. Không có API, manager, action c1, auth hay billing riêng cho template. Điều khiển đốt luôn chạy cục bộ và không phụ thuộc cloud.\n\nLệnh thiết bị chuẩn:\nD23,#801,,\"telemetry\",\"mode\"=#101,\"burned_minutes\"=#894,...\nD23,#801,,\"data\",\"IO-biomass-meter\",#894,#101",
       "image": "/sample_dashboards/biomass-burner-management/sample.png",
       "html": "/sample_dashboards/biomass-burner-management/dashboard_vi.html",
       "setup": {
@@ -3097,67 +3097,82 @@
         "burner",
         "database",
         "compact-v2",
-        "snapshot",
+        "telemetry",
+        "system-macros",
+        "system-cmds",
         "map"
       ],
       "defaultLocale": "vi",
       "default-fields": [
         {
-          "field": "#1005",
+          "field": "mode",
+          "kind": "number",
+          "min": 0,
+          "max": 4
+        },
+        {
+          "field": "burned_minutes",
+          "kind": "number",
+          "min": 0
+        },
+        {
+          "field": "primary_fan_pct",
+          "kind": "number",
+          "min": 30,
+          "max": 100
+        },
+        {
+          "field": "secondary_fan_pct",
+          "kind": "number",
+          "min": 30,
+          "max": 100
+        },
+        {
+          "field": "program_version",
+          "kind": "text"
+        },
+        {
+          "field": "cfg_1005",
           "kind": "number",
           "min": 30,
           "max": 180
         },
         {
-          "field": "#1006",
+          "field": "cfg_1006",
           "kind": "number",
           "min": 30,
           "max": 300
         },
         {
-          "field": "#1007",
+          "field": "cfg_1007",
           "kind": "number",
           "min": 30,
           "max": 100
         },
         {
-          "field": "#1008",
-          "kind": "number",
-          "min": 30,
-          "max": 100
-        },
-        {
-          "field": "#1009",
-          "kind": "number",
-          "min": 30,
-          "max": 100
-        },
-        {
-          "field": "#1010",
-          "kind": "number",
-          "min": 30,
-          "max": 100
-        },
-        {
-          "field": "#1011",
-          "kind": "number",
-          "min": 30,
-          "max": 100
-        },
-        {
-          "field": "#1012",
-          "kind": "number",
-          "min": 30,
-          "max": 100
-        },
-        {
-          "field": "#1013",
+          "field": "cfg_1013",
           "kind": "number",
           "min": 30,
           "max": 100
         }
       ],
-      "macro-examples": []
+      "macro-examples": [
+        {
+          "label": "Persist durable burner meter",
+          "payload": {
+            "macro": "IO-biomass-meter",
+            "c2": "0",
+            "c3": "0"
+          },
+          "gatewayCommand": "D23,#801,,\"data\",\"IO-biomass-meter\",#894,#101"
+        },
+        {
+          "label": "Read fleet summary",
+          "payload": {
+            "macro": "biomass-fleet-summary"
+          }
+        }
+      ]
     },
     {
       "id": "factory-production",
