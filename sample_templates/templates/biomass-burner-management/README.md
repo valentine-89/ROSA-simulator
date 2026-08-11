@@ -16,7 +16,7 @@ Template này tuyệt đối không được tạo route, manager, action `c1`, 
 
 ## Chương trình thiết bị
 
-- N10 gửi ngay telemetry và data meter sau khi mode thay đổi.
+- N10 bắt cả sự kiện cấp nguồn `I99-1` và mọi thay đổi I1-I4, đọc lại trạng thái thực của bốn ngõ vào để nhận cả OFF, rồi gửi ngay telemetry và data meter.
 - N20 chỉ gửi telemetry chuẩn.
 - N21 chạy từ `I99-1`, đếm phút bền ở `#894`, gửi mỗi 10 phút khi mode lớn hơn 0 và mỗi 30 phút khi OFF.
 - N24 chỉ gửi data macro cho meter; N25 chỉ gửi data macro GPS khi có fix hợp lệ.
