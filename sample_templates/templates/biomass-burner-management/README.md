@@ -27,6 +27,8 @@ Template này tuyệt đối không được tạo route, manager, action `c1`, 
 
 Mỗi lò phải được nạp database mẫu ở chế độ merge để có `system_pages`, `system_cmds`, `IO-biomass-meter` và `IO-biomass-gps`. Placeholder `<<syncid>>` phải được ROSA thay bằng SyncID của chính thiết bị. Không chia sẻ API key giữa các lò và không đưa API key vào dashboard/database/template.
 
+Chương trình thiết bị chỉ có hai group: `0 = Quy trình` chứa N1/N2/N3/N4/N10 và `1 = Chương trình con` chứa N20/N21/N23/N24/N25/N101. Khi ghi bằng API phải gửi JSON UTF-8 và dùng đúng hai tên group này; validator từ chối group thừa hoặc chuỗi mojibake.
+
 Chạy lại database mẫu:
 
 ```bash
