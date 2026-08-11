@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80" role="img" aria-label="Lò online">
-  <path fill="#16a34a" d="M32 79C27 69 10 53 10 34a22 22 0 1 1 44 0c0 19-17 35-22 45Z"/>
-  <circle cx="32" cy="33" r="18" fill="#f0fdf4"/>
-  <path fill="#15803d" d="M22 24h20v22H22zM37 17h6v9h-6z"/>
-  <path fill="#dcfce7" d="M26 29h12v11H26z"/>
-  <path fill="none" stroke="#16a34a" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="m26 34 4 4 8-9"/>
-</svg>

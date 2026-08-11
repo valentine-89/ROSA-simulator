@@ -1029,12 +1029,12 @@ body { padding: 10px; }
 .bb-live-pill[data-state="burning"] { color: #9a3412; background: #ffedd5; }
 .bb-live-pill[data-state="burning"]::before { background: #f97316; }
 
-.bb-map-item-icon { width: 30px; height: 38px; object-fit: contain; }
+.bb-map-item-icon { width: 34px; height: 34px; object-fit: contain; }
 .bb-map-item-state { font-size: 0.7rem; font-weight: 900; white-space: nowrap; }
 .bb-map-item[data-state="offline"] .bb-map-item-state { color: #64748b; }
 .bb-map-item[data-state="online"] .bb-map-item-state { color: #16a34a; }
 .bb-map-item[data-state="burning"] .bb-map-item-state { color: #f97316; }
-.bb-map-legend img { width: 20px; height: 25px; object-fit: contain; }
+.bb-map-legend img { width: 24px; height: 24px; object-fit: contain; }
 .bb-map-popup-status[data-state="offline"] { background: #e2e8f0; color: #475569; }
 .bb-map-popup-status[data-state="online"] { background: #dcfce7; color: #166534; }
 .bb-map-popup-status[data-state="burning"] { background: #ffedd5; color: #9a3412; }

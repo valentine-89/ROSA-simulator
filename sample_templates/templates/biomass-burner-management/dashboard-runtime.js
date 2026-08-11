@@ -4,9 +4,9 @@
   var runtimeScript = document.currentScript;
   var assetBase = runtimeScript && runtimeScript.src ? new URL(".", runtimeScript.src).href : "";
   var iconUrls = {
-    offline: assetBase + "burner-offline.svg",
-    online: assetBase + "burner-online.svg",
-    burning: assetBase + "burner-burning.svg"
+    offline: assetBase + "burner-offline.png",
+    online: assetBase + "burner-online.png",
+    burning: assetBase + "burner-burning.png"
   };
   var cfg = { title: "Quản lý lò sinh khối", subtitle: "", fleetIoid: "", syncId: "", pageSize: 50, refreshMs: 60000, mapCenterLat: 21.35, mapCenterLng: 105.72, mapZoom: 8 };
   try { cfg = Object.assign(cfg, JSON.parse(node && node.textContent || "{}")); } catch (_) {}
@@ -59,7 +59,7 @@
   }
   function leafletIcon(visualState) {
     if (!window.L) return null;
-    if (!state.mapIcons[visualState]) state.mapIcons[visualState] = window.L.icon({ iconUrl: iconUrl(visualState), iconSize: [46, 58], iconAnchor: [23, 56], popupAnchor: [0, -50] });
+    if (!state.mapIcons[visualState]) state.mapIcons[visualState] = window.L.icon({ iconUrl: iconUrl(visualState), iconSize: [52, 52], iconAnchor: [26, 50], popupAnchor: [0, -45] });
     return state.mapIcons[visualState];
   }
   function renderMap(items) {

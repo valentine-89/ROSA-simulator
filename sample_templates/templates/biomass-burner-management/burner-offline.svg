@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80" role="img" aria-label="Lò mất kết nối">
-  <path fill="#94a3b8" d="M32 79C27 69 10 53 10 34a22 22 0 1 1 44 0c0 19-17 35-22 45Z"/>
-  <circle cx="32" cy="33" r="18" fill="#f8fafc"/>
-  <path fill="#64748b" d="M22 24h20v22H22zM37 17h6v9h-6z"/>
-  <path fill="#cbd5e1" d="M26 29h12v11H26z"/>
-  <path fill="none" stroke="#ef4444" stroke-linecap="round" stroke-width="4" d="m25 26 14 14m0-14L25 40"/>
-</svg>

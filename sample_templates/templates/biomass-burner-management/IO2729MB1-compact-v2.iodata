@@ -38,7 +38,7 @@
   ],
   "io_programs": [
     {"io_group_id":0,"io_group":"Quy trình","io_group_desc":"","io_n_list":[
-      {"n_id":"1","n_mode":"1","n_content":"D1O1\nW#1005\nD1O2D2O3\nW3\nD1O6\nW#1006\nD4O7,#1007\nD4#102,#1007\nD2O1\nD2O2D1O3\nW4\nD1O6\nD4O8,#1010\nD4#103,#1010","n_natural":"","n_name":"khởi động lò","n_desc":""},
+      {"n_id":"1","n_mode":"1","n_content":"D1O1\nW#1005\nD1O2D2O3\nW3\nD1O6\nW#1006\nD4O7,#1007\nD4#102,#1007\nD2O1\nD2O2D1O3\nW4\nD2O6\nD4O8,#1010\nD4#103,#1010","n_natural":"","n_name":"khởi động lò","n_desc":""},
       {"n_id":"2","n_mode":"1","n_content":"D4O7,#1007\nD4O8,#1008\nD4#102,#1007\nD4#103,#1008","n_natural":"","n_name":"chạy lửa lớn","n_desc":""},
       {"n_id":"3","n_mode":"1","n_content":"D4O7,#1009\nD4O8,#1011\nD4#102,#1009\nD4#103,#1011","n_natural":"","n_name":"chạy lửa vừa","n_desc":""},
       {"n_id":"4","n_mode":"1","n_content":"D4O7,#1012\nD4O8,#1013\nD4#102,#1012\nD4#103,#1013","n_natural":"","n_name":"chạy lửa nhỏ","n_desc":""},
