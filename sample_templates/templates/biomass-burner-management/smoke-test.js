@@ -46,13 +46,13 @@ try {
   }
 
   const context = { session_id: 'IO2729MB1@redacted', sync_id: 'test', ioid: 'IO2729MB1' };
-  runMacro('IO-biomass-meter', { ...context, c2: '12', c3: '1' });
-  runMacro('IO-biomass-meter', { ...context, c2: '7', c3: '0' });
+  runMacro('IO-biomass-meter', { ...context, c1: '12', c2: '1' });
+  runMacro('IO-biomass-meter', { ...context, c1: '7', c2: '0' });
   const meter = db.prepare('SELECT burned_minutes, mode FROM biomass_device_meter WHERE ioid = ?').get('IO2729MB1');
   if (meter.burned_minutes !== 12 || meter.mode !== 0) throw new Error('Meter monotonicity failed');
 
-  runMacro('IO-biomass-gps', { ...context, c2: '10.7769', c3: '106.7009' });
-  runMacro('IO-biomass-gps', { ...context, c2: '0', c3: '0' });
+  runMacro('IO-biomass-gps', { ...context, c1: '10.7769', c2: '106.7009' });
+  runMacro('IO-biomass-gps', { ...context, c1: '0', c2: '0' });
   const burner = db.prepare('SELECT latitude, longitude, coordinate_source FROM biomass_burners WHERE ioid = ?').get('IO2729MB1');
   if (burner.latitude !== 10.7769 || burner.longitude !== 106.7009 || burner.coordinate_source !== 'gps') {
     throw new Error('GPS cache/fallback failed');

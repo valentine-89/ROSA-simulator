@@ -170,8 +170,10 @@ addMacro.run('IO-biomass-meter', 'Device durable meter sent with the standard c1
 INSERT INTO biomass_device_meter(ioid, burned_minutes, mode, reported_at)
 VALUES (
   CASE WHEN instr(:session_id, '@') > 0 THEN substr(:session_id, 1, instr(:session_id, '@') - 1) ELSE :session_id END,
-  MAX(0, CAST(COALESCE(NULLIF(:c2, ''), '0') AS INTEGER)),
-  MAX(0, MIN(4, CAST(COALESCE(NULLIF(:c3, ''), '0') AS INTEGER))),
+  -- The standard device gateway removes c1="data" and the macro name,
+  -- then exposes the first two device values as :c1 and :c2.
+  MAX(0, CAST(COALESCE(NULLIF(:c1, ''), '0') AS INTEGER)),
+  MAX(0, MIN(4, CAST(COALESCE(NULLIF(:c2, ''), '0') AS INTEGER))),
   CAST(strftime('%s','now') AS INTEGER) * 1000
 )
 ON CONFLICT(ioid) DO UPDATE SET
@@ -191,16 +193,16 @@ VALUES (
   CAST(strftime('%s','now') AS INTEGER) * 1000
 );
 UPDATE biomass_burners
-SET latitude = CAST(:c2 AS REAL),
-    longitude = CAST(:c3 AS REAL),
+SET latitude = CAST(:c1 AS REAL),
+    longitude = CAST(:c2 AS REAL),
     coordinate_source = 'gps',
     updated_at = CAST(strftime('%s','now') AS INTEGER) * 1000
 WHERE ioid = CASE WHEN instr(:session_id, '@') > 0 THEN substr(:session_id, 1, instr(:session_id, '@') - 1) ELSE :session_id END
+  AND TRIM(COALESCE(:c1, '')) <> ''
   AND TRIM(COALESCE(:c2, '')) <> ''
-  AND TRIM(COALESCE(:c3, '')) <> ''
-  AND CAST(:c2 AS REAL) BETWEEN -90 AND 90
-  AND CAST(:c3 AS REAL) BETWEEN -180 AND 180
-  AND NOT (CAST(:c2 AS REAL) = 0 AND CAST(:c3 AS REAL) = 0);
+  AND CAST(:c1 AS REAL) BETWEEN -90 AND 90
+  AND CAST(:c2 AS REAL) BETWEEN -180 AND 180
+  AND NOT (CAST(:c1 AS REAL) = 0 AND CAST(:c2 AS REAL) = 0);
 SELECT CASE WHEN changes() > 0 THEN 'OK' ELSE 'IGNORED' END AS c1;
 `);
 

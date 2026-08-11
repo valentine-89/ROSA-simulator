@@ -7,7 +7,7 @@ Template này tuyệt đối không được tạo route, manager, action `c1`, 
 ## Luồng chuẩn
 
 - Trạng thái hiện tại: thiết bị gửi action `telemetry` chuẩn. Firmware D23 production phát 17 giá trị vị trí; sau khi dispatcher bỏ action, snapshot `c1..c17` lần lượt là mode, meter, hai quạt, nhiệt độ, version, chín cấu hình và GPS. Ánh xạ này nằm hoàn toàn trong template, tuyệt đối không thêm parser/action/API riêng vào ROSA core.
-- Meter bền vững: thiết bị gửi riêng `c1="data"`, macro `IO-biomass-meter`. Macro chỉ upsert meter đơn điệu trong database riêng của thiết bị, không tạo bảng event cho heartbeat.
+- Meter bền vững: thiết bị gửi riêng `c1="data"`, macro `IO-biomass-meter`. Theo ánh xạ chuẩn của gateway, hai giá trị sau tên macro được đọc tại `c1/c2` (meter/mode). Macro chỉ upsert meter đơn điệu trong database riêng của thiết bị, không tạo bảng event cho heartbeat.
 - Fleet metadata: `biomass_burners` chỉ giữ IOID, tên, vị trí và tọa độ cache. Dashboard đọc/ghi bằng `system_macros` qua public IoT page macro API; trạng thái mỗi thiết bị được đọc bằng IoT page telemetry chuẩn với concurrency giới hạn.
 - Realtime: dashboard dùng `/api/iot-page-realtime/{ioid}/biomass-status` cho tối đa 50 lò trên trang hiện tại và đối soát toàn fleet mỗi 60 giây bằng public telemetry API có sẵn.
 - GPS: thiết bị có fix hợp lệ gửi riêng macro chuẩn `IO-biomass-gps`; thiết bị không có GPS hoặc chưa bắt sóng tiếp tục dùng tọa độ mặc định/thủ công đã cache trong SQLite.
