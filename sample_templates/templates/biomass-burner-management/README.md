@@ -6,7 +6,7 @@ Template này tuyệt đối không được tạo route, manager, action `c1`, 
 
 ## Luồng chuẩn
 
-- Trạng thái hiện tại: thiết bị gửi action `telemetry` chuẩn. Firmware D23 production phát 17 giá trị vị trí; sau khi dispatcher bỏ action, snapshot `c1..c17` lần lượt là mode, meter, hai quạt, nhiệt độ, version, chín cấu hình và GPS. Ánh xạ này nằm hoàn toàn trong template, tuyệt đối không thêm parser/action/API riêng vào ROSA core.
+- Trạng thái hiện tại: thiết bị gửi action `telemetry` chuẩn. Firmware D23 production phát 20 giá trị vị trí; sau khi dispatcher bỏ action, snapshot `c1..c20` lần lượt là mode, meter, hai quạt, nhiệt độ, version, mười hai cấu hình và GPS. Ánh xạ này nằm hoàn toàn trong template, tuyệt đối không thêm parser/action/API riêng vào ROSA core.
 - Meter bền vững: thiết bị gửi riêng `c1="data"`, macro `IO-biomass-meter`. Theo ánh xạ chuẩn của gateway, hai giá trị sau tên macro được đọc tại `c1/c2` (meter/mode). Macro chỉ upsert meter đơn điệu trong database riêng của thiết bị, không tạo bảng event cho heartbeat.
 - Fleet metadata: `biomass_burners` chỉ giữ IOID, tên, vị trí và tọa độ cache. Dashboard đọc/ghi bằng `system_macros` qua public IoT page macro API; trạng thái mỗi thiết bị được đọc bằng IoT page telemetry chuẩn với concurrency giới hạn.
 - Realtime: dashboard dùng `/api/iot-page-realtime/{ioid}/biomass-status` cho tối đa 50 lò trên trang hiện tại và đối soát toàn fleet mỗi 60 giây bằng public telemetry API có sẵn.
@@ -16,18 +16,19 @@ Template này tuyệt đối không được tạo route, manager, action `c1`, 
 
 ## Chương trình thiết bị
 
-- N10 bắt cả sự kiện cấp nguồn `I99-1` và mọi thay đổi I1-I4, đọc lại trạng thái thực của bốn ngõ vào để nhận cả OFF, rồi gửi ngay telemetry và data meter.
-- Mức quạt chuẩn: tối thiểu 45%; HIGH 100/100, MEDIUM 90/80, LOW 70/45 và quạt thứ cấp lúc START 45%.
+- N10 bắt cả sự kiện cấp nguồn `I99-1` và mọi thay đổi bộ chọn 1-5, đọc lại mode để nhận cả OFF, rồi gửi ngay telemetry và data meter.
+- Mức quạt mặc định theo bảng vận hành: START 70/20, HIGH 50/100, MEDIUM 40/80, LOW 20/50 và CHỜ TẮT 0/50.
+- N5 tắt sơ cấp, giữ thứ cấp theo `#1015` trong `#1016` giây, sau đó tắt toàn bộ quạt và chuyển mode về OFF để biểu thị đã sang ủ than. Lò không có cảm biến nhiệt nên tuyệt đối không thêm giai đoạn đốt rạc than.
 - N20 chỉ gửi telemetry chuẩn.
 - N21 chạy từ `I99-1`, đếm phút bền ở `#894`, gửi mỗi 10 phút khi mode lớn hơn 0 và mỗi 30 phút khi OFF.
 - N24 chỉ gửi data macro cho meter; N25 chỉ gửi data macro GPS khi có fix hợp lệ.
-- Lỗi mạng chỉ làm mất lần gửi; không được chặn N1-N4/N101 hoặc điều khiển cục bộ.
+- Lỗi mạng chỉ làm mất lần gửi; không được chặn N1-N5/N101 hoặc điều khiển cục bộ.
 
 ## Cấp phát thiết bị
 
 Mỗi lò phải được nạp database mẫu ở chế độ merge để có `system_pages`, `system_cmds`, `IO-biomass-meter` và `IO-biomass-gps`. Placeholder `<<syncid>>` phải được ROSA thay bằng SyncID của chính thiết bị. Không chia sẻ API key giữa các lò và không đưa API key vào dashboard/database/template.
 
-Chương trình thiết bị chỉ có hai group: `0 = Quy trình` chứa N1/N2/N3/N4/N10 và `1 = Chương trình con` chứa N20/N21/N23/N24/N25/N101. Khi ghi bằng API phải gửi JSON UTF-8 và dùng đúng hai tên group này; validator từ chối group thừa hoặc chuỗi mojibake.
+Chương trình thiết bị chỉ có hai group: `0 = Quy trình` chứa N1/N2/N3/N4/N5/N10 và `1 = Chương trình con` chứa N20/N21/N23/N24/N25/N101. Khi ghi bằng API phải gửi JSON UTF-8 và dùng đúng hai tên group này; validator từ chối group thừa hoặc chuỗi mojibake.
 
 Chạy lại database mẫu:
 

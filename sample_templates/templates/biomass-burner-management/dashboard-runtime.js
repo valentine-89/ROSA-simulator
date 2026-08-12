@@ -16,15 +16,18 @@
     burning: assetBase + "burner-burning.png"
   };
   var settingDefinitions = [
-    { key: "1005", label: "Điện trở mồi", minimum: 30, maximum: 180, unit: "s" },
-    { key: "1006", label: "Quạt mồi", minimum: 30, maximum: 300, unit: "s" },
-    { key: "1007", label: "Lớn - sơ cấp", minimum: 45, maximum: 100, unit: "%" },
-    { key: "1008", label: "Lớn - thứ cấp", minimum: 45, maximum: 100, unit: "%" },
-    { key: "1009", label: "Vừa - sơ cấp", minimum: 45, maximum: 100, unit: "%" },
-    { key: "1010", label: "Khởi động - thứ cấp", minimum: 45, maximum: 100, unit: "%" },
-    { key: "1011", label: "Vừa - thứ cấp", minimum: 45, maximum: 100, unit: "%" },
-    { key: "1012", label: "Nhỏ - sơ cấp", minimum: 45, maximum: 100, unit: "%" },
-    { key: "1013", label: "Nhỏ - thứ cấp", minimum: 45, maximum: 100, unit: "%" }
+    { key: "1005", group: "Mồi lò", label: "Điện trở", minimum: 30, maximum: 180, unit: "s" },
+    { key: "1006", group: "Mồi lò", label: "Quạt mồi", minimum: 30, maximum: 300, unit: "s" },
+    { key: "1014", group: "Mồi lò", label: "Sơ cấp", minimum: 60, maximum: 80, unit: "%" },
+    { key: "1010", group: "Mồi lò", label: "Thứ cấp", choices: [0, 20], unit: "%" },
+    { key: "1007", group: "Lửa lớn", label: "Sơ cấp", minimum: 40, maximum: 50, unit: "%" },
+    { key: "1008", group: "Lửa lớn", label: "Thứ cấp", minimum: 80, maximum: 100, unit: "%" },
+    { key: "1009", group: "Lửa vừa", label: "Sơ cấp", minimum: 30, maximum: 40, unit: "%" },
+    { key: "1011", group: "Lửa vừa", label: "Thứ cấp", minimum: 60, maximum: 80, unit: "%" },
+    { key: "1012", group: "Lửa nhỏ", label: "Sơ cấp", minimum: 20, maximum: 30, unit: "%" },
+    { key: "1013", group: "Lửa nhỏ", label: "Thứ cấp", minimum: 40, maximum: 60, unit: "%" },
+    { key: "1015", group: "Tắt lò", label: "Thứ cấp chờ", minimum: 40, maximum: 60, unit: "%" },
+    { key: "1016", group: "Tắt lò", label: "Thời gian chờ", minimum: 60, maximum: 3600, unit: "s" }
   ];
   var cfg = {
     title: "Quản lý lò sinh khối", subtitle: "", fleetIoid: "", pageSize: 50, refreshMs: 60000,
@@ -43,7 +46,7 @@
 
   function esc(value) { return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
   function number(value) { return Number(value || 0).toLocaleString("vi-VN"); }
-  function modeLabel(mode) { return ["OFF", "START", "HIGH", "MEDIUM", "LOW"][Number(mode)] || "OFF"; }
+  function modeLabel(mode) { return ["OFF", "START", "HIGH", "MEDIUM", "LOW", "CHỜ TẮT"][Number(mode)] || "OFF"; }
   function dateTime(value) { return value ? new Date(Number(value)).toLocaleString("vi-VN") : "--"; }
   function coordinateSourceLabel(source) { return source === "gps" ? "GPS" : source === "manual" ? "Thủ công" : "Mặc định"; }
   function validCoordinates(lat, lng) { return Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) && Number(lat) >= -90 && Number(lat) <= 90 && Number(lng) >= -180 && Number(lng) <= 180 && !(Number(lat) === 0 && Number(lng) === 0); }
@@ -52,7 +55,7 @@
   function setStatus(text, status) { els.status.textContent = text; els.status.dataset.state = status; }
   function semanticTelemetry(payload) {
     var source = payload || {};
-    var names = ["mode", "burned_minutes", "primary_fan_pct", "secondary_fan_pct", "temperature", "program_version", "cfg_1005", "cfg_1006", "cfg_1007", "cfg_1008", "cfg_1009", "cfg_1010", "cfg_1011", "cfg_1012", "cfg_1013", "latitude", "longitude"];
+    var names = ["mode", "burned_minutes", "primary_fan_pct", "secondary_fan_pct", "temperature", "program_version", "cfg_1005", "cfg_1006", "cfg_1007", "cfg_1008", "cfg_1009", "cfg_1010", "cfg_1011", "cfg_1012", "cfg_1013", "cfg_1014", "cfg_1015", "cfg_1016", "latitude", "longitude"];
     var normalized = Object.assign({}, source);
     names.forEach(function (name, index) { if (normalized[name] == null && source["c" + (index + 1)] != null) normalized[name] = source["c" + (index + 1)]; });
     return normalized;
@@ -74,7 +77,7 @@
     var gps = validCoordinates(payload.latitude, payload.longitude);
     return Object.assign({}, row, {
       mode: mode, stale: stale, lastReportedAt: lastReportedAt || null,
-      burnedMinutes: Number(payload.burned_minutes || 0), primaryFanPct: Number(payload.primary_fan_pct || 45), secondaryFanPct: Number(payload.secondary_fan_pct || 45),
+      burnedMinutes: Number(payload.burned_minutes || 0), primaryFanPct: Number(payload.primary_fan_pct || 0), secondaryFanPct: Number(payload.secondary_fan_pct || 0),
       temperature: payload.temperature == null || payload.temperature === "" ? null : Number(payload.temperature), programVersion: String(payload.program_version || ""),
       latitude: gps ? Number(payload.latitude) : Number(row.latitude), longitude: gps ? Number(payload.longitude) : Number(row.longitude), coordinateSource: gps ? "gps" : String(row.coordinate_source || "default"), payload: payload
     });
@@ -98,7 +101,27 @@
   async function cacheGps(rows) { await Promise.all(rows.map(async function (row) { var latest = state.telemetry[row.ioid]; var payload = latest && latest.payload || {}; if (!validCoordinates(payload.latitude, payload.longitude)) return; if (String(row.coordinate_source) === "gps" && Number(row.latitude) === Number(payload.latitude) && Number(row.longitude) === Number(payload.longitude)) return; try { await runMacro(cfg.fleetAdminPageId, "biomass-fleet-cache-gps", { burner_id: row.ioid, latitude: Number(payload.latitude), longitude: Number(payload.longitude) }); row.latitude = Number(payload.latitude); row.longitude = Number(payload.longitude); row.coordinate_source = "gps"; } catch (_) {} })); }
   async function refresh() { if (state.loading) return; state.loading = true; setStatus("Đang tải", "loading"); try { var offset = (state.page - 1) * state.pageSize; var results = await Promise.all([runMacro(cfg.fleetViewPageId, "biomass-fleet-summary"), runMacro(cfg.fleetViewPageId, "biomass-fleet-list", { search: els.search.value.trim(), page_size: state.pageSize, offset: offset }), runMacro(cfg.fleetViewPageId, "biomass-fleet-map")]); state.total = Number(results[0][0] && results[0][0].total || 0); state.listRows = results[1] || []; state.mapRows = results[2] || []; var ioids = state.mapRows.map(function (row) { return String(row.ioid); }); await mapLimit(ioids, 6, async function (ioid) { state.telemetry[ioid] = await readTelemetry(ioid); }); await cacheGps(state.mapRows); renderAll(); syncStreams(state.listRows.slice(0, 50).map(function (row) { return String(row.ioid); })); setStatus("Đã cập nhật", "online"); } catch (error) { setStatus("Không thể tải", "error"); notify(error.message, true); } finally { state.loading = false; clearTimeout(state.timer); state.timer = setTimeout(refresh, cfg.refreshMs); } }
 
-  async function openSettings(ioid) { try { var results = await Promise.all([runMacro(cfg.fleetViewPageId, "biomass-fleet-device", { burner_id: ioid }), readTelemetry(ioid)]); var rows = results[0]; if (!rows.length) throw new Error("Không tìm thấy lò"); if (results[1]) state.telemetry[ioid] = results[1]; var item = enriched(rows[0]); state.current = item; els.settingsTitle.textContent = "Cài đặt " + ioid; els.settingsSubtitle.textContent = deviceStateLabel(item) + (Number(item.mode) > 0 ? " · " + modeLabel(item.mode) : ""); els.coordinateSource.textContent = coordinateSourceLabel(item.coordinateSource); ["name", "location", "latitude", "longitude"].forEach(function (key) { els.deviceForm.elements[key].value = item[key] == null ? "" : item[key]; }); els.settingsGrid.innerHTML = settingDefinitions.map(function (definition) { var value = item.payload["cfg_" + definition.key]; return "<form class=\"bb-setting-card\" data-setting-key=\"" + definition.key + "\"><label><span>" + esc(definition.label) + "</span><code>#" + definition.key + "</code></label><div class=\"bb-setting-control\"><input class=\"bb-input\" name=\"value\" type=\"number\" min=\"" + definition.minimum + "\" max=\"" + definition.maximum + "\" value=\"" + esc(value == null ? "" : value) + "\"><span>" + definition.unit + "</span><button class=\"bb-btn\" type=\"submit\">Ghi</button></div></form>"; }).join(""); els.settingsState.textContent = results[1] ? "Đã đọc telemetry" : "Chưa có telemetry"; showModal(els.settingsModal, true); } catch (error) { notify(error.message, true); } }
+  function validSettingValue(definition, value) {
+    if (!Number.isInteger(value)) return false;
+    if (Array.isArray(definition.choices)) return definition.choices.includes(value);
+    return value >= definition.minimum && value <= definition.maximum;
+  }
+  function settingControl(definition, value) {
+    if (Array.isArray(definition.choices)) {
+      return "<select class=\"bb-input\" name=\"value\">" + definition.choices.map(function (choice) { return "<option value=\"" + choice + "\"" + (Number(value) === choice ? " selected" : "") + ">" + choice + "</option>"; }).join("") + "</select>";
+    }
+    return "<input class=\"bb-input\" name=\"value\" type=\"number\" step=\"1\" min=\"" + definition.minimum + "\" max=\"" + definition.maximum + "\" value=\"" + esc(value == null ? "" : value) + "\">";
+  }
+  function settingsMarkup(payload) {
+    var previousGroup = "";
+    return settingDefinitions.map(function (definition) {
+      var heading = definition.group !== previousGroup ? "<div class=\"bb-setting-group-title\">" + esc(definition.group) + "</div>" : "";
+      previousGroup = definition.group;
+      var value = payload["cfg_" + definition.key];
+      return heading + "<form class=\"bb-setting-card\" data-setting-key=\"" + definition.key + "\"><label><span>" + esc(definition.label) + "</span><code>#" + definition.key + "</code></label><div class=\"bb-setting-control\">" + settingControl(definition, value) + "<span>" + definition.unit + "</span><button class=\"bb-btn\" type=\"submit\">Ghi</button></div></form>";
+    }).join("");
+  }
+  async function openSettings(ioid) { try { var results = await Promise.all([runMacro(cfg.fleetViewPageId, "biomass-fleet-device", { burner_id: ioid }), readTelemetry(ioid)]); var rows = results[0]; if (!rows.length) throw new Error("Không tìm thấy lò"); if (results[1]) state.telemetry[ioid] = results[1]; var item = enriched(rows[0]); state.current = item; els.settingsTitle.textContent = "Cài đặt " + ioid; els.settingsSubtitle.textContent = deviceStateLabel(item) + (Number(item.mode) > 0 ? " · " + modeLabel(item.mode) : ""); els.coordinateSource.textContent = coordinateSourceLabel(item.coordinateSource); ["name", "location", "latitude", "longitude"].forEach(function (key) { els.deviceForm.elements[key].value = item[key] == null ? "" : item[key]; }); els.settingsGrid.innerHTML = settingsMarkup(item.payload); els.settingsState.textContent = results[1] ? "Đã đọc telemetry" : "Chưa có telemetry"; showModal(els.settingsModal, true); } catch (error) { notify(error.message, true); } }
   async function waitSetting(ioid, key, expected) { for (var attempt = 0; attempt < 8; attempt += 1) { await new Promise(function (resolve) { setTimeout(resolve, 1000); }); var latest = await readTelemetry(ioid); if (latest) state.telemetry[ioid] = latest; if (latest && Number(latest.payload["cfg_" + key]) === expected) return true; } return false; }
   async function auditSetting(ioid, key, value, resultState) { try { await runMacro(cfg.fleetAdminPageId, "biomass-setting-audit", { burner_id: ioid, setting_key: key, value: value, state: resultState }); } catch (_) {} }
 
@@ -115,7 +138,7 @@
   document.addEventListener("click", function (event) { var button = event.target.closest("[data-settings]"); if (button) openSettings(button.dataset.settings); });
   els.mapList.onclick = function (event) { var button = event.target.closest("[data-map-ioid]"); if (button) openSettings(button.dataset.mapIoid); };
   els.deviceForm.onsubmit = async function (event) { event.preventDefault(); if (!state.current) return; var form = new FormData(els.deviceForm); try { await runMacro(cfg.fleetAdminPageId, "biomass-fleet-update", { burner_id: state.current.ioid, name: String(form.get("name") || "").trim(), location: String(form.get("location") || "").trim(), latitude: Number(form.get("latitude")), longitude: Number(form.get("longitude")) }); notify("Đã lưu"); await openSettings(state.current.ioid); refresh(); } catch (error) { notify(error.message, true); } };
-  els.settingsGrid.onsubmit = async function (event) { event.preventDefault(); var form = event.target.closest("[data-setting-key]"); if (!form || !state.current) return; var key = form.dataset.settingKey; var definition = settingDefinitions.find(function (item) { return item.key === key; }); var value = Number(form.elements.value.value); if (!definition || !Number.isInteger(value) || value < definition.minimum || value > definition.maximum) { notify("Giá trị không hợp lệ", true); return; } var button = form.querySelector("button"); button.disabled = true; els.settingsState.textContent = "Đang ghi"; try { await jsonRequest("/api/iot-cmd/" + encodeURIComponent(state.current.ioid) + "/biomass-set-" + key, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: value }) }); var matched = await waitSetting(state.current.ioid, key, value); if (!matched) throw new Error("Chưa nhận được telemetry đọc lại"); await auditSetting(state.current.ioid, key, value, "confirmed"); els.settingsState.textContent = "Đã đọc lại"; notify("Đã cập nhật #" + key); scheduleLiveRender(); } catch (error) { await auditSetting(state.current.ioid, key, value, "failed"); els.settingsState.textContent = "Ghi lỗi"; notify(error.message, true); } finally { button.disabled = false; } };
+  els.settingsGrid.onsubmit = async function (event) { event.preventDefault(); var form = event.target.closest("[data-setting-key]"); if (!form || !state.current) return; var key = form.dataset.settingKey; var definition = settingDefinitions.find(function (item) { return item.key === key; }); var value = Number(form.elements.value.value); if (!definition || !validSettingValue(definition, value)) { notify("Giá trị không hợp lệ", true); return; } var button = form.querySelector("button"); button.disabled = true; els.settingsState.textContent = "Đang ghi"; try { await jsonRequest("/api/iot-cmd/" + encodeURIComponent(state.current.ioid) + "/biomass-set-" + key, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: value }) }); var matched = await waitSetting(state.current.ioid, key, value); if (!matched) throw new Error("Chưa nhận được telemetry đọc lại"); await auditSetting(state.current.ioid, key, value, "confirmed"); els.settingsState.textContent = "Đã đọc lại"; notify("Đã cập nhật #" + key); scheduleLiveRender(); } catch (error) { await auditSetting(state.current.ioid, key, value, "failed"); els.settingsState.textContent = "Ghi lỗi"; notify(error.message, true); } finally { button.disabled = false; } };
   els.deleteBurner.onclick = async function () { if (!state.current || !confirm("Xóa " + state.current.ioid + "?")) return; try { await runMacro(cfg.fleetAdminPageId, "biomass-fleet-delete", { burner_id: state.current.ioid }); showModal(els.settingsModal, false); notify("Đã xóa lò"); refresh(); } catch (error) { notify(error.message, true); } };
   window.addEventListener("beforeunload", function () { clearTimeout(state.timer); clearTimeout(state.renderTimer); closeStreams(); });
   document.querySelectorAll("[data-burner-icon]").forEach(function (image) { image.src = iconUrl(image.dataset.burnerIcon); });

@@ -1050,6 +1050,16 @@ body { padding: 10px; }
 .bb-form-actions { gap: 6px; }
 .bb-section-title { padding-bottom: 4px; }
 .bb-setting-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.bb-setting-group-title {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  padding: 3px 2px 1px;
+  color: color-mix(in srgb, var(--theme-text) 70%, transparent);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 .bb-setting-card { padding: 8px; gap: 6px; }
 .bb-setting-card > label { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 0; }
 .bb-setting-card > label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.76rem; font-weight: 850; }

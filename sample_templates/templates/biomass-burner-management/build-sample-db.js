@@ -27,7 +27,7 @@ db.exec(`
   CREATE TABLE biomass_device_meter (
     ioid TEXT PRIMARY KEY,
     burned_minutes INTEGER NOT NULL DEFAULT 0 CHECK (burned_minutes >= 0),
-    mode INTEGER NOT NULL DEFAULT 0 CHECK (mode BETWEEN 0 AND 4),
+    mode INTEGER NOT NULL DEFAULT 0 CHECK (mode BETWEEN 0 AND 5),
     reported_at INTEGER NOT NULL
   );
 
@@ -173,7 +173,7 @@ VALUES (
   -- The standard device gateway removes c1="data" and the macro name,
   -- then exposes the first two device values as c1 and c2 bindings.
   MAX(0, CAST(COALESCE(NULLIF(:c1, ''), '0') AS INTEGER)),
-  MAX(0, MIN(4, CAST(COALESCE(NULLIF(:c2, ''), '0') AS INTEGER))),
+  MAX(0, MIN(5, CAST(COALESCE(NULLIF(:c2, ''), '0') AS INTEGER))),
   CAST(strftime('%s','now') AS INTEGER) * 1000
 )
 ON CONFLICT(ioid) DO UPDATE SET
@@ -208,7 +208,7 @@ SELECT CASE WHEN changes() > 0 THEN 'OK' ELSE 'IGNORED' END AS c1;
 
 // Production D23 emits positional telemetry. This mapping belongs to the
 // template only; never add a biomass parser or action to ROSA core.
-const telemetryFields = Array.from({ length: 17 }, (_, index) => `c${index + 1}`);
+const telemetryFields = Array.from({ length: 20 }, (_, index) => `c${index + 1}`);
 const readMacros = {
   'biomass-fleet-summary': { params: {} },
   'biomass-fleet-list': { params: {
@@ -240,8 +240,8 @@ const writeMacros = {
   } },
   'biomass-setting-audit': { params: {
     burner_id: { type: 'string', required: true, pattern: '^[A-Za-z0-9._-]{3,64}$' },
-    setting_key: { type: 'string', required: true, enum: ['1005','1006','1007','1008','1009','1010','1011','1012','1013'] },
-    value: { type: 'integer', required: true, min: 30, max: 300 },
+    setting_key: { type: 'string', required: true, enum: ['1005','1006','1007','1008','1009','1010','1011','1012','1013','1014','1015','1016'] },
+    value: { type: 'integer', required: true, min: 0, max: 3600 },
     state: { type: 'string', required: true, enum: ['confirmed', 'failed'] }
   } }
 };
@@ -253,16 +253,26 @@ addPage.run('biomass-fleet-view', pageHtml, 0, 'Biomass fleet view', JSON.string
 addPage.run('biomass-fleet-admin', pageHtml, 1, 'Biomass fleet admin', JSON.stringify({ publicApi: { macros: writeMacros, rateLimit: { limit: 120, windowMs: 60000 } } }));
 
 const settingDefs = [
-  ['1005', 30, 180], ['1006', 30, 300], ['1007', 45, 100], ['1008', 45, 100],
-  ['1009', 45, 100], ['1010', 45, 100], ['1011', 45, 100], ['1012', 45, 100], ['1013', 45, 100]
+  { key: '1005', schema: { type: 'integer', required: true, min: 30, max: 180 } },
+  { key: '1006', schema: { type: 'integer', required: true, min: 30, max: 300 } },
+  { key: '1007', schema: { type: 'integer', required: true, min: 40, max: 50 } },
+  { key: '1008', schema: { type: 'integer', required: true, min: 80, max: 100 } },
+  { key: '1009', schema: { type: 'integer', required: true, min: 30, max: 40 } },
+  { key: '1010', schema: { type: 'integer', required: true, enum: [0, 20] } },
+  { key: '1011', schema: { type: 'integer', required: true, min: 60, max: 80 } },
+  { key: '1012', schema: { type: 'integer', required: true, min: 20, max: 30 } },
+  { key: '1013', schema: { type: 'integer', required: true, min: 40, max: 60 } },
+  { key: '1014', schema: { type: 'integer', required: true, min: 60, max: 80 } },
+  { key: '1015', schema: { type: 'integer', required: true, min: 40, max: 60 } },
+  { key: '1016', schema: { type: 'integer', required: true, min: 60, max: 3600 } }
 ];
 const addCommand = db.prepare(`INSERT INTO system_cmds(cmd_id, command_template, require_email, require_phone, sync_id, params_schema, enabled)
   VALUES (?, ?, 1, 0, '<<syncid>>', ?, 1)`);
-for (const [key, min, max] of settingDefs) {
+for (const { key, schema } of settingDefs) {
   addCommand.run(
     `biomass-set-${key}`,
     `D4#${key},<<value>>D5N20`,
-    JSON.stringify({ value: { type: 'integer', required: true, min, max } })
+    JSON.stringify({ value: schema })
   );
 }
 
