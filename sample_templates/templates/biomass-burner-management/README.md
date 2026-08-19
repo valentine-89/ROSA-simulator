@@ -25,7 +25,7 @@ Không tạo `biomass-report` hoặc bất kỳ action riêng nào.
 
 ## Trang IoT nạp nhiên liệu
 
-- Mỗi lò có page `biomass-refuel-<ioid>` trong database fleet và URL `/iot-page/IO2729MB1/<page-id>`.
+- Mỗi lò có page ID ngẫu nhiên 32 ký tự hex trong database fleet và URL công khai `https://rosa.technology/iot-page/IO2729MB1/<page-id>`; không tạo page ID từ IOID.
 - Trang chỉ gọi `/api/iot-page-macro/{fleetIoid}/{pageId}` với hai macro allowlist; context `burner_id` do server chèn và browser không được gửi lại.
 - Public body tối đa 1 KB, rate limit 20 request/phút theo IP + IOID/page/macro.
 - QR chỉ chứa URL trang IoT, không chứa API key hoặc SyncID. QR được render bằng asset local.

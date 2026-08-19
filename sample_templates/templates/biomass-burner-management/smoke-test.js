@@ -97,6 +97,12 @@ try {
   for (const token of ['biomass-fuel-lot-create-batch', 'biomass-purchased-minutes-set', 'downloadCsv', 'BiomassQr']) {
     if (!runtimeSource.includes(token)) throw new Error(`Dashboard feature ${token} is missing`);
   }
+  for (const obsolete of ['Chờ thiết bị đồng bộ', 'bb-settings-open', 'data-map-ioid', 'item.programVersion || "--"']) {
+    if (dashboardSource.includes(obsolete) || runtimeSource.includes(obsolete)) throw new Error(`Obsolete dashboard control or label remains: ${obsolete}`);
+  }
+  if (!runtimeSource.includes('https://rosa.technology') || !dashboardSource.includes('"publicBaseUrl":"https://rosa.technology"')) {
+    throw new Error('Production refuel base URL is missing');
+  }
   for (const token of ['sessionStorage', 'window.close()', 'client_request_id', 'pendingKey', 'br-success-view']) {
     if (!refuelSource.includes(token)) throw new Error(`Refuel safety ${token} is missing`);
   }
@@ -120,7 +126,7 @@ try {
   if (statusMeta.publicApi.fields.length !== 23 || !statusMeta.publicApi.fields.includes('c21') || !statusMeta.publicApi.fields.includes('c23')) {
     throw new Error('Purchased-minute telemetry c21 is missing');
   }
-  const refuelPage = pages.find((row) => row.page_id === 'biomass-refuel-io2729mb1');
+  const refuelPage = pages.find((row) => /^[0-9a-f]{32}$/.test(row.page_id));
   const refuelMeta = JSON.parse(refuelPage.meta).publicApi;
   if (refuelMeta.rateLimit.limit !== 20 || refuelMeta.maxBodyBytes !== 1024 || refuelMeta.context.burner_id !== 'IO2729MB1') {
     throw new Error('Refuel page scope or rate limit is invalid');
@@ -172,7 +178,7 @@ try {
   }
 
   const newBurner = runMacro('biomass-fleet-create', { ...context, burner_id: 'IO2729TEST', name: 'Lò test', location: '', latitude: '', longitude: '' })[0];
-  if (newBurner.refuel_page_id !== 'biomass-refuel-io2729test') throw new Error('New burner refuel page id failed');
+  if (!/^[0-9a-f]{32}$/.test(newBurner.refuel_page_id) || newBurner.refuel_page_id === refuelPage.page_id) throw new Error('New burner random refuel page id failed');
   const createdPage = db.prepare('SELECT meta FROM system_pages WHERE page_id = ?').get(newBurner.refuel_page_id);
   if (!createdPage || JSON.parse(createdPage.meta).publicApi.context.burner_id !== 'IO2729TEST') throw new Error('New burner page context failed');
 

@@ -426,12 +426,6 @@ textarea:disabled {
   box-shadow: none;
 }
 
-.bb-map-item:hover,
-.bb-map-item:focus-visible {
-  border-color: color-mix(in srgb, var(--theme-primary) 55%, transparent);
-  background: color-mix(in srgb, var(--theme-primary) 10%, transparent);
-}
-
 .bb-map-item-dot {
   width: 12px;
   height: 12px;
@@ -1038,7 +1032,6 @@ body { padding: 10px; }
 .bb-map-popup-status[data-state="offline"] { background: #e2e8f0; color: #475569; }
 .bb-map-popup-status[data-state="online"] { background: #dcfce7; color: #166534; }
 .bb-map-popup-status[data-state="burning"] { background: #ffedd5; color: #9a3412; }
-.bb-map-popup .bb-btn { width: 100%; margin-top: 10px; }
 
 .bb-modal-card-wide { width: min(100%, 960px); }
 .bb-modal-head { padding: 10px 12px; }
@@ -1113,7 +1106,6 @@ body { padding: 10px; }
 .bb-table-heading { padding: 2px 2px 8px; }
 .bb-row-actions { display: flex; flex-wrap: wrap; gap: 5px; }
 .bb-row-actions .bb-btn { min-height: 32px; padding: 0 8px; font-size: 0.72rem; }
-.bb-credit-warn { color: #b45309 !important; font-weight: 850; }
 
 .bb-credit-strip {
   display: grid;

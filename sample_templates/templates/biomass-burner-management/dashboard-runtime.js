@@ -31,7 +31,7 @@
     { key: "1016", group: "Tắt lò", label: "Thời gian chờ", minimum: 60, maximum: 3600, unit: "s" }
   ];
   var cfg = {
-    title: "Quản lý lò sinh khối", subtitle: "", fleetIoid: "", pageSize: 50, refreshMs: 60000,
+    title: "Quản lý lò sinh khối", subtitle: "", fleetIoid: "", publicBaseUrl: "https://rosa.technology", pageSize: 50, refreshMs: 60000,
     fleetViewPageId: "biomass-fleet-view", fleetAdminPageId: "biomass-fleet-admin",
     deviceStatusPageId: "biomass-status", mapCenterLat: 21.35, mapCenterLng: 105.72, mapZoom: 8
   };
@@ -43,7 +43,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var els = {
     title: $("bb-title"), subtitle: $("bb-subtitle"), status: $("bb-status"), refresh: $("bb-refresh"),
-    settingsOpen: $("bb-settings-open"), addOpen: $("bb-add-open"), lotOpen: $("bb-lot-open"), lotSectionOpen: $("bb-lot-section-open"),
+    addOpen: $("bb-add-open"), lotOpen: $("bb-lot-open"), lotSectionOpen: $("bb-lot-section-open"),
     addModal: $("bb-add-modal"), addForm: $("bb-add-form"), addClose: $("bb-add-close"), addCancel: $("bb-add-cancel"),
     search: $("bb-search"), pageSize: $("bb-page-size"), apply: $("bb-apply-filter"), body: $("bb-table-body"), empty: $("bb-empty"),
     prev: $("bb-prev"), next: $("bb-next"), pageInfo: $("bb-page-info"), total: $("bb-kpi-total"), active: $("bb-kpi-active"),
@@ -96,7 +96,7 @@
   function publicMacroUrl(pageId) { return "/api/iot-page-macro/" + encodeURIComponent(cfg.fleetIoid) + "/" + encodeURIComponent(pageId); }
   function telemetryUrl(ioid) { return "/api/iot-page-telemetry/" + encodeURIComponent(ioid) + "/" + encodeURIComponent(cfg.deviceStatusPageId); }
   function realtimeUrl(ioid) { return "/api/iot-page-realtime/" + encodeURIComponent(ioid) + "/" + encodeURIComponent(cfg.deviceStatusPageId) + "?historyMs=0"; }
-  function refuelUrl(item) { return location.origin + "/iot-page/" + encodeURIComponent(cfg.fleetIoid) + "/" + encodeURIComponent(item.refuel_page_id); }
+  function refuelUrl(item) { var base = String(cfg.publicBaseUrl || "https://rosa.technology").replace(/\/+$/, ""); return base + "/iot-page/" + encodeURIComponent(cfg.fleetIoid) + "/" + encodeURIComponent(item.refuel_page_id); }
   async function jsonRequest(url, options) { var response = await fetch(url, Object.assign({ credentials: "same-origin", cache: "no-store" }, options || {})); var data = await response.json().catch(function () { return {}; }); if (!response.ok) throw new Error(data.message || data.error || "Yêu cầu thất bại"); return data; }
   async function runMacro(pageId, macro, params) { var data = await jsonRequest(publicMacroUrl(pageId), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ macro: macro, params: params || {} }) }); return Array.isArray(data.rows) ? data.rows : []; }
   async function readTelemetry(ioid) { try { var data = await jsonRequest(telemetryUrl(ioid)); return data && data.c2 ? { serverTime: Number(data.c2.serverTime || 0), payload: semanticTelemetry(data.c2.payload) } : null; } catch (_) { return null; } }
@@ -112,11 +112,9 @@
     var gps = validCoordinates(payload.latitude, payload.longitude);
     var purchased = Number(row.purchased_minutes || 0);
     var burned = Number(row.burned_minutes == null ? payload.burned_minutes || 0 : row.burned_minutes);
-    var cache = payload.purchased_minutes_cache == null || payload.purchased_minutes_cache === "" ? null : Number(payload.purchased_minutes_cache);
     return Object.assign({}, row, {
       mode: mode, stale: stale, lastReportedAt: lastReportedAt || null, burnedMinutes: burned,
-      purchasedMinutes: purchased, remainingMinutes: Math.max(purchased - burned, 0), cachedPurchasedMinutes: cache,
-      creditSynced: cache != null && cache === purchased,
+      purchasedMinutes: purchased, remainingMinutes: Math.max(purchased - burned, 0),
       primaryFanPct: Number(payload.primary_fan_pct || 0), secondaryFanPct: Number(payload.secondary_fan_pct || 0),
       temperature: payload.temperature == null || payload.temperature === "" ? null : Number(payload.temperature),
       programVersion: String(payload.program_version || ""),
@@ -138,11 +136,10 @@
     els.empty.hidden = items.length > 0;
     els.body.innerHTML = items.map(function (item) {
       var visual = deviceState(item); var modeText = visual === "burning" ? " · " + modeLabel(item.mode) : "";
-      var sync = item.creditSynced ? "" : "<small class=\"bb-credit-warn\">Chờ thiết bị đồng bộ</small>";
-      return "<tr data-ioid=\"" + esc(item.ioid) + "\"><td><strong>" + esc(item.ioid) + "</strong><small>" + esc(item.programVersion || "--") + "</small></td>" +
+      return "<tr data-ioid=\"" + esc(item.ioid) + "\"><td><strong>" + esc(item.ioid) + "</strong></td>" +
         "<td><strong>" + esc(item.name || "--") + "</strong><small>" + esc(item.location || "--") + "</small></td>" +
         "<td><span class=\"bb-live-pill\" data-state=\"" + visual + "\">" + esc(deviceStateLabel(item) + modeText) + "</span></td>" +
-        "<td>" + number(item.burnedMinutes) + "</td><td><strong>" + number(item.purchasedMinutes) + "</strong>" + sync + "</td>" +
+        "<td>" + number(item.burnedMinutes) + "</td><td><strong>" + number(item.purchasedMinutes) + "</strong></td>" +
         "<td>" + number(item.remainingMinutes) + "</td><td>" + number(item.primaryFanPct) + "% / " + number(item.secondaryFanPct) + "%</td>" +
         "<td>" + esc(dateTime(item.lastReportedAt)) + "</td><td><div class=\"bb-row-actions\"><button class=\"bb-btn\" data-settings=\"" + esc(item.ioid) + "\">Cài đặt</button><button class=\"bb-btn\" data-refuel=\"" + esc(item.ioid) + "\">Nạp</button><button class=\"bb-btn\" data-qr=\"" + esc(item.ioid) + "\">QR</button></div></td></tr>";
     }).join("");
@@ -163,8 +160,8 @@
   function leafletIcon(visual) { if (!window.L) return null; if (!state.mapIcons[visual]) state.mapIcons[visual] = window.L.icon({ iconUrl: iconUrl(visual), iconSize: [52, 52], iconAnchor: [26, 50], popupAnchor: [0, -45] }); return state.mapIcons[visual]; }
   function renderMap(items) {
     ensureMap(); if (!state.map) return; state.markers.clearLayers(); els.mapCount.textContent = items.length + " lò có tọa độ";
-    els.mapList.innerHTML = items.slice(0, 100).map(function (item) { var visual = deviceState(item); return "<button class=\"bb-map-item\" data-state=\"" + visual + "\" data-map-ioid=\"" + esc(item.ioid) + "\"><img class=\"bb-map-item-icon\" src=\"" + esc(iconUrl(visual)) + "\" alt=\"\"><span class=\"bb-map-item-main\"><strong>" + esc(item.ioid) + "</strong><span>" + esc(item.location || item.name || coordinateSourceLabel(item.coordinateSource)) + "</span></span><span class=\"bb-map-item-state\">" + esc(deviceStateLabel(item)) + "</span></button>"; }).join("");
-    items.forEach(function (item) { if (!validCoordinates(item.latitude, item.longitude)) return; var visual = deviceState(item); var marker = window.L.marker([item.latitude, item.longitude], { title: item.ioid, icon: leafletIcon(visual) }); marker.bindPopup("<div class=\"bb-map-popup\"><div class=\"bb-map-popup-head\"><strong>" + esc(item.ioid) + "</strong><span class=\"bb-map-popup-status\" data-state=\"" + visual + "\">" + esc(deviceStateLabel(item)) + "</span></div><div class=\"bb-map-popup-grid\"><span>Đã mua</span><b>" + number(item.purchasedMinutes) + " phút</b><span>Còn lại</span><b>" + number(item.remainingMinutes) + " phút</b></div><button class=\"bb-btn\" data-settings=\"" + esc(item.ioid) + "\">Cài đặt</button></div>"); marker._biomassIoid = item.ioid; state.markers.addLayer(marker); });
+    els.mapList.innerHTML = items.slice(0, 100).map(function (item) { var visual = deviceState(item); return "<div class=\"bb-map-item\" data-state=\"" + visual + "\"><img class=\"bb-map-item-icon\" src=\"" + esc(iconUrl(visual)) + "\" alt=\"\"><span class=\"bb-map-item-main\"><strong>" + esc(item.ioid) + "</strong><span>" + esc(item.location || item.name || coordinateSourceLabel(item.coordinateSource)) + "</span></span><span class=\"bb-map-item-state\">" + esc(deviceStateLabel(item)) + "</span></div>"; }).join("");
+    items.forEach(function (item) { if (!validCoordinates(item.latitude, item.longitude)) return; var visual = deviceState(item); var marker = window.L.marker([item.latitude, item.longitude], { title: item.ioid, icon: leafletIcon(visual) }); marker.bindPopup("<div class=\"bb-map-popup\"><div class=\"bb-map-popup-head\"><strong>" + esc(item.ioid) + "</strong><span class=\"bb-map-popup-status\" data-state=\"" + visual + "\">" + esc(deviceStateLabel(item)) + "</span></div><div class=\"bb-map-popup-grid\"><span>Đã mua</span><b>" + number(item.purchasedMinutes) + " phút</b><span>Còn lại</span><b>" + number(item.remainingMinutes) + " phút</b></div></div>"); marker._biomassIoid = item.ioid; state.markers.addLayer(marker); });
   }
   function renderAll() { var mapItems = state.mapRows.map(enriched); var listItems = state.listRows.map(enriched); renderSummary(mapItems); renderTable(listItems); renderMap(mapItems); renderLots(); }
   function scheduleLiveRender() { clearTimeout(state.renderTimer); state.renderTimer = setTimeout(renderAll, 200); }
@@ -208,7 +205,6 @@
   function downloadCsv(rows) { var lines = ["code,description,purchased_minutes,created_at"].concat(rows.map(function (row) { return [row.code, row.description, row.purchased_minutes, new Date(Number(row.created_at)).toISOString()].map(function (value) { return '"' + String(value).replace(/"/g, '""') + '"'; }).join(","); })); var blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" }); var link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "lo-nhien-lieu-" + new Date().toISOString().slice(0, 10) + ".csv"; link.click(); setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000); }
 
   els.refresh.onclick = refresh;
-  els.settingsOpen.onclick = function () { var target = state.current && state.current.ioid || (state.listRows.length === 1 ? state.listRows[0].ioid : ""); if (target) openSettings(target); else notify("Chọn lò trong danh sách", true); };
   els.apply.onclick = function () { state.page = 1; state.pageSize = Number(els.pageSize.value); refresh(); };
   els.prev.onclick = function () { if (state.page > 1) { state.page -= 1; refresh(); } };
   els.next.onclick = function () { if (state.page * state.pageSize < state.total) { state.page += 1; refresh(); } };
@@ -239,7 +235,6 @@
   els.settingsGrid.onsubmit = async function (event) { event.preventDefault(); var form = event.target.closest("[data-setting-key]"); if (!form || !state.current) return; var key = form.dataset.settingKey; var definition = settingDefinitions.find(function (item) { return item.key === key; }); var value = Number(form.elements.value.value); if (!definition || !validSettingValue(definition, value)) { notify("Giá trị không hợp lệ", true); return; } var button = form.querySelector("button"); button.disabled = true; els.settingsState.textContent = "Đang ghi"; try { await jsonRequest("/api/iot-cmd/" + encodeURIComponent(state.current.ioid) + "/biomass-set-" + key, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: value }) }); var matched = await waitSetting(state.current.ioid, key, value); if (!matched) throw new Error("Chưa nhận được telemetry đọc lại"); await auditSetting(state.current.ioid, key, value, "confirmed"); els.settingsState.textContent = "Đã đọc lại"; notify("Đã cập nhật #" + key); scheduleLiveRender(); } catch (error) { await auditSetting(state.current.ioid, key, value, "failed"); els.settingsState.textContent = "Ghi lỗi"; notify(error.message, true); } finally { button.disabled = false; } };
   els.deleteBurner.onclick = async function () { if (!state.current || !confirm("Xóa " + state.current.ioid + "?")) return; try { await runMacro(cfg.fleetAdminPageId, "biomass-fleet-delete", { burner_id: state.current.ioid }); showModal(els.settingsModal, false); notify("Đã xóa lò"); state.current = null; refresh(); } catch (error) { notify(error.message, true); } };
   document.addEventListener("click", function (event) { var settings = event.target.closest("[data-settings]"); if (settings) openSettings(settings.dataset.settings); var refuel = event.target.closest("[data-refuel]"); if (refuel) { var refuelItem = findItem(refuel.dataset.refuel); if (refuelItem) window.open(refuelUrl(refuelItem), "_blank", "noopener"); } var qr = event.target.closest("[data-qr]"); if (qr) openQr(findItem(qr.dataset.qr)); });
-  els.mapList.onclick = function (event) { var button = event.target.closest("[data-map-ioid]"); if (button) openSettings(button.dataset.mapIoid); };
   window.addEventListener("beforeunload", function () { clearTimeout(state.timer); clearTimeout(state.renderTimer); closeStreams(); });
   document.querySelectorAll("[data-burner-icon]").forEach(function (image) { image.src = iconUrl(image.dataset.burnerIcon); });
   refresh();

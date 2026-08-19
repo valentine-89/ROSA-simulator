@@ -16,7 +16,7 @@ db.exec(`
     ioid TEXT PRIMARY KEY, name TEXT NOT NULL DEFAULT '', location TEXT NOT NULL DEFAULT '',
     latitude REAL NOT NULL DEFAULT 21.35, longitude REAL NOT NULL DEFAULT 105.72,
     coordinate_source TEXT NOT NULL DEFAULT 'default' CHECK (coordinate_source IN ('default','manual','gps')),
-    refuel_page_id TEXT NOT NULL UNIQUE, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+    refuel_page_id TEXT NOT NULL UNIQUE CHECK (length(refuel_page_id)=32 AND refuel_page_id NOT GLOB '*[^0-9a-f]*'), created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
   );
   CREATE TABLE biomass_device_meter (
     ioid TEXT PRIMARY KEY, burned_minutes INTEGER NOT NULL DEFAULT 0 CHECK (burned_minutes >= 0),
@@ -93,8 +93,9 @@ const refuelMetaTemplate = JSON.stringify({
 db.prepare('INSERT INTO biomass_page_templates(page_type,html,meta_template) VALUES (?,?,?)').run('refuel',refuelHtml,refuelMetaTemplate);
 
 const now = 1786400000000;
+const initialRefuelPageId = 'd4f8a92c6b1e47a0bd395f82c713e064';
 db.prepare(`INSERT INTO biomass_burners(ioid,name,location,latitude,longitude,coordinate_source,refuel_page_id,created_at,updated_at)
- VALUES ('IO2729MB1','','',21.35,105.72,'default','biomass-refuel-io2729mb1',?,?)`).run(now,now);
+ VALUES ('IO2729MB1','','',21.35,105.72,'default',?, ?,?)`).run(initialRefuelPageId,now,now);
 db.prepare(`INSERT INTO biomass_device_meter(ioid,burned_minutes,purchased_minutes,mode,reported_at)
  VALUES ('IO2729MB1',0,0,0,?)`).run(now);
 
@@ -136,14 +137,14 @@ VALUES (:burner_id,COALESCE(:name,''),COALESCE(:location,''),
  CASE WHEN trim(COALESCE(:latitude,''))='' THEN 21.35 ELSE CAST(:latitude AS REAL) END,
  CASE WHEN trim(COALESCE(:longitude,''))='' THEN 105.72 ELSE CAST(:longitude AS REAL) END,
  CASE WHEN trim(COALESCE(:latitude,''))='' OR trim(COALESCE(:longitude,''))='' THEN 'default' ELSE 'manual' END,
- 'biomass-refuel-'||lower(:burner_id),CAST(strftime('%s','now') AS INTEGER)*1000,CAST(strftime('%s','now') AS INTEGER)*1000);
+ lower(hex(randomblob(16))),CAST(strftime('%s','now') AS INTEGER)*1000,CAST(strftime('%s','now') AS INTEGER)*1000);
 INSERT INTO biomass_device_meter(ioid,burned_minutes,purchased_minutes,mode,reported_at)
 VALUES (:burner_id,0,0,0,CAST(strftime('%s','now') AS INTEGER)*1000);
 INSERT INTO system_pages(page_id,html,require_email,require_phone,sync_id,enabled,title,meta)
-SELECT 'biomass-refuel-'||lower(:burner_id),html,0,0,'<<syncid>>',1,'Nạp nhiên liệu '||:burner_id,
+SELECT b.refuel_page_id,t.html,0,0,'<<syncid>>',1,'Nạp nhiên liệu '||:burner_id,
        replace(meta_template,'__BURNER_ID__',:burner_id)
-FROM biomass_page_templates WHERE page_type='refuel';
-SELECT :burner_id ioid,'biomass-refuel-'||lower(:burner_id) refuel_page_id;
+FROM biomass_page_templates t JOIN biomass_burners b ON b.ioid=:burner_id WHERE t.page_type='refuel';
+SELECT ioid,refuel_page_id FROM biomass_burners WHERE ioid=:burner_id;
 `);
 addMacro.run('biomass-fleet-update','Update burner metadata and manual coordinates.',`
 UPDATE biomass_burners SET name=COALESCE(:name,''),location=COALESCE(:location,''),
@@ -275,7 +276,7 @@ addPage.run('biomass-status',pageHtml,0,'Biomass status',JSON.stringify({publicA
 addPage.run('biomass-fleet-view',pageHtml,0,'Biomass fleet view',JSON.stringify({publicApi:{macros:readMacros,rateLimit:{limit:300,windowMs:60000}}}));
 addPage.run('biomass-fleet-admin',pageHtml,1,'Biomass fleet admin',JSON.stringify({publicApi:{macros:writeMacros,rateLimit:{limit:120,windowMs:60000}}}));
 const template=db.prepare('SELECT html,meta_template FROM biomass_page_templates WHERE page_type=?').get('refuel');
-addPage.run('biomass-refuel-io2729mb1',template.html,0,'Nạp nhiên liệu IO2729MB1',template.meta_template.replace('__BURNER_ID__','IO2729MB1'));
+addPage.run(initialRefuelPageId,template.html,0,'Nạp nhiên liệu IO2729MB1',template.meta_template.replace('__BURNER_ID__','IO2729MB1'));
 
 const settingDefs=[
  {key:'1005',schema:{type:'integer',required:true,min:30,max:180}},{key:'1006',schema:{type:'integer',required:true,min:0,max:30}},

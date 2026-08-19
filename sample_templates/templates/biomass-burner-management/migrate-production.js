@@ -90,8 +90,12 @@ function migrate(targetPath, options = {}) {
         upsertCommand.run(row.cmd_id, row.command_template, row.require_email, row.require_phone, currentSync, row.params_schema, row.enabled);
       }
 
-      db.exec(`UPDATE biomass_burners SET refuel_page_id='biomass-refuel-'||lower(ioid)
-        WHERE refuel_page_id IS NULL OR trim(refuel_page_id)='';`);
+      const legacyRefuelPageIds = db.prepare(`SELECT refuel_page_id FROM biomass_burners
+        WHERE refuel_page_id IS NOT NULL AND trim(refuel_page_id)<>''
+          AND (length(trim(refuel_page_id))<>32 OR lower(trim(refuel_page_id)) GLOB '*[^0-9a-f]*')`).all();
+      db.exec(`UPDATE biomass_burners SET refuel_page_id=lower(hex(randomblob(16)))
+        WHERE refuel_page_id IS NULL OR trim(refuel_page_id)=''
+          OR length(trim(refuel_page_id))<>32 OR lower(trim(refuel_page_id)) GLOB '*[^0-9a-f]*';`);
       db.exec(`INSERT OR IGNORE INTO biomass_device_meter(ioid,burned_minutes,purchased_minutes,mode,reported_at)
         SELECT ioid,0,0,0,CAST(strftime('%s','now') AS INTEGER)*1000 FROM biomass_burners;`);
       const insertRefuelPage = db.prepare(`INSERT INTO system_pages(page_id,html,require_email,require_phone,sync_id,enabled,title,meta)
@@ -101,10 +105,14 @@ function migrate(targetPath, options = {}) {
         insertRefuelPage.run(burner.refuel_page_id, pageTemplate.html, currentSync,
           `Nạp nhiên liệu ${burner.ioid}`, pageTemplate.meta_template.replaceAll('__BURNER_ID__', burner.ioid));
       }
+      const deleteLegacyPage = db.prepare(`DELETE FROM system_pages WHERE page_id=?
+        AND page_id NOT IN (SELECT refuel_page_id FROM biomass_burners)`);
+      for (const row of legacyRefuelPageIds) deleteLegacyPage.run(row.refuel_page_id);
 
       return {
         burners: db.prepare('SELECT COUNT(*) count FROM biomass_burners').get().count,
-        refuelPages: db.prepare(`SELECT COUNT(*) count FROM system_pages WHERE page_id LIKE 'biomass-refuel-%' AND enabled=1`).get().count,
+        refuelPages: db.prepare(`SELECT COUNT(*) count FROM system_pages p
+          JOIN biomass_burners b ON b.refuel_page_id=p.page_id WHERE p.enabled=1`).get().count,
         fuelLots: db.prepare('SELECT COUNT(*) count FROM biomass_fuel_lots').get().count,
         syncId: currentSync
       };
