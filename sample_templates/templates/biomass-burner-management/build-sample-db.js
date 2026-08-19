@@ -78,6 +78,9 @@ db.exec(`
 
 const refuelMetaTemplate = JSON.stringify({
   pageType: 'biomass-refuel',
+  // Standard ROSA hidden-link session removes the full QR target from the
+  // address bar after the public page opens.
+  hideLink: true,
   publicApi: {
     stream: false, maxBodyBytes: 1024, rateLimit: { limit: 20, windowMs: 60000 },
     context: { burner_id: '__BURNER_ID__' },

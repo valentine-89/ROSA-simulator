@@ -38,7 +38,8 @@ try {
   if (burner.name !== 'Lò thật' || burner.latitude !== 16.03143 || burner.longitude !== 108.189156) throw new Error('Migration changed burner metadata');
   if (!/^[0-9a-f]{32}$/.test(burner.refuel_page_id) || burner.refuel_page_id !== firstPageId) throw new Error('Migration did not preserve one random 32-character page id');
   if (meter.burned_minutes !== 2543 || meter.purchased_minutes !== 0) throw new Error('Migration changed meter history');
-  if (!page || page.sync_id !== 'SYNC-PRODUCTION' || JSON.parse(page.meta).publicApi.context.burner_id !== 'IO2729MB1') throw new Error('Migration did not create scoped refuel page');
+  const pageMeta = page && JSON.parse(page.meta);
+  if (!page || page.sync_id !== 'SYNC-PRODUCTION' || pageMeta.publicApi.context.burner_id !== 'IO2729MB1' || pageMeta.hideLink !== true) throw new Error('Migration did not create a scoped hidden-link refuel page');
   if (migrated.prepare('SELECT COUNT(*) count FROM system_pages WHERE page_id=?').get('biomass-refuel-io2729mb1').count !== 0) throw new Error('Migration retained legacy refuel page id');
   if (migrated.prepare('SELECT COUNT(*) count FROM biomass_fuel_lots').get().count !== 0) throw new Error('Migration inserted demo fuel lots');
   migrated.close();

@@ -127,7 +127,9 @@ try {
     throw new Error('Purchased-minute telemetry c21 is missing');
   }
   const refuelPage = pages.find((row) => /^[0-9a-f]{32}$/.test(row.page_id));
-  const refuelMeta = JSON.parse(refuelPage.meta).publicApi;
+  const parsedRefuelMeta = JSON.parse(refuelPage.meta);
+  if (parsedRefuelMeta.hideLink !== true) throw new Error('Refuel page does not enable the standard ROSA hidden-link flow');
+  const refuelMeta = parsedRefuelMeta.publicApi;
   if (refuelMeta.rateLimit.limit !== 20 || refuelMeta.maxBodyBytes !== 1024 || refuelMeta.context.burner_id !== 'IO2729MB1') {
     throw new Error('Refuel page scope or rate limit is invalid');
   }
