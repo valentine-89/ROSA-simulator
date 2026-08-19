@@ -4,6 +4,7 @@
   // Template-only setup: return JSON configuration through DashboardSetupBridge.
   // Never call a private biomass API or mutate ROSA core from this page.
   var baseConfig = {};
+  var activeFleetIoid = "";
 
   document.body.innerHTML = ""
     + "<main class=\"shell\">"
@@ -11,18 +12,12 @@
     + "<section class=\"panel\"><div class=\"grid\">"
     + field("title", "Tên dashboard", "text", "full")
     + field("subtitle", "Mô tả ngắn", "text", "full")
-    + field("fleetIoid", "IOID fleet", "text")
     + field("pageSize", "Số dòng mỗi trang", "number")
     + field("refreshMs", "Chu kỳ đối soát (ms)", "number")
     + field("mapCenterLat", "Vĩ độ tâm", "number", "", "0.000001")
     + field("mapCenterLng", "Kinh độ tâm", "number", "", "0.000001")
     + field("mapZoom", "Mức zoom", "number")
     + "</div></section>"
-    + "<details><summary>Định danh capability ROSA</summary><div class=\"advanced-body\"><div class=\"grid\">"
-    + field("fleetViewPageId", "Trang đọc fleet", "text")
-    + field("fleetAdminPageId", "Trang quản trị fleet", "text")
-    + field("deviceStatusPageId", "Trang telemetry thiết bị", "text")
-    + "</div></div></details>"
     + "</main>";
 
   function field(key, label, type, className, step) {
@@ -33,31 +28,32 @@
   function integer(key, fallback, min, max) { var value = Math.floor(Number(input(key).value)); return Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback; }
   function number(key, fallback, min, max) { var value = Number(input(key).value); return Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback; }
   function set(key, value) { input(key).value = value == null ? "" : String(value); }
+  function ioid(value) { return String(value || "").trim().split("@")[0]; }
 
   function initialize(payload) {
     baseConfig = payload && payload.config && typeof payload.config === "object" ? Object.assign({}, payload.config) : {};
     var context = payload && payload.context || {};
+    // The active ROSA profile owns the fleet identity. The dashboard config may
+    // already contain an expanded IOID@APIKEY placeholder, so never expose or
+    // validate that credential-bearing value as a user-editable field.
+    activeFleetIoid = ioid(context.ioid || context.sessionId || baseConfig.fleetIoid);
     set("title", baseConfig.title || "Quản lý lò sinh khối");
     set("subtitle", baseConfig.subtitle || "");
-    set("fleetIoid", baseConfig.fleetIoid || String(context.sessionId || "").split("@")[0]);
     set("pageSize", baseConfig.pageSize || 50);
     set("refreshMs", baseConfig.refreshMs || 60000);
     set("mapCenterLat", baseConfig.mapCenterLat == null ? 21.35 : baseConfig.mapCenterLat);
     set("mapCenterLng", baseConfig.mapCenterLng == null ? 105.72 : baseConfig.mapCenterLng);
     set("mapZoom", baseConfig.mapZoom || 8);
-    set("fleetViewPageId", baseConfig.fleetViewPageId || "biomass-fleet-view");
-    set("fleetAdminPageId", baseConfig.fleetAdminPageId || "biomass-fleet-admin");
-    set("deviceStatusPageId", baseConfig.deviceStatusPageId || "biomass-status");
   }
 
   function collect() {
-    var fleetIoid = text("fleetIoid", "");
-    if (!/^[A-Za-z0-9._-]{3,64}$/.test(fleetIoid)) throw new Error("IOID fleet không hợp lệ.");
+    if (!/^[A-Za-z0-9._-]{3,64}$/.test(activeFleetIoid)) throw new Error("Không xác định được thiết bị ROSA đang hoạt động.");
     return Object.assign({}, baseConfig, {
-      title: text("title", "Quản lý lò sinh khối"), subtitle: String(input("subtitle").value || "").trim(), fleetIoid: fleetIoid,
+      title: text("title", "Quản lý lò sinh khối"), subtitle: String(input("subtitle").value || "").trim(), fleetIoid: activeFleetIoid,
       pageSize: integer("pageSize", 50, 1, 100), refreshMs: integer("refreshMs", 60000, 60000, 3600000),
       mapCenterLat: number("mapCenterLat", 21.35, -90, 90), mapCenterLng: number("mapCenterLng", 105.72, -180, 180), mapZoom: integer("mapZoom", 8, 2, 19),
-      fleetViewPageId: text("fleetViewPageId", "biomass-fleet-view"), fleetAdminPageId: text("fleetAdminPageId", "biomass-fleet-admin"), deviceStatusPageId: text("deviceStatusPageId", "biomass-status")
+      // These page IDs are fixed template capabilities, not operator settings.
+      fleetViewPageId: "biomass-fleet-view", fleetAdminPageId: "biomass-fleet-admin", deviceStatusPageId: "biomass-status"
     });
   }
 

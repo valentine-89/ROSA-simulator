@@ -1,6 +1,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const vm = require('vm');
 const Database = require('better-sqlite3');
 
 const source = path.join(__dirname, 'sample.sqlite');
@@ -33,6 +34,42 @@ function runMacro(name, bindings) {
   return rows;
 }
 
+function testSetupPage() {
+  const source = fs.readFileSync(path.join(__dirname, 'setup_biomass_vi.js'), 'utf8');
+  const fields = new Map();
+  const body = {};
+  Object.defineProperty(body, 'innerHTML', {
+    set(value) {
+      this.value = String(value);
+      for (const match of this.value.matchAll(/<input id="([^"]+)"/g)) fields.set(match[1], { value: '' });
+    },
+    get() { return this.value || ''; }
+  });
+  let handlers = null;
+  vm.runInNewContext(source, {
+    document: { body, getElementById: (id) => fields.get(id) || null },
+    DashboardSetupBridge: { start: (value) => { handlers = value; } }
+  });
+  if (!handlers) throw new Error('Biomass setup bridge did not start');
+  if (/IOID fleet|Định danh capability ROSA/.test(body.innerHTML)) throw new Error('Technical biomass identifiers leaked into setup UI');
+  handlers.onInit({
+    config: {
+      fleetIoid: 'IO2729MB1@expanded-api-key',
+      fleetViewPageId: 'unsafe-view',
+      fleetAdminPageId: 'unsafe-admin',
+      deviceStatusPageId: 'unsafe-status'
+    },
+    context: { sessionId: 'IO2729MB1@redacted', ioid: 'IO2729MB1' }
+  });
+  const config = handlers.onCollect();
+  if (config.fleetIoid !== 'IO2729MB1') throw new Error('Setup did not normalize the active fleet IOID');
+  if (config.fleetViewPageId !== 'biomass-fleet-view'
+      || config.fleetAdminPageId !== 'biomass-fleet-admin'
+      || config.deviceStatusPageId !== 'biomass-status') {
+    throw new Error('Setup did not enforce fixed biomass capability page IDs');
+  }
+}
+
 const context = { session_id: 'IO2729MB1@redacted', sync_id: 'test', ioid: 'IO2729MB1' };
 function createBatch(quantity, suffix, minutes = 300) {
   const rows = runMacro('biomass-fuel-lot-create-batch', {
@@ -49,6 +86,7 @@ function createBatch(quantity, suffix, minutes = 300) {
 }
 
 try {
+  testSetupPage();
   const runtimeSource = fs.readFileSync(path.join(__dirname, 'dashboard-runtime.js'), 'utf8');
   const dashboardSource = fs.readFileSync(path.join(__dirname, 'dashboard_vi.html'), 'utf8');
   const refuelSource = fs.readFileSync(path.join(__dirname, 'refuel-runtime.js'), 'utf8');

@@ -13,6 +13,7 @@ Chỉ hỗ trợ compact-v2. Không thêm fallback cho IO2722OB1 hoặc giả l�
 - Meter đã đốt chỉ tăng. `purchased_minutes` có thể được quản trị viên đặt trực tiếp và không có audit theo yêu cầu nghiệp vụ.
 - Phút mua chỉ dùng giám sát. Mất mạng, hết SyncID hoặc hết phút tuyệt đối không được chặn N1–N5/N101.
 - Mã nhiên liệu là 6 ký tự `A-Z0-9`. Batch 1–500 mã được tạo atomically; một mã chỉ được nạp một lần. `client_request_id` làm cho retry không cộng phút lần hai.
+- Setup page tự lấy fleet IOID từ profile ROSA đang hoạt động và cố định ba page capability của template; không hiển thị IOID/API key hoặc page ID kỹ thuật để người dùng sửa.
 
 Payload thiết bị qua gateway chuẩn:
 
