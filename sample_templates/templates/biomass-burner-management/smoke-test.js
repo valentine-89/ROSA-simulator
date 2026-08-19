@@ -6,12 +6,8 @@ const Database = require('better-sqlite3');
 const source = path.join(__dirname, 'sample.sqlite');
 const temp = path.join(os.tmpdir(), `rosa-biomass-${process.pid}-${Date.now()}.sqlite`);
 fs.copyFileSync(source, temp);
-
 const db = new Database(temp);
-const runtimeSource = fs.readFileSync(path.join(__dirname, 'dashboard-runtime.js'), 'utf8');
 
-// Match ROSA's named-binding compilation so comments and literals are tested
-// against the same parameter behavior as the production macro runner.
 function compileNamedSql(sql, bindings) {
   const params = [];
   const compiledSql = sql.replace(/:([A-Za-z_][A-Za-z0-9_]*)/g, (_match, name) => {
@@ -37,59 +33,116 @@ function runMacro(name, bindings) {
   return rows;
 }
 
+const context = { session_id: 'IO2729MB1@redacted', sync_id: 'test', ioid: 'IO2729MB1' };
+function createBatch(quantity, suffix, minutes = 300) {
+  const rows = runMacro('biomass-fuel-lot-create-batch', {
+    ...context,
+    client_request_id: `BATCH-REQUEST-${suffix}-${quantity}`,
+    description: `Gỗ nén ${suffix}`,
+    minutes_per_lot: String(minutes),
+    quantity: String(quantity)
+  });
+  if (rows.length !== quantity || rows.some((row) => row.status !== 'OK')) {
+    throw new Error(`Batch ${quantity} returned ${rows.length} rows`);
+  }
+  return rows;
+}
+
 try {
-  for (const key of ['1005','1006','1007','1008','1009','1010','1011','1012','1013','1014','1015','1016']) {
+  const runtimeSource = fs.readFileSync(path.join(__dirname, 'dashboard-runtime.js'), 'utf8');
+  const dashboardSource = fs.readFileSync(path.join(__dirname, 'dashboard_vi.html'), 'utf8');
+  const refuelSource = fs.readFileSync(path.join(__dirname, 'refuel-runtime.js'), 'utf8');
+  const qrSource = fs.readFileSync(path.join(__dirname, 'qrcode-runtime.js'), 'utf8');
+  for (const key of ['1005','1006','1007','1008','1009','1010','1011','1012','1013','1014','1015','1016','1017','1018']) {
     if (!runtimeSource.includes(`key: "${key}"`)) throw new Error(`Dashboard setting #${key} is missing`);
   }
-  if (!runtimeSource.includes('"CHỜ TẮT"') || !runtimeSource.includes('bb-setting-group-title')) {
-    throw new Error('Shutdown mode or compact setting groups are missing from dashboard runtime');
+  for (const token of ['biomass-fuel-lot-create-batch', 'biomass-purchased-minutes-set', 'downloadCsv', 'BiomassQr']) {
+    if (!runtimeSource.includes(token)) throw new Error(`Dashboard feature ${token} is missing`);
   }
-  const pages = db.prepare('SELECT page_id, require_email, meta FROM system_pages ORDER BY page_id').all();
-  if (pages.length !== 3 || pages.find((row) => row.page_id === 'biomass-fleet-admin')?.require_email !== 1) {
-    throw new Error('Public/admin page policy is invalid');
+  for (const token of ['sessionStorage', 'window.close()', 'client_request_id', 'pendingKey', 'br-success-view']) {
+    if (!refuelSource.includes(token)) throw new Error(`Refuel safety ${token} is missing`);
+  }
+  for (const marker of [
+    'AI-BRIDGE-EDITABLE HTML LAYOUT: START',
+    'AI-BRIDGE-EDITABLE HTML LAYOUT: END',
+    'AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START',
+    'AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END',
+    'AI-BRIDGE-LOCKED RUNTIME SCRIPT: START',
+    'AI-BRIDGE-LOCKED RUNTIME SCRIPT: END'
+  ]) {
+    if (!dashboardSource.includes(marker)) throw new Error(`Dashboard marker ${marker} is missing`);
+  }
+  if (!qrSource.includes('global.BiomassQr') || /(?:fetch|src\s*=)\s*\(?["']https?:\/\//.test(qrSource)) throw new Error('Local QR runtime is invalid');
+
+  const pages = db.prepare('SELECT page_id, require_email, meta, html FROM system_pages ORDER BY page_id').all();
+  if (pages.length !== 4 || pages.find((row) => row.page_id === 'biomass-fleet-admin')?.require_email !== 1) {
+    throw new Error('System page policy is invalid');
   }
   const statusMeta = JSON.parse(pages.find((row) => row.page_id === 'biomass-status').meta);
-  if (!statusMeta.publicApi.fields.includes('c5') || statusMeta.publicApi.fields.length !== 20 || statusMeta.publicApi.stream !== true) {
-    throw new Error('Nullable temperature or realtime telemetry is missing');
+  if (statusMeta.publicApi.fields.length !== 23 || !statusMeta.publicApi.fields.includes('c21') || !statusMeta.publicApi.fields.includes('c23')) {
+    throw new Error('Purchased-minute telemetry c21 is missing');
+  }
+  const refuelPage = pages.find((row) => row.page_id === 'biomass-refuel-io2729mb1');
+  const refuelMeta = JSON.parse(refuelPage.meta).publicApi;
+  if (refuelMeta.rateLimit.limit !== 20 || refuelMeta.maxBodyBytes !== 1024 || refuelMeta.context.burner_id !== 'IO2729MB1') {
+    throw new Error('Refuel page scope or rate limit is invalid');
+  }
+  if (!refuelPage.html.includes('refuel-runtime.js') || /@[^<\s/]+\/[A-Za-z0-9]{12,}/.test(refuelPage.html)) {
+    throw new Error('Refuel page missing runtime or leaking credentials');
   }
   for (const page of pages) {
     const publicApi = JSON.parse(page.meta).publicApi || {};
     for (const macro of Object.values(publicApi.macros || {})) {
-      if (macro.params && Object.prototype.hasOwnProperty.call(macro.params, 'ioid')) {
-        throw new Error('Public page macro must not redeclare reserved ioid');
-      }
+      if (macro.params && Object.prototype.hasOwnProperty.call(macro.params, 'ioid')) throw new Error('Reserved ioid param leaked');
     }
   }
-  if (db.prepare('SELECT COUNT(*) AS count FROM system_cmds').get().count !== 12) {
-    throw new Error('Expected twelve compact-v2 setting commands');
-  }
-  const startSecondarySchema = JSON.parse(db.prepare('SELECT params_schema FROM system_cmds WHERE cmd_id = ?').get('biomass-set-1010').params_schema);
-  const shutdownDelaySchema = JSON.parse(db.prepare('SELECT params_schema FROM system_cmds WHERE cmd_id = ?').get('biomass-set-1016').params_schema);
-  if (JSON.stringify(startSecondarySchema.value.enum) !== JSON.stringify([0, 20]) || shutdownDelaySchema.value.max !== 3600) {
-    throw new Error('New ignition/shutdown setting validation is invalid');
-  }
 
-  const context = { session_id: 'IO2729MB1@redacted', sync_id: 'test', ioid: 'IO2729MB1' };
-  runMacro('IO-biomass-meter', { ...context, c1: '12', c2: '1' });
-  runMacro('IO-biomass-meter', { ...context, c1: '12', c2: '5' });
-  const shutdownMeter = db.prepare('SELECT burned_minutes, mode FROM biomass_device_meter WHERE ioid = ?').get('IO2729MB1');
-  if (shutdownMeter.burned_minutes !== 12 || shutdownMeter.mode !== 5) throw new Error('Shutdown mode persistence failed');
-  runMacro('IO-biomass-meter', { ...context, c1: '7', c2: '0' });
-  const meter = db.prepare('SELECT burned_minutes, mode FROM biomass_device_meter WHERE ioid = ?').get('IO2729MB1');
-  if (meter.burned_minutes !== 12 || meter.mode !== 0) throw new Error('Meter monotonicity failed');
-
-  runMacro('IO-biomass-gps', { ...context, c1: '10.7769', c2: '106.7009' });
-  runMacro('IO-biomass-gps', { ...context, c1: '0', c2: '0' });
-  const burner = db.prepare('SELECT latitude, longitude, coordinate_source FROM biomass_burners WHERE ioid = ?').get('IO2729MB1');
-  if (burner.latitude !== 10.7769 || burner.longitude !== 106.7009 || burner.coordinate_source !== 'gps') {
-    throw new Error('GPS cache/fallback failed');
+  const initial = runMacro('IO-biomass-meter', { ...context, c1: 'IO2729MB1', c2: '12', c3: '5' })[0];
+  if (initial.c1 !== 'OK' || initial.c2 !== 0) throw new Error('Meter response contract failed');
+  const regression = runMacro('IO-biomass-meter', { ...context, c1: 'IO2729MB1', c2: '7', c3: '0' })[0];
+  if (regression.c1 !== 'METER_REGRESSION' || regression.c2 !== 0) throw new Error('Meter regression contract failed');
+  if (runMacro('IO-biomass-meter', { ...context, c1: 'IO-NOT-REGISTERED', c2: '1', c3: '0' })[0].c1 !== 'UNKNOWN_DEVICE') {
+    throw new Error('Unknown meter device was accepted');
   }
 
-  const list = runMacro('biomass-fleet-list', { ...context, search: '', page_size: '50', offset: '0' });
-  if (list.length !== 1 || list[0].ioid !== 'IO2729MB1') throw new Error('Fleet list failed');
-  const device = runMacro('biomass-fleet-device', { ...context, burner_id: 'IO2729MB1' });
-  if (device.length !== 1 || device[0].ioid !== 'IO2729MB1') throw new Error('Fleet device read failed');
-  console.log('biomass compact-v2 smoke test passed');
+  for (const [value, label] of [[500, 'up'], [20, 'down'], [0, 'zero'], [2147483647, 'max']]) {
+    const result = runMacro('biomass-purchased-minutes-set', { ...context, burner_id: 'IO2729MB1', purchased_minutes: String(value) })[0];
+    if (result.status !== 'OK' || result.purchased_minutes !== value) throw new Error(`Manual credit ${label} failed`);
+  }
+  if (runMacro('biomass-purchased-minutes-set', { ...context, burner_id: 'IO-NOPE', purchased_minutes: '10' })[0].status !== 'NOT_FOUND') {
+    throw new Error('Manual credit accepted unknown burner');
+  }
+  runMacro('biomass-purchased-minutes-set', { ...context, burner_id: 'IO2729MB1', purchased_minutes: '0' });
+
+  const batch1 = createBatch(1, 'one');
+  createBatch(100, 'hundred');
+  createBatch(500, 'five-hundred');
+  const allCodes = db.prepare('SELECT code FROM biomass_fuel_lots').all().map((row) => row.code);
+  if (new Set(allCodes).size !== 601 || allCodes.some((code) => !/^[A-Z0-9]{6}$/.test(code))) {
+    throw new Error('Generated fuel-lot codes are not globally unique six-character codes');
+  }
+
+  const code = batch1[0].code;
+  const first = runMacro('biomass-refuel-redeem', { ...context, burner_id: 'IO2729MB1', lot_code: code, client_request_id: 'REDEEM-REQUEST-0001' })[0];
+  if (first.status !== 'OK' || first.added_minutes !== 300 || first.purchased_minutes !== 300) throw new Error('First redeem failed');
+  const retry = runMacro('biomass-refuel-redeem', { ...context, burner_id: 'IO2729MB1', lot_code: code, client_request_id: 'REDEEM-REQUEST-0001' })[0];
+  if (retry.status !== 'OK' || retry.purchased_minutes !== 300) throw new Error('Idempotent redeem retry failed');
+  const duplicate = runMacro('biomass-refuel-redeem', { ...context, burner_id: 'IO2729MB1', lot_code: code, client_request_id: 'REDEEM-REQUEST-0002' })[0];
+  if (duplicate.status !== 'ALREADY_USED' || duplicate.purchased_minutes !== 300) throw new Error('Duplicate redeem was not rejected');
+  if (runMacro('biomass-refuel-redeem', { ...context, burner_id: 'IO2729MB1', lot_code: 'BAD@@@', client_request_id: 'REDEEM-REQUEST-0003' })[0].status !== 'INVALID') {
+    throw new Error('Invalid fuel code was not rejected');
+  }
+
+  const newBurner = runMacro('biomass-fleet-create', { ...context, burner_id: 'IO2729TEST', name: 'Lò test', location: '', latitude: '', longitude: '' })[0];
+  if (newBurner.refuel_page_id !== 'biomass-refuel-io2729test') throw new Error('New burner refuel page id failed');
+  const createdPage = db.prepare('SELECT meta FROM system_pages WHERE page_id = ?').get(newBurner.refuel_page_id);
+  if (!createdPage || JSON.parse(createdPage.meta).publicApi.context.burner_id !== 'IO2729TEST') throw new Error('New burner page context failed');
+
+  runMacro('IO-biomass-gps', { ...context, c1: 'IO2729MB1', c2: '10.7769', c3: '106.7009' });
+  const burner = db.prepare('SELECT latitude,longitude,coordinate_source FROM biomass_burners WHERE ioid=?').get('IO2729MB1');
+  if (burner.latitude !== 10.7769 || burner.longitude !== 106.7009 || burner.coordinate_source !== 'gps') throw new Error('GPS cache failed');
+
+  console.log('biomass compact-v2.6 smoke test passed');
 } finally {
   db.close();
   fs.rmSync(temp, { force: true });

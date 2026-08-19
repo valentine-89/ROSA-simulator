@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <title>Nạp nhiên liệu</title>
+  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/refuel.css?v=2026.08.19.1" />
+</head>
+<body>
+  <main class="br-page">
+    <section class="br-card" aria-live="polite">
+      <div class="br-brand" aria-hidden="true">🔥</div>
+      <div id="br-form-view">
+        <p class="br-kicker">LÒ SINH KHỐI</p>
+        <h1>Nạp nhiên liệu</h1>
+        <p class="br-device" id="br-device">Đang tải thông tin lò…</p>
+        <form id="br-form" novalidate>
+          <label for="br-code">Mã lô nhiên liệu</label>
+          <input id="br-code" name="lot_code" type="text" maxlength="6" minlength="6"
+            inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false"
+            enterkeyhint="done" placeholder="ABC123" aria-describedby="br-help br-message" />
+          <p id="br-help" class="br-help">Nhập 6 ký tự in trên bao nhiên liệu.</p>
+          <button id="br-submit" type="submit">Nạp phút đốt</button>
+        </form>
+        <p id="br-message" class="br-message" role="alert"></p>
+      </div>
+      <div id="br-success-view" class="br-success" hidden>
+        <div class="br-check" aria-hidden="true">✓</div>
+        <h1>Nạp nhiên liệu thành công</h1>
+        <p class="br-added"><strong id="br-added">0</strong> phút đã được cộng</p>
+        <p class="br-total">Tổng phút đã mua: <strong id="br-total">0</strong></p>
+        <p class="br-countdown" id="br-countdown">Trang sẽ tự đóng sau 5 giây.</p>
+      </div>
+    </section>
+  </main>
+  <script id="rosa-iot-page-meta" type="application/json">__ROSA_IOT_PAGE_META__</script>
+  <script id="rosa-iot-page-context" type="application/json">__ROSA_IOT_PAGE_CONTEXT__</script>
+  <script src="/sample_dashboards/biomass-burner-management/refuel-runtime.js?v=2026.08.19.1"></script>
+</body>
+</html>

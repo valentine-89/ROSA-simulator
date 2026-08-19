@@ -8,21 +8,28 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="anonymous" />
-  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/dashboard.css?v=2026.08.12.1" />
+  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/dashboard.css?v=2026.08.19.1" />
 </head>
 <body>
   <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
   <main class="bb-page" id="biomass-burner-root">
     <section class="bb-panel bb-topbar">
       <div class="bb-title"><h1 id="bb-title">Quản lý lò sinh khối</h1><p id="bb-subtitle"></p></div>
-      <div class="bb-toolbar"><div class="bb-status-chip" id="bb-status" data-state="loading">Đang tải</div><button class="bb-btn" id="bb-refresh" type="button">Làm mới</button><button class="bb-btn" id="bb-settings-open" type="button">Cài đặt lò</button><button class="bb-btn bb-btn-primary" id="bb-add-open" type="button">+ Thêm lò</button></div>
+      <div class="bb-toolbar">
+        <div class="bb-status-chip" id="bb-status" data-state="loading">Đang tải</div>
+        <button class="bb-btn" id="bb-refresh" type="button">Làm mới</button>
+        <button class="bb-btn" id="bb-settings-open" type="button">Cài đặt lò</button>
+        <button class="bb-btn" id="bb-lot-open" type="button">+ Tạo lô</button>
+        <button class="bb-btn bb-btn-primary" id="bb-add-open" type="button">+ Thêm lò</button>
+      </div>
     </section>
 
-    <section class="bb-kpi-grid" aria-label="Tổng quan">
+    <section class="bb-kpi-grid bb-kpi-grid-five" aria-label="Tổng quan">
       <article class="bb-kpi"><span>Tổng lò</span><strong id="bb-kpi-total">--</strong><em>thiết bị</em></article>
       <article class="bb-kpi"><span>Đang đốt</span><strong id="bb-kpi-active">--</strong><em>lò</em></article>
       <article class="bb-kpi"><span>Mất kết nối</span><strong id="bb-kpi-stale">--</strong><em>lò</em></article>
       <article class="bb-kpi"><span>Phút đã đốt</span><strong id="bb-kpi-burned">--</strong><em>phút</em></article>
+      <article class="bb-kpi"><span>Phút đã mua</span><strong id="bb-kpi-purchased">--</strong><em>phút</em></article>
     </section>
 
     <section class="bb-map-layout">
@@ -41,24 +48,47 @@
     </section>
 
     <section class="bb-panel bb-table-panel">
-      <div class="bb-table-scroll"><table class="bb-table"><thead><tr><th>IOID</th><th>Tên / vị trí</th><th>Mode</th><th>Phút đốt</th><th>Quạt sơ cấp</th><th>Quạt thứ cấp</th><th class="bb-temperature-column">Nhiệt độ</th><th>Cập nhật</th><th>Thao tác</th></tr></thead><tbody id="bb-table-body"></tbody></table><div class="bb-empty" id="bb-empty" hidden>Chưa có lò.</div></div>
+      <div class="bb-panel-head bb-table-heading"><div><span class="bb-eyebrow">Danh sách lò</span><h2>Trạng thái và phút đốt</h2></div></div>
+      <div class="bb-table-scroll"><table class="bb-table"><thead><tr><th>IOID</th><th>Tên / vị trí</th><th>Trạng thái</th><th>Đã đốt</th><th>Đã mua</th><th>Còn lại</th><th>Quạt sơ / thứ</th><th>Cập nhật</th><th>Thao tác</th></tr></thead><tbody id="bb-table-body"></tbody></table><div class="bb-empty" id="bb-empty" hidden>Chưa có lò.</div></div>
       <div class="bb-pager"><button class="bb-btn" id="bb-prev" type="button">Trước</button><div class="bb-page-info" id="bb-page-info">Trang 1 / 1</div><button class="bb-btn" id="bb-next" type="button">Sau</button></div>
+    </section>
+
+    <section class="bb-panel bb-lot-panel">
+      <div class="bb-panel-head"><div><span class="bb-eyebrow">Nhiên liệu</span><h2>Danh sách lô</h2></div><button class="bb-btn bb-btn-primary" id="bb-lot-section-open" type="button">+ Tạo lô</button></div>
+      <div class="bb-lot-filters"><input class="bb-input" id="bb-lot-search" type="search" placeholder="Tìm mã, nội dung hoặc IOID" autocomplete="off" /><select class="bb-select" id="bb-lot-status"><option value="all">Tất cả</option><option value="unused">Chưa nạp</option><option value="redeemed">Đã nạp</option></select><button class="bb-btn" id="bb-lot-apply" type="button">Lọc</button></div>
+      <div class="bb-table-scroll"><table class="bb-table bb-lot-table"><thead><tr><th>Mã lô</th><th>Nội dung</th><th>Phút</th><th>Ngày tạo</th><th>Ngày nạp</th><th>Lò đã dùng</th><th>Trạng thái</th></tr></thead><tbody id="bb-lot-body"></tbody></table><div class="bb-empty" id="bb-lot-empty" hidden>Chưa có lô nhiên liệu.</div></div>
+      <div class="bb-pager"><button class="bb-btn" id="bb-lot-prev" type="button">Trước</button><div class="bb-page-info" id="bb-lot-page-info">Trang 1 / 1</div><button class="bb-btn" id="bb-lot-next" type="button">Sau</button></div>
     </section>
   </main>
 
   <div class="bb-modal" id="bb-add-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-sm"><div class="bb-modal-head"><h2>Thêm lò</h2><button class="bb-icon-btn" id="bb-add-close" type="button">×</button></div><div class="bb-modal-body"><form id="bb-add-form" class="bb-section"><div class="bb-form-grid"><div class="bb-field"><label for="add-ioid">IOID</label><input class="bb-input" id="add-ioid" name="ioid" required /></div><div class="bb-field"><label for="add-name">Tên</label><input class="bb-input" id="add-name" name="name" /></div><div class="bb-field bb-field-full"><label for="add-location">Vị trí</label><input class="bb-input" id="add-location" name="location" /></div><div class="bb-field"><label for="add-latitude">Vĩ độ</label><input class="bb-input" id="add-latitude" name="latitude" type="number" step="0.000001" /></div><div class="bb-field"><label for="add-longitude">Kinh độ</label><input class="bb-input" id="add-longitude" name="longitude" type="number" step="0.000001" /></div></div><div class="bb-form-actions"><button class="bb-btn" id="bb-add-cancel" type="button">Hủy</button><button class="bb-btn bb-btn-primary" type="submit">Lưu</button></div></form></div></div></div>
 
-  <div class="bb-modal" id="bb-settings-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-wide"><div class="bb-modal-head"><div><h2 id="bb-settings-title">Cài đặt lò</h2><p id="bb-settings-subtitle"></p></div><button class="bb-icon-btn" id="bb-settings-close" type="button">×</button></div><div class="bb-modal-body"><form id="bb-device-form" class="bb-section bb-device-form"><div class="bb-section-title"><strong>Thông tin lò</strong><span class="bb-small-chip" id="bb-coordinate-source">Mặc định</span></div><div class="bb-form-grid bb-device-grid"><div class="bb-field bb-device-name"><label for="device-name">Tên</label><input class="bb-input" id="device-name" name="name" /></div><div class="bb-field bb-device-location"><label for="device-location">Vị trí</label><input class="bb-input" id="device-location" name="location" /></div><div class="bb-field"><label for="device-latitude">Vĩ độ</label><input class="bb-input" id="device-latitude" name="latitude" type="number" step="0.000001" /></div><div class="bb-field"><label for="device-longitude">Kinh độ</label><input class="bb-input" id="device-longitude" name="longitude" type="number" step="0.000001" /></div></div><div class="bb-form-actions"><button class="bb-btn bb-btn-primary" type="submit">Lưu thông tin</button></div></form><section class="bb-section"><div class="bb-section-title"><strong>Thông số vận hành</strong><span class="bb-small-chip" id="bb-settings-read-state">--</span></div><div class="bb-setting-grid" id="bb-settings-grid"></div></section><section class="bb-danger-zone"><button class="bb-btn bb-btn-danger" id="bb-delete-burner" type="button">Xóa lò</button></section></div></div></div>
+  <div class="bb-modal" id="bb-settings-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-wide"><div class="bb-modal-head"><div><h2 id="bb-settings-title">Cài đặt lò</h2><p id="bb-settings-subtitle"></p></div><button class="bb-icon-btn" id="bb-settings-close" type="button">×</button></div><div class="bb-modal-body">
+    <section class="bb-credit-strip"><div><span>Phút đã mua</span><strong id="bb-credit-purchased">0</strong></div><div><span>Phút còn lại</span><strong id="bb-credit-remaining">0</strong></div><button class="bb-btn" id="bb-credit-edit" type="button">Sửa phút</button><button class="bb-btn" id="bb-open-refuel" type="button">Trang nạp</button><button class="bb-btn" id="bb-show-qr" type="button">QR</button></section>
+    <form id="bb-device-form" class="bb-section bb-device-form"><div class="bb-section-title"><strong>Thông tin lò</strong><span class="bb-small-chip" id="bb-coordinate-source">Mặc định</span></div><div class="bb-form-grid bb-device-grid"><div class="bb-field bb-device-name"><label for="device-name">Tên</label><input class="bb-input" id="device-name" name="name" /></div><div class="bb-field bb-device-location"><label for="device-location">Vị trí</label><input class="bb-input" id="device-location" name="location" /></div><div class="bb-field"><label for="device-latitude">Vĩ độ</label><input class="bb-input" id="device-latitude" name="latitude" type="number" step="0.000001" /></div><div class="bb-field"><label for="device-longitude">Kinh độ</label><input class="bb-input" id="device-longitude" name="longitude" type="number" step="0.000001" /></div></div><div class="bb-form-actions"><button class="bb-btn bb-btn-primary" type="submit">Lưu thông tin</button></div></form>
+    <section class="bb-section"><div class="bb-section-title"><strong>Thông số vận hành</strong><span class="bb-small-chip" id="bb-settings-read-state">--</span></div><div class="bb-setting-grid" id="bb-settings-grid"></div></section>
+    <section class="bb-danger-zone"><button class="bb-btn bb-btn-danger" id="bb-delete-burner" type="button">Xóa lò</button></section>
+  </div></div></div>
 
-  <div class="bb-toast-stack" id="bb-toast-stack" aria-live="polite"></div>
+  <div class="bb-modal" id="bb-credit-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-sm"><div class="bb-modal-head"><h2>Sửa phút đã mua</h2><button class="bb-icon-btn" id="bb-credit-close" type="button">×</button></div><div class="bb-modal-body"><form id="bb-credit-form" class="bb-section"><div class="bb-field"><label for="bb-credit-value">Giá trị mới</label><input class="bb-input" id="bb-credit-value" name="purchased_minutes" type="number" min="0" max="2147483647" step="1" required /></div><div class="bb-form-actions"><button class="bb-btn" id="bb-credit-cancel" type="button">Hủy</button><button class="bb-btn bb-btn-primary" type="submit">Lưu</button></div></form></div></div></div>
+
+  <div class="bb-modal" id="bb-lot-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-sm"><div class="bb-modal-head"><h2>Tạo lô nhiên liệu</h2><button class="bb-icon-btn" id="bb-lot-close" type="button">×</button></div><div class="bb-modal-body"><form id="bb-lot-form" class="bb-section"><div class="bb-field"><label for="bb-lot-description">Nội dung lô</label><input class="bb-input" id="bb-lot-description" name="description" maxlength="120" placeholder="Gỗ nén 50 kg" required /></div><div class="bb-form-grid"><div class="bb-field"><label for="bb-lot-minutes">Phút mỗi lô</label><input class="bb-input" id="bb-lot-minutes" name="minutes_per_lot" type="number" min="1" max="1000000" step="1" value="300" required /></div><div class="bb-field"><label for="bb-lot-quantity">Số lượng</label><input class="bb-input" id="bb-lot-quantity" name="quantity" type="number" min="1" max="500" step="1" value="1" required /></div></div><div class="bb-form-actions"><button class="bb-btn" id="bb-lot-cancel" type="button">Hủy</button><button class="bb-btn bb-btn-primary" type="submit">Tạo mã</button></div></form></div></div></div>
+
+  <div class="bb-modal" id="bb-batch-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-wide"><div class="bb-modal-head"><div><h2>Đã tạo lô</h2><p id="bb-batch-summary"></p></div><button class="bb-icon-btn" id="bb-batch-close" type="button">×</button></div><div class="bb-modal-body"><textarea class="bb-code-list" id="bb-batch-codes" readonly></textarea><div class="bb-form-actions"><button class="bb-btn" id="bb-batch-copy" type="button">Sao chép mã</button><button class="bb-btn bb-btn-primary" id="bb-batch-csv" type="button">Tải CSV</button></div></div></div></div>
+
+  <div class="bb-modal" id="bb-qr-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-sm"><div class="bb-modal-head"><h2>QR trang nạp</h2><button class="bb-icon-btn" id="bb-qr-close" type="button">×</button></div><div class="bb-modal-body bb-qr-body"><div id="bb-qr-code"></div><strong id="bb-qr-device"></strong><input class="bb-input" id="bb-qr-url" readonly /><div class="bb-form-actions"><button class="bb-btn" id="bb-qr-copy" type="button">Sao chép URL</button><button class="bb-btn bb-btn-primary" id="bb-qr-print" type="button">In QR</button></div></div></div></div>
+
+  <div class="bb-toast-stack" id="bb-toast-stack"></div>
   <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
 
   <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
-  <script type="application/json" id="biomass-burner-config">{"title":"Quản lý lò sinh khối","subtitle":"","fleetIoid":"<<ioid>>","fleetViewPageId":"biomass-fleet-view","fleetAdminPageId":"biomass-fleet-admin","deviceStatusPageId":"biomass-status","pageSize":50,"refreshMs":60000,"mapCenterLat":21.35,"mapCenterLng":105.72,"mapZoom":8}</script>
+  <script type="application/json" id="biomass-burner-config">{"title":"Quản lý lò sinh khối","subtitle":"","fleetIoid":"<<sessionid>>","fleetViewPageId":"biomass-fleet-view","fleetAdminPageId":"biomass-fleet-admin","deviceStatusPageId":"biomass-status","pageSize":50,"refreshMs":60000,"mapCenterLat":21.35,"mapCenterLng":105.72,"mapZoom":8}</script>
   <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+
   <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START --><script></script><!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin="anonymous"></script>
-  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START --><script src="/sample_dashboards/biomass-burner-management/dashboard-runtime.js?v=2026.08.12.1"></script><!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+  <script src="/sample_dashboards/biomass-burner-management/qrcode-runtime.js?v=2026.08.19.1"></script>
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START --><script src="/sample_dashboards/biomass-burner-management/dashboard-runtime.js?v=2026.08.19.1"></script><!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
 </body>
 </html>
