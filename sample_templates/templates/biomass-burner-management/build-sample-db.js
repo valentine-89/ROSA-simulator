@@ -256,7 +256,8 @@ WHERE ioid=trim(:c1) AND trim(COALESCE(:c2,''))<>'' AND trim(COALESCE(:c3,''))<>
 SELECT CASE WHEN changes()>0 THEN 'OK' ELSE 'IGNORED' END c1;
 `);
 
-const telemetryFields=Array.from({length:23},(_,index)=>`c${index+1}`);
+// Current fan outputs c3/c4 are intentionally not exposed to the dashboard.
+const telemetryFields=Array.from({length:23},(_,index)=>`c${index+1}`).filter((field)=>field!=='c3'&&field!=='c4');
 const readMacros={
  'biomass-fleet-summary':{params:{}},
  'biomass-fleet-list':{params:{search:{type:'string',maxLength:100},page_size:{type:'integer',min:1,max:100},offset:{type:'integer',min:0,max:1000000}}},

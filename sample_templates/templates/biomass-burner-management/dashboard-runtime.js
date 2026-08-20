@@ -33,12 +33,15 @@
   var cfg = {
     title: "Quản lý lò sinh khối", subtitle: "", fleetIoid: "", publicBaseUrl: "https://rosa.technology", pageSize: 50, refreshMs: 60000,
     fleetViewPageId: "biomass-fleet-view", fleetAdminPageId: "biomass-fleet-admin",
-    deviceStatusPageId: "biomass-status", mapCenterLat: 21.35, mapCenterLng: 105.72, mapZoom: 8
+    deviceStatusPageId: "biomass-status", activeStaleMinutes: 20, idleStaleMinutes: 40,
+    mapCenterLat: 21.35, mapCenterLng: 105.72, mapZoom: 8
   };
   try { cfg = Object.assign(cfg, JSON.parse(configNode && configNode.textContent || "{}")); } catch (_) {}
   var query = new URLSearchParams(location.search);
   cfg.fleetIoid = String(query.get("ioid") || cfg.fleetIoid || "").trim().split("@")[0];
   cfg.refreshMs = Math.max(60000, Number(cfg.refreshMs) || 60000);
+  cfg.activeStaleMinutes = Math.max(1, Number(cfg.activeStaleMinutes) || 20);
+  cfg.idleStaleMinutes = Math.max(cfg.activeStaleMinutes, Number(cfg.idleStaleMinutes) || 40);
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {
@@ -106,7 +109,7 @@
     var latest = state.telemetry[String(row.ioid)] || null;
     var payload = latest && latest.payload || {};
     var mode = Number(payload.mode == null ? row.stored_mode || 0 : payload.mode);
-    var staleAfter = mode === 0 ? 60 * 60000 : 20 * 60000;
+    var staleAfter = (mode === 0 ? cfg.idleStaleMinutes : cfg.activeStaleMinutes) * 60000;
     var lastReportedAt = Number(latest && latest.serverTime || row.reported_at || 0);
     var stale = !lastReportedAt || Date.now() - lastReportedAt > staleAfter;
     var gps = validCoordinates(payload.latitude, payload.longitude);
@@ -115,7 +118,6 @@
     return Object.assign({}, row, {
       mode: mode, stale: stale, lastReportedAt: lastReportedAt || null, burnedMinutes: burned,
       purchasedMinutes: purchased, remainingMinutes: Math.max(purchased - burned, 0),
-      primaryFanPct: Number(payload.primary_fan_pct || 0), secondaryFanPct: Number(payload.secondary_fan_pct || 0),
       temperature: payload.temperature == null || payload.temperature === "" ? null : Number(payload.temperature),
       programVersion: String(payload.program_version || ""),
       latitude: gps ? Number(payload.latitude) : Number(row.latitude), longitude: gps ? Number(payload.longitude) : Number(row.longitude),
@@ -140,7 +142,7 @@
         "<td><strong>" + esc(item.name || "--") + "</strong><small>" + esc(item.location || "--") + "</small></td>" +
         "<td><span class=\"bb-live-pill\" data-state=\"" + visual + "\">" + esc(deviceStateLabel(item) + modeText) + "</span></td>" +
         "<td>" + number(item.burnedMinutes) + "</td><td><strong>" + number(item.purchasedMinutes) + "</strong></td>" +
-        "<td>" + number(item.remainingMinutes) + "</td><td>" + number(item.primaryFanPct) + "% / " + number(item.secondaryFanPct) + "%</td>" +
+        "<td>" + number(item.remainingMinutes) + "</td>" +
         "<td>" + esc(dateTime(item.lastReportedAt)) + "</td><td><div class=\"bb-row-actions\"><button class=\"bb-btn\" data-settings=\"" + esc(item.ioid) + "\">Cài đặt</button><button class=\"bb-btn\" data-refuel=\"" + esc(item.ioid) + "\">Nạp</button><button class=\"bb-btn\" data-qr=\"" + esc(item.ioid) + "\">QR</button></div></td></tr>";
     }).join("");
     var pages = Math.max(1, Math.ceil(state.total / state.pageSize));
@@ -168,7 +170,7 @@
   function fitMap() { var items = state.mapRows.map(enriched).filter(function (item) { return validCoordinates(item.latitude, item.longitude); }); if (!state.map || !items.length) return; state.map.fitBounds(window.L.latLngBounds(items.map(function (item) { return [item.latitude, item.longitude]; })), { padding: [30, 30], maxZoom: 13 }); }
   function findItem(ioid) { var row = state.mapRows.concat(state.listRows).find(function (item) { return String(item.ioid) === String(ioid); }); return row ? enriched(row) : null; }
   function closeStreams() { Object.keys(state.streams).forEach(function (ioid) { state.streams[ioid].close(); delete state.streams[ioid]; }); }
-  function syncStreams(ioids) { var wanted = new Set(ioids); Object.keys(state.streams).forEach(function (ioid) { if (!wanted.has(ioid)) { state.streams[ioid].close(); delete state.streams[ioid]; } }); ioids.forEach(function (ioid) { if (state.streams[ioid] || !window.EventSource) return; var stream = new EventSource(realtimeUrl(ioid)); stream.onmessage = function (event) { try { var data = JSON.parse(event.data); if (data.type === "telemetry" && data.payload) { state.telemetry[ioid] = { serverTime: Number(data.serverTime || Date.now()), payload: semanticTelemetry(Object.assign({}, state.telemetry[ioid] && state.telemetry[ioid].payload || {}, data.payload)) }; scheduleLiveRender(); } } catch (_) {} }; state.streams[ioid] = stream; }); }
+  function syncStreams(ioids) { var wanted = new Set(ioids); Object.keys(state.streams).forEach(function (ioid) { if (!wanted.has(ioid)) { state.streams[ioid].close(); delete state.streams[ioid]; } }); ioids.forEach(function (ioid) { if (state.streams[ioid] || !window.EventSource) return; var stream = new EventSource(realtimeUrl(ioid)); stream.onmessage = function (event) { try { var data = JSON.parse(event.data); var eventTime = Number(data.serverTime || 0); if (data.type === "telemetry" && data.payload && eventTime > 0) { state.telemetry[ioid] = { serverTime: eventTime, payload: semanticTelemetry(Object.assign({}, state.telemetry[ioid] && state.telemetry[ioid].payload || {}, data.payload)) }; scheduleLiveRender(); } } catch (_) {} }; state.streams[ioid] = stream; }); }
   async function cacheGps(rows) { await Promise.all(rows.map(async function (row) { var latest = state.telemetry[row.ioid]; var payload = latest && latest.payload || {}; if (!validCoordinates(payload.latitude, payload.longitude)) return; if (String(row.coordinate_source) === "gps" && Number(row.latitude) === Number(payload.latitude) && Number(row.longitude) === Number(payload.longitude)) return; try { await runMacro(cfg.fleetAdminPageId, "biomass-fleet-cache-gps", { burner_id: row.ioid, latitude: Number(payload.latitude), longitude: Number(payload.longitude) }); row.latitude = Number(payload.latitude); row.longitude = Number(payload.longitude); row.coordinate_source = "gps"; } catch (_) {} })); }
 
   async function refresh() {

@@ -97,7 +97,7 @@ try {
   for (const token of ['biomass-fuel-lot-create-batch', 'biomass-purchased-minutes-set', 'downloadCsv', 'BiomassQr']) {
     if (!runtimeSource.includes(token)) throw new Error(`Dashboard feature ${token} is missing`);
   }
-  for (const obsolete of ['Chờ thiết bị đồng bộ', 'bb-settings-open', 'data-map-ioid', 'item.programVersion || "--"']) {
+  for (const obsolete of ['Chờ thiết bị đồng bộ', 'bb-settings-open', 'data-map-ioid', 'item.programVersion || "--"', 'Quạt sơ / thứ', 'primaryFanPct', 'secondaryFanPct', 'data.serverTime || Date.now()']) {
     if (dashboardSource.includes(obsolete) || runtimeSource.includes(obsolete)) throw new Error(`Obsolete dashboard control or label remains: ${obsolete}`);
   }
   if (!runtimeSource.includes('https://rosa.technology') || !dashboardSource.includes('"publicBaseUrl":"https://rosa.technology"')) {
@@ -123,9 +123,11 @@ try {
     throw new Error('System page policy is invalid');
   }
   const statusMeta = JSON.parse(pages.find((row) => row.page_id === 'biomass-status').meta);
-  if (statusMeta.publicApi.fields.length !== 23 || !statusMeta.publicApi.fields.includes('c21') || !statusMeta.publicApi.fields.includes('c23')) {
-    throw new Error('Purchased-minute telemetry c21 is missing');
+  if (statusMeta.publicApi.fields.length !== 21 || statusMeta.publicApi.fields.includes('c3') || statusMeta.publicApi.fields.includes('c4') || !statusMeta.publicApi.fields.includes('c21') || !statusMeta.publicApi.fields.includes('c23')) {
+    throw new Error('Public telemetry field policy is invalid');
   }
+  if (!dashboardSource.includes('"activeStaleMinutes":20') || !dashboardSource.includes('"idleStaleMinutes":40')) throw new Error('Device stale thresholds are invalid');
+  if (!dashboardSource.includes('dashboard-runtime.js?v=2026.08.20.1')) throw new Error('Dashboard runtime cache version is stale');
   const refuelPage = pages.find((row) => /^[0-9a-f]{32}$/.test(row.page_id));
   const parsedRefuelMeta = JSON.parse(refuelPage.meta);
   if (parsedRefuelMeta.hideLink !== true) throw new Error('Refuel page does not enable the standard ROSA hidden-link flow');
