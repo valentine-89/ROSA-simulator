@@ -33,15 +33,15 @@
   var cfg = {
     title: "Quản lý lò sinh khối", subtitle: "", fleetIoid: "", publicBaseUrl: "https://rosa.technology", pageSize: 50, refreshMs: 60000,
     fleetViewPageId: "biomass-fleet-view", fleetAdminPageId: "biomass-fleet-admin",
-    deviceStatusPageId: "biomass-status", activeStaleMinutes: 20, idleStaleMinutes: 40,
+    deviceStatusPageId: "biomass-status", activeStaleMinutes: 15, idleStaleMinutes: 15,
     mapCenterLat: 21.35, mapCenterLng: 105.72, mapZoom: 8
   };
   try { cfg = Object.assign(cfg, JSON.parse(configNode && configNode.textContent || "{}")); } catch (_) {}
   var query = new URLSearchParams(location.search);
   cfg.fleetIoid = String(query.get("ioid") || cfg.fleetIoid || "").trim().split("@")[0];
   cfg.refreshMs = Math.max(60000, Number(cfg.refreshMs) || 60000);
-  cfg.activeStaleMinutes = Math.max(1, Number(cfg.activeStaleMinutes) || 20);
-  cfg.idleStaleMinutes = Math.max(cfg.activeStaleMinutes, Number(cfg.idleStaleMinutes) || 40);
+  cfg.activeStaleMinutes = Math.max(1, Number(cfg.activeStaleMinutes) || 15);
+  cfg.idleStaleMinutes = Math.max(1, Number(cfg.idleStaleMinutes) || 15);
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {

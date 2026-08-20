@@ -14,7 +14,7 @@ Chỉ hỗ trợ compact-v2. Không thêm fallback cho IO2722OB1 hoặc giả l�
 - Phút mua chỉ dùng giám sát. Mất mạng, hết SyncID hoặc hết phút tuyệt đối không được chặn N1–N5/N101.
 - Mã nhiên liệu là 6 ký tự `A-Z0-9`. Batch 1–500 mã được tạo atomically; một mã chỉ được nạp một lần. `client_request_id` làm cho retry không cộng phút lần hai.
 - Setup page tự lấy fleet IOID từ profile ROSA đang hoạt động và cố định ba page capability của template; không hiển thị IOID/API key hoặc page ID kỹ thuật để người dùng sửa.
-- Dashboard đánh dấu mất kết nối sau 20 phút khi lò đang chạy và 40 phút khi OFF (chu kỳ báo OFF 30 phút cộng 10 phút dung sai). Chỉ timestamp report thật được dùng; event realtime thiếu timestamp bị bỏ qua.
+- Dashboard đánh dấu mất kết nối sau 15 phút không nhận telemetry, không phụ thuộc mode. Chỉ timestamp report thật được dùng; event realtime thiếu timestamp bị bỏ qua.
 - Cường độ quạt hiện tại `c3/c4` không được public hoặc hiển thị; các tham số cấu hình quạt vẫn có trong popup cài đặt.
 
 Payload thiết bị qua gateway chuẩn:
@@ -40,7 +40,7 @@ Không tạo `biomass-report` hoặc bất kỳ action riêng nào.
 - N20 gửi positional telemetry `c1..c23`; `c21=#1022`, `c22=#1017`, `c23=#1018`, không dịch chuyển `c1..c20`.
 - N24 gọi `D23,#801,#1,"data","IO-biomass-meter",#1001,#894,#101`; chỉ ghi `#1022=#2` khi `#1` là `OK` hoặc `METER_REGRESSION`.
 - N25 gọi GPS với `c1=#1001`, `c2=#105`, `c3=#106`.
-- N10 bắt `I99-1`, đọc selector, dispatch bằng switch-case và báo ngay khi mode đổi. N21 dùng vòng vô tận `L(...W60...)` để đếm/báo định kỳ.
+- N10 bắt `I99-1`, đọc selector, dispatch bằng switch-case và báo ngay khi mode đổi. N21 dùng vòng vô tận `L(...W60...)` để đếm và báo mỗi 10 phút ở mọi mode, bảo đảm thiết bị online không vượt ngưỡng stale 15 phút.
 - N1–N5/N10/N21/N23/N101 trong sample được lấy từ readback IO2729MB1 ngày 2026-08-19; chỉ N20/N24/N25 và version được mở rộng cho phút mua/IOID.
 - Giữ nguyên trình tự vật lý N1–N5/N101, các giá trị `#1019–#1021`, meter `#894` và luồng bán hàng ngoài ROSA `#802` khi merge xuống thiết bị. Trước khi restore phải đọc lại thiết bị, không ghi đè mù từ sample.
 
