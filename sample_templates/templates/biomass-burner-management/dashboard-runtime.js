@@ -91,9 +91,11 @@
   }
   function semanticTelemetry(payload) {
     var source = payload || {};
-    var names = ["mode", "burned_minutes", "primary_fan_pct", "secondary_fan_pct", "temperature", "program_version", "cfg_1005", "cfg_1006", "cfg_1007", "cfg_1008", "cfg_1009", "cfg_1010", "cfg_1011", "cfg_1012", "cfg_1013", "cfg_1014", "cfg_1015", "cfg_1016", "latitude", "longitude", "purchased_minutes_cache", "cfg_1017", "cfg_1018"];
+    var names = ["mode", "burned_minutes", null, null, "temperature", "program_version", "cfg_1005", "cfg_1006", "cfg_1007", "cfg_1008", "cfg_1009", "cfg_1010", "cfg_1011", "cfg_1012", "cfg_1013", "cfg_1014", "cfg_1015", "cfg_1016", "latitude", "longitude", "purchased_minutes_cache", "cfg_1017", "cfg_1018"];
     var normalized = Object.assign({}, source);
-    names.forEach(function (name, index) { if (normalized[name] == null && source["c" + (index + 1)] != null) normalized[name] = source["c" + (index + 1)]; });
+    delete normalized.c3;
+    delete normalized.c4;
+    names.forEach(function (name, index) { if (name && normalized[name] == null && source["c" + (index + 1)] != null) normalized[name] = source["c" + (index + 1)]; });
     return normalized;
   }
   function publicMacroUrl(pageId) { return "/api/iot-page-macro/" + encodeURIComponent(cfg.fleetIoid) + "/" + encodeURIComponent(pageId); }

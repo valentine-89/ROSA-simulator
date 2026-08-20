@@ -89,6 +89,7 @@ try {
   testSetupPage();
   const runtimeSource = fs.readFileSync(path.join(__dirname, 'dashboard-runtime.js'), 'utf8');
   const dashboardSource = fs.readFileSync(path.join(__dirname, 'dashboard_vi.html'), 'utf8');
+  const deviceTemplate = JSON.parse(fs.readFileSync(path.join(__dirname, 'IO2729MB1-compact-v2.iodata'), 'utf8'));
   const refuelSource = fs.readFileSync(path.join(__dirname, 'refuel-runtime.js'), 'utf8');
   const qrSource = fs.readFileSync(path.join(__dirname, 'qrcode-runtime.js'), 'utf8');
   for (const key of ['1005','1006','1007','1008','1009','1010','1011','1012','1013','1014','1015','1016','1017','1018']) {
@@ -100,6 +101,9 @@ try {
   for (const obsolete of ['Chờ thiết bị đồng bộ', 'bb-settings-open', 'data-map-ioid', 'item.programVersion || "--"', 'Quạt sơ / thứ', 'primaryFanPct', 'secondaryFanPct', 'data.serverTime || Date.now()']) {
     if (dashboardSource.includes(obsolete) || runtimeSource.includes(obsolete)) throw new Error(`Obsolete dashboard control or label remains: ${obsolete}`);
   }
+  const n20 = deviceTemplate.io_programs.flatMap((group) => group.io_n_list || []).find((program) => String(program.n_id) === '20');
+  if (!n20 || /(?:^|,)#10[23](?:,|$)/.test(n20.n_content) || !n20.n_content.includes('#894,"","","",#1003')) throw new Error('N20 still sends current fan intensity');
+  if (/primary_fan_pct|secondary_fan_pct/.test(runtimeSource)) throw new Error('Fan telemetry semantic mapping remains');
   if (!runtimeSource.includes('https://rosa.technology') || !dashboardSource.includes('"publicBaseUrl":"https://rosa.technology"')) {
     throw new Error('Production refuel base URL is missing');
   }
@@ -127,7 +131,7 @@ try {
     throw new Error('Public telemetry field policy is invalid');
   }
   if (!dashboardSource.includes('"activeStaleMinutes":15') || !dashboardSource.includes('"idleStaleMinutes":15')) throw new Error('Device stale thresholds are invalid');
-  if (!dashboardSource.includes('dashboard-runtime.js?v=2026.08.20.2')) throw new Error('Dashboard runtime cache version is stale');
+  if (!dashboardSource.includes('dashboard-runtime.js?v=2026.08.20.3')) throw new Error('Dashboard runtime cache version is stale');
   const refuelPage = pages.find((row) => /^[0-9a-f]{32}$/.test(row.page_id));
   const parsedRefuelMeta = JSON.parse(refuelPage.meta);
   if (parsedRefuelMeta.hideLink !== true) throw new Error('Refuel page does not enable the standard ROSA hidden-link flow');

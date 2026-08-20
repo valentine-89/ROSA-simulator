@@ -15,7 +15,7 @@ Chỉ hỗ trợ compact-v2. Không thêm fallback cho IO2722OB1 hoặc giả l�
 - Mã nhiên liệu là 6 ký tự `A-Z0-9`. Batch 1–500 mã được tạo atomically; một mã chỉ được nạp một lần. `client_request_id` làm cho retry không cộng phút lần hai.
 - Setup page tự lấy fleet IOID từ profile ROSA đang hoạt động và cố định ba page capability của template; không hiển thị IOID/API key hoặc page ID kỹ thuật để người dùng sửa.
 - Dashboard đánh dấu mất kết nối sau 15 phút không nhận telemetry, không phụ thuộc mode. Chỉ timestamp report thật được dùng; event realtime thiếu timestamp bị bỏ qua.
-- Cường độ quạt hiện tại `c3/c4` không được public hoặc hiển thị; các tham số cấu hình quạt vẫn có trong popup cài đặt.
+- N20 không đọc hoặc gửi cường độ quạt. Hai vị trí `c3/c4` được giữ rỗng để không làm lệch các trường positional phía sau, đồng thời không được public hoặc ánh xạ semantic; các tham số cấu hình quạt vẫn có trong popup cài đặt.
 
 Payload thiết bị qua gateway chuẩn:
 
@@ -37,7 +37,7 @@ Không tạo `biomass-report` hoặc bất kỳ action riêng nào.
 
 - `#894`: tổng phút đã đốt journal bền.
 - `#1022`: cache bền phút đã mua, khởi tạo `0`. Không dùng `#1019–#1021` vì thiết bị production đã dành các ô này cho luồng bán hàng.
-- N20 gửi positional telemetry `c1..c23`; `c21=#1022`, `c22=#1017`, `c23=#1018`, không dịch chuyển `c1..c20`.
+- N20 gửi positional telemetry `c1..c23`; `c3/c4` là chuỗi rỗng, `c21=#1022`, `c22=#1017`, `c23=#1018`, không dịch chuyển các vị trí còn lại.
 - N24 gọi `D23,#801,#1,"data","IO-biomass-meter",#1001,#894,#101`; chỉ ghi `#1022=#2` khi `#1` là `OK` hoặc `METER_REGRESSION`.
 - N25 gọi GPS với `c1=#1001`, `c2=#105`, `c3=#106`.
 - N10 bắt `I99-1`, đọc selector, dispatch bằng switch-case và báo ngay khi mode đổi. N21 dùng vòng vô tận `L(...W60...)` để đếm và báo mỗi 10 phút ở mọi mode, bảo đảm thiết bị online không vượt ngưỡng stale 15 phút.

@@ -1,7 +1,7 @@
 {
   "type": "PROGRAM_FULL",
   "profile": "compact-v2",
-  "program_version": "compact-v2.6.1",
+  "program_version": "compact-v2.6.2",
   "io_id": "<<ioid>>",
   "io_source": "<<io_source>>",
   "io_objects": [
@@ -25,7 +25,7 @@
     {"ob_id":107,"ob_content":"#107","ob_type":"variable","ob_name":"phút từ lần gửi GPS","ob_desc":"","ob_mac":null,"ob_value":"10","ob_state":1,"ob_config":null},
     {"ob_id":1001,"ob_content":"#1001","ob_type":"variable","ob_name":"IOID lò","ob_desc":"","ob_mac":null,"ob_value":"<<ioid>>","ob_state":1,"ob_config":null},
     {"ob_id":894,"ob_content":"#894","ob_type":"variable","ob_name":"tổng phút đốt journal","ob_desc":"","ob_mac":null,"ob_value":"0","ob_state":1,"ob_config":null},
-    {"ob_id":1003,"ob_content":"#1003","ob_type":"variable","ob_name":"version chương trình","ob_desc":"","ob_mac":null,"ob_value":"compact-v2.6.1","ob_state":1,"ob_config":null},
+    {"ob_id":1003,"ob_content":"#1003","ob_type":"variable","ob_name":"version chương trình","ob_desc":"","ob_mac":null,"ob_value":"compact-v2.6.2","ob_state":1,"ob_config":null},
     {"ob_id":1005,"ob_content":"#1005","ob_type":"variable","ob_name":"điện trở mồi giây","ob_desc":"","ob_mac":null,"ob_value":"60","ob_state":1,"ob_config":null},
     {"ob_id":1006,"ob_content":"#1006","ob_type":"variable","ob_name":"quạt mồi tối thiểu","ob_desc":"phần trăm mở ban đầu trước chuỗi tăng dần","ob_mac":null,"ob_value":"15","ob_state":1,"ob_config":null},
     {"ob_id":1007,"ob_content":"#1007","ob_type":"variable","ob_name":"lửa lớn sơ cấp","ob_desc":"","ob_mac":null,"ob_value":"95","ob_state":1,"ob_config":null},
@@ -52,7 +52,7 @@
       {"n_id":"10","n_mode":"4","n_content":"I99-1I(1:5,#1,#2,#3)\nW1\nD4#101,0\n[#3=1](\n  D6N101\n  D4#101,#1\n  [#101:1,2,3,4,5]\n  (D5N1)\n  (D5N2)\n  (D5N3)\n  (D5N4)\n  (D5N5)\n  D5N20\n  D5N24\n)\nD4#104,0\n[I1I2I3I4I5=\"00000\"](D6N101)","n_natural":"","n_name":"kiểm tra nút gạt và đổi mode","n_desc":"khởi động theo nguồn, chỉ đổi mode khi trạng thái nút thay đổi và báo ngay bằng luồng ROSA chuẩn","n_local_def":[]}
     ]},
     {"io_group_id":1,"io_group":"Chương trình con","io_group_desc":"","io_n_list":[
-      {"n_id":"20","n_mode":"1","n_content":"D23,#801,,\"telemetry\",#101,#894,#102,#103,\"\",#1003,#1005,#1006,#1007,#1008,#1009,#1010,#1011,#1012,#1013,#1014,#1015,#1016,#105,#106,#1022,#1017,#1018","n_natural":"","n_name":"gửi telemetry ROSA","n_desc":"c1..c20 giữ ánh xạ compact-v2; c21 là cache phút đã mua; c22/c23 là #1017/#1018; chỉ dùng telemetry D23 chuẩn"},
+      {"n_id":"20","n_mode":"1","n_content":"D23,#801,,\"telemetry\",#101,#894,\"\",\"\",\"\",#1003,#1005,#1006,#1007,#1008,#1009,#1010,#1011,#1012,#1013,#1014,#1015,#1016,#105,#106,#1022,#1017,#1018","n_natural":"","n_name":"gửi telemetry ROSA","n_desc":"c3/c4 để rỗng, không gửi cường độ quạt và không làm lệch các vị trí sau; c21 là cache phút đã mua; c22/c23 là #1017/#1018"},
       {"n_id":"21","n_mode":"1","n_content":"I99-1\nW1\n[#894=\"\"](D4#894,0)\n[#101=\"\"](D4#101,0)\n[#102=\"\"](D4#102,0)\n[#103=\"\"](D4#103,0)\n[#107=\"\"](D4#107,10)\nD4#104,0\nD5N20\nD5N24\nL(\nW60\nD4#104,#104+1\nD4#107,#107+1\n[#101>0](\n  D4#894,#894+1\n  [(#894%60)=0](\n    D4#5,#909#908#907#911#912#913\n    D61,#802,#1002,1,1,#1004,#1004,#1004,#1002#904,#909#908#907#911#912#913,2,,0,1,10000-(#894/60)\n  )\n)\n[#104>=10](D4#104,0D5N20D5N24)\n)","n_natural":"","n_name":"đếm phút và lịch báo cáo","n_desc":"báo mỗi 10 phút ở mọi mode để trạng thái online không vượt ngưỡng stale 15 phút; giữ luồng bán hàng #802 song song"},
       {"n_id":"23","n_mode":"4","n_content":"I95-1\nD4#1,I95\n[(#1.1<>\"\"&#1.2<>\"\"&(#105=\"\"|#106=\"\"|#107>=10))](D4#105,#1.1D4#106,#1.2D4#107,0D5N20D5N25)","n_natural":"","n_name":"cập nhật GPS khi có tín hiệu","n_desc":"GPS gửi bằng telemetry và data macro chuẩn"},
       {"n_id":"24","n_mode":"1","n_content":"D23,#801,#1,\"data\",\"IO-biomass-meter\",#1001,#894,#101\n[#1=\"OK\"](D4#1022,#2)\n[#1=\"METER_REGRESSION\"](D4#1022,#2)","n_natural":"","n_name":"lưu meter và đọc phút mua","n_desc":"c1 khai báo IOID; response c1 trạng thái, c2 phút đã mua; lỗi mạng giữ nguyên #1022"},
