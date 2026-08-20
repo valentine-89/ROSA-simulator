@@ -102,7 +102,7 @@ try {
     if (dashboardSource.includes(obsolete) || runtimeSource.includes(obsolete)) throw new Error(`Obsolete dashboard control or label remains: ${obsolete}`);
   }
   const n20 = deviceTemplate.io_programs.flatMap((group) => group.io_n_list || []).find((program) => String(program.n_id) === '20');
-  if (!n20 || /(?:^|,)#10[23](?:,|$)/.test(n20.n_content) || !n20.n_content.includes('#894,"","","",#1003')) throw new Error('N20 still sends current fan intensity');
+  if (!n20 || /(?:^|,)#10[23](?:,|$)/.test(n20.n_content) || /,""/.test(n20.n_content) || !n20.n_content.includes('#894,#1003,#1005')) throw new Error('N20 is not using the dense compact-v2 telemetry contract');
   if (/primary_fan_pct|secondary_fan_pct/.test(runtimeSource)) throw new Error('Fan telemetry semantic mapping remains');
   if (!runtimeSource.includes('https://rosa.technology') || !dashboardSource.includes('"publicBaseUrl":"https://rosa.technology"')) {
     throw new Error('Production refuel base URL is missing');
@@ -127,11 +127,11 @@ try {
     throw new Error('System page policy is invalid');
   }
   const statusMeta = JSON.parse(pages.find((row) => row.page_id === 'biomass-status').meta);
-  if (statusMeta.publicApi.fields.length !== 21 || statusMeta.publicApi.fields.includes('c3') || statusMeta.publicApi.fields.includes('c4') || !statusMeta.publicApi.fields.includes('c21') || !statusMeta.publicApi.fields.includes('c23')) {
+  if (statusMeta.publicApi.fields.length !== 20 || statusMeta.publicApi.fields[0] !== 'c1' || statusMeta.publicApi.fields[19] !== 'c20') {
     throw new Error('Public telemetry field policy is invalid');
   }
   if (!dashboardSource.includes('"activeStaleMinutes":15') || !dashboardSource.includes('"idleStaleMinutes":15')) throw new Error('Device stale thresholds are invalid');
-  if (!dashboardSource.includes('dashboard-runtime.js?v=2026.08.20.3')) throw new Error('Dashboard runtime cache version is stale');
+  if (!dashboardSource.includes('dashboard-runtime.js?v=2026.08.20.4')) throw new Error('Dashboard runtime cache version is stale');
   const refuelPage = pages.find((row) => /^[0-9a-f]{32}$/.test(row.page_id));
   const parsedRefuelMeta = JSON.parse(refuelPage.meta);
   if (parsedRefuelMeta.hideLink !== true) throw new Error('Refuel page does not enable the standard ROSA hidden-link flow');

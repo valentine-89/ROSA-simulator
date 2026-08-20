@@ -91,11 +91,9 @@
   }
   function semanticTelemetry(payload) {
     var source = payload || {};
-    var names = ["mode", "burned_minutes", null, null, "temperature", "program_version", "cfg_1005", "cfg_1006", "cfg_1007", "cfg_1008", "cfg_1009", "cfg_1010", "cfg_1011", "cfg_1012", "cfg_1013", "cfg_1014", "cfg_1015", "cfg_1016", "latitude", "longitude", "purchased_minutes_cache", "cfg_1017", "cfg_1018"];
+    var names = ["mode", "burned_minutes", "program_version", "cfg_1005", "cfg_1006", "cfg_1007", "cfg_1008", "cfg_1009", "cfg_1010", "cfg_1011", "cfg_1012", "cfg_1013", "cfg_1014", "cfg_1015", "cfg_1016", "latitude", "longitude", "purchased_minutes_cache", "cfg_1017", "cfg_1018"];
     var normalized = Object.assign({}, source);
-    delete normalized.c3;
-    delete normalized.c4;
-    names.forEach(function (name, index) { if (name && normalized[name] == null && source["c" + (index + 1)] != null) normalized[name] = source["c" + (index + 1)]; });
+    names.forEach(function (name, index) { if (normalized[name] == null && source["c" + (index + 1)] != null) normalized[name] = source["c" + (index + 1)]; });
     return normalized;
   }
   function publicMacroUrl(pageId) { return "/api/iot-page-macro/" + encodeURIComponent(cfg.fleetIoid) + "/" + encodeURIComponent(pageId); }
@@ -120,7 +118,6 @@
     return Object.assign({}, row, {
       mode: mode, stale: stale, lastReportedAt: lastReportedAt || null, burnedMinutes: burned,
       purchasedMinutes: purchased, remainingMinutes: Math.max(purchased - burned, 0),
-      temperature: payload.temperature == null || payload.temperature === "" ? null : Number(payload.temperature),
       programVersion: String(payload.program_version || ""),
       latitude: gps ? Number(payload.latitude) : Number(row.latitude), longitude: gps ? Number(payload.longitude) : Number(row.longitude),
       coordinateSource: gps ? "gps" : String(row.coordinate_source || "default"), payload: payload
