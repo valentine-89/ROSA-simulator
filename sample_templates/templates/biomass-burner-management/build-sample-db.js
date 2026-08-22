@@ -169,7 +169,7 @@ VALUES (:burner_id,COALESCE(:name,''),COALESCE(:location,''),
 INSERT INTO biomass_device_meter(ioid,burned_minutes,purchased_minutes,mode,reported_at)
 VALUES (:burner_id,0,0,0,CAST(strftime('%s','now') AS INTEGER)*1000);
 INSERT INTO system_iot_batch_devices(source_id,ioid,api_key,fields_json,metadata_json,enabled,created_at,updated_at)
-VALUES ('biomass-fleet',:burner_id,trim(:api_key),'[]','{}',1,
+VALUES ('biomass-fleet',:burner_id,trim(:device_key),'[]','{}',1,
  CAST(strftime('%s','now') AS INTEGER)*1000,CAST(strftime('%s','now') AS INTEGER)*1000);
 INSERT INTO system_pages(page_id,html,require_email,require_phone,sync_id,enabled,title,meta)
 SELECT b.refuel_page_id,t.html,0,0,'<<syncid>>',1,'Nạp nhiên liệu '||:burner_id,
@@ -184,9 +184,9 @@ UPDATE biomass_burners SET name=COALESCE(:name,''),location=COALESCE(:location,'
  coordinate_source=CASE WHEN trim(COALESCE(:latitude,''))='' OR trim(COALESCE(:longitude,''))='' THEN coordinate_source ELSE 'manual' END,
  updated_at=CAST(strftime('%s','now') AS INTEGER)*1000 WHERE ioid=:burner_id;
 INSERT INTO system_iot_batch_devices(source_id,ioid,api_key,fields_json,metadata_json,enabled,created_at,updated_at)
-SELECT 'biomass-fleet',:burner_id,trim(:api_key),'[]','{}',1,
+SELECT 'biomass-fleet',:burner_id,trim(:device_key),'[]','{}',1,
  CAST(strftime('%s','now') AS INTEGER)*1000,CAST(strftime('%s','now') AS INTEGER)*1000
-WHERE trim(COALESCE(:api_key,''))<>''
+WHERE trim(COALESCE(:device_key,''))<>''
 ON CONFLICT(source_id,ioid) DO UPDATE SET api_key=excluded.api_key,enabled=1,updated_at=excluded.updated_at;
 SELECT :burner_id ioid WHERE changes()>0;
 `);
@@ -298,8 +298,8 @@ const readMacros={
  'biomass-fleet-device':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'}}}
 };
 const writeMacros={
- 'biomass-fleet-create':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},api_key:{type:'string',required:true,minLength:1,maxLength:512},name:{type:'string',maxLength:120},location:{type:'string',maxLength:240},latitude:{type:'number',min:-90,max:90},longitude:{type:'number',min:-180,max:180}}},
- 'biomass-fleet-update':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},api_key:{type:'string',maxLength:512},name:{type:'string',maxLength:120},location:{type:'string',maxLength:240},latitude:{type:'number',min:-90,max:90},longitude:{type:'number',min:-180,max:180}}},
+ 'biomass-fleet-create':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},device_key:{type:'string',required:true,minLength:1,maxLength:512},name:{type:'string',maxLength:120},location:{type:'string',maxLength:240},latitude:{type:'number',min:-90,max:90},longitude:{type:'number',min:-180,max:180}}},
+ 'biomass-fleet-update':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},device_key:{type:'string',maxLength:512},name:{type:'string',maxLength:120},location:{type:'string',maxLength:240},latitude:{type:'number',min:-90,max:90},longitude:{type:'number',min:-180,max:180}}},
  'biomass-fleet-delete':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'}}},
  'biomass-fleet-cache-gps':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},latitude:{type:'number',required:true,min:-90,max:90},longitude:{type:'number',required:true,min:-180,max:180}}},
  'biomass-purchased-minutes-set':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},purchased_minutes:{type:'integer',required:true,min:0,max:2147483647}}},

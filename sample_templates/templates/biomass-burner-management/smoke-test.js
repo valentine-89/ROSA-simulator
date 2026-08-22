@@ -138,7 +138,7 @@ try {
     throw new Error('Standard batch source schema is invalid');
   }
   if (!dashboardSource.includes('"activeStaleMinutes":15') || !dashboardSource.includes('"idleStaleMinutes":15')) throw new Error('Device stale thresholds are invalid');
-  if (!dashboardSource.includes('dashboard-runtime.js?v=2026.08.22.1')) throw new Error('Dashboard runtime cache version is stale');
+  if (!dashboardSource.includes('dashboard-runtime.js?v=2026.08.22.2')) throw new Error('Dashboard runtime cache version is stale');
   const refuelPage = pages.find((row) => /^[0-9a-f]{32}$/.test(row.page_id));
   const parsedRefuelMeta = JSON.parse(refuelPage.meta);
   if (parsedRefuelMeta.hideLink !== true) throw new Error('Refuel page does not enable the standard ROSA hidden-link flow');
@@ -152,7 +152,11 @@ try {
   for (const page of pages) {
     const publicApi = JSON.parse(page.meta).publicApi || {};
     for (const macro of Object.values(publicApi.macros || {})) {
-      if (macro.params && Object.prototype.hasOwnProperty.call(macro.params, 'ioid')) throw new Error('Reserved ioid param leaked');
+      for (const reserved of ['ioid', 'api_key']) {
+        if (macro.params && Object.prototype.hasOwnProperty.call(macro.params, reserved)) {
+          throw new Error(`Reserved public API param leaked: ${reserved}`);
+        }
+      }
     }
   }
 
@@ -193,7 +197,7 @@ try {
   }
 
   const revisionBeforeCreate = db.prepare('SELECT revision FROM system_iot_batch_sources WHERE source_id=?').get('biomass-fleet').revision;
-  const newBurner = runMacro('biomass-fleet-create', { ...context, burner_id: 'IO2729TEST', api_key: 'test-api-key', name: 'Lò test', location: '', latitude: '', longitude: '' })[0];
+  const newBurner = runMacro('biomass-fleet-create', { ...context, burner_id: 'IO2729TEST', device_key: 'test-api-key', name: 'Lò test', location: '', latitude: '', longitude: '' })[0];
   if (!/^[0-9a-f]{32}$/.test(newBurner.refuel_page_id) || newBurner.refuel_page_id === refuelPage.page_id) throw new Error('New burner random refuel page id failed');
   const createdPage = db.prepare('SELECT meta FROM system_pages WHERE page_id = ?').get(newBurner.refuel_page_id);
   if (!createdPage || JSON.parse(createdPage.meta).publicApi.context.burner_id !== 'IO2729TEST') throw new Error('New burner page context failed');
