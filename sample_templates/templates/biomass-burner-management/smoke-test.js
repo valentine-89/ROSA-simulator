@@ -121,7 +121,9 @@ try {
   if (!qrSource.includes('global.BiomassQr') || /(?:fetch|src\s*=)\s*\(?["']https?:\/\//.test(qrSource)) throw new Error('Local QR runtime is invalid');
 
   const pages = db.prepare('SELECT page_id, require_email, meta, html FROM system_pages ORDER BY page_id').all();
-  if (pages.length !== 3 || pages.find((row) => row.page_id === 'biomass-fleet-admin')?.require_email !== 1) {
+  if (pages.length !== 3
+      || pages.find((row) => row.page_id === 'biomass-fleet-admin')?.require_email !== 1
+      || pages.find((row) => row.page_id === 'biomass-fleet-view')?.require_email !== 1) {
     throw new Error('System page policy is invalid');
   }
   const viewMeta = JSON.parse(pages.find((row) => row.page_id === 'biomass-fleet-view').meta);

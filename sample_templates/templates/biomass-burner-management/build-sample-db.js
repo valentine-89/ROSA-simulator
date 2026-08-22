@@ -309,7 +309,7 @@ const writeMacros={
 };
 const pageHtml='<!doctype html><html lang="vi"><meta charset="utf-8"><title>Biomass compact-v2</title><main>Biomass compact-v2</main></html>';
 const addPage=db.prepare(`INSERT INTO system_pages(page_id,html,require_email,require_phone,sync_id,enabled,title,meta) VALUES (?,?,?,0,'<<syncid>>',1,?,?)`);
-addPage.run('biomass-fleet-view',pageHtml,0,'Biomass fleet view',JSON.stringify({publicApi:{batchTelemetry:{sourceId:'biomass-fleet'},macros:readMacros,rateLimit:{limit:300,windowMs:60000}}}));
+addPage.run('biomass-fleet-view',pageHtml,1,'Biomass fleet view',JSON.stringify({publicApi:{batchTelemetry:{sourceId:'biomass-fleet'},macros:readMacros,rateLimit:{limit:300,windowMs:60000}}}));
 addPage.run('biomass-fleet-admin',pageHtml,1,'Biomass fleet admin',JSON.stringify({publicApi:{macros:writeMacros,rateLimit:{limit:120,windowMs:60000}}}));
 const template=db.prepare('SELECT html,meta_template FROM biomass_page_templates WHERE page_type=?').get('refuel');
 addPage.run(initialRefuelPageId,template.html,0,'Nạp nhiên liệu IO2729MB1',template.meta_template.replace('__BURNER_ID__','IO2729MB1'));
