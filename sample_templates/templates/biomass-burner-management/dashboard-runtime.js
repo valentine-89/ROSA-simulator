@@ -34,7 +34,7 @@
     title: "Quản lý lò sinh khối", subtitle: "", fleetIoid: "", publicBaseUrl: "https://rosa.technology", pageSize: 50, refreshMs: 60000,
     fleetViewPageId: "biomass-fleet-view", fleetAdminPageId: "biomass-fleet-admin",
     activeStaleMinutes: 15, idleStaleMinutes: 15,
-    mapCenterLat: 21.35, mapCenterLng: 105.72, mapZoom: 8
+    mapCenterLat: 10.798, mapCenterLng: 106.651, mapZoom: 12
   };
   try { cfg = Object.assign(cfg, JSON.parse(configNode && configNode.textContent || "{}")); } catch (_) {}
   var query = new URLSearchParams(location.search);
@@ -53,7 +53,7 @@
     addModal: $("bb-add-modal"), addForm: $("bb-add-form"), addClose: $("bb-add-close"), addCancel: $("bb-add-cancel"),
     search: $("bb-search"), pageSize: $("bb-page-size"), apply: $("bb-apply-filter"), body: $("bb-table-body"), empty: $("bb-empty"),
     prev: $("bb-prev"), next: $("bb-next"), pageInfo: $("bb-page-info"), total: $("bb-kpi-total"), active: $("bb-kpi-active"),
-    stale: $("bb-kpi-stale"), burned: $("bb-kpi-burned"), purchased: $("bb-kpi-purchased"), map: $("bb-map"),
+    online: $("bb-kpi-online"), burned: $("bb-kpi-burned"), purchased: $("bb-kpi-purchased"), map: $("bb-map"),
     mapLoading: $("bb-map-loading"), mapFit: $("bb-map-fit"), mapList: $("bb-map-list"), mapCount: $("bb-map-count"),
     settingsModal: $("bb-settings-modal"), settingsTitle: $("bb-settings-title"), settingsSubtitle: $("bb-settings-subtitle"),
     settingsClose: $("bb-settings-close"), coordinateSource: $("bb-coordinate-source"), deviceForm: $("bb-device-form"),
@@ -67,7 +67,8 @@
     batchModal: $("bb-batch-modal"), batchSummary: $("bb-batch-summary"), batchCodes: $("bb-batch-codes"),
     batchClose: $("bb-batch-close"), batchCopy: $("bb-batch-copy"), batchCsv: $("bb-batch-csv"),
     qrModal: $("bb-qr-modal"), qrClose: $("bb-qr-close"), qrCode: $("bb-qr-code"), qrDevice: $("bb-qr-device"),
-    qrUrl: $("bb-qr-url"), qrCopy: $("bb-qr-copy"), qrPrint: $("bb-qr-print"), toast: $("bb-toast-stack")
+    qrUrl: $("bb-qr-url"), qrCopy: $("bb-qr-copy"), qrPrint: $("bb-qr-print"), toast: $("bb-toast-stack"),
+    themePicker: $("theme-picker"), themePickerToggle: $("theme-picker-toggle"), themePickerMenu: $("theme-picker-menu")
   };
   var state = {
     page: 1, pageSize: Math.max(1, Number(cfg.pageSize) || 50), total: 0,
@@ -88,6 +89,21 @@
   function showModal(modal, visible) { modal.setAttribute("aria-hidden", visible ? "false" : "true"); modal.classList.toggle("is-open", visible); }
   function notify(message, error) { var item = document.createElement("div"); item.className = "bb-toast" + (error ? " is-error" : ""); item.textContent = message; els.toast.appendChild(item); setTimeout(function () { item.remove(); }, 4200); }
   function setStatus(text, status) { els.status.textContent = text; els.status.dataset.state = status; }
+  function setTheme(nextTheme) {
+    var allowed = ["neumorphism", "aurora-ui", "modern-flat", "glassmorphism", "cyberpunk", "neo-brutalism", "bento-grid"];
+    var theme = allowed.includes(String(nextTheme || "")) ? String(nextTheme) : "neumorphism";
+    document.documentElement.setAttribute("data-theme", theme);
+    try { window.localStorage.setItem("sample-dashboard-theme", theme); } catch (_) {}
+    if (els.themePickerMenu) {
+      els.themePickerMenu.querySelectorAll("[data-theme-option]").forEach(function (button) {
+        var active = button.getAttribute("data-theme-option") === theme;
+        button.setAttribute("aria-checked", active ? "true" : "false");
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+    }
+  }
+  function closeThemePicker() { if (!els.themePicker) return; els.themePicker.classList.remove("is-open"); els.themePickerToggle.setAttribute("aria-expanded", "false"); }
+  function toggleThemePicker() { if (!els.themePicker) return; var open = !els.themePicker.classList.contains("is-open"); els.themePicker.classList.toggle("is-open", open); els.themePickerToggle.setAttribute("aria-expanded", open ? "true" : "false"); }
   function requestId(prefix) {
     var id = window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
     return String(prefix || "REQ") + "-" + id;
@@ -133,9 +149,9 @@
   function iconUrl(itemOrState) { var value = typeof itemOrState === "string" ? itemOrState : deviceState(itemOrState); return iconUrls[value] || iconUrls.offline; }
 
   function renderSummary(items) {
-    var active = 0; var stale = 0; var burned = 0; var purchased = 0;
-    items.forEach(function (item) { if (item.stale) stale += 1; else if (Number(item.mode) > 0) active += 1; burned += item.burnedMinutes; purchased += item.purchasedMinutes; });
-    els.total.textContent = number(state.total); els.active.textContent = number(active); els.stale.textContent = number(stale);
+    var active = 0; var online = 0; var burned = 0; var purchased = 0;
+    items.forEach(function (item) { if (!item.stale) { online += 1; if (Number(item.mode) > 0) active += 1; } burned += item.burnedMinutes; purchased += item.purchasedMinutes; });
+    els.total.textContent = number(state.total); els.active.textContent = number(active); els.online.textContent = number(online);
     els.burned.textContent = number(burned); els.purchased.textContent = number(purchased);
   }
   function renderTable(items) {
@@ -239,8 +255,17 @@
   els.deviceForm.onsubmit = async function (event) { event.preventDefault(); if (!state.current) return; var form = new FormData(els.deviceForm); try { await runMacro(cfg.fleetAdminPageId, "biomass-fleet-update", { burner_id: state.current.ioid, device_key: String(form.get("api_key") || "").trim(), name: String(form.get("name") || "").trim(), location: String(form.get("location") || "").trim(), latitude: Number(form.get("latitude")), longitude: Number(form.get("longitude")) }); notify("Đã lưu"); await loadBatchTelemetry(); await openSettings(state.current.ioid); refresh(); } catch (error) { notify(error.message, true); } };
   els.settingsGrid.onsubmit = async function (event) { event.preventDefault(); var form = event.target.closest("[data-setting-key]"); if (!form || !state.current) return; var key = form.dataset.settingKey; var definition = settingDefinitions.find(function (item) { return item.key === key; }); var value = Number(form.elements.value.value); if (!definition || !validSettingValue(definition, value)) { notify("Giá trị không hợp lệ", true); return; } var button = form.querySelector("button"); button.disabled = true; els.settingsState.textContent = "Đang ghi"; try { await jsonRequest("/api/iot-cmd/" + encodeURIComponent(state.current.ioid) + "/biomass-set-" + key, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: value }) }); var matched = await waitSetting(state.current.ioid, key, value); if (!matched) throw new Error("Chưa nhận được telemetry đọc lại"); await auditSetting(state.current.ioid, key, value, "confirmed"); els.settingsState.textContent = "Đã đọc lại"; notify("Đã cập nhật #" + key); scheduleLiveRender(); } catch (error) { await auditSetting(state.current.ioid, key, value, "failed"); els.settingsState.textContent = "Ghi lỗi"; notify(error.message, true); } finally { button.disabled = false; } };
   els.deleteBurner.onclick = async function () { if (!state.current || !confirm("Xóa " + state.current.ioid + "?")) return; try { await runMacro(cfg.fleetAdminPageId, "biomass-fleet-delete", { burner_id: state.current.ioid }); showModal(els.settingsModal, false); notify("Đã xóa lò"); state.current = null; refresh(); } catch (error) { notify(error.message, true); } };
-  document.addEventListener("click", function (event) { var settings = event.target.closest("[data-settings]"); if (settings) openSettings(settings.dataset.settings); var refuel = event.target.closest("[data-refuel]"); if (refuel) { var refuelItem = findItem(refuel.dataset.refuel); if (refuelItem) window.open(refuelUrl(refuelItem), "_blank", "noopener"); } var qr = event.target.closest("[data-qr]"); if (qr) openQr(findItem(qr.dataset.qr)); });
+  document.addEventListener("click", function (event) {
+    var themeOption = event.target.closest("[data-theme-option]");
+    if (themeOption) { setTheme(themeOption.getAttribute("data-theme-option")); closeThemePicker(); return; }
+    if (event.target.closest("#theme-picker-toggle")) { toggleThemePicker(); return; }
+    if (els.themePicker && !els.themePicker.contains(event.target)) closeThemePicker();
+    var settings = event.target.closest("[data-settings]"); if (settings) openSettings(settings.dataset.settings);
+    var refuel = event.target.closest("[data-refuel]"); if (refuel) { var refuelItem = findItem(refuel.dataset.refuel); if (refuelItem) window.open(refuelUrl(refuelItem), "_blank", "noopener"); }
+    var qr = event.target.closest("[data-qr]"); if (qr) openQr(findItem(qr.dataset.qr));
+  });
   window.addEventListener("beforeunload", function () { clearTimeout(state.timer); clearTimeout(state.renderTimer); closeStream(); });
+  setTheme(document.documentElement.getAttribute("data-theme") || "neumorphism");
   document.querySelectorAll("[data-burner-icon]").forEach(function (image) { image.src = iconUrl(image.dataset.burnerIcon); });
   refresh();
 })();

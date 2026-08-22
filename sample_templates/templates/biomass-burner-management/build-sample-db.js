@@ -14,7 +14,7 @@ db.exec(`
   PRAGMA foreign_keys = ON;
   CREATE TABLE biomass_burners (
     ioid TEXT PRIMARY KEY, name TEXT NOT NULL DEFAULT '', location TEXT NOT NULL DEFAULT '',
-    latitude REAL NOT NULL DEFAULT 21.35, longitude REAL NOT NULL DEFAULT 105.72,
+    latitude REAL NOT NULL DEFAULT 10.798, longitude REAL NOT NULL DEFAULT 106.651,
     coordinate_source TEXT NOT NULL DEFAULT 'default' CHECK (coordinate_source IN ('default','manual','gps')),
     refuel_page_id TEXT NOT NULL UNIQUE CHECK (length(refuel_page_id)=32 AND refuel_page_id NOT GLOB '*[^0-9a-f]*'), created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
   );
@@ -118,7 +118,7 @@ db.prepare('INSERT INTO biomass_page_templates(page_type,html,meta_template) VAL
 const now = 1786400000000;
 const initialRefuelPageId = 'd4f8a92c6b1e47a0bd395f82c713e064';
 db.prepare(`INSERT INTO biomass_burners(ioid,name,location,latitude,longitude,coordinate_source,refuel_page_id,created_at,updated_at)
- VALUES ('IO2729MB1','','',21.35,105.72,'default',?, ?,?)`).run(initialRefuelPageId,now,now);
+ VALUES ('IO2729MB1','','',10.798,106.651,'default',?, ?,?)`).run(initialRefuelPageId,now,now);
 db.prepare(`INSERT INTO biomass_device_meter(ioid,burned_minutes,purchased_minutes,mode,reported_at)
  VALUES ('IO2729MB1',0,0,0,?)`).run(now);
 const telemetryFields=Array.from({length:20},(_,index)=>`c${index+1}`);
@@ -162,8 +162,8 @@ FROM biomass_burners b LEFT JOIN biomass_device_meter m ON m.ioid=b.ioid WHERE b
 addMacro.run('biomass-fleet-create','Register a compact-v2 burner and create its public refuel page atomically.',`
 INSERT INTO biomass_burners(ioid,name,location,latitude,longitude,coordinate_source,refuel_page_id,created_at,updated_at)
 VALUES (:burner_id,COALESCE(:name,''),COALESCE(:location,''),
- CASE WHEN trim(COALESCE(:latitude,''))='' THEN 21.35 ELSE CAST(:latitude AS REAL) END,
- CASE WHEN trim(COALESCE(:longitude,''))='' THEN 105.72 ELSE CAST(:longitude AS REAL) END,
+ CASE WHEN trim(COALESCE(:latitude,''))='' THEN 10.798 ELSE CAST(:latitude AS REAL) END,
+ CASE WHEN trim(COALESCE(:longitude,''))='' THEN 106.651 ELSE CAST(:longitude AS REAL) END,
  CASE WHEN trim(COALESCE(:latitude,''))='' OR trim(COALESCE(:longitude,''))='' THEN 'default' ELSE 'manual' END,
  lower(hex(randomblob(16))),CAST(strftime('%s','now') AS INTEGER)*1000,CAST(strftime('%s','now') AS INTEGER)*1000);
 INSERT INTO biomass_device_meter(ioid,burned_minutes,purchased_minutes,mode,reported_at)

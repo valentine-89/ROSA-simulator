@@ -4,11 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quản lý lò sinh khối</title>
+  <script>
+    try {
+      var savedTheme = window.localStorage.getItem("sample-dashboard-theme");
+      if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+    } catch (_) {}
+  </script>
   <link rel="stylesheet" href="/dashboard-themes.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="anonymous" />
-  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/dashboard.css?v=2026.08.22.1" />
+  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/dashboard.css?v=2026.08.22.2" />
 </head>
 <body>
   <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
@@ -23,12 +29,12 @@
       </div>
     </section>
 
-    <section class="bb-kpi-grid bb-kpi-grid-five" aria-label="Tổng quan">
-      <article class="bb-kpi"><span>Tổng lò</span><strong id="bb-kpi-total">--</strong><em>thiết bị</em></article>
-      <article class="bb-kpi"><span>Đang đốt</span><strong id="bb-kpi-active">--</strong><em>lò</em></article>
-      <article class="bb-kpi"><span>Mất kết nối</span><strong id="bb-kpi-stale">--</strong><em>lò</em></article>
-      <article class="bb-kpi"><span>Phút đã đốt</span><strong id="bb-kpi-burned">--</strong><em>phút</em></article>
-      <article class="bb-kpi"><span>Phút đã mua</span><strong id="bb-kpi-purchased">--</strong><em>phút</em></article>
+    <section class="bb-panel bb-overview-card" aria-label="Tổng quan">
+      <div class="bb-overview-stat"><span>Tổng lò</span><div><strong id="bb-kpi-total">--</strong><em>thiết bị</em></div></div>
+      <div class="bb-overview-stat"><span>Đang đốt</span><div><strong id="bb-kpi-active">--</strong><em>lò</em></div></div>
+      <div class="bb-overview-stat"><span>Online</span><div><strong id="bb-kpi-online">--</strong><em>lò</em></div></div>
+      <div class="bb-overview-stat"><span>Phút đã đốt</span><div><strong id="bb-kpi-burned">--</strong><em>phút</em></div></div>
+      <div class="bb-overview-stat"><span>Phút đã mua</span><div><strong id="bb-kpi-purchased">--</strong><em>phút</em></div></div>
     </section>
 
     <section class="bb-map-layout">
@@ -78,16 +84,29 @@
   <div class="bb-modal" id="bb-qr-modal" aria-hidden="true"><div class="bb-modal-card bb-modal-card-sm"><div class="bb-modal-head"><h2>QR trang nạp</h2><button class="bb-icon-btn" id="bb-qr-close" type="button">×</button></div><div class="bb-modal-body bb-qr-body"><div id="bb-qr-code"></div><strong id="bb-qr-device"></strong><input class="bb-input" id="bb-qr-url" readonly /><div class="bb-form-actions"><button class="bb-btn" id="bb-qr-copy" type="button">Sao chép URL</button><button class="bb-btn bb-btn-primary" id="bb-qr-print" type="button">In QR</button></div></div></div></div>
 
   <div class="bb-toast-stack" id="bb-toast-stack"></div>
+
+  <div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Chọn giao diện" aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Tùy chọn giao diện">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism" role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism" role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk" role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento Grid</button>
+    </div>
+  </div>
   <!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
 
   <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
-  <script type="application/json" id="biomass-burner-config">{"title":"Quản lý lò sinh khối","subtitle":"","fleetIoid":"<<sessionid>>","publicBaseUrl":"https://rosa.technology","fleetViewPageId":"biomass-fleet-view","fleetAdminPageId":"biomass-fleet-admin","pageSize":50,"refreshMs":60000,"activeStaleMinutes":15,"idleStaleMinutes":15,"mapCenterLat":21.35,"mapCenterLng":105.72,"mapZoom":8}</script>
+  <script type="application/json" id="biomass-burner-config">{"title":"Quản lý lò sinh khối","subtitle":"","fleetIoid":"<<sessionid>>","publicBaseUrl":"https://rosa.technology","fleetViewPageId":"biomass-fleet-view","fleetAdminPageId":"biomass-fleet-admin","pageSize":50,"refreshMs":60000,"activeStaleMinutes":15,"idleStaleMinutes":15,"mapCenterLat":10.798,"mapCenterLng":106.651,"mapZoom":12}</script>
   <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
 
   <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: START --><script></script><!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin="anonymous"></script>
   <script src="/sample_dashboards/biomass-burner-management/qrcode-runtime.js?v=2026.08.19.1"></script>
-  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START --><script src="/sample_dashboards/biomass-burner-management/dashboard-runtime.js?v=2026.08.22.2"></script><!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+  <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START --><script src="/sample_dashboards/biomass-burner-management/dashboard-runtime.js?v=2026.08.22.3"></script><!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
 </body>
 </html>

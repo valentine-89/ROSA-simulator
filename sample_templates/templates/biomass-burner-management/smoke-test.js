@@ -66,6 +66,9 @@ function testSetupPage() {
       || config.fleetAdminPageId !== 'biomass-fleet-admin') {
     throw new Error('Setup did not enforce fixed biomass capability page IDs');
   }
+  if (config.mapCenterLat !== 10.798 || config.mapCenterLng !== 106.651 || config.mapZoom !== 12) {
+    throw new Error('Setup did not preserve the compact-v2 sample map defaults');
+  }
 }
 
 const context = { session_id: 'IO2729MB1@redacted', sync_id: 'test', ioid: 'IO2729MB1' };
@@ -87,6 +90,7 @@ try {
   testSetupPage();
   const runtimeSource = fs.readFileSync(path.join(__dirname, 'dashboard-runtime.js'), 'utf8');
   const dashboardSource = fs.readFileSync(path.join(__dirname, 'dashboard_vi.html'), 'utf8');
+  const dashboardCss = fs.readFileSync(path.join(__dirname, 'dashboard.css'), 'utf8');
   const deviceTemplate = JSON.parse(fs.readFileSync(path.join(__dirname, 'IO2729MB1-compact-v2.iodata'), 'utf8'));
   const refuelSource = fs.readFileSync(path.join(__dirname, 'refuel-runtime.js'), 'utf8');
   const qrSource = fs.readFileSync(path.join(__dirname, 'qrcode-runtime.js'), 'utf8');
@@ -95,6 +99,15 @@ try {
   }
   for (const token of ['biomass-fuel-lot-create-batch', 'biomass-purchased-minutes-set', 'downloadCsv', 'BiomassQr', 'iot-page-batch-telemetry', 'iot-page-batch-realtime']) {
     if (!runtimeSource.includes(token)) throw new Error(`Dashboard feature ${token} is missing`);
+  }
+  for (const token of ['bb-overview-card', 'bb-kpi-online', 'theme-picker-toggle', 'data-theme-option="bento-grid"', 'sample-dashboard-theme']) {
+    if (!dashboardSource.includes(token) && !runtimeSource.includes(token)) throw new Error(`Compact overview/theme feature ${token} is missing`);
+  }
+  if (dashboardSource.includes('bb-kpi-grid') || dashboardSource.includes('bb-kpi-stale') || dashboardCss.includes('.bb-kpi')) {
+    throw new Error('Legacy standalone KPI cards remain');
+  }
+  if (!runtimeSource.includes('var active = 0; var online = 0') || !runtimeSource.includes('els.online.textContent')) {
+    throw new Error('Online KPI does not use the current non-stale fleet count');
   }
   for (const obsolete of ['Chờ thiết bị đồng bộ', 'bb-settings-open', 'data-map-ioid', 'item.programVersion || "--"', 'Quạt sơ / thứ', 'primaryFanPct', 'secondaryFanPct', 'data.serverTime || Date.now()', 'iot-page-telemetry/', 'iot-page-realtime/', 'deviceStatusPageId']) {
     if (dashboardSource.includes(obsolete) || runtimeSource.includes(obsolete)) throw new Error(`Obsolete dashboard control or label remains: ${obsolete}`);
@@ -133,12 +146,15 @@ try {
   const source = db.prepare('SELECT * FROM system_iot_batch_sources WHERE source_id=?').get('biomass-fleet');
   const sourceFields = JSON.parse(source.fields_json);
   const initialBatchDevice = db.prepare('SELECT ioid,api_key FROM system_iot_batch_devices WHERE source_id=?').get('biomass-fleet');
+  const initialBurner = db.prepare('SELECT latitude,longitude,coordinate_source FROM biomass_burners WHERE ioid=?').get('IO2729MB1');
   if (sourceFields.length !== 20 || sourceFields[0] !== 'c1' || sourceFields[19] !== 'c20'
-      || initialBatchDevice.ioid !== 'IO2729MB1' || initialBatchDevice.api_key !== '<<apikey>>') {
+      || initialBatchDevice.ioid !== 'IO2729MB1' || initialBatchDevice.api_key !== '<<apikey>>'
+      || initialBurner.latitude !== 10.798 || initialBurner.longitude !== 106.651 || initialBurner.coordinate_source !== 'default') {
     throw new Error('Standard batch source schema is invalid');
   }
   if (!dashboardSource.includes('"activeStaleMinutes":15') || !dashboardSource.includes('"idleStaleMinutes":15')) throw new Error('Device stale thresholds are invalid');
-  if (!dashboardSource.includes('dashboard-runtime.js?v=2026.08.22.2')) throw new Error('Dashboard runtime cache version is stale');
+  if (!dashboardSource.includes('dashboard-runtime.js?v=2026.08.22.3')
+      || !dashboardSource.includes('dashboard.css?v=2026.08.22.2')) throw new Error('Dashboard asset cache version is stale');
   const refuelPage = pages.find((row) => /^[0-9a-f]{32}$/.test(row.page_id));
   const parsedRefuelMeta = JSON.parse(refuelPage.meta);
   if (parsedRefuelMeta.hideLink !== true) throw new Error('Refuel page does not enable the standard ROSA hidden-link flow');
@@ -201,6 +217,10 @@ try {
   if (!/^[0-9a-f]{32}$/.test(newBurner.refuel_page_id) || newBurner.refuel_page_id === refuelPage.page_id) throw new Error('New burner random refuel page id failed');
   const createdPage = db.prepare('SELECT meta FROM system_pages WHERE page_id = ?').get(newBurner.refuel_page_id);
   if (!createdPage || JSON.parse(createdPage.meta).publicApi.context.burner_id !== 'IO2729TEST') throw new Error('New burner page context failed');
+  const createdBurner = db.prepare('SELECT latitude,longitude,coordinate_source FROM biomass_burners WHERE ioid=?').get('IO2729TEST');
+  if (createdBurner.latitude !== 10.798 || createdBurner.longitude !== 106.651 || createdBurner.coordinate_source !== 'default') {
+    throw new Error('New burner default coordinates are invalid');
+  }
   const createdBatchDevice = db.prepare('SELECT api_key FROM system_iot_batch_devices WHERE source_id=? AND ioid=?').get('biomass-fleet','IO2729TEST');
   const revisionAfterCreate = db.prepare('SELECT revision FROM system_iot_batch_sources WHERE source_id=?').get('biomass-fleet').revision;
   if (createdBatchDevice?.api_key !== 'test-api-key' || revisionAfterCreate <= revisionBeforeCreate) throw new Error('Batch device create/revision failed');

@@ -47,7 +47,6 @@ textarea:disabled {
 }
 
 .bb-panel,
-.bb-kpi,
 .bb-modal-card,
 .bb-toast,
 .bb-menu {
@@ -179,35 +178,51 @@ textarea:disabled {
   background: #94a3b8;
 }
 
-.bb-kpi-grid {
+.bb-overview-card {
   display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 8px 10px;
+  overflow: hidden;
+}
+
+.bb-overview-stat {
+  min-width: 0;
+  padding: 3px 12px;
+  border-right: 1px solid color-mix(in srgb, var(--theme-text) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 10px;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
-.bb-kpi {
-  padding: 12px;
-  display: grid;
-  gap: 8px;
-  min-height: 94px;
+.bb-overview-stat:last-child {
+  border-right: 0;
 }
 
-.bb-kpi span {
+.bb-overview-stat span {
   color: color-mix(in srgb, var(--theme-text) 68%, transparent);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 800;
   text-transform: uppercase;
 }
 
-.bb-kpi strong {
-  font-size: 1.42rem;
+.bb-overview-stat > div {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.bb-overview-stat strong {
+  font-size: 1.2rem;
   line-height: 1.05;
 }
 
-.bb-kpi em {
+.bb-overview-stat em {
   color: color-mix(in srgb, var(--theme-text) 64%, transparent);
   font-style: normal;
-  font-size: 0.76rem;
+  font-size: 0.68rem;
 }
 
 .bb-map-layout {
@@ -910,10 +925,6 @@ textarea:disabled {
 }
 
 @media (max-width: 1180px) {
-  .bb-kpi-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   .bb-filters {
     grid-template-columns: minmax(0, 1fr) minmax(150px, 0.5fr) auto;
   }
@@ -960,10 +971,6 @@ textarea:disabled {
     justify-content: flex-start;
   }
 
-  .bb-kpi-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .bb-form-grid,
   .bb-setting-grid {
     grid-template-columns: 1fr;
@@ -990,9 +997,6 @@ textarea:disabled {
 body { padding: 10px; }
 .bb-page { gap: 10px; }
 .bb-topbar { padding: 10px 12px; }
-.bb-kpi-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.bb-kpi { min-height: 72px; padding: 10px; gap: 5px; }
-.bb-kpi strong { font-size: 1.28rem; }
 .bb-map-layout { min-height: 420px; gap: 10px; }
 .bb-map-panel, .bb-map-list-panel { padding: 10px; }
 
@@ -1079,9 +1083,12 @@ body { padding: 10px; }
   .bb-toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .bb-toolbar .bb-status-chip { grid-column: 1 / -1; }
   .bb-toolbar .bb-btn { width: 100%; }
-  .bb-kpi-grid { gap: 6px; }
-  .bb-kpi { min-height: 64px; padding: 8px; }
-  .bb-kpi em { display: none; }
+  .bb-overview-card { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 5px 7px; }
+  .bb-overview-stat { min-height: 34px; padding: 4px 7px; }
+  .bb-overview-stat:nth-child(2n) { border-right: 0; }
+  .bb-overview-stat:nth-child(n+3) { border-top: 1px solid color-mix(in srgb, var(--theme-text) 10%, transparent); }
+  .bb-overview-stat:last-child { grid-column: 1 / -1; }
+  .bb-overview-stat em { display: none; }
   .bb-map-panel { grid-template-rows: auto 320px auto; }
   .bb-filters { grid-template-columns: minmax(0, 1fr) auto; gap: 6px; padding: 7px; }
   #bb-search { grid-column: 1 / -1; }
@@ -1102,7 +1109,6 @@ body { padding: 10px; }
 }
 
 /* Purchased minutes, fuel lots and QR workflow */
-.bb-kpi-grid-five { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .bb-table-heading { padding: 2px 2px 8px; }
 .bb-row-actions { display: flex; flex-wrap: wrap; gap: 5px; }
 .bb-row-actions .bb-btn { min-height: 32px; padding: 0 8px; font-size: 0.72rem; }
@@ -1150,13 +1156,11 @@ body { padding: 10px; }
 #bb-qr-url { width: 100%; font-size: 0.74rem; }
 
 @media (max-width: 1180px) {
-  .bb-kpi-grid-five { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .bb-credit-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .bb-credit-strip > div { grid-row: 1; }
 }
 
 @media (max-width: 760px) {
-  .bb-kpi-grid-five { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bb-credit-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .bb-credit-strip > div { grid-column: span 1; }
   .bb-credit-strip .bb-btn { min-height: 38px; padding-inline: 6px; font-size: 0.72rem; }

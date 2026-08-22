@@ -41,9 +41,9 @@
     set("subtitle", baseConfig.subtitle || "");
     set("pageSize", baseConfig.pageSize || 50);
     set("refreshMs", baseConfig.refreshMs || 60000);
-    set("mapCenterLat", baseConfig.mapCenterLat == null ? 21.35 : baseConfig.mapCenterLat);
-    set("mapCenterLng", baseConfig.mapCenterLng == null ? 105.72 : baseConfig.mapCenterLng);
-    set("mapZoom", baseConfig.mapZoom || 8);
+    set("mapCenterLat", baseConfig.mapCenterLat == null ? 10.798 : baseConfig.mapCenterLat);
+    set("mapCenterLng", baseConfig.mapCenterLng == null ? 106.651 : baseConfig.mapCenterLng);
+    set("mapZoom", baseConfig.mapZoom || 12);
   }
 
   function collect() {
@@ -51,7 +51,7 @@
     return Object.assign({}, baseConfig, {
       title: text("title", "Quản lý lò sinh khối"), subtitle: String(input("subtitle").value || "").trim(), fleetIoid: activeFleetIoid,
       pageSize: integer("pageSize", 50, 1, 100), refreshMs: integer("refreshMs", 60000, 60000, 3600000),
-      mapCenterLat: number("mapCenterLat", 21.35, -90, 90), mapCenterLng: number("mapCenterLng", 105.72, -180, 180), mapZoom: integer("mapZoom", 8, 2, 19),
+      mapCenterLat: number("mapCenterLat", 10.798, -90, 90), mapCenterLng: number("mapCenterLng", 106.651, -180, 180), mapZoom: integer("mapZoom", 12, 2, 19),
       // These page IDs are fixed template capabilities, not operator settings.
       fleetViewPageId: "biomass-fleet-view", fleetAdminPageId: "biomass-fleet-admin"
     });
