@@ -1,4 +1,5 @@
 const http = require('http');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
@@ -29,6 +30,8 @@ const store = new SimulatorStore({
 
 const generatorTimers = new Map();
 const publicRateBuckets = new Map();
+const batchViewerLeases = new Map();
+const BATCH_VIEWER_LEASE_MS = 45 * 1000;
 
 function json(res, status, value) {
   const body = JSON.stringify(value);
@@ -500,6 +503,75 @@ function openTelemetryStream(req, res, sessionId, fields, options = {}) {
   req.on('close', unsubscribe);
 }
 
+function upsertBatchViewerLease(ioid, pageId, requestedLeaseId = '', allowCreate = true) {
+  const now = Date.now();
+  for (const [leaseId, lease] of batchViewerLeases) {
+    if (!lease || lease.expiresAt <= now) batchViewerLeases.delete(leaseId);
+  }
+  const requested = String(requestedLeaseId || '').trim();
+  let lease = /^[0-9a-f-]{36}$/i.test(requested) ? batchViewerLeases.get(requested) : null;
+  if (lease && (lease.ioid !== ioid || lease.pageId !== pageId)) lease = null;
+  if (!lease && !allowCreate) return null;
+  if (!lease) lease = { leaseId: crypto.randomUUID(), ioid, pageId, createdAt: now };
+  lease.expiresAt = now + BATCH_VIEWER_LEASE_MS;
+  batchViewerLeases.set(lease.leaseId, lease);
+  return lease;
+}
+
+function sendBatchSnapshot(send, ioid, pageId) {
+  let cursor = 0;
+  do {
+    const page = store.getBatchTelemetryPage(ioid, pageId, cursor);
+    send({
+      type: 'snapshot',
+      revision: page.revision,
+      generation: page.generation,
+      devices: page.devices
+    });
+    cursor = page.nextCursor == null ? -1 : Number(page.nextCursor);
+  } while (cursor >= 0);
+  send({ type: 'ready' });
+}
+
+function openBatchTelemetryStream(req, res, ioid, pageId, lease) {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream; charset=utf-8',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no'
+  });
+  const send = (event) => res.write(`data: ${JSON.stringify(event)}\n\n`);
+  sendBatchSnapshot(send, ioid, pageId);
+  const unsubscribe = store.subscribe((event) => {
+    if (event.type === 'telemetry' && event.sessionId) {
+      const deviceIoid = normalizeIoDataKey(event.sessionId);
+      const device = store.getBatchDevice(ioid, pageId, deviceIoid);
+      if (device) send({ type: 'delta', device });
+      return;
+    }
+    if (event.type === 'iodata_changed' && normalizeIoDataKey(event.sessionId || '') === ioid) {
+      const context = store.getPublicBatchContext(ioid, pageId);
+      send({ type: 'reset', revision: context.revision, generation: `sim-${context.revision}` });
+      sendBatchSnapshot(send, ioid, pageId);
+    }
+  });
+  const heartbeat = setInterval(() => {
+    const renewed = upsertBatchViewerLease(ioid, pageId, lease.leaseId, false);
+    if (!renewed) {
+      clearInterval(heartbeat);
+      unsubscribe();
+      res.end();
+      return;
+    }
+    res.write(`: keepalive ${Date.now()}\n\n`);
+  }, 15_000);
+  heartbeat.unref?.();
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    unsubscribe();
+  });
+}
+
 function injectShim(html) {
   const snippet = `<script>window.ROSA_SIMULATOR_CONTEXT=${JSON.stringify({ sessionId: DEFAULT_SESSION_ID, syncId: DEFAULT_SYNC_ID })};</script>\n<script src="/simulator/shim.js"></script>\n`;
   if (String(html || '').includes('/simulator/shim.js')) return html;
@@ -776,6 +848,48 @@ async function handlePublicPageApi(req, res, url) {
       text(res, 200, rewritePackageManifestPaths(rendered.html), 'text/html; charset=utf-8');
     } catch (error) {
       publicErrorJson(res, error, 404);
+    }
+    return true;
+  }
+
+  const batchTelemetryMatch = url.pathname.match(/^\/api\/iot-page-batch-telemetry\/([^/]+)\/([^/]+)$/);
+  if (req.method === 'GET' && batchTelemetryMatch) {
+    try {
+      const ioid = decodeURIComponent(batchTelemetryMatch[1]);
+      const pageId = decodeURIComponent(batchTelemetryMatch[2]);
+      const cursor = Math.max(0, Math.floor(Number(url.searchParams.get('cursor') || 0)));
+      const lease = upsertBatchViewerLease(ioid, pageId, url.searchParams.get('lease') || '');
+      const page = store.getBatchTelemetryPage(ioid, pageId, cursor);
+      json(res, 200, {
+        ok: true,
+        sourceId: page.context.sourceId,
+        revision: page.revision,
+        generation: page.generation,
+        viewerLeaseId: lease.leaseId,
+        total: page.total,
+        accepted: page.accepted,
+        pending: page.pending,
+        rejected: page.rejected,
+        devices: page.devices,
+        nextCursor: page.nextCursor
+      });
+    } catch (error) {
+      publicErrorJson(res, error, 400);
+    }
+    return true;
+  }
+
+  const batchRealtimeMatch = url.pathname.match(/^\/api\/iot-page-batch-realtime\/([^/]+)\/([^/]+)$/);
+  if (req.method === 'GET' && batchRealtimeMatch) {
+    try {
+      const ioid = decodeURIComponent(batchRealtimeMatch[1]);
+      const pageId = decodeURIComponent(batchRealtimeMatch[2]);
+      store.getPublicBatchContext(ioid, pageId);
+      const lease = upsertBatchViewerLease(ioid, pageId, url.searchParams.get('lease') || '', false);
+      if (!lease) throw new PublicPageError(404, 'VIEWER_LEASE_NOT_FOUND', 'Viewer lease is no longer valid.');
+      openBatchTelemetryStream(req, res, ioid, pageId, lease);
+    } catch (error) {
+      publicErrorJson(res, error, 400);
     }
     return true;
   }

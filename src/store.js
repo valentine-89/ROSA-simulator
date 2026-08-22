@@ -69,6 +69,17 @@ function normalizeIoDataKey(sessionId) {
   return sanitized;
 }
 
+function parseDeviceSession(sessionId) {
+  const raw = String(sessionId || '').trim();
+  const separator = raw.indexOf('@');
+  if (separator <= 0 || separator >= raw.length - 1) return null;
+  return {
+    ioid: normalizeIoDataKey(raw.slice(0, separator)),
+    apiKey: raw.slice(separator + 1),
+    sessionId: raw
+  };
+}
+
 function parseFieldsParam(value) {
   return String(value || '')
     .split(',')
@@ -652,6 +663,12 @@ class SimulatorStore {
         enabled INTEGER NOT NULL DEFAULT 0,
         updated_at INTEGER NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS device_registry (
+        ioid TEXT PRIMARY KEY,
+        api_key TEXT NOT NULL,
+        session_id TEXT NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
     `);
   }
 
@@ -721,6 +738,17 @@ class SimulatorStore {
       }
     });
     tx();
+    const device = parseDeviceSession(sessionId);
+    if (device && device.apiKey !== PUBLIC_SESSION_SUFFIX) {
+      this.db.prepare(`
+        INSERT INTO device_registry (ioid, api_key, session_id, updated_at)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(ioid) DO UPDATE SET
+          api_key = excluded.api_key,
+          session_id = excluded.session_id,
+          updated_at = excluded.updated_at
+      `).run(device.ioid, device.apiKey, device.sessionId, now);
+    }
     const normalizedPayload = {};
     for (const [field, value] of entries) normalizedPayload[field] = sqliteValueToText(value);
     this.emit({ type: 'telemetry', sessionId, serverTime: now, payload: normalizedPayload });
@@ -814,6 +842,7 @@ class SimulatorStore {
 
   replaceIoDataPlaceholders(filePath, context) {
     const db = new Database(filePath);
+    const device = parseDeviceSession(context.sessionId);
     const replacements = [
       ['<<ioid>>', context.ioid],
       ['<<ioId>>', context.ioid],
@@ -826,6 +855,7 @@ class SimulatorStore {
       ['<<sync_id>>', context.syncId],
       ['<<SYNCID>>', context.syncId]
     ];
+    if (device) replacements.push(['<<apikey>>', device.apiKey], ['<<APIKEY>>', device.apiKey]);
     try {
       const tables = db.prepare(`
         SELECT name
@@ -1117,6 +1147,138 @@ class SimulatorStore {
       throw new PublicPageError(403, 'PUBLIC_FIELDS_NOT_CONFIGURED', 'Public telemetry fields are not configured for this page.');
     }
     return context;
+  }
+
+  getPublicBatchContext(ioid, pageId) {
+    const context = this.getPublicPageContext(ioid, pageId);
+    const pageMeta = safeJsonObject(context.page.meta);
+    const batchTelemetry = isRecord(pageMeta.publicApi) && isRecord(pageMeta.publicApi.batchTelemetry)
+      ? pageMeta.publicApi.batchTelemetry
+      : {};
+    const sourceId = String(batchTelemetry.sourceId || '').trim();
+    if (!ID_PATTERN.test(sourceId)) {
+      throw new PublicPageError(500, 'INVALID_BATCH_SOURCE', 'Public batch telemetry source is not configured.');
+    }
+    const filePath = this.getIoDataFilePath(context.ioid);
+    const db = new Database(filePath, { readonly: true, fileMustExist: true });
+    try {
+      const source = db.prepare(`
+        SELECT source_id, fields_json, enabled, revision
+        FROM system_iot_batch_sources
+        WHERE source_id = ?
+        LIMIT 1
+      `).get(sourceId);
+      if (!source) throw new PublicPageError(404, 'BATCH_SOURCE_NOT_FOUND', 'Batch telemetry source was not found.');
+      if (Number(source.enabled || 0) === 0) {
+        throw new PublicPageError(403, 'BATCH_SOURCE_DISABLED', 'Batch telemetry source is disabled.');
+      }
+      let fields = [];
+      try {
+        const parsed = JSON.parse(String(source.fields_json || '[]'));
+        if (Array.isArray(parsed)) fields = parsed.map(String).filter(Boolean);
+      } catch {}
+      return {
+        ...context,
+        sourceId,
+        sourceFields: fields,
+        revision: Number(source.revision || 0)
+      };
+    } finally {
+      db.close();
+    }
+  }
+
+  readBatchDeviceSnapshot(context, device) {
+    const registry = this.db.prepare(`
+      SELECT api_key, session_id
+      FROM device_registry
+      WHERE ioid = ?
+      LIMIT 1
+    `).get(device.ioid);
+    const credentialStatus = !registry
+      ? 'pending'
+      : String(registry.api_key || '') === String(device.api_key || '') ? 'accepted' : 'rejected';
+    let fields = context.sourceFields;
+    try {
+      const parsed = JSON.parse(String(device.fields_json || '[]'));
+      if (Array.isArray(parsed) && parsed.length) fields = parsed.map(String).filter(Boolean);
+    } catch {}
+    const latest = credentialStatus === 'accepted'
+      ? this.getLatestState(String(registry.session_id || ''), fields)
+      : null;
+    return {
+      ioid: String(device.ioid || ''),
+      credentialStatus,
+      serverTime: Number(latest && latest.serverTime || 0),
+      payload: latest && latest.payload || {}
+    };
+  }
+
+  getBatchTelemetryPage(ioid, pageId, cursor = 0, pageSize = 500) {
+    const context = this.getPublicBatchContext(ioid, pageId);
+    const offset = Math.max(0, Math.floor(Number(cursor || 0)));
+    const limit = Math.max(1, Math.min(500, Math.floor(Number(pageSize || 500))));
+    const filePath = this.getIoDataFilePath(context.ioid);
+    const db = new Database(filePath, { readonly: true, fileMustExist: true });
+    try {
+      const totalRow = db.prepare(`
+        SELECT COUNT(*) AS total
+        FROM system_iot_batch_devices
+        WHERE source_id = ?
+      `).get(context.sourceId);
+      const devices = db.prepare(`
+        SELECT ioid, api_key, fields_json, enabled
+        FROM system_iot_batch_devices
+        WHERE source_id = ?
+        ORDER BY ioid
+        LIMIT ? OFFSET ?
+      `).all(context.sourceId, limit, offset);
+      const snapshots = devices.map((device) => Number(device.enabled || 0) === 0
+        ? { ioid: String(device.ioid || ''), credentialStatus: 'pending', serverTime: 0, payload: {} }
+        : this.readBatchDeviceSnapshot(context, device));
+      const total = Number(totalRow && totalRow.total || 0);
+      const counts = db.prepare(`
+        SELECT ioid, api_key, fields_json, enabled
+        FROM system_iot_batch_devices
+        WHERE source_id = ?
+        ORDER BY ioid
+      `).all(context.sourceId).reduce((result, device) => {
+        const status = Number(device.enabled || 0) === 0
+          ? 'pending'
+          : this.readBatchDeviceSnapshot(context, device).credentialStatus;
+        result[status] += 1;
+        return result;
+      }, { accepted: 0, pending: 0, rejected: 0 });
+      return {
+        context,
+        revision: context.revision,
+        generation: `sim-${context.revision}`,
+        total,
+        ...counts,
+        devices: snapshots,
+        nextCursor: offset + devices.length < total ? offset + devices.length : null
+      };
+    } finally {
+      db.close();
+    }
+  }
+
+  getBatchDevice(ioid, pageId, deviceIoid) {
+    const context = this.getPublicBatchContext(ioid, pageId);
+    const filePath = this.getIoDataFilePath(context.ioid);
+    const db = new Database(filePath, { readonly: true, fileMustExist: true });
+    try {
+      const device = db.prepare(`
+        SELECT ioid, api_key, fields_json, enabled
+        FROM system_iot_batch_devices
+        WHERE source_id = ? AND ioid = ?
+        LIMIT 1
+      `).get(context.sourceId, normalizeIoDataKey(deviceIoid));
+      if (!device || Number(device.enabled || 0) === 0) return null;
+      return this.readBatchDeviceSnapshot(context, device);
+    } finally {
+      db.close();
+    }
   }
 
   parsePublicMacroBody(body, maxBodyBytes) {

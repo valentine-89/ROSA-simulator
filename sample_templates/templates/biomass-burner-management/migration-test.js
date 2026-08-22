@@ -26,11 +26,14 @@ db.exec(`
 db.close();
 
 try {
-  migrate(target);
+  migrate(target, { credentials: { IO2729MB1: 'production-key' } });
   const firstPass = new Database(target, { readonly: true });
   const firstPageId = firstPass.prepare('SELECT refuel_page_id FROM biomass_burners WHERE ioid=?').get('IO2729MB1').refuel_page_id;
   firstPass.close();
-  migrate(target);
+  const firstRevisionDb = new Database(target, { readonly: true });
+  const firstRevision = firstRevisionDb.prepare(`SELECT revision FROM system_iot_batch_sources WHERE source_id='biomass-fleet'`).get().revision;
+  firstRevisionDb.close();
+  migrate(target, { credentials: { IO2729MB1: 'production-key' } });
   const migrated = new Database(target, { readonly: true });
   const burner = migrated.prepare('SELECT * FROM biomass_burners WHERE ioid=?').get('IO2729MB1');
   const meter = migrated.prepare('SELECT * FROM biomass_device_meter WHERE ioid=?').get('IO2729MB1');
@@ -42,6 +45,11 @@ try {
   if (!page || page.sync_id !== 'SYNC-PRODUCTION' || pageMeta.publicApi.context.burner_id !== 'IO2729MB1' || pageMeta.hideLink !== true) throw new Error('Migration did not create a scoped hidden-link refuel page');
   if (migrated.prepare('SELECT COUNT(*) count FROM system_pages WHERE page_id=?').get('biomass-refuel-io2729mb1').count !== 0) throw new Error('Migration retained legacy refuel page id');
   if (migrated.prepare('SELECT COUNT(*) count FROM biomass_fuel_lots').get().count !== 0) throw new Error('Migration inserted demo fuel lots');
+  const batchDevice = migrated.prepare(`SELECT api_key FROM system_iot_batch_devices WHERE source_id='biomass-fleet' AND ioid=?`).get('IO2729MB1');
+  const batchSource = migrated.prepare(`SELECT fields_json,revision FROM system_iot_batch_sources WHERE source_id='biomass-fleet'`).get();
+  if (batchDevice?.api_key !== 'production-key' || JSON.parse(batchSource.fields_json).length !== 20) throw new Error('Migration did not configure batch telemetry');
+  if (batchSource.revision !== firstRevision) throw new Error('Repeated migration changed batch revision without a data change');
+  if (migrated.prepare(`SELECT COUNT(*) count FROM system_pages WHERE page_id='biomass-status'`).get().count !== 0) throw new Error('Legacy per-device telemetry page remains');
   migrated.close();
   console.log('biomass production migration idempotency test passed');
 } finally {

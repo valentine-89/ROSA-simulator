@@ -20,6 +20,29 @@ function migrate(targetPath, options = {}) {
       if (!hasColumn(db, 'biomass_device_meter', 'purchased_minutes')) db.exec('ALTER TABLE biomass_device_meter ADD COLUMN purchased_minutes INTEGER NOT NULL DEFAULT 0');
       db.exec(`
         CREATE UNIQUE INDEX IF NOT EXISTS idx_biomass_burners_refuel_page ON biomass_burners(refuel_page_id);
+        CREATE TABLE IF NOT EXISTS system_iot_batch_sources (
+          source_id TEXT PRIMARY KEY, fields_json TEXT NOT NULL DEFAULT '[]', enabled INTEGER NOT NULL DEFAULT 1,
+          revision INTEGER NOT NULL DEFAULT 1, updated_at INTEGER NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS system_iot_batch_devices (
+          source_id TEXT NOT NULL REFERENCES system_iot_batch_sources(source_id) ON DELETE CASCADE,
+          ioid TEXT NOT NULL, api_key TEXT NOT NULL, fields_json TEXT NOT NULL DEFAULT '[]',
+          metadata_json TEXT NOT NULL DEFAULT '{}', enabled INTEGER NOT NULL DEFAULT 1,
+          created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY(source_id,ioid)
+        );
+        CREATE INDEX IF NOT EXISTS idx_system_iot_batch_devices_source_ioid ON system_iot_batch_devices(source_id,ioid);
+        DROP TRIGGER IF EXISTS system_iot_batch_devices_insert_revision;
+        DROP TRIGGER IF EXISTS system_iot_batch_devices_update_revision;
+        DROP TRIGGER IF EXISTS system_iot_batch_devices_delete_revision;
+        CREATE TRIGGER system_iot_batch_devices_insert_revision AFTER INSERT ON system_iot_batch_devices BEGIN
+          UPDATE system_iot_batch_sources SET revision=revision+1,updated_at=NEW.updated_at WHERE source_id=NEW.source_id;
+        END;
+        CREATE TRIGGER system_iot_batch_devices_update_revision AFTER UPDATE ON system_iot_batch_devices BEGIN
+          UPDATE system_iot_batch_sources SET revision=revision+1,updated_at=NEW.updated_at WHERE source_id=NEW.source_id;
+        END;
+        CREATE TRIGGER system_iot_batch_devices_delete_revision AFTER DELETE ON system_iot_batch_devices BEGIN
+          UPDATE system_iot_batch_sources SET revision=revision+1,updated_at=CAST(strftime('%s','now') AS INTEGER)*1000 WHERE source_id=OLD.source_id;
+        END;
         CREATE TABLE IF NOT EXISTS biomass_fuel_batches (
           batch_id TEXT PRIMARY KEY, client_request_id TEXT NOT NULL UNIQUE,
           description TEXT NOT NULL CHECK (length(trim(description)) BETWEEN 1 AND 120),
@@ -64,6 +87,25 @@ function migrate(targetPath, options = {}) {
       if (!currentSync || currentSync.includes('<<')) throw new Error('A production SyncID is required for page migration');
 
       const pageTemplate = sample.prepare('SELECT page_type,html,meta_template FROM biomass_page_templates WHERE page_type=?').get('refuel');
+      const sampleBatchSource = sample.prepare(`SELECT source_id,fields_json,enabled FROM system_iot_batch_sources
+        WHERE source_id='biomass-fleet'`).get();
+      db.prepare(`INSERT INTO system_iot_batch_sources(source_id,fields_json,enabled,revision,updated_at)
+        VALUES (?,?,?,1,CAST(strftime('%s','now') AS INTEGER)*1000)
+        ON CONFLICT(source_id) DO UPDATE SET fields_json=excluded.fields_json,enabled=excluded.enabled,
+          revision=system_iot_batch_sources.revision+1,updated_at=excluded.updated_at
+        WHERE system_iot_batch_sources.fields_json IS NOT excluded.fields_json
+           OR system_iot_batch_sources.enabled IS NOT excluded.enabled`)
+        .run(sampleBatchSource.source_id, sampleBatchSource.fields_json, sampleBatchSource.enabled);
+      const credentials = options.credentials && typeof options.credentials === 'object' ? options.credentials : {};
+      const upsertBatchDevice = db.prepare(`INSERT INTO system_iot_batch_devices(
+        source_id,ioid,api_key,fields_json,metadata_json,enabled,created_at,updated_at
+      ) VALUES ('biomass-fleet',?,?,'[]','{}',1,CAST(strftime('%s','now') AS INTEGER)*1000,CAST(strftime('%s','now') AS INTEGER)*1000)
+      ON CONFLICT(source_id,ioid) DO UPDATE SET api_key=excluded.api_key,enabled=1,updated_at=excluded.updated_at
+      WHERE system_iot_batch_devices.api_key IS NOT excluded.api_key OR system_iot_batch_devices.enabled<>1`);
+      for (const burner of db.prepare('SELECT ioid FROM biomass_burners ORDER BY ioid').all()) {
+        const apiKey = String(credentials[burner.ioid] || (burner.ioid === 'IO2729MB1' ? options.apiKey || '' : '')).trim();
+        if (apiKey) upsertBatchDevice.run(burner.ioid, apiKey);
+      }
       db.prepare(`INSERT INTO biomass_page_templates(page_type,html,meta_template) VALUES (?,?,?)
         ON CONFLICT(page_type) DO UPDATE SET html=excluded.html,meta_template=excluded.meta_template`)
         .run(pageTemplate.page_type, pageTemplate.html, pageTemplate.meta_template);
@@ -78,9 +120,10 @@ function migrate(targetPath, options = {}) {
       const upsertPage = db.prepare(`INSERT INTO system_pages(page_id,html,require_email,require_phone,sync_id,enabled,title,meta)
         VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(page_id) DO UPDATE SET html=excluded.html,require_email=excluded.require_email,
         require_phone=excluded.require_phone,sync_id=excluded.sync_id,enabled=excluded.enabled,title=excluded.title,meta=excluded.meta`);
-      for (const row of sample.prepare(`SELECT * FROM system_pages WHERE page_id IN ('biomass-status','biomass-fleet-view','biomass-fleet-admin')`).all()) {
+      for (const row of sample.prepare(`SELECT * FROM system_pages WHERE page_id IN ('biomass-fleet-view','biomass-fleet-admin')`).all()) {
         upsertPage.run(row.page_id, row.html, row.require_email, row.require_phone, currentSync, row.enabled, row.title, row.meta);
       }
+      db.prepare(`DELETE FROM system_pages WHERE page_id='biomass-status'`).run();
 
       const upsertCommand = db.prepare(`INSERT INTO system_cmds(cmd_id,command_template,require_email,require_phone,sync_id,params_schema,enabled)
         VALUES (?,?,?,?,?,?,?) ON CONFLICT(cmd_id) DO UPDATE SET command_template=excluded.command_template,
@@ -114,6 +157,7 @@ function migrate(targetPath, options = {}) {
         refuelPages: db.prepare(`SELECT COUNT(*) count FROM system_pages p
           JOIN biomass_burners b ON b.refuel_page_id=p.page_id WHERE p.enabled=1`).get().count,
         fuelLots: db.prepare('SELECT COUNT(*) count FROM biomass_fuel_lots').get().count,
+        batchDevices: db.prepare(`SELECT COUNT(*) count FROM system_iot_batch_devices WHERE source_id='biomass-fleet'`).get().count,
         syncId: currentSync
       };
     })();
@@ -128,8 +172,17 @@ if (require.main === module) {
   const args = process.argv.slice(2);
   const target = args.find((arg) => !arg.startsWith('--'));
   const syncArg = args.find((arg) => arg.startsWith('--sync-id='));
+  const apiKeyArg = args.find((arg) => arg.startsWith('--api-key='));
+  let credentials = {};
+  if (process.env.BIOMASS_BATCH_CREDENTIALS_JSON) {
+    credentials = JSON.parse(process.env.BIOMASS_BATCH_CREDENTIALS_JSON);
+  }
   if (!target) throw new Error('Usage: node migrate-production.js <database.sqlite> [--sync-id=...]');
-  const result = migrate(target, { syncId: syncArg ? syncArg.slice('--sync-id='.length) : '' });
+  const result = migrate(target, {
+    syncId: syncArg ? syncArg.slice('--sync-id='.length) : '',
+    apiKey: apiKeyArg ? apiKeyArg.slice('--api-key='.length) : '',
+    credentials,
+  });
   console.log(JSON.stringify({ ...result, syncId: '[configured]' }));
 }
 

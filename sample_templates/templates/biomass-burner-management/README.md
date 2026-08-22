@@ -2,7 +2,7 @@
 
 ## Ranh giới bắt buộc
 
-Template này tuyệt đối không được tạo route, manager, action `c1`, xác thực, tính phí, cache hoặc realtime riêng trong ROSA core. Tất cả chức năng phải ghép từ `telemetry`, `data`, `system_macros`, `system_pages` và `system_cmds` dùng chung. Không sửa core chỉ để phục vụ lò sinh khối.
+Template này tuyệt đối không được tạo route, manager, action `c1`, xác thực, tính phí, cache hoặc realtime riêng cho lò sinh khối trong ROSA core. Template chỉ dùng `telemetry`, public batch telemetry, `data`, `system_macros`, `system_pages` và `system_cmds` chuẩn dùng chung. Phần batch trong core phải giữ tên và hành vi tổng quát để các template khác tái sử dụng.
 
 Chỉ hỗ trợ compact-v2. Không thêm fallback cho IO2722OB1 hoặc giả lập cảm biến nhiệt không tồn tại.
 
@@ -13,8 +13,12 @@ Chỉ hỗ trợ compact-v2. Không thêm fallback cho IO2722OB1 hoặc giả l�
 - Meter đã đốt chỉ tăng. `purchased_minutes` có thể được quản trị viên đặt trực tiếp và không có audit theo yêu cầu nghiệp vụ.
 - Phút mua chỉ dùng giám sát. Mất mạng, hết SyncID hoặc hết phút tuyệt đối không được chặn N1–N5/N101.
 - Mã nhiên liệu là 6 ký tự `A-Z0-9`. Batch 1–500 mã được tạo atomically; một mã chỉ được nạp một lần. `client_request_id` làm cho retry không cộng phút lần hai.
-- Setup page tự lấy fleet IOID từ profile ROSA đang hoạt động và cố định ba page capability của template; không hiển thị IOID/API key hoặc page ID kỹ thuật để người dùng sửa.
-- Dashboard đánh dấu mất kết nối sau 15 phút không nhận telemetry, không phụ thuộc mode. Chỉ timestamp report thật được dùng; event realtime thiếu timestamp bị bỏ qua.
+- Setup page tự lấy fleet IOID từ profile ROSA đang hoạt động và cố định hai page capability của template; không hiển thị IOID hoặc page ID kỹ thuật để người dùng sửa.
+- Fleet khai báo nguồn `biomass-fleet` trong `system_iot_batch_sources`; mỗi lò có một dòng `IOID + API key` trong `system_iot_batch_devices`. Thêm/sửa chỉ lưu cấu hình, không gọi IOeasy và không kiểm tra Device profile.
+- Collector chỉ nhận cặp credential khớp chính xác registry ROSA. API key không được trả về dashboard; UI chỉ hiển thị `Đã nhận`, `Chờ thiết bị` hoặc `Sai khóa`.
+- Dashboard dùng một snapshot `/api/iot-page-batch-telemetry/...` và một SSE `/api/iot-page-batch-realtime/...` cho toàn fleet, không gọi telemetry riêng từng lò và không suy telemetry từ bảng `data`.
+- Cache Redis được chia sẻ giữa dashboard/process, giữ nóng 15 phút sau người xem cuối. Phí đọc batch dùng giá telemetry hiện hành với hệ số `0,1 unit / thiết bị / người xem / phút`.
+- Dashboard đánh dấu mất kết nối sau 15 phút không nhận telemetry, không phụ thuộc mode. Chỉ timestamp telemetry thật trong batch snapshot/delta được dùng; thời điểm refresh cache không được dùng làm `last_seen`.
 - N20 dùng contract compact-v2 mới liên tục `c1..c20`, không có trường nhiệt độ hoặc cường độ quạt và không giữ fallback vị trí cũ. Các tham số cấu hình quạt vẫn có trong popup cài đặt.
 
 Payload thiết bị qua gateway chuẩn:

@@ -1106,6 +1106,10 @@ body { padding: 10px; }
 .bb-table-heading { padding: 2px 2px 8px; }
 .bb-row-actions { display: flex; flex-wrap: wrap; gap: 5px; }
 .bb-row-actions .bb-btn { min-height: 32px; padding: 0 8px; font-size: 0.72rem; }
+.bb-credential-state { display: block; margin-top: 3px; font-size: 0.66rem; font-weight: 850; }
+.bb-credential-state[data-state="accepted"] { color: #15803d; }
+.bb-credential-state[data-state="pending"] { color: #a16207; }
+.bb-credential-state[data-state="rejected"] { color: #b91c1c; }
 
 .bb-credit-strip {
   display: grid;

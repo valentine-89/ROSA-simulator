@@ -53,7 +53,7 @@
       pageSize: integer("pageSize", 50, 1, 100), refreshMs: integer("refreshMs", 60000, 60000, 3600000),
       mapCenterLat: number("mapCenterLat", 21.35, -90, 90), mapCenterLng: number("mapCenterLng", 105.72, -180, 180), mapZoom: integer("mapZoom", 8, 2, 19),
       // These page IDs are fixed template capabilities, not operator settings.
-      fleetViewPageId: "biomass-fleet-view", fleetAdminPageId: "biomass-fleet-admin", deviceStatusPageId: "biomass-status"
+      fleetViewPageId: "biomass-fleet-view", fleetAdminPageId: "biomass-fleet-admin"
     });
   }
 

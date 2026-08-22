@@ -33,7 +33,7 @@
   var cfg = {
     title: "Quản lý lò sinh khối", subtitle: "", fleetIoid: "", publicBaseUrl: "https://rosa.technology", pageSize: 50, refreshMs: 60000,
     fleetViewPageId: "biomass-fleet-view", fleetAdminPageId: "biomass-fleet-admin",
-    deviceStatusPageId: "biomass-status", activeStaleMinutes: 15, idleStaleMinutes: 15,
+    activeStaleMinutes: 15, idleStaleMinutes: 15,
     mapCenterLat: 21.35, mapCenterLng: 105.72, mapZoom: 8
   };
   try { cfg = Object.assign(cfg, JSON.parse(configNode && configNode.textContent || "{}")); } catch (_) {}
@@ -42,6 +42,9 @@
   cfg.refreshMs = Math.max(60000, Number(cfg.refreshMs) || 60000);
   cfg.activeStaleMinutes = Math.max(1, Number(cfg.activeStaleMinutes) || 15);
   cfg.idleStaleMinutes = Math.max(1, Number(cfg.idleStaleMinutes) || 15);
+  var leaseStorageKey = "rosa-batch-lease:" + cfg.fleetIoid + ":" + cfg.fleetViewPageId;
+  var storedLeaseId = "";
+  try { storedLeaseId = String(sessionStorage.getItem(leaseStorageKey) || ""); } catch (_) {}
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {
@@ -70,7 +73,7 @@
     page: 1, pageSize: Math.max(1, Number(cfg.pageSize) || 50), total: 0,
     lotPage: 1, lotPageSize: 50, lotTotal: 0, lotRows: [], batchRows: [],
     loading: false, timer: 0, renderTimer: 0, current: null, listRows: [], mapRows: [], telemetry: {},
-    map: null, markers: null, mapIcons: {}, streams: {}
+    map: null, markers: null, mapIcons: {}, stream: null, viewerLeaseId: storedLeaseId, generation: ""
   };
   els.title.textContent = cfg.title;
   els.subtitle.textContent = cfg.subtitle;
@@ -97,26 +100,27 @@
     return normalized;
   }
   function publicMacroUrl(pageId) { return "/api/iot-page-macro/" + encodeURIComponent(cfg.fleetIoid) + "/" + encodeURIComponent(pageId); }
-  function telemetryUrl(ioid) { return "/api/iot-page-telemetry/" + encodeURIComponent(ioid) + "/" + encodeURIComponent(cfg.deviceStatusPageId); }
-  function realtimeUrl(ioid) { return "/api/iot-page-realtime/" + encodeURIComponent(ioid) + "/" + encodeURIComponent(cfg.deviceStatusPageId) + "?historyMs=0"; }
+  function batchTelemetryUrl(cursor) { var q = new URLSearchParams(); if (state.viewerLeaseId) q.set("lease", state.viewerLeaseId); if (cursor) q.set("cursor", cursor); return "/api/iot-page-batch-telemetry/" + encodeURIComponent(cfg.fleetIoid) + "/" + encodeURIComponent(cfg.fleetViewPageId) + "?" + q; }
+  function batchRealtimeUrl() { return "/api/iot-page-batch-realtime/" + encodeURIComponent(cfg.fleetIoid) + "/" + encodeURIComponent(cfg.fleetViewPageId) + "?lease=" + encodeURIComponent(state.viewerLeaseId); }
   function refuelUrl(item) { var base = String(cfg.publicBaseUrl || "https://rosa.technology").replace(/\/+$/, ""); return base + "/iot-page/" + encodeURIComponent(cfg.fleetIoid) + "/" + encodeURIComponent(item.refuel_page_id); }
   async function jsonRequest(url, options) { var response = await fetch(url, Object.assign({ credentials: "same-origin", cache: "no-store" }, options || {})); var data = await response.json().catch(function () { return {}; }); if (!response.ok) throw new Error(data.message || data.error || "Yêu cầu thất bại"); return data; }
   async function runMacro(pageId, macro, params) { var data = await jsonRequest(publicMacroUrl(pageId), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ macro: macro, params: params || {} }) }); return Array.isArray(data.rows) ? data.rows : []; }
-  async function readTelemetry(ioid) { try { var data = await jsonRequest(telemetryUrl(ioid)); return data && data.c2 ? { serverTime: Number(data.c2.serverTime || 0), payload: semanticTelemetry(data.c2.payload) } : null; } catch (_) { return null; } }
-  async function mapLimit(items, limit, worker) { var cursor = 0; async function run() { while (cursor < items.length) { var index = cursor++; await worker(items[index], index); } } await Promise.all(Array.from({ length: Math.min(limit, items.length) }, run)); }
+  function applyBatchDevice(device) { if (!device || !device.ioid) return; state.telemetry[String(device.ioid)] = { serverTime: Number(device.serverTime || 0), payload: semanticTelemetry(device.payload), credentialStatus: String(device.credentialStatus || "pending") }; }
+  async function loadBatchTelemetry() { var cursor = 0; var first = true; do { var data = await jsonRequest(batchTelemetryUrl(cursor)); if (first) { state.viewerLeaseId = String(data.viewerLeaseId || state.viewerLeaseId); try { sessionStorage.setItem(leaseStorageKey, state.viewerLeaseId); } catch (_) {} state.generation = String(data.generation || ""); state.telemetry = {}; first = false; } (data.devices || []).forEach(applyBatchDevice); cursor = data.nextCursor == null ? -1 : Number(data.nextCursor); } while (cursor >= 0); }
 
   function enriched(row) {
     var latest = state.telemetry[String(row.ioid)] || null;
     var payload = latest && latest.payload || {};
+    var credentialStatus = String(latest && latest.credentialStatus || "pending");
     var mode = Number(payload.mode == null ? row.stored_mode || 0 : payload.mode);
     var staleAfter = (mode === 0 ? cfg.idleStaleMinutes : cfg.activeStaleMinutes) * 60000;
     var lastReportedAt = Number(latest && latest.serverTime || row.reported_at || 0);
-    var stale = !lastReportedAt || Date.now() - lastReportedAt > staleAfter;
+    var stale = credentialStatus !== "accepted" || !lastReportedAt || Date.now() - lastReportedAt > staleAfter;
     var gps = validCoordinates(payload.latitude, payload.longitude);
     var purchased = Number(row.purchased_minutes || 0);
     var burned = Number(row.burned_minutes == null ? payload.burned_minutes || 0 : row.burned_minutes);
     return Object.assign({}, row, {
-      mode: mode, stale: stale, lastReportedAt: lastReportedAt || null, burnedMinutes: burned,
+      mode: mode, stale: stale, credentialStatus: credentialStatus, lastReportedAt: lastReportedAt || null, burnedMinutes: burned,
       purchasedMinutes: purchased, remainingMinutes: Math.max(purchased - burned, 0),
       programVersion: String(payload.program_version || ""),
       latitude: gps ? Number(payload.latitude) : Number(row.latitude), longitude: gps ? Number(payload.longitude) : Number(row.longitude),
@@ -125,6 +129,7 @@
   }
   function deviceState(item) { return item && item.stale ? "offline" : Number(item && item.mode) > 0 ? "burning" : "online"; }
   function deviceStateLabel(item) { var value = deviceState(item); return value === "offline" ? "Mất kết nối" : value === "burning" ? "Đang đốt" : "Online"; }
+  function credentialLabel(value) { return value === "accepted" ? "Đã nhận" : value === "rejected" ? "Sai khóa" : "Chờ thiết bị"; }
   function iconUrl(itemOrState) { var value = typeof itemOrState === "string" ? itemOrState : deviceState(itemOrState); return iconUrls[value] || iconUrls.offline; }
 
   function renderSummary(items) {
@@ -137,7 +142,7 @@
     els.empty.hidden = items.length > 0;
     els.body.innerHTML = items.map(function (item) {
       var visual = deviceState(item); var modeText = visual === "burning" ? " · " + modeLabel(item.mode) : "";
-      return "<tr data-ioid=\"" + esc(item.ioid) + "\"><td><strong>" + esc(item.ioid) + "</strong></td>" +
+      return "<tr data-ioid=\"" + esc(item.ioid) + "\"><td><strong>" + esc(item.ioid) + "</strong><small class=\"bb-credential-state\" data-state=\"" + esc(item.credentialStatus) + "\">" + esc(credentialLabel(item.credentialStatus)) + "</small></td>" +
         "<td><strong>" + esc(item.name || "--") + "</strong><small>" + esc(item.location || "--") + "</small></td>" +
         "<td><span class=\"bb-live-pill\" data-state=\"" + visual + "\">" + esc(deviceStateLabel(item) + modeText) + "</span></td>" +
         "<td>" + number(item.burnedMinutes) + "</td><td><strong>" + number(item.purchasedMinutes) + "</strong></td>" +
@@ -168,8 +173,8 @@
   function scheduleLiveRender() { clearTimeout(state.renderTimer); state.renderTimer = setTimeout(renderAll, 200); }
   function fitMap() { var items = state.mapRows.map(enriched).filter(function (item) { return validCoordinates(item.latitude, item.longitude); }); if (!state.map || !items.length) return; state.map.fitBounds(window.L.latLngBounds(items.map(function (item) { return [item.latitude, item.longitude]; })), { padding: [30, 30], maxZoom: 13 }); }
   function findItem(ioid) { var row = state.mapRows.concat(state.listRows).find(function (item) { return String(item.ioid) === String(ioid); }); return row ? enriched(row) : null; }
-  function closeStreams() { Object.keys(state.streams).forEach(function (ioid) { state.streams[ioid].close(); delete state.streams[ioid]; }); }
-  function syncStreams(ioids) { var wanted = new Set(ioids); Object.keys(state.streams).forEach(function (ioid) { if (!wanted.has(ioid)) { state.streams[ioid].close(); delete state.streams[ioid]; } }); ioids.forEach(function (ioid) { if (state.streams[ioid] || !window.EventSource) return; var stream = new EventSource(realtimeUrl(ioid)); stream.onmessage = function (event) { try { var data = JSON.parse(event.data); var eventTime = Number(data.serverTime || 0); if (data.type === "telemetry" && data.payload && eventTime > 0) { state.telemetry[ioid] = { serverTime: eventTime, payload: semanticTelemetry(Object.assign({}, state.telemetry[ioid] && state.telemetry[ioid].payload || {}, data.payload)) }; scheduleLiveRender(); } } catch (_) {} }; state.streams[ioid] = stream; }); }
+  function closeStream() { if (state.stream) state.stream.close(); state.stream = null; }
+  function connectBatchStream() { if (state.stream || !state.viewerLeaseId || !window.EventSource) return; var stream = new EventSource(batchRealtimeUrl()); state.stream = stream; stream.onmessage = function (event) { try { var data = JSON.parse(event.data); if (data.type === "reset") { state.telemetry = {}; state.generation = String(data.generation || ""); } else if (data.type === "snapshot") { (data.devices || []).forEach(applyBatchDevice); } else if (data.type === "delta" && data.device) { applyBatchDevice(data.device); } else if (data.type === "billing_blocked") { closeStream(); setStatus("Hết hạn mức", "error"); notify("SyncID đã hết hạn mức", true); return; } scheduleLiveRender(); } catch (_) {} }; stream.onerror = function () { if (state.stream === stream) { closeStream(); setTimeout(connectBatchStream, 3000); } }; }
   async function cacheGps(rows) { await Promise.all(rows.map(async function (row) { var latest = state.telemetry[row.ioid]; var payload = latest && latest.payload || {}; if (!validCoordinates(payload.latitude, payload.longitude)) return; if (String(row.coordinate_source) === "gps" && Number(row.latitude) === Number(payload.latitude) && Number(row.longitude) === Number(payload.longitude)) return; try { await runMacro(cfg.fleetAdminPageId, "biomass-fleet-cache-gps", { burner_id: row.ioid, latitude: Number(payload.latitude), longitude: Number(payload.longitude) }); row.latitude = Number(payload.latitude); row.longitude = Number(payload.longitude); row.coordinate_source = "gps"; } catch (_) {} })); }
 
   async function refresh() {
@@ -187,10 +192,9 @@
       state.listRows = results[1] || []; state.mapRows = results[2] || [];
       state.lotRows = (results[3] || []).filter(function (row) { return /^[A-Z0-9]{6}$/.test(String(row.code || "")); });
       state.lotTotal = Number(state.lotRows[0] && state.lotRows[0].total_rows || 0);
-      var ioids = state.mapRows.map(function (row) { return String(row.ioid); });
-      await mapLimit(ioids, 6, async function (ioid) { state.telemetry[ioid] = await readTelemetry(ioid); });
+      await loadBatchTelemetry();
       await cacheGps(state.mapRows); renderAll();
-      syncStreams(state.listRows.slice(0, 50).map(function (row) { return String(row.ioid); }));
+      connectBatchStream();
       setStatus("Đã cập nhật", "online");
     } catch (error) { setStatus("Không thể tải", "error"); notify(error.message, true); }
     finally { state.loading = false; clearTimeout(state.timer); state.timer = setTimeout(refresh, cfg.refreshMs); }
@@ -199,8 +203,8 @@
   function validSettingValue(definition, value) { if (!Number.isInteger(value)) return false; if (Array.isArray(definition.choices)) return definition.choices.includes(value); return value >= definition.minimum && value <= definition.maximum; }
   function settingControl(definition, value) { if (Array.isArray(definition.choices)) return "<select class=\"bb-input\" name=\"value\">" + definition.choices.map(function (choice) { return "<option value=\"" + choice + "\"" + (Number(value) === choice ? " selected" : "") + ">" + choice + "</option>"; }).join("") + "</select>"; return "<input class=\"bb-input\" name=\"value\" type=\"number\" step=\"1\" min=\"" + definition.minimum + "\" max=\"" + definition.maximum + "\" value=\"" + esc(value == null ? "" : value) + "\">"; }
   function settingsMarkup(payload) { var previousGroup = ""; return settingDefinitions.map(function (definition) { var heading = definition.group !== previousGroup ? "<div class=\"bb-setting-group-title\">" + esc(definition.group) + "</div>" : ""; previousGroup = definition.group; var value = payload["cfg_" + definition.key]; return heading + "<form class=\"bb-setting-card\" data-setting-key=\"" + definition.key + "\"><label><span>" + esc(definition.label) + "</span><code>#" + definition.key + "</code></label><div class=\"bb-setting-control\">" + settingControl(definition, value) + "<span>" + definition.unit + "</span><button class=\"bb-btn\" type=\"submit\">Ghi</button></div></form>"; }).join(""); }
-  async function openSettings(ioid) { try { var results = await Promise.all([runMacro(cfg.fleetViewPageId, "biomass-fleet-device", { burner_id: ioid }), readTelemetry(ioid)]); if (!results[0].length) throw new Error("Không tìm thấy lò"); if (results[1]) state.telemetry[ioid] = results[1]; var item = enriched(results[0][0]); state.current = item; els.settingsTitle.textContent = "Cài đặt " + ioid; els.settingsSubtitle.textContent = deviceStateLabel(item) + (Number(item.mode) > 0 ? " · " + modeLabel(item.mode) : ""); els.coordinateSource.textContent = coordinateSourceLabel(item.coordinateSource); els.creditPurchased.textContent = number(item.purchasedMinutes); els.creditRemaining.textContent = number(item.remainingMinutes); ["name", "location", "latitude", "longitude"].forEach(function (key) { els.deviceForm.elements[key].value = item[key] == null ? "" : item[key]; }); els.settingsGrid.innerHTML = settingsMarkup(item.payload); els.settingsState.textContent = results[1] ? "Đã đọc telemetry" : "Chưa có telemetry"; showModal(els.settingsModal, true); } catch (error) { notify(error.message, true); } }
-  async function waitSetting(ioid, key, expected) { for (var attempt = 0; attempt < 8; attempt += 1) { await new Promise(function (resolve) { setTimeout(resolve, 1000); }); var latest = await readTelemetry(ioid); if (latest) state.telemetry[ioid] = latest; if (latest && Number(latest.payload["cfg_" + key]) === expected) return true; } return false; }
+  async function openSettings(ioid) { try { var rows = await runMacro(cfg.fleetViewPageId, "biomass-fleet-device", { burner_id: ioid }); if (!rows.length) throw new Error("Không tìm thấy lò"); if (!state.telemetry[ioid]) await loadBatchTelemetry(); var item = enriched(rows[0]); state.current = item; els.settingsTitle.textContent = "Cài đặt " + ioid; els.settingsSubtitle.textContent = deviceStateLabel(item) + (Number(item.mode) > 0 ? " · " + modeLabel(item.mode) : ""); els.coordinateSource.textContent = coordinateSourceLabel(item.coordinateSource); els.creditPurchased.textContent = number(item.purchasedMinutes); els.creditRemaining.textContent = number(item.remainingMinutes); ["name", "location", "latitude", "longitude"].forEach(function (key) { els.deviceForm.elements[key].value = item[key] == null ? "" : item[key]; }); els.deviceForm.elements.api_key.value = ""; els.settingsGrid.innerHTML = settingsMarkup(item.payload); els.settingsState.textContent = item.credentialStatus === "accepted" ? "Đã đọc telemetry" : credentialLabel(item.credentialStatus); showModal(els.settingsModal, true); } catch (error) { notify(error.message, true); } }
+  async function waitSetting(ioid, key, expected) { for (var attempt = 0; attempt < 8; attempt += 1) { await new Promise(function (resolve) { setTimeout(resolve, 1000); }); var latest = state.telemetry[ioid]; if (latest && Number(latest.payload["cfg_" + key]) === expected) return true; } return false; }
   async function auditSetting(ioid, key, value, resultState) { try { await runMacro(cfg.fleetAdminPageId, "biomass-setting-audit", { burner_id: ioid, setting_key: key, value: value, state: resultState }); } catch (_) {} }
   function openQr(item) { if (!item) return; var url = refuelUrl(item); els.qrDevice.textContent = item.ioid; els.qrUrl.value = url; if (window.BiomassQr) window.BiomassQr.render(els.qrCode, url, 236); showModal(els.qrModal, true); }
   function downloadCsv(rows) { var lines = ["code,description,purchased_minutes,created_at"].concat(rows.map(function (row) { return [row.code, row.description, row.purchased_minutes, new Date(Number(row.created_at)).toISOString()].map(function (value) { return '"' + String(value).replace(/"/g, '""') + '"'; }).join(","); })); var blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" }); var link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "lo-nhien-lieu-" + new Date().toISOString().slice(0, 10) + ".csv"; link.click(); setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000); }
@@ -229,14 +233,14 @@
   els.batchCopy.onclick = async function () { try { await navigator.clipboard.writeText(els.batchCodes.value); notify("Đã sao chép mã"); } catch (_) { els.batchCodes.select(); document.execCommand("copy"); notify("Đã sao chép mã"); } };
   els.batchCsv.onclick = function () { downloadCsv(state.batchRows); };
 
-  els.addForm.onsubmit = async function (event) { event.preventDefault(); var form = new FormData(els.addForm); var params = { burner_id: String(form.get("ioid") || "").trim(), name: String(form.get("name") || "").trim(), location: String(form.get("location") || "").trim() }; if (String(form.get("latitude") || "").trim() && String(form.get("longitude") || "").trim()) { params.latitude = Number(form.get("latitude")); params.longitude = Number(form.get("longitude")); } try { await runMacro(cfg.fleetAdminPageId, "biomass-fleet-create", params); showModal(els.addModal, false); notify("Đã thêm lò và trang nạp"); refresh(); } catch (error) { notify(error.message, true); } };
+  els.addForm.onsubmit = async function (event) { event.preventDefault(); var form = new FormData(els.addForm); var params = { burner_id: String(form.get("ioid") || "").trim(), api_key: String(form.get("api_key") || "").trim(), name: String(form.get("name") || "").trim(), location: String(form.get("location") || "").trim() }; if (String(form.get("latitude") || "").trim() && String(form.get("longitude") || "").trim()) { params.latitude = Number(form.get("latitude")); params.longitude = Number(form.get("longitude")); } try { await runMacro(cfg.fleetAdminPageId, "biomass-fleet-create", params); showModal(els.addModal, false); notify("Đã thêm lò và trang nạp"); refresh(); } catch (error) { notify(error.message, true); } };
   els.lotForm.onsubmit = async function (event) { event.preventDefault(); var form = new FormData(els.lotForm); var params = { client_request_id: requestId("BATCH"), description: String(form.get("description") || "").trim(), minutes_per_lot: Number(form.get("minutes_per_lot")), quantity: Number(form.get("quantity")) }; var button = els.lotForm.querySelector("button[type=submit]"); button.disabled = true; try { var rows = await runMacro(cfg.fleetAdminPageId, "biomass-fuel-lot-create-batch", params); if (!rows.length || rows.some(function (row) { return row.status !== "OK"; })) throw new Error("Không thể tạo đủ mã cho lô"); if (rows.length !== params.quantity) throw new Error("Số mã trả về không đúng yêu cầu"); state.batchRows = rows; els.batchSummary.textContent = rows.length + " mã · " + number(params.minutes_per_lot) + " phút/mã"; els.batchCodes.value = rows.map(function (row) { return row.code; }).join("\n"); showModal(els.lotModal, false); showModal(els.batchModal, true); state.lotPage = 1; notify("Đã tạo " + rows.length + " mã"); refresh(); } catch (error) { notify(error.message, true); } finally { button.disabled = false; } };
   els.creditForm.onsubmit = async function (event) { event.preventDefault(); if (!state.current) return; var value = Number(els.creditValue.value); if (!Number.isInteger(value) || value < 0 || value > 2147483647) { notify("Giá trị phút không hợp lệ", true); return; } if (!confirm("Đặt phút đã mua của " + state.current.ioid + " thành " + number(value) + "?")) return; try { var rows = await runMacro(cfg.fleetAdminPageId, "biomass-purchased-minutes-set", { burner_id: state.current.ioid, purchased_minutes: value }); if (!rows[0] || rows[0].status !== "OK") throw new Error("Không tìm thấy lò"); showModal(els.creditModal, false); notify("Đã cập nhật phút mua"); await openSettings(state.current.ioid); refresh(); } catch (error) { notify(error.message, true); } };
-  els.deviceForm.onsubmit = async function (event) { event.preventDefault(); if (!state.current) return; var form = new FormData(els.deviceForm); try { await runMacro(cfg.fleetAdminPageId, "biomass-fleet-update", { burner_id: state.current.ioid, name: String(form.get("name") || "").trim(), location: String(form.get("location") || "").trim(), latitude: Number(form.get("latitude")), longitude: Number(form.get("longitude")) }); notify("Đã lưu"); await openSettings(state.current.ioid); refresh(); } catch (error) { notify(error.message, true); } };
+  els.deviceForm.onsubmit = async function (event) { event.preventDefault(); if (!state.current) return; var form = new FormData(els.deviceForm); try { await runMacro(cfg.fleetAdminPageId, "biomass-fleet-update", { burner_id: state.current.ioid, api_key: String(form.get("api_key") || "").trim(), name: String(form.get("name") || "").trim(), location: String(form.get("location") || "").trim(), latitude: Number(form.get("latitude")), longitude: Number(form.get("longitude")) }); notify("Đã lưu"); await loadBatchTelemetry(); await openSettings(state.current.ioid); refresh(); } catch (error) { notify(error.message, true); } };
   els.settingsGrid.onsubmit = async function (event) { event.preventDefault(); var form = event.target.closest("[data-setting-key]"); if (!form || !state.current) return; var key = form.dataset.settingKey; var definition = settingDefinitions.find(function (item) { return item.key === key; }); var value = Number(form.elements.value.value); if (!definition || !validSettingValue(definition, value)) { notify("Giá trị không hợp lệ", true); return; } var button = form.querySelector("button"); button.disabled = true; els.settingsState.textContent = "Đang ghi"; try { await jsonRequest("/api/iot-cmd/" + encodeURIComponent(state.current.ioid) + "/biomass-set-" + key, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: value }) }); var matched = await waitSetting(state.current.ioid, key, value); if (!matched) throw new Error("Chưa nhận được telemetry đọc lại"); await auditSetting(state.current.ioid, key, value, "confirmed"); els.settingsState.textContent = "Đã đọc lại"; notify("Đã cập nhật #" + key); scheduleLiveRender(); } catch (error) { await auditSetting(state.current.ioid, key, value, "failed"); els.settingsState.textContent = "Ghi lỗi"; notify(error.message, true); } finally { button.disabled = false; } };
   els.deleteBurner.onclick = async function () { if (!state.current || !confirm("Xóa " + state.current.ioid + "?")) return; try { await runMacro(cfg.fleetAdminPageId, "biomass-fleet-delete", { burner_id: state.current.ioid }); showModal(els.settingsModal, false); notify("Đã xóa lò"); state.current = null; refresh(); } catch (error) { notify(error.message, true); } };
   document.addEventListener("click", function (event) { var settings = event.target.closest("[data-settings]"); if (settings) openSettings(settings.dataset.settings); var refuel = event.target.closest("[data-refuel]"); if (refuel) { var refuelItem = findItem(refuel.dataset.refuel); if (refuelItem) window.open(refuelUrl(refuelItem), "_blank", "noopener"); } var qr = event.target.closest("[data-qr]"); if (qr) openQr(findItem(qr.dataset.qr)); });
-  window.addEventListener("beforeunload", function () { clearTimeout(state.timer); clearTimeout(state.renderTimer); closeStreams(); });
+  window.addEventListener("beforeunload", function () { clearTimeout(state.timer); clearTimeout(state.renderTimer); closeStream(); });
   document.querySelectorAll("[data-burner-icon]").forEach(function (image) { image.src = iconUrl(image.dataset.burnerIcon); });
   refresh();
 })();

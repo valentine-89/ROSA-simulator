@@ -3,7 +3,7 @@ const path = require('path');
 const Database = require('better-sqlite3');
 
 // Template boundary: compose only standard ROSA system_macros, system_pages,
-// telemetry/data and system_cmds. Never add a biomass route or c1 action to core.
+// batch telemetry/data and system_cmds. Never add a biomass route or c1 action to core.
 const output = path.join(__dirname, 'sample.sqlite');
 const refuelHtml = fs.readFileSync(path.join(__dirname, 'refuel_page.html'), 'utf8');
 fs.rmSync(output, { force: true });
@@ -55,6 +55,26 @@ db.exec(`
     cmd_id TEXT PRIMARY KEY, command_template TEXT NOT NULL, require_email INTEGER NOT NULL DEFAULT 0,
     require_phone INTEGER NOT NULL DEFAULT 0, sync_id TEXT NOT NULL, params_schema TEXT, enabled INTEGER NOT NULL DEFAULT 1
   );
+  CREATE TABLE system_iot_batch_sources (
+    source_id TEXT PRIMARY KEY, fields_json TEXT NOT NULL DEFAULT '[]', enabled INTEGER NOT NULL DEFAULT 1,
+    revision INTEGER NOT NULL DEFAULT 1, updated_at INTEGER NOT NULL
+  );
+  CREATE TABLE system_iot_batch_devices (
+    source_id TEXT NOT NULL REFERENCES system_iot_batch_sources(source_id) ON DELETE CASCADE,
+    ioid TEXT NOT NULL, api_key TEXT NOT NULL, fields_json TEXT NOT NULL DEFAULT '[]',
+    metadata_json TEXT NOT NULL DEFAULT '{}', enabled INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, PRIMARY KEY(source_id,ioid)
+  );
+  CREATE INDEX idx_system_iot_batch_devices_source_ioid ON system_iot_batch_devices(source_id,ioid);
+  CREATE TRIGGER system_iot_batch_devices_insert_revision AFTER INSERT ON system_iot_batch_devices BEGIN
+    UPDATE system_iot_batch_sources SET revision=revision+1,updated_at=NEW.updated_at WHERE source_id=NEW.source_id;
+  END;
+  CREATE TRIGGER system_iot_batch_devices_update_revision AFTER UPDATE ON system_iot_batch_devices BEGIN
+    UPDATE system_iot_batch_sources SET revision=revision+1,updated_at=NEW.updated_at WHERE source_id=NEW.source_id;
+  END;
+  CREATE TRIGGER system_iot_batch_devices_delete_revision AFTER DELETE ON system_iot_batch_devices BEGIN
+    UPDATE system_iot_batch_sources SET revision=revision+1,updated_at=CAST(strftime('%s','now') AS INTEGER)*1000 WHERE source_id=OLD.source_id;
+  END;
   CREATE TRIGGER biomass_fuel_batch_generate AFTER INSERT ON biomass_fuel_batches BEGIN
     INSERT INTO biomass_fuel_lots(code,batch_id,description,purchased_minutes,created_at)
     WITH RECURSIVE sequence(n) AS (
@@ -101,6 +121,11 @@ db.prepare(`INSERT INTO biomass_burners(ioid,name,location,latitude,longitude,co
  VALUES ('IO2729MB1','','',21.35,105.72,'default',?, ?,?)`).run(initialRefuelPageId,now,now);
 db.prepare(`INSERT INTO biomass_device_meter(ioid,burned_minutes,purchased_minutes,mode,reported_at)
  VALUES ('IO2729MB1',0,0,0,?)`).run(now);
+const telemetryFields=Array.from({length:20},(_,index)=>`c${index+1}`);
+db.prepare(`INSERT INTO system_iot_batch_sources(source_id,fields_json,enabled,revision,updated_at)
+ VALUES ('biomass-fleet',?,1,1,?)`).run(JSON.stringify(telemetryFields),now);
+db.prepare(`INSERT INTO system_iot_batch_devices(source_id,ioid,api_key,fields_json,metadata_json,enabled,created_at,updated_at)
+ VALUES ('biomass-fleet','IO2729MB1','<<apikey>>','[]','{}',1,?,?)`).run(now,now);
 
 const addMacro = db.prepare('INSERT INTO system_macros(name,comment,source,enabled) VALUES (?,?,?,1)');
 addMacro.run('biomass-fleet-summary','Fleet summary from the shared compact-v2 database.',`
@@ -143,6 +168,9 @@ VALUES (:burner_id,COALESCE(:name,''),COALESCE(:location,''),
  lower(hex(randomblob(16))),CAST(strftime('%s','now') AS INTEGER)*1000,CAST(strftime('%s','now') AS INTEGER)*1000);
 INSERT INTO biomass_device_meter(ioid,burned_minutes,purchased_minutes,mode,reported_at)
 VALUES (:burner_id,0,0,0,CAST(strftime('%s','now') AS INTEGER)*1000);
+INSERT INTO system_iot_batch_devices(source_id,ioid,api_key,fields_json,metadata_json,enabled,created_at,updated_at)
+VALUES ('biomass-fleet',:burner_id,trim(:api_key),'[]','{}',1,
+ CAST(strftime('%s','now') AS INTEGER)*1000,CAST(strftime('%s','now') AS INTEGER)*1000);
 INSERT INTO system_pages(page_id,html,require_email,require_phone,sync_id,enabled,title,meta)
 SELECT b.refuel_page_id,t.html,0,0,'<<syncid>>',1,'Nạp nhiên liệu '||:burner_id,
        replace(meta_template,'__BURNER_ID__',:burner_id)
@@ -155,10 +183,16 @@ UPDATE biomass_burners SET name=COALESCE(:name,''),location=COALESCE(:location,'
  longitude=CASE WHEN trim(COALESCE(:longitude,''))='' THEN longitude ELSE CAST(:longitude AS REAL) END,
  coordinate_source=CASE WHEN trim(COALESCE(:latitude,''))='' OR trim(COALESCE(:longitude,''))='' THEN coordinate_source ELSE 'manual' END,
  updated_at=CAST(strftime('%s','now') AS INTEGER)*1000 WHERE ioid=:burner_id;
+INSERT INTO system_iot_batch_devices(source_id,ioid,api_key,fields_json,metadata_json,enabled,created_at,updated_at)
+SELECT 'biomass-fleet',:burner_id,trim(:api_key),'[]','{}',1,
+ CAST(strftime('%s','now') AS INTEGER)*1000,CAST(strftime('%s','now') AS INTEGER)*1000
+WHERE trim(COALESCE(:api_key,''))<>''
+ON CONFLICT(source_id,ioid) DO UPDATE SET api_key=excluded.api_key,enabled=1,updated_at=excluded.updated_at;
 SELECT :burner_id ioid WHERE changes()>0;
 `);
 addMacro.run('biomass-fleet-delete','Delete burner and disable its refuel page while retaining redeemed lot history.',`
 UPDATE system_pages SET enabled=0 WHERE page_id=(SELECT refuel_page_id FROM biomass_burners WHERE ioid=:burner_id);
+DELETE FROM system_iot_batch_devices WHERE source_id='biomass-fleet' AND ioid=:burner_id;
 DELETE FROM biomass_device_meter WHERE ioid=:burner_id;
 DELETE FROM biomass_burners WHERE ioid=:burner_id;
 SELECT :burner_id ioid WHERE changes()>0;
@@ -257,7 +291,6 @@ SELECT CASE WHEN changes()>0 THEN 'OK' ELSE 'IGNORED' END c1;
 `);
 
 // Compact-v2 production telemetry is a dense c1..c20 contract without fan or temperature slots.
-const telemetryFields=Array.from({length:20},(_,index)=>`c${index+1}`);
 const readMacros={
  'biomass-fleet-summary':{params:{}},
  'biomass-fleet-list':{params:{search:{type:'string',maxLength:100},page_size:{type:'integer',min:1,max:100},offset:{type:'integer',min:0,max:1000000}}},
@@ -265,8 +298,8 @@ const readMacros={
  'biomass-fleet-device':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'}}}
 };
 const writeMacros={
- 'biomass-fleet-create':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},name:{type:'string',maxLength:120},location:{type:'string',maxLength:240},latitude:{type:'number',min:-90,max:90},longitude:{type:'number',min:-180,max:180}}},
- 'biomass-fleet-update':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},name:{type:'string',maxLength:120},location:{type:'string',maxLength:240},latitude:{type:'number',min:-90,max:90},longitude:{type:'number',min:-180,max:180}}},
+ 'biomass-fleet-create':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},api_key:{type:'string',required:true,minLength:1,maxLength:512},name:{type:'string',maxLength:120},location:{type:'string',maxLength:240},latitude:{type:'number',min:-90,max:90},longitude:{type:'number',min:-180,max:180}}},
+ 'biomass-fleet-update':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},api_key:{type:'string',maxLength:512},name:{type:'string',maxLength:120},location:{type:'string',maxLength:240},latitude:{type:'number',min:-90,max:90},longitude:{type:'number',min:-180,max:180}}},
  'biomass-fleet-delete':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'}}},
  'biomass-fleet-cache-gps':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},latitude:{type:'number',required:true,min:-90,max:90},longitude:{type:'number',required:true,min:-180,max:180}}},
  'biomass-purchased-minutes-set':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},purchased_minutes:{type:'integer',required:true,min:0,max:2147483647}}},
@@ -276,8 +309,7 @@ const writeMacros={
 };
 const pageHtml='<!doctype html><html lang="vi"><meta charset="utf-8"><title>Biomass compact-v2</title><main>Biomass compact-v2</main></html>';
 const addPage=db.prepare(`INSERT INTO system_pages(page_id,html,require_email,require_phone,sync_id,enabled,title,meta) VALUES (?,?,?,0,'<<syncid>>',1,?,?)`);
-addPage.run('biomass-status',pageHtml,0,'Biomass status',JSON.stringify({publicApi:{fields:telemetryFields,stream:true}}));
-addPage.run('biomass-fleet-view',pageHtml,0,'Biomass fleet view',JSON.stringify({publicApi:{macros:readMacros,rateLimit:{limit:300,windowMs:60000}}}));
+addPage.run('biomass-fleet-view',pageHtml,0,'Biomass fleet view',JSON.stringify({publicApi:{batchTelemetry:{sourceId:'biomass-fleet'},macros:readMacros,rateLimit:{limit:300,windowMs:60000}}}));
 addPage.run('biomass-fleet-admin',pageHtml,1,'Biomass fleet admin',JSON.stringify({publicApi:{macros:writeMacros,rateLimit:{limit:120,windowMs:60000}}}));
 const template=db.prepare('SELECT html,meta_template FROM biomass_page_templates WHERE page_type=?').get('refuel');
 addPage.run(initialRefuelPageId,template.html,0,'Nạp nhiên liệu IO2729MB1',template.meta_template.replace('__BURNER_ID__','IO2729MB1'));
