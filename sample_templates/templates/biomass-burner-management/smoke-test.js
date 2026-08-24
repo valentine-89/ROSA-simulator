@@ -120,7 +120,7 @@ try {
     throw new Error('Production refuel base URL is missing');
   }
   for (const token of ['sessionStorage', 'window.close()', 'client_request_id', 'pendingKey',
-    'biomass-refuel-check', '/api/iot-cmd/', 'gatewayText']) {
+    'biomass-refuel-check', '/api/iot-cmd/', 'gatewayText', 'JSON.parse(gatewayAck).result']) {
     if (!refuelSource.includes(token)) throw new Error(`Refuel safety ${token} is missing`);
   }
   for (const token of ['br-success-view', 'br-burned', 'br-purchased']) {

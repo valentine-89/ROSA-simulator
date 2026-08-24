@@ -64,7 +64,11 @@
       }
       throw new Error(data.message || data.error || "Không thể gửi yêu cầu tới thiết bị.");
     }
-    if (String(data.gatewayText || "").trim() !== "OK") {
+    var gatewayAck = String(data.gatewayText || "").trim();
+    if (gatewayAck.charAt(0) === "{") {
+      try { gatewayAck = String(JSON.parse(gatewayAck).result || "").trim(); } catch (_) {}
+    }
+    if (gatewayAck !== "OK") {
       throw new Error("Thiết bị chưa sẵn sàng. Vui lòng cắm điện vào lò và thử lại.");
     }
     return data;
