@@ -94,6 +94,7 @@ try {
   const deviceTemplate = JSON.parse(fs.readFileSync(path.join(__dirname, 'IO2729MB1-compact-v2.iodata'), 'utf8'));
   const refuelSource = fs.readFileSync(path.join(__dirname, 'refuel-runtime.js'), 'utf8');
   const refuelHtmlSource = fs.readFileSync(path.join(__dirname, 'refuel_page.html'), 'utf8');
+  const refuelCssSource = fs.readFileSync(path.join(__dirname, 'refuel.css'), 'utf8');
   const qrSource = fs.readFileSync(path.join(__dirname, 'qrcode-runtime.js'), 'utf8');
   for (const key of ['1005','1006','1007','1008','1009','1010','1011','1012','1013','1014','1015','1016','1017','1018']) {
     if (!runtimeSource.includes(`key: "${key}"`)) throw new Error(`Dashboard setting #${key} is missing`);
@@ -125,6 +126,11 @@ try {
   }
   for (const token of ['br-success-view', 'br-burned', 'br-purchased']) {
     if (!refuelHtmlSource.includes(token)) throw new Error(`Refuel UI ${token} is missing`);
+  }
+  if (/font-family:\s*Inter\b/.test(refuelCssSource)
+      || !/button\s*\{[\s\S]*?font-family:\s*inherit/.test(refuelCssSource)
+      || !refuelHtmlSource.includes('refuel.css?v=2026.08.24.2')) {
+    throw new Error('Refuel page does not use the UTF-8-safe inherited UI font stack');
   }
   const n24 = deviceTemplate.io_programs.flatMap((group) => group.io_n_list || []).find((program) => String(program.n_id) === '24');
   const n26 = deviceTemplate.io_programs.flatMap((group) => group.io_n_list || []).find((program) => String(program.n_id) === '26');

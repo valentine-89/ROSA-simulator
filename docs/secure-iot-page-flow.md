@@ -2,6 +2,8 @@
 
 This guide is for AI agents and engineers creating templates that include customer-facing QR pages, public displays, or public IoT pages stored in `system_pages`.
 
+Use a system UI font stack with Vietnamese coverage and explicitly inherit it on form controls. Do not put an unbundled web font first in a public page font stack. Production ROSA CSP only allowlists the Cloudflare Insights beacon origins in addition to same-origin scripts and connections; templates must not add broader third-party script permissions.
+
 ## Core Rule
 
 There are two different browser contexts:
