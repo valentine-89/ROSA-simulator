@@ -53,7 +53,8 @@ db.exec(`
   );
   CREATE TABLE system_cmds (
     cmd_id TEXT PRIMARY KEY, command_template TEXT NOT NULL, require_email INTEGER NOT NULL DEFAULT 0,
-    require_phone INTEGER NOT NULL DEFAULT 0, sync_id TEXT NOT NULL, params_schema TEXT, enabled INTEGER NOT NULL DEFAULT 1
+    require_phone INTEGER NOT NULL DEFAULT 0, sync_id TEXT NOT NULL, params_schema TEXT, enabled INTEGER NOT NULL DEFAULT 1,
+    page_only INTEGER NOT NULL DEFAULT 0
   );
   CREATE TABLE system_iot_batch_sources (
     source_id TEXT PRIMARY KEY, fields_json TEXT NOT NULL DEFAULT '[]', enabled INTEGER NOT NULL DEFAULT 1,
@@ -104,8 +105,13 @@ const refuelMetaTemplate = JSON.stringify({
   publicApi: {
     stream: false, maxBodyBytes: 1024, rateLimit: { limit: 20, windowMs: 60000 },
     context: { burner_id: '__BURNER_ID__' },
+    commandTarget: { type: 'batch-device', sourceId: 'biomass-fleet', ioid: '__BURNER_ID__' },
+    allowedCommands: ['biomass-refuel'],
     macros: {
       'biomass-refuel-state': { params: {} },
+      'biomass-refuel-check': { params: {
+        lot_code: { type: 'string', required: true, pattern: '^[A-Z0-9]{6}$' }
+      } },
       'biomass-refuel-redeem': { params: {
         lot_code: { type: 'string', required: true, pattern: '^[A-Z0-9]{6}$' },
         client_request_id: { type: 'string', required: true, maxLength: 80, pattern: '^[A-Za-z0-9._:-]{12,80}$' }
@@ -238,6 +244,16 @@ SELECT b.ioid burner_id,b.name,b.location,COALESCE(m.burned_minutes,0) burned_mi
  MAX(COALESCE(m.purchased_minutes,0)-COALESCE(m.burned_minutes,0),0) remaining_minutes
 FROM biomass_burners b LEFT JOIN biomass_device_meter m ON m.ioid=b.ioid WHERE b.ioid=:burner_id LIMIT 1;
 `);
+addMacro.run('biomass-refuel-check','Read-only validation before the page sends the standard N26 command.',`
+SELECT CASE
+ WHEN length(upper(trim(:lot_code)))<>6 OR upper(trim(:lot_code)) GLOB '*[^A-Z0-9]*' THEN 'INVALID'
+ WHEN NOT EXISTS (SELECT 1 FROM biomass_fuel_lots WHERE code=upper(trim(:lot_code))) THEN 'NOT_FOUND'
+ WHEN EXISTS (SELECT 1 FROM biomass_fuel_lots WHERE code=upper(trim(:lot_code)) AND redeemed_at IS NOT NULL) THEN 'ALREADY_USED'
+ WHEN NOT EXISTS (SELECT 1 FROM biomass_device_meter m JOIN biomass_fuel_lots l ON l.code=upper(trim(:lot_code))
+   WHERE m.ioid=:burner_id AND m.purchased_minutes<=2147483647-l.purchased_minutes) THEN 'CREDIT_LIMIT'
+ ELSE 'READY' END status,
+ COALESCE((SELECT purchased_minutes FROM biomass_fuel_lots WHERE code=upper(trim(:lot_code))),0) added_minutes;
+`);
 addMacro.run('biomass-refuel-redeem','Atomically redeem one global fuel-lot code for the trusted burner context.',`
 UPDATE biomass_fuel_lots SET redeemed_at=CAST(strftime('%s','now') AS INTEGER)*1000,
  redeemed_ioid=:burner_id,redeemed_request_id=:client_request_id
@@ -312,7 +328,7 @@ const addPage=db.prepare(`INSERT INTO system_pages(page_id,html,require_email,re
 addPage.run('biomass-fleet-view',pageHtml,1,'Biomass fleet view',JSON.stringify({publicApi:{batchTelemetry:{sourceId:'biomass-fleet'},macros:readMacros,rateLimit:{limit:300,windowMs:60000}}}));
 addPage.run('biomass-fleet-admin',pageHtml,1,'Biomass fleet admin',JSON.stringify({publicApi:{macros:writeMacros,rateLimit:{limit:120,windowMs:60000}}}));
 const template=db.prepare('SELECT html,meta_template FROM biomass_page_templates WHERE page_type=?').get('refuel');
-addPage.run(initialRefuelPageId,template.html,0,'Nạp nhiên liệu IO2729MB1',template.meta_template.replace('__BURNER_ID__','IO2729MB1'));
+addPage.run(initialRefuelPageId,template.html,0,'Nạp nhiên liệu IO2729MB1',template.meta_template.replaceAll('__BURNER_ID__','IO2729MB1'));
 
 const settingDefs=[
  {key:'1005',schema:{type:'integer',required:true,min:30,max:180}},{key:'1006',schema:{type:'integer',required:true,min:0,max:30}},
@@ -325,6 +341,12 @@ const settingDefs=[
 ];
 const addCommand=db.prepare(`INSERT INTO system_cmds(cmd_id,command_template,require_email,require_phone,sync_id,params_schema,enabled) VALUES (?,?,1,0,'<<syncid>>',?,1)`);
 for(const {key,schema} of settingDefs)addCommand.run(`biomass-set-${key}`,`D4#${key},<<value>>D5N20`,JSON.stringify({value:schema}));
+db.prepare(`INSERT INTO system_cmds(cmd_id,command_template,require_email,require_phone,sync_id,params_schema,enabled,page_only)
+ VALUES ('biomass-refuel','N26,"<<lot_code>>",<<minutes>>',0,0,'<<syncid>>',?,1,1)`)
+ .run(JSON.stringify({
+   lot_code:{type:'string',required:true,pattern:'^[A-Z0-9]{6}$'},
+   minutes:{type:'integer',required:true,min:1,max:1000000}
+ }));
 db.pragma('wal_checkpoint(TRUNCATE)');
 db.close();
 console.log(output);

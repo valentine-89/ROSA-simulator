@@ -1,7 +1,7 @@
 {
   "type": "PROGRAM_FULL",
   "profile": "compact-v2",
-  "program_version": "compact-v2.6.3",
+  "program_version": "compact-v2.7.0",
   "io_id": "<<ioid>>",
   "io_source": "<<io_source>>",
   "io_objects": [
@@ -25,7 +25,7 @@
     {"ob_id":107,"ob_content":"#107","ob_type":"variable","ob_name":"phút từ lần gửi GPS","ob_desc":"","ob_mac":null,"ob_value":"10","ob_state":1,"ob_config":null},
     {"ob_id":1001,"ob_content":"#1001","ob_type":"variable","ob_name":"IOID lò","ob_desc":"","ob_mac":null,"ob_value":"<<ioid>>","ob_state":1,"ob_config":null},
     {"ob_id":894,"ob_content":"#894","ob_type":"variable","ob_name":"tổng phút đốt journal","ob_desc":"","ob_mac":null,"ob_value":"0","ob_state":1,"ob_config":null},
-    {"ob_id":1003,"ob_content":"#1003","ob_type":"variable","ob_name":"version chương trình","ob_desc":"","ob_mac":null,"ob_value":"compact-v2.6.3","ob_state":1,"ob_config":null},
+    {"ob_id":1003,"ob_content":"#1003","ob_type":"variable","ob_name":"version chương trình","ob_desc":"","ob_mac":null,"ob_value":"compact-v2.7.0","ob_state":1,"ob_config":null},
     {"ob_id":1005,"ob_content":"#1005","ob_type":"variable","ob_name":"điện trở mồi giây","ob_desc":"","ob_mac":null,"ob_value":"60","ob_state":1,"ob_config":null},
     {"ob_id":1006,"ob_content":"#1006","ob_type":"variable","ob_name":"quạt mồi tối thiểu","ob_desc":"phần trăm mở ban đầu trước chuỗi tăng dần","ob_mac":null,"ob_value":"15","ob_state":1,"ob_config":null},
     {"ob_id":1007,"ob_content":"#1007","ob_type":"variable","ob_name":"lửa lớn sơ cấp","ob_desc":"","ob_mac":null,"ob_value":"95","ob_state":1,"ob_config":null},
@@ -57,6 +57,7 @@
       {"n_id":"23","n_mode":"4","n_content":"I95-1\nD4#1,I95\n[(#1.1<>\"\"&#1.2<>\"\"&(#105=\"\"|#106=\"\"|#107>=10))](D4#105,#1.1D4#106,#1.2D4#107,0D5N20D5N25)","n_natural":"","n_name":"cập nhật GPS khi có tín hiệu","n_desc":"GPS gửi bằng telemetry và data macro chuẩn"},
       {"n_id":"24","n_mode":"1","n_content":"D23,#801,#1,\"data\",\"IO-biomass-meter\",#1001,#894,#101\n[#1=\"OK\"](D4#1022,#2)\n[#1=\"METER_REGRESSION\"](D4#1022,#2)","n_natural":"","n_name":"lưu meter và đọc phút mua","n_desc":"c1 khai báo IOID; response c1 trạng thái, c2 phút đã mua; lỗi mạng giữ nguyên #1022"},
       {"n_id":"25","n_mode":"1","n_content":"D23,#801,,\"data\",\"IO-biomass-gps\",#1001,#105,#106","n_natural":"","n_name":"lưu GPS ROSA","n_desc":"c1 khai báo IOID, c2/c3 là tọa độ; dùng data macro chuẩn"},
+      {"n_id":"26","n_mode":"1","n_content":"D4#3,#2/60\nD4#5,#909#908#907#911#912#913\nD61,#802,#1002,1,#3,#1004,#1004,#1004,#1002#904,#909#908#907#911#912#913,2,,0,1,10000-(#894/60)\nD4#1022,#1022+#2\nD9,\"OK\"","n_natural":"","n_name":"báo cáo nạp phút đốt","n_desc":"nhận N26, mã lô, số phút; cập nhật cache tham khảo #1022 rồi trả OK"},
       {"n_id":"101","n_mode":"1","n_content":"D14N1N2N3N4N5\nD2O2D1O3\nD2O1O4O7O8\nD2O5O6D8\n//D4O5,#1018\nD4#102,#1018\n//D4O6,#1018\nD4#103,#1018","n_natural":"","n_name":"tắt tất cả quy trình","n_desc":"giữ nguyên trình tự an toàn đã đọc từ IO2729MB1","n_local_def":[]}
     ]}
   ]

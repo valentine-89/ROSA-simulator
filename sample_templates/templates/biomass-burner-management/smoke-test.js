@@ -93,6 +93,7 @@ try {
   const dashboardCss = fs.readFileSync(path.join(__dirname, 'dashboard.css'), 'utf8');
   const deviceTemplate = JSON.parse(fs.readFileSync(path.join(__dirname, 'IO2729MB1-compact-v2.iodata'), 'utf8'));
   const refuelSource = fs.readFileSync(path.join(__dirname, 'refuel-runtime.js'), 'utf8');
+  const refuelHtmlSource = fs.readFileSync(path.join(__dirname, 'refuel_page.html'), 'utf8');
   const qrSource = fs.readFileSync(path.join(__dirname, 'qrcode-runtime.js'), 'utf8');
   for (const key of ['1005','1006','1007','1008','1009','1010','1011','1012','1013','1014','1015','1016','1017','1018']) {
     if (!runtimeSource.includes(`key: "${key}"`)) throw new Error(`Dashboard setting #${key} is missing`);
@@ -118,8 +119,17 @@ try {
   if (!runtimeSource.includes('https://rosa.technology') || !dashboardSource.includes('"publicBaseUrl":"https://rosa.technology"')) {
     throw new Error('Production refuel base URL is missing');
   }
-  for (const token of ['sessionStorage', 'window.close()', 'client_request_id', 'pendingKey', 'br-success-view']) {
+  for (const token of ['sessionStorage', 'window.close()', 'client_request_id', 'pendingKey',
+    'biomass-refuel-check', '/api/iot-cmd/', 'gatewayText']) {
     if (!refuelSource.includes(token)) throw new Error(`Refuel safety ${token} is missing`);
+  }
+  for (const token of ['br-success-view', 'br-burned', 'br-purchased']) {
+    if (!refuelHtmlSource.includes(token)) throw new Error(`Refuel UI ${token} is missing`);
+  }
+  const n24 = deviceTemplate.io_programs.flatMap((group) => group.io_n_list || []).find((program) => String(program.n_id) === '24');
+  const n26 = deviceTemplate.io_programs.flatMap((group) => group.io_n_list || []).find((program) => String(program.n_id) === '26');
+  if (!n20.n_content.includes('#1022') || !n24?.n_content.includes('D4#1022,#2') || !n26?.n_content.includes('D4#1022,#1022+#2') || !n26?.n_content.includes('D9,"OK"')) {
+    throw new Error('Compact-v2 purchased-minute programs do not consistently use #1022');
   }
   for (const marker of [
     'AI-BRIDGE-EDITABLE HTML LAYOUT: START',
@@ -162,6 +172,14 @@ try {
   if (refuelMeta.rateLimit.limit !== 20 || refuelMeta.maxBodyBytes !== 1024 || refuelMeta.context.burner_id !== 'IO2729MB1') {
     throw new Error('Refuel page scope or rate limit is invalid');
   }
+  if (refuelMeta.commandTarget.type !== 'batch-device' || refuelMeta.commandTarget.sourceId !== 'biomass-fleet'
+      || refuelMeta.commandTarget.ioid !== 'IO2729MB1' || !refuelMeta.allowedCommands.includes('biomass-refuel')) {
+    throw new Error('Refuel page command target is invalid');
+  }
+  const refuelCommand = db.prepare('SELECT command_template,page_only FROM system_cmds WHERE cmd_id=?').get('biomass-refuel');
+  if (!refuelCommand || refuelCommand.page_only !== 1 || refuelCommand.command_template !== 'N26,"<<lot_code>>",<<minutes>>') {
+    throw new Error('Page-only refuel command is invalid');
+  }
   if (!refuelPage.html.includes('refuel-runtime.js') || /@[^<\s/]+\/[A-Za-z0-9]{12,}/.test(refuelPage.html)) {
     throw new Error('Refuel page missing runtime or leaking credentials');
   }
@@ -202,12 +220,15 @@ try {
   }
 
   const code = batch1[0].code;
+  const check = runMacro('biomass-refuel-check', { ...context, burner_id: 'IO2729MB1', lot_code: code })[0];
+  if (check.status !== 'READY' || check.added_minutes !== 300) throw new Error('Refuel precheck failed');
   const first = runMacro('biomass-refuel-redeem', { ...context, burner_id: 'IO2729MB1', lot_code: code, client_request_id: 'REDEEM-REQUEST-0001' })[0];
   if (first.status !== 'OK' || first.added_minutes !== 300 || first.purchased_minutes !== 300) throw new Error('First redeem failed');
   const retry = runMacro('biomass-refuel-redeem', { ...context, burner_id: 'IO2729MB1', lot_code: code, client_request_id: 'REDEEM-REQUEST-0001' })[0];
   if (retry.status !== 'OK' || retry.purchased_minutes !== 300) throw new Error('Idempotent redeem retry failed');
   const duplicate = runMacro('biomass-refuel-redeem', { ...context, burner_id: 'IO2729MB1', lot_code: code, client_request_id: 'REDEEM-REQUEST-0002' })[0];
   if (duplicate.status !== 'ALREADY_USED' || duplicate.purchased_minutes !== 300) throw new Error('Duplicate redeem was not rejected');
+  if (runMacro('biomass-refuel-check', { ...context, burner_id: 'IO2729MB1', lot_code: code })[0].status !== 'ALREADY_USED') throw new Error('Refuel precheck accepted a used code');
   if (runMacro('biomass-refuel-redeem', { ...context, burner_id: 'IO2729MB1', lot_code: 'BAD@@@', client_request_id: 'REDEEM-REQUEST-0003' })[0].status !== 'INVALID') {
     throw new Error('Invalid fuel code was not rejected');
   }
@@ -216,7 +237,8 @@ try {
   const newBurner = runMacro('biomass-fleet-create', { ...context, burner_id: 'IO2729TEST', device_key: 'test-api-key', name: 'Lò test', location: '', latitude: '', longitude: '' })[0];
   if (!/^[0-9a-f]{32}$/.test(newBurner.refuel_page_id) || newBurner.refuel_page_id === refuelPage.page_id) throw new Error('New burner random refuel page id failed');
   const createdPage = db.prepare('SELECT meta FROM system_pages WHERE page_id = ?').get(newBurner.refuel_page_id);
-  if (!createdPage || JSON.parse(createdPage.meta).publicApi.context.burner_id !== 'IO2729TEST') throw new Error('New burner page context failed');
+  if (!createdPage || JSON.parse(createdPage.meta).publicApi.context.burner_id !== 'IO2729TEST'
+      || JSON.parse(createdPage.meta).publicApi.commandTarget.ioid !== 'IO2729TEST') throw new Error('New burner page context failed');
   const createdBurner = db.prepare('SELECT latitude,longitude,coordinate_source FROM biomass_burners WHERE ioid=?').get('IO2729TEST');
   if (createdBurner.latitude !== 10.798 || createdBurner.longitude !== 106.651 || createdBurner.coordinate_source !== 'default') {
     throw new Error('New burner default coordinates are invalid');
@@ -229,7 +251,7 @@ try {
   const burner = db.prepare('SELECT latitude,longitude,coordinate_source FROM biomass_burners WHERE ioid=?').get('IO2729MB1');
   if (burner.latitude !== 10.7769 || burner.longitude !== 106.7009 || burner.coordinate_source !== 'gps') throw new Error('GPS cache failed');
 
-  console.log('biomass compact-v2.6 smoke test passed');
+  console.log('biomass compact-v2.7 smoke test passed');
 } finally {
   db.close();
   fs.rmSync(temp, { force: true });

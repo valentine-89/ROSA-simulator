@@ -43,6 +43,9 @@ try {
   if (meter.burned_minutes !== 2543 || meter.purchased_minutes !== 0) throw new Error('Migration changed meter history');
   const pageMeta = page && JSON.parse(page.meta);
   if (!page || page.sync_id !== 'SYNC-PRODUCTION' || pageMeta.publicApi.context.burner_id !== 'IO2729MB1' || pageMeta.hideLink !== true) throw new Error('Migration did not create a scoped hidden-link refuel page');
+  if (pageMeta.publicApi.commandTarget.ioid !== 'IO2729MB1' || !pageMeta.publicApi.allowedCommands.includes('biomass-refuel')) throw new Error('Migration did not create a page-bound refuel command target');
+  const refuelCommand = migrated.prepare('SELECT page_only,command_template FROM system_cmds WHERE cmd_id=?').get('biomass-refuel');
+  if (!refuelCommand || refuelCommand.page_only !== 1 || !refuelCommand.command_template.startsWith('N26,')) throw new Error('Migration did not install the page-only N26 command');
   if (migrated.prepare('SELECT COUNT(*) count FROM system_pages WHERE page_id=?').get('biomass-refuel-io2729mb1').count !== 0) throw new Error('Migration retained legacy refuel page id');
   if (migrated.prepare('SELECT COUNT(*) count FROM biomass_fuel_lots').get().count !== 0) throw new Error('Migration inserted demo fuel lots');
   const batchDevice = migrated.prepare(`SELECT api_key FROM system_iot_batch_devices WHERE source_id='biomass-fleet' AND ioid=?`).get('IO2729MB1');

@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "validate": "node scripts/validate.js",
-    "check": "node --check server.js && node --check src/store.js && node --check src/dashboardEditableSections.js && node --check scripts/validate.js",
+    "check": "node --check server.js && node --check src/store.js && node --check src/dashboardEditableSections.js && node --check scripts/validate.js && node --check scripts/test-page-bound-command.js",
+    "test:page-command": "node scripts/test-page-bound-command.js",
     "refresh:bootstrapper:win": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/package-windows.ps1 -RootLauncher",
     "package:win": "bash scripts/package-windows.sh",
     "package:win:powershell": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/package-windows.ps1"

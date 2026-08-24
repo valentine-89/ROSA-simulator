@@ -103,7 +103,7 @@ Public IoT pages are different. If a template creates rows in `system_pages`, th
 - Use `/api/iot-page-telemetry/{ioid}/{pageid}`, `/api/iot-page-timeseries/{ioid}/{pageid}`, and `/api/iot-page-realtime/{ioid}/{pageid}` for public telemetry/timeseries. Visible fields are configured server-side in `meta.publicApi.fields`; browser code does not send the field list.
 - Use `/api/iot-page-macro/{ioid}/{pageid}` for public SQLite macros. Runnable macros are configured server-side in `meta.publicApi.macros`.
 - Use `/api/iot-page-stream/{ioid}/{pageid}` only for database change notifications when `meta.publicApi.stream=true`.
-- Use `/api/iot-cmd/{ioid}/{cmd_id}` for public commands defined in `system_cmds`. Do not build gateway commands or API-key URLs in browser code.
+- Use `/api/iot-cmd/{ioid}/{cmd_id}` for public commands defined in `system_cmds`. For a different target IO, use `?pageId=...` with one fixed `publicApi.commandTarget`, `allowedCommands`, a matching `system_iot_batch_devices` credential row and `system_cmds.page_only=1`. Do not build gateway commands, target IOIDs or API-key URLs in browser code.
 - Never ask the browser to send reserved keys: `apikey`, `api_key`, `syncid`, `sync_id`, `sessionid`, `session_id`, `ioid`, `macro`, `email`, `phone`, `username`, `__proto__`, `prototype`, or `constructor`.
 - Do not declare reserved keys in `publicApi.context`, public macro params, or public command request bodies. Identity fields such as `email`, `username`, and `phone` are injected by the backend when `require_email` or `require_phone` is enabled.
 

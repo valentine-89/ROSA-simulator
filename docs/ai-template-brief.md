@@ -30,7 +30,7 @@ Do not edit simulator runtime files, packaging files, npm files, backend routes,
 
 Public pages must use `/iot-page/{ioid}/{pageid}` and pageid-based APIs only. Never expose `sessionId@apikey`, real `sync_id`, API keys, or direct `/api/{sessionId}/{syncId}/...` URLs in browser HTML/JavaScript.
 
-For public telemetry, timeseries, and SSE, configure readable fields in `system_pages.meta.publicApi.fields`. Browser code calls the public endpoint without sending the field list.
+For public telemetry, timeseries, and SSE, configure readable fields in `system_pages.meta.publicApi.fields`. Browser code calls the public endpoint without sending the field list. If a public page commands another IO, declare one fixed `publicApi.commandTarget`, an `allowedCommands` list, the matching server-side batch-device credential row, and mark the command `page_only=1`; never accept the target or API key from browser input.
 
 For public macros and commands, follow `docs/secure-iot-page-flow.md`.
 

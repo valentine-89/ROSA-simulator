@@ -63,11 +63,45 @@ h1 {
 
 .br-device {
   min-height: 27px;
-  margin: 12px 0 24px;
+  margin: 12px 0 16px;
   color: #50617d;
   font-size: 18px;
   font-weight: 750;
   text-align: center;
+}
+
+.br-meters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 20px;
+}
+
+.br-meters > div {
+  min-width: 0;
+  padding: 13px 10px 12px;
+  border: 1px solid #d7e2f3;
+  border-radius: 15px;
+  background: #f5f8fd;
+  text-align: center;
+}
+
+.br-meters span,
+.br-meters small {
+  display: block;
+  color: #627089;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.br-meters strong {
+  display: block;
+  overflow: hidden;
+  margin: 2px 0 0;
+  color: #1d4f91;
+  font-size: clamp(25px, 8vw, 34px);
+  line-height: 1.1;
+  text-overflow: ellipsis;
 }
 
 form { display: grid; gap: 10px; }

@@ -1028,9 +1028,10 @@ async function handlePublicPageApi(req, res, url) {
       assertSameOrigin(req);
       const ioid = decodeURIComponent(cmdMatch[1]);
       const cmdId = decodeURIComponent(cmdMatch[2]);
+      const pageId = url.searchParams.get('pageId') || '';
       checkPublicRateLimit(`cmd:${requestClientKey(req)}:${ioid}:${cmdId}`, { limit: 120, windowMs: 60 * 1000 });
       const body = await readBody(req, 64 * 1024);
-      const result = store.executeSystemCommand(ioid, cmdId, body);
+      const result = store.executeSystemCommand(ioid, cmdId, body, pageId);
       json(res, 200, result);
     } catch (error) {
       publicErrorJson(res, error, 400);

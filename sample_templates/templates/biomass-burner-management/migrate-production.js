@@ -18,6 +18,7 @@ function migrate(targetPath, options = {}) {
       db.pragma('foreign_keys = ON');
       if (!hasColumn(db, 'biomass_burners', 'refuel_page_id')) db.exec('ALTER TABLE biomass_burners ADD COLUMN refuel_page_id TEXT');
       if (!hasColumn(db, 'biomass_device_meter', 'purchased_minutes')) db.exec('ALTER TABLE biomass_device_meter ADD COLUMN purchased_minutes INTEGER NOT NULL DEFAULT 0');
+      if (!hasColumn(db, 'system_cmds', 'page_only')) db.exec('ALTER TABLE system_cmds ADD COLUMN page_only INTEGER NOT NULL DEFAULT 0');
       db.exec(`
         CREATE UNIQUE INDEX IF NOT EXISTS idx_biomass_burners_refuel_page ON biomass_burners(refuel_page_id);
         CREATE TABLE IF NOT EXISTS system_iot_batch_sources (
@@ -125,12 +126,12 @@ function migrate(targetPath, options = {}) {
       }
       db.prepare(`DELETE FROM system_pages WHERE page_id='biomass-status'`).run();
 
-      const upsertCommand = db.prepare(`INSERT INTO system_cmds(cmd_id,command_template,require_email,require_phone,sync_id,params_schema,enabled)
-        VALUES (?,?,?,?,?,?,?) ON CONFLICT(cmd_id) DO UPDATE SET command_template=excluded.command_template,
+      const upsertCommand = db.prepare(`INSERT INTO system_cmds(cmd_id,command_template,require_email,require_phone,sync_id,params_schema,enabled,page_only)
+        VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(cmd_id) DO UPDATE SET command_template=excluded.command_template,
         require_email=excluded.require_email,require_phone=excluded.require_phone,sync_id=excluded.sync_id,
-        params_schema=excluded.params_schema,enabled=excluded.enabled`);
+        params_schema=excluded.params_schema,enabled=excluded.enabled,page_only=excluded.page_only`);
       for (const row of sample.prepare(`SELECT * FROM system_cmds WHERE cmd_id LIKE 'biomass-%'`).all()) {
-        upsertCommand.run(row.cmd_id, row.command_template, row.require_email, row.require_phone, currentSync, row.params_schema, row.enabled);
+        upsertCommand.run(row.cmd_id, row.command_template, row.require_email, row.require_phone, currentSync, row.params_schema, row.enabled, row.page_only || 0);
       }
 
       const legacyRefuelPageIds = db.prepare(`SELECT refuel_page_id FROM biomass_burners

@@ -22,6 +22,7 @@ The simulator supports the same public contract needed for local testing:
 - `POST /api/iot-page-macro/{ioid}/{pageid}` runs only macros configured in `publicApi.macros`.
 - `GET /api/iot-page-stream/{ioid}/{pageid}` streams `iodata_changed` when `publicApi.stream=true`.
 - `POST /api/iot-cmd/{ioid}/{cmd_id}` resolves `system_cmds.command_template`, logs locally, and does not call the real IoT gateway.
+- `POST /api/iot-cmd/{databaseIoid}/{cmd_id}?pageId={pageId}` applies the same page-bound target and API-key registry checks as production before logging the simulated target command.
 
 The simulator uses fake identity values from `SIM_USER_EMAIL`, `SIM_USER_NAME`, and `SIM_USER_PHONE`. If these env vars are absent, it provides a local demo identity so QR/locker/mixer pages can be tested.
 
@@ -56,7 +57,8 @@ CREATE TABLE IF NOT EXISTS system_cmds (
   require_phone INTEGER NOT NULL DEFAULT 0,
   sync_id TEXT NOT NULL,
   params_schema TEXT,
-  enabled INTEGER NOT NULL DEFAULT 1
+  enabled INTEGER NOT NULL DEFAULT 1,
+  page_only INTEGER NOT NULL DEFAULT 0
 );
 ```
 
@@ -115,6 +117,8 @@ Rules:
 - `context` is server-side page context. Client code must not send these keys.
 - `macros` lists the public macros this page can call. A macro not listed here must be rejected.
 - `maxBodyBytes` and `rateLimit` are optional server-side safety settings handled by ROSA/simulator when configured.
+- `allowedCommands` lists command IDs callable with this page as scope.
+- `commandTarget` may fix one target `{ "type":"batch-device", "sourceId":"...", "ioid":"IO..." }`. The target row's API key is compared with the simulator/ROSA device registry and is never returned to browser code.
 
 ## Public Telemetry And Timeseries
 
@@ -210,7 +214,24 @@ This route is separate from telemetry realtime. Use it for macro/database change
 
 ## Secure Public Commands
 
-Public pages must not build IoT gateway URLs or expose device credentials. If a public page needs to send a command, define the command in `system_cmds` and call `/api/iot-cmd/{ioid}/{cmd_id}`.
+Public pages must not build IoT gateway URLs or expose device credentials. If a public page needs to send a command, define the command in `system_cmds` and call `/api/iot-cmd/{ioid}/{cmd_id}`. If the target differs from the page database IOID, call `/api/iot-cmd/{databaseIoid}/{cmd_id}?pageId={pageId}` and configure one fixed target plus allowlist in `meta.publicApi`.
+
+Example page scope:
+
+```json
+{
+  "publicApi": {
+    "allowedCommands": ["locker-open-auto"],
+    "commandTarget": {
+      "type": "batch-device",
+      "sourceId": "locker-fleet",
+      "ioid": "IO123abcd"
+    }
+  }
+}
+```
+
+The device must have an enabled row in `system_iot_batch_devices`, and that configured API key must exactly match the registry built from standard device telemetry. Set `page_only=1` on commands that must never be callable without this scope. Multiple dashboards may name the same target, but each dashboard is independently rejected when its own configured key is wrong.
 
 Example `system_cmds` row:
 
@@ -271,6 +292,7 @@ Do not do these in public pages:
 - Do not call `/api/{sessionId}/{syncId}/iotelemetry`, `/iotimeseries`, `/iodata`, or `/dataquery`.
 - Do not put `IO...@...`, API keys, or real `sync_id` in HTML, JS, data attributes, query strings, QR codes, logs, or localStorage.
 - Do not ask the user/browser to send `phone`, `email`, `username`, `ioid`, `sync_id`, `sessionId`, or API keys.
+- Do not accept a target device or device key from query/body fields; page-bound targets must be fixed server-side in `meta.publicApi.commandTarget`.
 - Do not add a new backend route when `publicApi.fields`, `publicApi.macros`, `system_cmds`, or SQLite macros can model the behavior.
 - Do not declare reserved keys such as `phone` in `publicApi.macros[macro].params`; the page will fail validation.
 - Do not use public pages as admin dashboards unless every exposed macro and field is intentionally public.
@@ -289,6 +311,7 @@ Before a template with public pages is considered done:
 - Reserved keys are not used in params, context, or command bodies.
 - Public write macros are idempotent where retry/double-click is possible.
 - `system_cmds` is used for public commands instead of client-side gateway commands.
+- Page-bound commands have an allowlist, fixed target, matching batch credential row and `page_only=1` when direct calls are forbidden.
 - `npm run validate` and `npm run check` pass.
 
 ## Local Smoke Test

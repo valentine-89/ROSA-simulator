@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { timingSafeEqual } = require('crypto');
 
 function requireDatabaseModule() {
   const bootstrapModules = process.env.ROSA_SIMULATOR_NODE_MODULES;
@@ -89,6 +90,14 @@ function parseFieldsParam(value) {
 
 function isRecord(value) {
   return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function matchesCredential(left, right) {
+  const leftBuffer = Buffer.from(String(left || ''), 'utf8');
+  const rightBuffer = Buffer.from(String(right || ''), 'utf8');
+  return leftBuffer.length > 0
+    && leftBuffer.length === rightBuffer.length
+    && timingSafeEqual(leftBuffer, rightBuffer);
 }
 
 function isTruthy(value) {
@@ -1338,8 +1347,12 @@ class SimulatorStore {
         LIMIT 1
       `).get();
       if (!table) throw new PublicPageError(404, 'SYSTEM_CMDS_NOT_FOUND', 'system_cmds table was not found.');
+      const columns = new Set(db.prepare('PRAGMA table_info(system_cmds)').all()
+        .map((column) => String(column.name || '')));
+      const pageOnlySelect = columns.has('page_only') ? 'page_only' : '0 AS page_only';
       const row = db.prepare(`
-        SELECT cmd_id, command_template, require_email, require_phone, sync_id, params_schema, enabled
+        SELECT cmd_id, command_template, require_email, require_phone, sync_id, params_schema, enabled,
+               ${pageOnlySelect}
         FROM system_cmds
         WHERE cmd_id = ?
         LIMIT 1
@@ -1357,15 +1370,107 @@ class SimulatorStore {
         require_phone: Number(row.require_phone || 0),
         sync_id: String(row.sync_id || this.defaultSyncId || '').trim(),
         params_schema: String(row.params_schema || '').trim(),
-        enabled: Number(row.enabled || 0)
+        enabled: Number(row.enabled || 0),
+        page_only: Number(row.page_only || 0)
       };
     } finally {
       db.close();
     }
   }
 
-  executeSystemCommand(ioid, cmdId, body) {
+  readPageCommandTarget(databaseIoid, pageId, cmdId) {
+    const normalizedDatabaseIoid = normalizePublicIoid(databaseIoid);
+    const normalizedPageId = normalizePageId(pageId);
+    const normalizedCmdId = normalizePageId(cmdId);
+    const filePath = this.getIoDataFilePath(normalizedDatabaseIoid);
+    if (!fs.existsSync(filePath)) {
+      throw new PublicPageError(404, 'IODATA_NOT_FOUND', `IoData database for ${normalizedDatabaseIoid} was not found.`);
+    }
+    const db = new Database(filePath, { readonly: true, fileMustExist: true });
+    try {
+      const table = db.prepare(`
+        SELECT name FROM sqlite_master
+        WHERE type = 'table' AND name = 'system_pages'
+        LIMIT 1
+      `).get();
+      if (!table) throw new PublicPageError(404, 'SYSTEM_PAGES_NOT_FOUND', 'system_pages table was not found.');
+      const page = db.prepare(`
+        SELECT page_id, require_email, require_phone, enabled, meta
+        FROM system_pages
+        WHERE page_id = ?
+        LIMIT 1
+      `).get(normalizedPageId);
+      if (!page || !page.page_id) {
+        throw new PublicPageError(404, 'PAGE_NOT_FOUND', `Page "${normalizedPageId}" was not found.`);
+      }
+      if (!Number(page.enabled || 0)) {
+        throw new PublicPageError(403, 'PAGE_DISABLED', `Page "${normalizedPageId}" is disabled.`);
+      }
+      const meta = safeJsonObject(page.meta);
+      const publicApi = isRecord(meta.publicApi) ? meta.publicApi : null;
+      if (!publicApi) {
+        throw new PublicPageError(403, 'PAGE_COMMAND_NOT_ALLOWED', 'This page does not allow secure commands.');
+      }
+      const allowedCommands = Array.isArray(publicApi.allowedCommands)
+        ? publicApi.allowedCommands.map((value) => String(value || '').trim()).filter(Boolean)
+        : [];
+      if (!allowedCommands.includes(normalizedCmdId)) {
+        throw new PublicPageError(403, 'PAGE_COMMAND_NOT_ALLOWED', `Command "${normalizedCmdId}" is not allowed by this page.`);
+      }
+
+      if (publicApi.commandTarget == null) {
+        return {
+          targetIoid: normalizedDatabaseIoid,
+          configuredApiKey: '',
+          requireEmail: Boolean(page.require_email),
+          requirePhone: Boolean(page.require_phone)
+        };
+      }
+      if (!isRecord(publicApi.commandTarget)
+          || String(publicApi.commandTarget.type || '').trim() !== 'batch-device') {
+        throw new PublicPageError(500, 'INVALID_PAGE_COMMAND_CONFIG', 'Unsupported publicApi.commandTarget configuration.');
+      }
+      const sourceId = String(publicApi.commandTarget.sourceId || '').trim();
+      const targetIoid = normalizePublicIoid(publicApi.commandTarget.ioid);
+      if (!ID_PATTERN.test(sourceId)) {
+        throw new PublicPageError(500, 'INVALID_PAGE_COMMAND_CONFIG', 'Invalid batch source ID.');
+      }
+      const deviceTable = db.prepare(`
+        SELECT name FROM sqlite_master
+        WHERE type = 'table' AND name = 'system_iot_batch_devices'
+        LIMIT 1
+      `).get();
+      if (!deviceTable) {
+        throw new PublicPageError(404, 'BATCH_DEVICE_NOT_FOUND', 'Batch device table was not found.');
+      }
+      const device = db.prepare(`
+        SELECT d.api_key, d.enabled, s.enabled AS source_enabled
+        FROM system_iot_batch_devices d
+        JOIN system_iot_batch_sources s ON s.source_id = d.source_id
+        WHERE d.source_id = ? AND d.ioid = ?
+        LIMIT 1
+      `).get(sourceId, targetIoid);
+      if (!device || !Number(device.enabled || 0) || !Number(device.source_enabled || 0)) {
+        throw new PublicPageError(404, 'BATCH_DEVICE_NOT_FOUND', 'The page target is not enabled in this dashboard.');
+      }
+      const configuredApiKey = String(device.api_key || '').trim();
+      if (!configuredApiKey) {
+        throw new PublicPageError(403, 'DEVICE_KEY_REJECTED', 'The dashboard device key is missing.');
+      }
+      return {
+        targetIoid,
+        configuredApiKey,
+        requireEmail: Boolean(page.require_email),
+        requirePhone: Boolean(page.require_phone)
+      };
+    } finally {
+      db.close();
+    }
+  }
+
+  executeSystemCommand(ioid, cmdId, body, pageId = '') {
     const normalizedIoid = normalizePublicIoid(ioid);
+    const normalizedPageId = pageId ? normalizePageId(pageId) : '';
     if (!isRecord(body)) throw new PublicPageError(400, 'INVALID_BODY', 'JSON body must be an object.');
     for (const key of Object.keys(body)) {
       if (isReservedParamKey(key)) {
@@ -1373,25 +1478,48 @@ class SimulatorStore {
       }
     }
     const row = this.readSystemCommand(normalizedIoid, cmdId);
+    if (Number(row.page_only || 0) && !normalizedPageId) {
+      throw new PublicPageError(403, 'PAGE_REQUIRED', 'This command may only be called from an allowed IoT page.');
+    }
+    const pageTarget = normalizedPageId
+      ? this.readPageCommandTarget(normalizedIoid, normalizedPageId, cmdId)
+      : null;
     const identity = this.getSimulatorIdentity();
-    if (Number(row.require_email || 0) && !identity.email) {
+    if ((Number(row.require_email || 0) || pageTarget && pageTarget.requireEmail) && !identity.email) {
       throw new PublicPageError(409, 'EMAIL_REQUIRED', 'Simulator identity email is required for this command.');
     }
-    if (Number(row.require_phone || 0) && !identity.phone) {
+    if ((Number(row.require_phone || 0) || pageTarget && pageTarget.requirePhone) && !identity.phone) {
       throw new PublicPageError(409, 'PHONE_REQUIRED', 'Simulator identity phone is required for this command.');
+    }
+    const targetIoid = pageTarget ? pageTarget.targetIoid : normalizedIoid;
+    if (pageTarget && pageTarget.configuredApiKey) {
+      const registry = this.db.prepare(`
+        SELECT api_key
+        FROM device_registry
+        WHERE ioid = ?
+        LIMIT 1
+      `).get(targetIoid);
+      if (!registry) {
+        throw new PublicPageError(404, 'DEVICE_NOT_REGISTERED', `Verified device registry for ${targetIoid} was not found.`);
+      }
+      if (!matchesCredential(pageTarget.configuredApiKey, registry.api_key)) {
+        throw new PublicPageError(403, 'DEVICE_KEY_REJECTED', 'The dashboard device key does not match the verified registry.');
+      }
     }
     const schema = parseParamsSchema(row.params_schema);
     const params = normalizeCommandParams(body, schema);
     const command = resolveCommandTemplate(row.command_template, identity, params);
-    this.handleLocalCommand(normalizedIoid, command);
+    this.handleLocalCommand(targetIoid, command);
     return {
       ok: true,
-      command,
+      c1: 'OK',
+      ioid: targetIoid,
+      databaseIoid: normalizedIoid,
+      pageId: normalizedPageId || undefined,
+      cmd_id: String(row.cmd_id || ''),
+      gatewayStatus: 200,
+      gatewayText: 'OK',
       chargedCost: 0,
-      gateway: {
-        status: 200,
-        text: 'OK'
-      },
       simulated: true
     };
   }

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="color-scheme" content="light" />
   <title>Nạp nhiên liệu</title>
-  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/refuel.css?v=2026.08.19.1" />
+  <link rel="stylesheet" href="/sample_dashboards/biomass-burner-management/refuel.css?v=2026.08.24.1" />
 </head>
 <body>
   <main class="br-page">
@@ -15,6 +15,10 @@
         <p class="br-kicker">LÒ SINH KHỐI</p>
         <h1>Nạp nhiên liệu</h1>
         <p class="br-device" id="br-device">Đang tải thông tin lò…</p>
+        <div class="br-meters" aria-label="Thông tin phút đốt">
+          <div><span>Đã đốt</span><strong id="br-burned">--</strong><small>phút</small></div>
+          <div><span>Đã mua</span><strong id="br-purchased">--</strong><small>phút</small></div>
+        </div>
         <form id="br-form" novalidate>
           <label for="br-code">Mã lô nhiên liệu</label>
           <input id="br-code" name="lot_code" type="text" maxlength="6" minlength="6"
@@ -36,6 +40,6 @@
   </main>
   <script id="rosa-iot-page-meta" type="application/json">__ROSA_IOT_PAGE_META__</script>
   <script id="rosa-iot-page-context" type="application/json">__ROSA_IOT_PAGE_CONTEXT__</script>
-  <script src="/sample_dashboards/biomass-burner-management/refuel-runtime.js?v=2026.08.19.1"></script>
+  <script src="/sample_dashboards/biomass-burner-management/refuel-runtime.js?v=2026.08.24.1"></script>
 </body>
 </html>

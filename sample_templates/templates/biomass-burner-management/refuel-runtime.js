@@ -27,6 +27,8 @@
   var submit = document.getElementById("br-submit");
   var message = document.getElementById("br-message");
   var device = document.getElementById("br-device");
+  var burned = document.getElementById("br-burned");
+  var purchased = document.getElementById("br-purchased");
   var countdownTimer = 0;
 
   function macroUrl() {
@@ -46,6 +48,26 @@
       throw new Error(data.message || data.error || "Không thể kết nối. Vui lòng thử lại.");
     }
     return Array.isArray(data.rows) ? data.rows : [];
+  }
+  async function sendRefuelCommand(lotCode, minutes) {
+    var response = await fetch("/api/iot-cmd/" + encodeURIComponent(pageIoid) + "/biomass-refuel?pageId=" + encodeURIComponent(pageId), {
+      method: "POST",
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lot_code: lotCode, minutes: Number(minutes) })
+    });
+    var data = await response.json().catch(function () { return {}; });
+    if (!response.ok) {
+      if (["DEVICE_NOT_REGISTERED", "DEVICE_KEY_REJECTED", "DEVICE_COMMAND_FAILED", "BATCH_DEVICE_NOT_FOUND"].indexOf(data.error) >= 0) {
+        throw new Error("Thiết bị chưa sẵn sàng. Vui lòng cắm điện vào lò và thử lại.");
+      }
+      throw new Error(data.message || data.error || "Không thể gửi yêu cầu tới thiết bị.");
+    }
+    if (String(data.gatewayText || "").trim() !== "OK") {
+      throw new Error("Thiết bị chưa sẵn sàng. Vui lòng cắm điện vào lò và thử lại.");
+    }
+    return data;
   }
 
   function showSuccess(result, persist) {
@@ -114,9 +136,16 @@
       return;
     }
     submit.disabled = true;
-    submit.textContent = "Đang nạp…";
+    submit.textContent = "Đang kiểm tra thiết bị…";
     message.textContent = "";
     try {
+      var checkedRows = await runMacro("biomass-refuel-check", { lot_code: lotCode });
+      var checked = checkedRows[0] || {};
+      if (checked.status !== "READY") {
+        clearPendingRequest();
+        throw new Error(friendlyStatus(String(checked.status || "INVALID")));
+      }
+      await sendRefuelCommand(lotCode, checked.added_minutes);
       var rows = await runMacro("biomass-refuel-redeem", {
         lot_code: lotCode,
         client_request_id: pendingRequestFor(lotCode)
@@ -127,6 +156,7 @@
         throw new Error(friendlyStatus(String(result.status || "INVALID")));
       }
       clearPendingRequest();
+      purchased.textContent = number(result.purchased_minutes);
       showSuccess(result, true);
     } catch (error) {
       message.textContent = error.message || "Không thể nạp nhiên liệu.";
@@ -147,6 +177,8 @@
       var row = rows[0];
       if (!row) throw new Error("Trang nạp không còn hiệu lực.");
       device.textContent = (row.name ? row.name + " · " : "") + row.burner_id;
+      burned.textContent = number(row.burned_minutes);
+      purchased.textContent = number(row.purchased_minutes);
       code.focus();
     } catch (error) {
       device.textContent = "Không thể tải thông tin lò";
