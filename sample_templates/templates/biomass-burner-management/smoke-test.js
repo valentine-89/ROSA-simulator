@@ -170,7 +170,7 @@ try {
   }
   if (!dashboardSource.includes('"activeStaleMinutes":15') || !dashboardSource.includes('"idleStaleMinutes":15')) throw new Error('Device stale thresholds are invalid');
   if (!dashboardSource.includes('dashboard-runtime.js?v=2026.09.09.1')
-      || !dashboardSource.includes('dashboard.css?v=2026.08.22.2')) throw new Error('Dashboard asset cache version is stale');
+      || !dashboardSource.includes('dashboard.css?v=2026.09.09.1')) throw new Error('Dashboard asset cache version is stale');
   const refuelPage = pages.find((row) => /^[0-9a-f]{32}$/.test(row.page_id));
   const parsedRefuelMeta = JSON.parse(refuelPage.meta);
   if (parsedRefuelMeta.hideLink !== true) throw new Error('Refuel page does not enable the standard ROSA hidden-link flow');

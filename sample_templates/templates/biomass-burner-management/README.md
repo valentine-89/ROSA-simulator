@@ -74,6 +74,7 @@ Phải sao lưu database và snapshot chương trình trên host trước migrat
 
 ## Cấu hình 8 mức lửa (compact-v2.8)
 
+- Hai phép lưu trạng thái nội bộ #102/#103 trong N1 cũng lấy phần tử danh sách mới; không thay thứ tự lệnh đầu ra hoặc delay. Thêm khai báo O2/O3 theo bản IO272qKB1.
 - Chỉ hiển thị #1005 (điện trở mồi 30–180 giây), #1007 và #1008. Hai danh sách có đúng 8 số nguyên 0–56, 0 mạnh nhất và 56 yếu nhất; đây không phải phần trăm quạt.
 - Mẫu sơ cấp: `16,23,28,33,36,41,48,56`; thứ cấp: `0,10,16,32,35,40,47,56`. Lệnh chuẩn system_cmds ghi chuỗi trong dấu ngoặc kép rồi gọi N20; xác nhận bằng telemetry đọc lại, không tạo API riêng hoặc sửa ROSA core.
 - Popup quản trị hiển thị phút đã mua/đã đốt. Trang nạp hiển thị thêm dòng phút còn lại, bằng MAX(đã mua − đã đốt, 0).
