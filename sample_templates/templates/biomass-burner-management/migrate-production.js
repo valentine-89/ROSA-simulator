@@ -126,6 +126,8 @@ function migrate(targetPath, options = {}) {
       }
       db.prepare(`DELETE FROM system_pages WHERE page_id='biomass-status'`).run();
 
+      // Retire scalar flame settings; keep unrelated commands and all history.
+      db.prepare("DELETE FROM system_cmds WHERE cmd_id GLOB 'biomass-set-*' AND cmd_id NOT IN ('biomass-set-1005','biomass-set-1007','biomass-set-1008')").run();
       const upsertCommand = db.prepare(`INSERT INTO system_cmds(cmd_id,command_template,require_email,require_phone,sync_id,params_schema,enabled,page_only)
         VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(cmd_id) DO UPDATE SET command_template=excluded.command_template,
         require_email=excluded.require_email,require_phone=excluded.require_phone,sync_id=excluded.sync_id,

@@ -183,6 +183,7 @@
       device.textContent = (row.name ? row.name + " · " : "") + row.burner_id;
       burned.textContent = number(row.burned_minutes);
       purchased.textContent = number(row.purchased_minutes);
+      document.getElementById("br-remaining").textContent = number(Math.max(Number(row.purchased_minutes || 0) - Number(row.burned_minutes || 0), 0));
       code.focus();
     } catch (error) {
       device.textContent = "Không thể tải thông tin lò";

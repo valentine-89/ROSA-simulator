@@ -22,6 +22,8 @@ db.exec(`
   INSERT INTO biomass_device_meter VALUES ('IO2729MB1',2543,0,300);
   INSERT INTO system_pages VALUES ('biomass-fleet-admin','old',1,0,'SYNC-PRODUCTION',1,'old','{}');
   INSERT INTO system_pages VALUES ('biomass-refuel-io2729mb1','old-refuel',0,0,'SYNC-PRODUCTION',1,'old-refuel','{}');
+  INSERT INTO system_cmds VALUES ('biomass-set-1018','old',1,0,'SYNC-PRODUCTION','{}',1);
+  INSERT INTO system_cmds VALUES ('unrelated-command','keep',1,0,'SYNC-PRODUCTION','{}',1);
 `);
 db.close();
 
@@ -50,8 +52,10 @@ try {
   if (migrated.prepare('SELECT COUNT(*) count FROM biomass_fuel_lots').get().count !== 0) throw new Error('Migration inserted demo fuel lots');
   const batchDevice = migrated.prepare(`SELECT api_key FROM system_iot_batch_devices WHERE source_id='biomass-fleet' AND ioid=?`).get('IO2729MB1');
   const batchSource = migrated.prepare(`SELECT fields_json,revision FROM system_iot_batch_sources WHERE source_id='biomass-fleet'`).get();
-  if (batchDevice?.api_key !== 'production-key' || JSON.parse(batchSource.fields_json).length !== 20) throw new Error('Migration did not configure batch telemetry');
+  if (batchDevice?.api_key !== 'production-key' || JSON.parse(batchSource.fields_json).length !== 9) throw new Error('Migration did not configure batch telemetry');
   if (batchSource.revision !== firstRevision) throw new Error('Repeated migration changed batch revision without a data change');
+  if (migrated.prepare("SELECT 1 FROM system_cmds WHERE cmd_id='biomass-set-1018'").get()) throw new Error('Obsolete scalar command remains');
+  if (!migrated.prepare("SELECT 1 FROM system_cmds WHERE cmd_id='unrelated-command'").get()) throw new Error('Migration removed unrelated command');
   if (migrated.prepare(`SELECT COUNT(*) count FROM system_pages WHERE page_id='biomass-status'`).get().count !== 0) throw new Error('Legacy per-device telemetry page remains');
   migrated.close();
   console.log('biomass production migration idempotency test passed');

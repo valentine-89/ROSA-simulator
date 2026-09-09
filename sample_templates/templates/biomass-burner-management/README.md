@@ -43,12 +43,12 @@ Không tạo `biomass-report` hoặc bất kỳ action riêng nào.
 
 - `#894`: tổng phút đã đốt journal bền.
 - `#1022`: cache bền phút đã mua, khởi tạo `0`. Không dùng `#1019–#1021` vì thiết bị production đã dành các ô này cho luồng bán hàng.
-- N20 gửi positional telemetry liên tục: `c1=mode`, `c2=phút đốt`, `c3=version`, `c4..c15=#1005..#1016`, `c16/c17=GPS`, `c18=#1022`, `c19=#1017`, `c20=#1018`.
+- N20 compact-v2.8 gửi 9 field liên tục: `c1=mode`, `c2=phút đốt`, `c3=version`, `c4=#1005`, `c5=#1007` (chuỗi 8 mức sơ cấp), `c6=#1008` (chuỗi 8 mức thứ cấp), `c7/c8=GPS`, `c9=#1022`.
 - N24 gọi `D23,#801,#1,"data","IO-biomass-meter",#1001,#894,#101`; chỉ ghi `#1022=#2` khi `#1` là `OK` hoặc `METER_REGRESSION`.
 - N25 gọi GPS với `c1=#1001`, `c2=#105`, `c3=#106`.
 - N26 nhận mã lô và số phút, cập nhật cache tham khảo `#1022`, giữ báo cáo bán hàng hiện có rồi trả `OK`. N24 vẫn là nguồn đồng bộ định kỳ từ SQLite và có thể ghi đè cache này.
-- N10 bắt `I99-1`, đọc selector, dispatch bằng switch-case và báo ngay khi mode đổi. N21 dùng vòng vô tận `L(...W60...)` để đếm và báo mỗi 10 phút ở mọi mode, bảo đảm thiết bị online không vượt ngưỡng stale 15 phút.
-- N1–N5/N10/N21/N23/N101 trong sample được lấy từ readback IO2729MB1 ngày 2026-08-19; chỉ N20/N24/N25 và version được mở rộng cho phút mua/IOID.
+- N10 bắt I99-1 và dispatch switch-case. N21 giữ lịch trong bản IO272qKB1: đang đốt 10 phút, OFF 30 phút; vì dashboard stale 15 phút, OFF có thể hiện offline giữa hai lần gửi. Chưa sửa lịch hoặc thử vật lý trong thay đổi này.
+- Mẫu compact-v2.8 dựa trên chương trình IO272qKB1 lưu trên server IOeasy, đọc ngày 2026-09-09 (thiết bị không kết nối trực tiếp lúc đọc). Giữ trình tự đầu ra N1–N6/N101; N24/N25 vẫn theo đối số macro chuẩn của template.
 - Giữ nguyên trình tự vật lý N1–N5/N101, các giá trị `#1019–#1021`, meter `#894` và luồng bán hàng ngoài ROSA `#802` khi merge xuống thiết bị. Trước khi restore phải đọc lại thiết bị, không ghi đè mù từ sample.
 
 Chương trình mẫu chỉ có hai group UTF-8: `Quy trình` và `Chương trình con`. Validator từ chối group thừa, mojibake và N22 dư thừa.
@@ -71,3 +71,11 @@ node sample_templates/templates/biomass-burner-management/migrate-production.js 
 ```
 
 Phải sao lưu database và snapshot chương trình trên host trước migration/restore. Không tạo backup trên thiết bị. Chỉ restore thiết bị khi online và mode OFF; không bật lò trong smoke test.
+
+## Cấu hình 8 mức lửa (compact-v2.8)
+
+- Chỉ hiển thị #1005 (điện trở mồi 30–180 giây), #1007 và #1008. Hai danh sách có đúng 8 số nguyên 0–56, 0 mạnh nhất và 56 yếu nhất; đây không phải phần trăm quạt.
+- Mẫu sơ cấp: `16,23,28,33,36,41,48,56`; thứ cấp: `0,10,16,32,35,40,47,56`. Lệnh chuẩn system_cmds ghi chuỗi trong dấu ngoặc kép rồi gọi N20; xác nhận bằng telemetry đọc lại, không tạo API riêng hoặc sửa ROSA core.
+- Popup quản trị hiển thị phút đã mua/đã đốt. Trang nạp hiển thị thêm dòng phút còn lại, bằng MAX(đã mua − đã đốt, 0).
+- Chạy thêm `node sample_templates/templates/biomass-burner-management/eight-level-test.js`. Migration xóa các lệnh scalar cũ trong phạm vi biomass-set, giữ meter, khóa, tọa độ và lịch sử.
+- N20 mới yêu cầu thiết bị dùng mapping mới. Không ghi tự động chương trình thật trong đợt thay đổi template này.

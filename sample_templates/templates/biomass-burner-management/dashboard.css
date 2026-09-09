@@ -1063,6 +1063,11 @@ body { padding: 10px; }
 .bb-setting-card > label code { color: color-mix(in srgb, var(--theme-text) 55%, transparent); font-size: 0.68rem; }
 .bb-setting-control { grid-template-columns: minmax(58px, 1fr) auto auto; gap: 5px; }
 .bb-setting-control .bb-input { min-height: 34px; padding: 6px 8px; }
+.bb-setting-card[data-setting-key="1007"],
+.bb-setting-card[data-setting-key="1008"] { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr; }
+.bb-setting-card[data-setting-key="1007"] .bb-setting-control,
+.bb-setting-card[data-setting-key="1008"] .bb-setting-control { grid-template-columns: minmax(0, 1fr) auto; }
+.bb-setting-control > span:empty { display: none; }
 .bb-setting-control > span { min-width: 24px; font-size: 0.72rem; text-align: center; }
 .bb-setting-control .bb-btn { min-height: 34px; padding: 0 9px; }
 .bb-danger-zone { padding: 8px; }

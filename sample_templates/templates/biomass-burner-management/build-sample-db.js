@@ -127,7 +127,7 @@ db.prepare(`INSERT INTO biomass_burners(ioid,name,location,latitude,longitude,co
  VALUES ('IO2729MB1','','',10.798,106.651,'default',?, ?,?)`).run(initialRefuelPageId,now,now);
 db.prepare(`INSERT INTO biomass_device_meter(ioid,burned_minutes,purchased_minutes,mode,reported_at)
  VALUES ('IO2729MB1',0,0,0,?)`).run(now);
-const telemetryFields=Array.from({length:20},(_,index)=>`c${index+1}`);
+const telemetryFields=Array.from({length:9},(_,index)=>`c${index+1}`);
 db.prepare(`INSERT INTO system_iot_batch_sources(source_id,fields_json,enabled,revision,updated_at)
  VALUES ('biomass-fleet',?,1,1,?)`).run(JSON.stringify(telemetryFields),now);
 db.prepare(`INSERT INTO system_iot_batch_devices(source_id,ioid,api_key,fields_json,metadata_json,enabled,created_at,updated_at)
@@ -321,7 +321,7 @@ const writeMacros={
  'biomass-purchased-minutes-set':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},purchased_minutes:{type:'integer',required:true,min:0,max:2147483647}}},
  'biomass-fuel-lot-create-batch':{params:{client_request_id:{type:'string',required:true,maxLength:80,pattern:'^[A-Za-z0-9._:-]{12,80}$'},description:{type:'string',required:true,minLength:1,maxLength:120},minutes_per_lot:{type:'integer',required:true,min:1,max:1000000},quantity:{type:'integer',required:true,min:1,max:500}}},
  'biomass-fuel-lot-list':{params:{search:{type:'string',maxLength:120},status:{type:'string',enum:['all','unused','redeemed']},page_size:{type:'integer',min:1,max:100},offset:{type:'integer',min:0,max:1000000}}},
- 'biomass-setting-audit':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},setting_key:{type:'string',required:true,enum:['1005','1006','1007','1008','1009','1010','1011','1012','1013','1014','1015','1016','1017','1018']},value:{type:'integer',required:true,min:0,max:3600},state:{type:'string',required:true,enum:['confirmed','failed']}}}
+ 'biomass-setting-audit':{params:{burner_id:{type:'string',required:true,pattern:'^[A-Za-z0-9._-]{3,64}$'},setting_key:{type:'string',required:true,enum:['1005','1007','1008']},value:{type:'string',required:true,maxLength:23,pattern:'^[0-9,]+$'},state:{type:'string',required:true,enum:['confirmed','failed']}}}
 };
 const pageHtml='<!doctype html><html lang="vi"><meta charset="utf-8"><title>Biomass compact-v2</title><main>Biomass compact-v2</main></html>';
 const addPage=db.prepare(`INSERT INTO system_pages(page_id,html,require_email,require_phone,sync_id,enabled,title,meta) VALUES (?,?,?,0,'<<syncid>>',1,?,?)`);
@@ -330,17 +330,13 @@ addPage.run('biomass-fleet-admin',pageHtml,1,'Biomass fleet admin',JSON.stringif
 const template=db.prepare('SELECT html,meta_template FROM biomass_page_templates WHERE page_type=?').get('refuel');
 addPage.run(initialRefuelPageId,template.html,0,'Nạp nhiên liệu IO2729MB1',template.meta_template.replaceAll('__BURNER_ID__','IO2729MB1'));
 
+const flameListSchema={type:'string',required:true,maxLength:23,pattern:'^(?:[0-9]|[1-4][0-9]|5[0-6])(?:,(?:[0-9]|[1-4][0-9]|5[0-6])){7}$'};
 const settingDefs=[
- {key:'1005',schema:{type:'integer',required:true,min:30,max:180}},{key:'1006',schema:{type:'integer',required:true,min:0,max:30}},
- {key:'1007',schema:{type:'integer',required:true,min:20,max:100}},{key:'1008',schema:{type:'integer',required:true,min:20,max:100}},
- {key:'1009',schema:{type:'integer',required:true,min:20,max:100}},{key:'1010',schema:{type:'integer',required:true,min:0,max:100}},
- {key:'1011',schema:{type:'integer',required:true,min:20,max:100}},{key:'1012',schema:{type:'integer',required:true,min:20,max:100}},
- {key:'1013',schema:{type:'integer',required:true,min:20,max:100}},{key:'1014',schema:{type:'integer',required:true,min:20,max:100}},
- {key:'1015',schema:{type:'integer',required:true,min:20,max:100}},{key:'1016',schema:{type:'integer',required:true,min:60,max:3600}},
- {key:'1017',schema:{type:'integer',required:true,min:0,max:100}},{key:'1018',schema:{type:'integer',required:true,min:0,max:100}}
+ {key:'1005',schema:{type:'integer',required:true,min:30,max:180}},
+ {key:'1007',schema:flameListSchema},{key:'1008',schema:flameListSchema}
 ];
 const addCommand=db.prepare(`INSERT INTO system_cmds(cmd_id,command_template,require_email,require_phone,sync_id,params_schema,enabled) VALUES (?,?,1,0,'<<syncid>>',?,1)`);
-for(const {key,schema} of settingDefs)addCommand.run(`biomass-set-${key}`,`D4#${key},<<value>>D5N20`,JSON.stringify({value:schema}));
+for(const {key,schema} of settingDefs)addCommand.run(`biomass-set-${key}`,`D4#${key},${schema.type === 'string' ? '"<<value>>"' : '<<value>>'}D5N20`,JSON.stringify({value:schema}));
 db.prepare(`INSERT INTO system_cmds(cmd_id,command_template,require_email,require_phone,sync_id,params_schema,enabled,page_only)
  VALUES ('biomass-refuel','N26,"<<lot_code>>",<<minutes>>',0,0,'<<syncid>>',?,1,1)`)
  .run(JSON.stringify({

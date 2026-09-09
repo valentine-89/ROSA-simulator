@@ -96,7 +96,7 @@ try {
   const refuelHtmlSource = fs.readFileSync(path.join(__dirname, 'refuel_page.html'), 'utf8');
   const refuelCssSource = fs.readFileSync(path.join(__dirname, 'refuel.css'), 'utf8');
   const qrSource = fs.readFileSync(path.join(__dirname, 'qrcode-runtime.js'), 'utf8');
-  for (const key of ['1005','1006','1007','1008','1009','1010','1011','1012','1013','1014','1015','1016','1017','1018']) {
+  for (const key of ['1005','1007','1008']) {
     if (!runtimeSource.includes(`key: "${key}"`)) throw new Error(`Dashboard setting #${key} is missing`);
   }
   for (const token of ['biomass-fuel-lot-create-batch', 'biomass-purchased-minutes-set', 'downloadCsv', 'BiomassQr', 'iot-page-batch-telemetry', 'iot-page-batch-realtime']) {
@@ -124,7 +124,7 @@ try {
     'biomass-refuel-check', '/api/iot-cmd/', 'gatewayText', 'JSON.parse(gatewayAck).result']) {
     if (!refuelSource.includes(token)) throw new Error(`Refuel safety ${token} is missing`);
   }
-  for (const token of ['br-success-view', 'br-burned', 'br-purchased']) {
+  for (const token of ['br-success-view', 'br-burned', 'br-purchased', 'br-remaining']) {
     if (!refuelHtmlSource.includes(token)) throw new Error(`Refuel UI ${token} is missing`);
   }
   if (/font-family:\s*Inter\b/.test(refuelCssSource)
@@ -163,13 +163,13 @@ try {
   const sourceFields = JSON.parse(source.fields_json);
   const initialBatchDevice = db.prepare('SELECT ioid,api_key FROM system_iot_batch_devices WHERE source_id=?').get('biomass-fleet');
   const initialBurner = db.prepare('SELECT latitude,longitude,coordinate_source FROM biomass_burners WHERE ioid=?').get('IO2729MB1');
-  if (sourceFields.length !== 20 || sourceFields[0] !== 'c1' || sourceFields[19] !== 'c20'
+  if (sourceFields.length !== 9 || sourceFields[0] !== 'c1' || sourceFields[8] !== 'c9'
       || initialBatchDevice.ioid !== 'IO2729MB1' || initialBatchDevice.api_key !== '<<apikey>>'
       || initialBurner.latitude !== 10.798 || initialBurner.longitude !== 106.651 || initialBurner.coordinate_source !== 'default') {
     throw new Error('Standard batch source schema is invalid');
   }
   if (!dashboardSource.includes('"activeStaleMinutes":15') || !dashboardSource.includes('"idleStaleMinutes":15')) throw new Error('Device stale thresholds are invalid');
-  if (!dashboardSource.includes('dashboard-runtime.js?v=2026.08.22.3')
+  if (!dashboardSource.includes('dashboard-runtime.js?v=2026.09.09.1')
       || !dashboardSource.includes('dashboard.css?v=2026.08.22.2')) throw new Error('Dashboard asset cache version is stale');
   const refuelPage = pages.find((row) => /^[0-9a-f]{32}$/.test(row.page_id));
   const parsedRefuelMeta = JSON.parse(refuelPage.meta);
