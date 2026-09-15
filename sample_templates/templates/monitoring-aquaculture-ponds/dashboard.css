@@ -146,6 +146,11 @@
     .control-only-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); align-items: stretch; }
     .control-only-grid > * { min-width: 0; }
     .pond-card { padding: 12px; display: grid; gap: 12px; min-width: 0; max-width: 100%; }
+    .pond-card--updates-muted { background: color-mix(in srgb, var(--theme-card) 35%, #808080 65%); }
+    .pond-update-status { font-size: 0.78rem; font-weight: 700; line-height: 1.3; }
+    .pond-update-status[hidden] { display: none; }
+    .pond-toggle .pond-title:has(.pond-update-status) { display: flex; flex-wrap: wrap; align-items: center; column-gap: 10px; }
+    .pond-title:has(.pond-update-status) p { flex-basis: 100%; }
     .pond-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
     .pond-toggle { flex: 1 1 auto; min-width: 0; }
     .pond-toggle .pond-title { display: grid; gap: 0; min-width: 0; }

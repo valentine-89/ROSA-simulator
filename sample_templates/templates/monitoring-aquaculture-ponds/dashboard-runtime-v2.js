@@ -1259,7 +1259,7 @@
         state.node.className = 'pond-card';
         state.node.innerHTML = ''
           + '<div class="pond-header">'
-          + '<button class="section-toggle pond-toggle" type="button" data-role="pond-toggle" aria-expanded="false"><span class="pond-title"><h2>' + esc(state.title) + '</h2><p>' + esc(state.description || formatUi("pond.deviceDescription", "Device: {ioid}", { ioid: ioid })) + '</p></span><span class="section-toggle-indicator">&#9662;</span></button>'
+          + '<button class="section-toggle pond-toggle" type="button" data-role="pond-toggle" aria-expanded="false"><span class="pond-title"><h2>' + esc(state.title) + '</h2><span class="pond-update-status" data-role="update-status" hidden>' + esc(getUi('pond.updatesDisabled', document.documentElement.lang === 'vi' ? 'Đã tắt cập nhật' : 'Updates disabled')) + '</span><p>' + esc(state.description || formatUi("pond.deviceDescription", "Device: {ioid}", { ioid: ioid })) + '</p></span><span class="section-toggle-indicator">&#9662;</span></button>'
           + '<div class="pond-toolbar">' + (state.hasSettings ? '<button type="button" class="toolbar-button pond-settings-button" data-role="settings-button" aria-label="' + esc(formatUi("pond.settingsButtonAria", "Open pond settings for {title}", { title: state.title })) + '">' + esc(getUi("pond.settingsButton", "Settings")) + '</button>' : '') + '<div class="live-pill" data-role="live" data-state="connecting">' + esc(getUi("pond.connecting", "Connecting")) + '</div></div>'
           + '</div>'
           + '<div class="pond-content" data-role="pond-content" hidden>' + (state.contentInitialized ? state.contentHtml : '') + '</div>';
@@ -1269,6 +1269,8 @@
         state.pondContent = state.node.querySelector('[data-role="pond-content"]');
         state.live = state.node.querySelector('[data-role="live"]');
         state.settingsButton = state.node.querySelector('[data-role="settings-button"]');
+        state.updateStatus = state.node.querySelector('[data-role="update-status"]');
+        refreshPondUpdateUi(state);
         state.energyCard = null;
         state.energyAlarmShell = null;
         state.energyAlarmText = null;
@@ -1838,6 +1840,7 @@
           var updateEnabledMatch = extractConfiguredTelemetryValue(key, state.fields.updateEnabled, value);
           if (updateEnabledMatch.matched) {
             state.updateEnabled = normalizeEnabledFlag(updateEnabledMatch.value);
+            refreshPondUpdateUi(state);
             if (thresholdModalState.state === state) refreshSettingsUpdateToggleUi(state);
             matched = true;
           }
@@ -2255,6 +2258,12 @@
         node.hidden = !visible;
       }
 
+      function refreshPondUpdateUi(state) {
+        if (!state || !state.node) return;
+        state.node.classList.toggle('pond-card--updates-muted', hasField(state, 'updateEnabled') && state.updateEnabled !== true);
+        if (state.updateStatus) state.updateStatus.hidden = state.updateEnabled !== false;
+      }
+
       function refreshSettingsUpdateToggleUi(state) {
         if (!settingsUpdateToggle) return;
         var enabled = !!state && state.updateEnabled === true;
@@ -2268,6 +2277,7 @@
         var modalCard = thresholdModal ? thresholdModal.querySelector('.modal-card') : null;
         var previous = state.updateEnabled;
         state.updateEnabled = !!nextEnabled;
+        refreshPondUpdateUi(state);
         refreshSettingsUpdateToggleUi(state);
         setPondBusy(state, true);
         withControlCooldown(modalCard || state.node, function () {
@@ -2275,6 +2285,7 @@
             showToast(getUi(nextEnabled ? 'settingsModal.updateEnabled' : 'settingsModal.updateDisabled', nextEnabled ? 'Updates enabled.' : 'Updates disabled.'), 'success');
           }).catch(function (error) {
             state.updateEnabled = previous;
+            refreshPondUpdateUi(state);
             refreshSettingsUpdateToggleUi(state);
             showToast((error && error.message) || getUi('settingsModal.updateFailed', 'Unable to update refresh mode.'), 'error');
           }).finally(function () {
