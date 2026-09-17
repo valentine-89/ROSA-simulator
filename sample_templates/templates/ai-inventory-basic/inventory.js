@@ -9,6 +9,8 @@
   const session = cfg.databaseSessionId || '';
   const ioid = publicPage ? cfg.ioid : session.split('@')[0];
   let cameras = [], selected = '', selectedEvent = '', offset = 0, loadVersion = 0, eventVersion = 0, leaving = false, requestId = '';
+  const historyPageSize = 30;
+  let hasNextPage = false;
   const byId = id => document.getElementById(id);
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const date = value => value ? new Date(value).toLocaleString('vi-VN') : '—';
@@ -62,9 +64,10 @@
       root.innerHTML='<header><span class="eyebrow">KIỂM KÊ KHO</span><h1 id="area-title">Kiểm kê kho</h1></header>'+tabs+'<div id="status" role="status"></div><section id="latest"><div class="empty">Đang tải…</div></section><div class="update-action"><button id="update" class="primary" disabled>Cập nhật</button></div><section id="employee-photo"></section>';
       byId('update').onclick=update;
     } else {
-      root.innerHTML='<header class="admin-header"><div><h1>'+esc(title)+'</h1></div><div class="toolbar"><button id="add">+ Camera</button><button id="refresh" aria-label="Tải lại">↻ Tải lại</button></div></header><div id="status" role="status"></div><div class="warehouse-grid"><section class="panel history-panel"><div class="history-heading"><h2>Camera & lịch sử</h2><label class="check"><input id="hide-errors" type="checkbox">Ẩn lỗi</label></div>'+tabs+'<div class="scroll history-scroll"><table><thead><tr><th>Thời điểm</th><th>Trạng thái</th><th class="number">Tổng</th><th class="number">±</th></tr></thead><tbody id="history"></tbody></table></div><button id="more" hidden>Xem thêm</button></section><section class="panel image-panel" aria-label="Ảnh và sản phẩm kiểm kê"><div id="latest"><div class="empty">Chọn lần kiểm kê để xem ảnh.</div></div></section><section class="panel stock-panel"><h2>Tổng tồn kho</h2><div id="stock"><div class="empty">Đang tải…</div></div></section></div>';
+      root.innerHTML='<header class="admin-header"><div><h1>'+esc(title)+'</h1></div><div class="toolbar"><button id="add">+ Camera</button><button id="refresh" aria-label="Tải lại">↻ Tải lại</button></div></header><div id="status" role="status"></div><div class="warehouse-grid"><section class="panel history-panel"><div class="history-heading"><h2>Camera & lịch sử</h2><div class="history-tools"><label class="check"><input id="hide-errors" type="checkbox">Ẩn lỗi</label><nav class="history-pager" aria-label="Phân trang lịch sử"><button id="history-prev" type="button" aria-label="Trang trước" title="Trang trước" disabled>‹</button><span id="history-page" aria-label="Trang 1" aria-live="polite">1</span><button id="history-next" type="button" aria-label="Trang sau" title="Trang sau" disabled>›</button></nav></div></div>'+tabs+'<div class="scroll history-scroll"><table><thead><tr><th>Thời điểm</th><th>SĐT</th><th>Trạng thái</th><th class="number">Tổng</th><th class="number">±</th></tr></thead><tbody id="history"></tbody></table></div></section><section class="panel image-panel" aria-label="Ảnh và sản phẩm kiểm kê"><div id="latest"><div class="empty">Chọn lần kiểm kê để xem ảnh.</div></div></section><section class="panel stock-panel"><h2>Tổng tồn kho</h2><div id="stock"><div class="empty">Đang tải…</div></div></section></div>';
       byId('hide-errors').onchange=()=>select(selected);
-      byId('more').onclick=()=>loadHistory(true).catch(e=>status(e.message,true));
+      byId('history-prev').onclick=()=>changeHistoryPage(-1);
+      byId('history-next').onclick=()=>changeHistoryPage(1);
       byId('history').onclick=e=>{const tr=e.target.closest('[data-event]');if(tr)showEvent(tr.dataset.event);};
       byId('history').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){const tr=e.target.closest('[data-event]');if(tr){e.preventDefault();showEvent(tr.dataset.event);}}};
       byId('add').onclick=()=>editCamera();
@@ -130,7 +133,7 @@
   }
   async function loadStock() {
     const rows=await macro('warehouse-stock');
-    byId('stock').innerHTML=rows.length?'<table><thead><tr><th>Sản phẩm</th><th class="number">Số lượng</th></tr></thead><tbody>'+rows.map(i=>'<tr><td><strong class="stock-name">'+esc(i.name)+'</strong><div class="muted">'+esc(i.sku)+'</div></td><td class="number"><strong class="stock-quantity">'+esc(i.quantity??'—')+'</strong>'+(i.counted_areas<i.areas?'<div class="muted">'+esc(i.counted_areas)+'/'+esc(i.areas)+' khu vực</div>':'')+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">Chưa có sản phẩm.</div>';
+    byId('stock').innerHTML=rows.length?'<ul class="stock-grid">'+rows.map(i=>'<li class="stock-card"><strong class="stock-name">'+esc(i.name)+'</strong><span class="muted stock-sku">'+esc(i.sku)+'</span><strong class="stock-quantity">'+esc(i.quantity??'—')+'</strong>'+(i.counted_areas<i.areas?'<span class="muted">'+esc(i.counted_areas)+'/'+esc(i.areas)+' khu vực</span>':'')+'</li>').join('')+'</ul>':'<div class="empty">Chưa có sản phẩm.</div>';
   }
   async function load() {
     cameras=await macro(publicPage?'warehouse-camera':'warehouse-cameras-admin');
@@ -141,23 +144,44 @@
     selected=id; selectedEvent=''; requestId=''; offset=0; const version=++loadVersion;eventVersion++;
     byId('tabs').innerHTML=cameras.map(c=>'<span class="camera-tab'+(c.camera_id===id?' is-selected':'')+'" role="presentation"><button role="tab" aria-selected="'+(c.camera_id===id)+'" data-camera="'+esc(c.camera_id)+'">'+esc(c.area_name)+(c.enabled===0?' · Tắt':'')+'</button>'+(!publicPage?'<button type="button" class="camera-settings icon-button" data-edit-camera="'+esc(c.camera_id)+'" aria-label="Cài đặt camera '+esc(c.area_name)+'" title="Cài đặt camera">'+settingsIcon+'</button>':'')+'</span>').join('');
     if(publicPage){byId('update').disabled=!id||leaving;byId('area-title').textContent=cameras.find(c=>c.camera_id===id)?.area_name||'Kiểm kê kho';byId('tabs').hidden=cameras.length<2;byId('employee-photo').innerHTML='';}
-    else{byId('history').innerHTML='';byId('more').hidden=true;}
+    else{byId('history').innerHTML='';hasNextPage=false;renderHistoryPager(Boolean(id));}
     byId('latest').innerHTML='<div class="empty">'+(id?'Đang tải…':'Chưa có camera.')+'</div>';
     if(!id){status('');return;}
     status('Đang tải…');
     try {
       if(publicPage){const rows=await macro('warehouse-latest',{camera_id:id});if(version!==loadVersion)return;employeeSnapshot(rows[0]);}
-      else await loadHistory(false,version);
+      else await loadHistory(0,version);
       if(version===loadVersion)status('');
     } catch(e){if(version===loadVersion)status(e.message,true);}
   }
-  async function loadHistory(append, version=loadVersion) {
-    const rows=await macro('warehouse-history',{camera_id:selected,offset:append?offset:0,hide_errors:byId('hide-errors').checked?1:0});
-    if(version!==loadVersion)return;
-    const html=rows.map(e=>'<tr tabindex="0" aria-selected="false" data-event="'+esc(e.request_id)+'"><td>'+esc(date(e.captured_at||Number(e.requested_at)))+'<div class="staff-phone muted">'+esc(e.actor||'')+'</div></td><td><span class="badge" title="'+esc(e.error||'')+'">'+esc(e.error==='IMAGE_TOO_DARK'?'Ảnh quá tối':labels[e.status]||e.status)+'</span></td><td class="number">'+esc(e.quantity??'—')+'</td><td class="number">'+esc(e.quantity==null?'—':delta(e.delta))+'</td></tr>').join('');
-    if(append)byId('history').insertAdjacentHTML('beforeend',html);else byId('history').innerHTML=html||'<tr><td colspan="4" class="empty">Chưa có lịch sử.</td></tr>';
-    offset=(append?offset:0)+rows.length;byId('more').hidden=rows.length<30;
-    if(!append){if(rows[0])await showEvent(rows[0].request_id,version);else byId('latest').innerHTML='<div class="empty">Chưa có lần kiểm kê.</div>';}
+  function renderHistoryPager(busy=false) {
+    byId('history-prev').disabled=busy||offset===0;
+    byId('history-next').disabled=busy||!hasNextPage;
+    byId('history-page').textContent=String(Math.floor(offset/historyPageSize)+1);
+    byId('history-page').setAttribute('aria-label','Trang '+byId('history-page').textContent);
+    byId('history').closest('.history-scroll').setAttribute('aria-busy',String(busy));
+  }
+  async function changeHistoryPage(direction) {
+    if((direction<0&&offset===0)||(direction>0&&!hasNextPage))return;
+    const version=++loadVersion;eventVersion++;
+    try {await loadHistory(offset+direction*historyPageSize,version);if(version===loadVersion)status('');}
+    catch(e){if(version===loadVersion)status(e.message,true);}
+  }
+  async function loadHistory(pageOffset, version=loadVersion) {
+    renderHistoryPager(true);
+    try {
+      const params={camera_id:selected,offset:pageOffset,hide_errors:byId('hide-errors').checked?1:0};
+      const rows=await macro('warehouse-history',params);
+      if(version!==loadVersion)return;
+      // Reuse the existing 30-row macro; one overlapping probe avoids an empty last page.
+      const tail=rows.length===historyPageSize?await macro('warehouse-history',{...params,offset:pageOffset+historyPageSize-1}):[];
+      if(version!==loadVersion)return;
+      const html=rows.map(e=>'<tr tabindex="0" aria-selected="false" data-event="'+esc(e.request_id)+'"><td>'+esc(date(e.captured_at||Number(e.requested_at)))+'</td><td class="staff-phone">'+esc(e.actor||'—')+'</td><td><span class="badge" title="'+esc(e.error||'')+'">'+esc(e.error==='IMAGE_TOO_DARK'?'Ảnh quá tối':labels[e.status]||e.status)+'</span></td><td class="number">'+esc(e.quantity??'—')+'</td><td class="number">'+esc(e.quantity==null?'—':delta(e.delta))+'</td></tr>').join('');
+      byId('history').innerHTML=html||'<tr><td colspan="5" class="empty">Chưa có lịch sử.</td></tr>';
+      offset=pageOffset;hasNextPage=tail.length>1;
+      byId('history').closest('.history-scroll').scrollTop=0;
+      if(rows[0])await showEvent(rows[0].request_id,version);else byId('latest').innerHTML='<div class="empty">Chưa có lần kiểm kê.</div>';
+    } finally {if(version===loadVersion)renderHistoryPager();}
   }
   async function showEvent(id, version=loadVersion) {
     const detailVersion=++eventVersion;selectedEvent=id;
