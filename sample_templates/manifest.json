@@ -1,6 +1,40 @@
 {
   "samples": [
     {
+      "name": "Kho AI cơ bản",
+      "setup": {
+        "page": "/sample_dashboards/ai-inventory-basic/setup_vi.html"
+      },
+      "id": "ai-inventory-basic",
+      "sampleDatabase": "/sample_dashboards/ai-inventory-basic/sample.sqlite",
+      "description": "Kiểm kê toàn bộ tồn bằng SightCount Vision. Nhiều camera theo khu vực, ánh xạ mã AI sang sản phẩm, ảnh và lịch sử riêng. Nhân viên đăng nhập ROSA, quét QR và bấm Cập nhật; quét lại sau để xem kết quả. Chi phí tính vào tài khoản ROSA của kho.",
+      "image": "/sample_dashboards/ai-inventory-basic/sample.svg",
+      "tags": [
+        "inventory",
+        "ai",
+        "database",
+        "iot-page"
+      ],
+      "default-fields": [],
+      "html": "/sample_dashboards/ai-inventory-basic/dashboard_vi.html",
+      "macro-examples": [
+        {
+          "label": "Danh sách camera",
+          "payload": {
+            "macro": "warehouse-cameras"
+          }
+        },
+        {
+          "label": "Lịch sử khu vực",
+          "payload": {
+            "macro": "warehouse-history",
+            "camera_id": "CAMERA_ID",
+            "offset": 0
+          }
+        }
+      ]
+    },
+    {
       "id": "fuel-price-network",
       "name": "Quản lý bảng giá xăng dầu",
       "description": "Tổng quan:\nDashboard bảng giá xăng dầu dành cho một trạm. Mỗi tài khoản/Device key đăng nhập chỉ xem và điều khiển trạm của mình, với bảng LED 5 chữ số theo hồ sơ kỹ thuật.\n\nLoại:\ntelemetry + commands + nguồn dữ liệu công khai qua frontend\n\nChức năng chính:\n- Quản lý 5 mặt hàng: E10 RON 95-V, E10 RON 95-III, E5 RON 92-II, DO 0,001S-V và DO 0,05S-II\n- Tải tự động giá Vùng 1/Vùng 2 từ Petrolimex hoặc nhập tay\n- Xem trước và xác nhận bảng giá trước khi gửi xuống thiết bị tính tiền\n- Theo dõi ACK phiên bản, kết nối, độ sáng và nhiệt bộ điều khiển\n- Chỉnh độ sáng ngay hoặc cấu hình nhiều mốc giờ/phút/độ sáng\n- Bảng log ghi lấy giá, gửi lệnh, lỗi và trạng thái kết nối realtime\n- GUI setup cho trạm, sản phẩm, lịch độ sáng, field và giao thức thiết bị\n\nGhi chú:\n- Không bao gồm Dầu hỏa và Mazút.\n- Mỗi tài khoản quản lý một trạm; trạm khác dùng tài khoản/Device key khác nhưng cùng giao diện.\n- Giá online chỉ được nạp vào vùng chờ duyệt, không tự động phát hành.\n- Giá đi một chiều từ ROSA xuống thiết bị; firmware chỉ phản hồi ACK đúng phiên bản sau khi áp dụng.\n- Mẫu lệnh PRICESET/BRIGHT/BRIGHTSCHEDULE phải đổi theo firmware thực tế.\n- Context-aware với <<sessionid>> và <<syncid>>.\n- Không cần backend hoặc database bổ sung.",
