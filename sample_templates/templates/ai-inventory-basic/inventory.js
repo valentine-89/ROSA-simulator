@@ -13,6 +13,8 @@
   const date = value => value ? new Date(value).toLocaleString('vi-VN') : '—';
   const delta = value => value == null ? 'Lần đầu' : (value > 0 ? '+' : '') + value;
   const labels = {applied:'Đã cập nhật',needs_review:'Cần kiểm tra',stale:'Cấu hình đã đổi',failed:'Đếm lỗi',partial:'Kết quả chưa đủ',busy:'Camera đang bận',unknown:'Chưa xác định'};
+  const settingsIcon='<span aria-hidden="true">⚙︎</span>';
+  const copyIcon='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></svg>';
   // Copied from monitoring-aquaculture-ponds; appearance comes entirely from dashboard-themes.css.
   const themePickerHtml = `<div class="theme-picker" id="theme-picker">
     <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Chọn giao diện"
@@ -59,16 +61,12 @@
       root.innerHTML='<header><span class="eyebrow">KIỂM KÊ KHO</span><h1 id="area-title">Kiểm kê kho</h1></header>'+tabs+'<div id="status" role="status"></div><section id="latest"><div class="empty">Đang tải…</div></section><div class="update-action"><button id="update" class="primary" disabled>Cập nhật</button></div><section id="employee-photo"></section>';
       byId('update').onclick=update;
     } else {
-      root.innerHTML='<header class="admin-header"><div><h1>'+esc(title)+'</h1></div><div class="toolbar"><button id="add">+ Camera</button><button id="refresh" aria-label="Tải lại">↻ Tải lại</button><a id="qr-link" class="button" href="#">Trang QR</a></div></header><div id="status" role="status"></div><div class="warehouse-grid"><section class="panel history-panel"><div class="panel-heading"><h2>Camera & lịch sử</h2><button id="edit" disabled>Cài đặt</button></div>'+tabs+'<div class="scroll history-scroll"><table><thead><tr><th>Thời điểm</th><th>Trạng thái</th><th class="number">Tổng</th><th class="number">±</th></tr></thead><tbody id="history"></tbody></table></div><button id="more" hidden>Xem thêm</button></section><section class="panel image-panel"><h2>Ảnh kiểm kê</h2><div id="latest"><div class="empty">Chọn lần kiểm kê để xem ảnh.</div></div></section><section class="panel stock-panel"><h2>Tổng tồn kho</h2><div id="stock"><div class="empty">Đang tải…</div></div></section></div><dialog id="detail"><div class="panel-heading"><h2>Trang nhân viên</h2><button id="close-detail">Đóng</button></div><div id="detail-body" class="qr-body"></div></dialog>';
-      byId('close-detail').onclick=()=>byId('detail').close();
+      root.innerHTML='<header class="admin-header"><div><h1>'+esc(title)+'</h1></div><div class="toolbar"><button id="add">+ Camera</button><button id="refresh" aria-label="Tải lại">↻ Tải lại</button></div></header><div id="status" role="status"></div><div class="warehouse-grid"><section class="panel history-panel"><h2>Camera & lịch sử</h2>'+tabs+'<div class="scroll history-scroll"><table><thead><tr><th>Thời điểm</th><th>Trạng thái</th><th class="number">Tổng</th><th class="number">±</th></tr></thead><tbody id="history"></tbody></table></div><button id="more" hidden>Xem thêm</button></section><section class="panel image-panel" aria-label="Ảnh và sản phẩm kiểm kê"><div id="latest"><div class="empty">Chọn lần kiểm kê để xem ảnh.</div></div></section><section class="panel stock-panel"><h2>Tổng tồn kho</h2><div id="stock"><div class="empty">Đang tải…</div></div></section></div>';
       byId('more').onclick=()=>loadHistory(true).catch(e=>status(e.message,true));
       byId('history').onclick=e=>{const tr=e.target.closest('[data-event]');if(tr)showEvent(tr.dataset.event);};
       byId('history').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){const tr=e.target.closest('[data-event]');if(tr){e.preventDefault();showEvent(tr.dataset.event);}}};
-      byId('add').onclick=()=>editCamera(); byId('edit').onclick=()=>editCamera(cameras.find(c=>c.camera_id===selected));
+      byId('add').onclick=()=>editCamera();
       byId('refresh').onclick=()=>load().catch(e=>status(e.message,true));
-      byId('qr-link').onclick=e=>{
-        e.preventDefault();if(selected)showQr(selected);
-      };
       root.insertAdjacentHTML('beforeend',themePickerHtml);
       themePickerToggle=byId('theme-picker-toggle');themePickerMenu=byId('theme-picker-menu');
       document.addEventListener('click', function (event) {
@@ -89,7 +87,11 @@
 
 
     }
-    byId('tabs').onclick=e=>{const b=e.target.closest('[data-camera]');if(b&&!leaving)select(b.dataset.camera);};
+    byId('tabs').onclick=e=>{
+      const edit=e.target.closest('[data-edit-camera]');
+      if(edit&&!publicPage){editCamera(cameras.find(c=>c.camera_id===edit.dataset.editCamera));return;}
+      const b=e.target.closest('[data-camera]');if(b&&!leaving)select(b.dataset.camera);
+    };
   }
       function setTheme(nextTheme) {
         document.documentElement.setAttribute("data-theme", nextTheme);
@@ -118,8 +120,7 @@
   }
   function snapshot(row) {
     if(!row)return '<div class="empty">Chưa có lần kiểm kê.</div>';
-    const reason=row.error==='APP_IMAGE_SAVE_FAILED'?'Không lưu được ảnh.':row.error;
-    return '<div class="snapshot-meta"><div><time>'+esc(date(row.captured_at||Number(row.requested_at)))+'</time><div class="staff-email">'+esc(row.actor||'')+'</div></div><span class="badge">'+esc(labels[row.status]||row.status||'Đã cập nhật')+'</span></div>'+photo(row)+(reason?'<p class="error">'+esc(reason)+'</p>':'')+'<div class="scroll"><table><thead><tr><th>Sản phẩm</th><th class="number">Tồn</th><th class="number">±</th></tr></thead><tbody>'+itemsOf(row).map(i=>'<tr><td>'+esc(i.name)+'<div class="muted">'+esc(i.sku)+'</div></td><td class="number">'+esc(i.quantity)+'</td><td class="number">'+esc(delta(i.delta))+'</td></tr>').join('')+'</tbody></table></div>';
+    return photo(row)+'<ul class="snapshot-products" aria-label="Sản phẩm kiểm kê">'+itemsOf(row).map(i=>'<li><span class="product-name">'+esc(i.name)+'<small class="muted">'+esc(i.sku)+'</small></span><span class="product-count"><strong aria-label="Số lượng: '+esc(i.quantity)+'">'+esc(i.quantity)+'</strong>'+(i.delta==null?'':'<small class="muted" aria-label="Thay đổi: '+esc(delta(i.delta))+'">('+esc(delta(i.delta))+')</small>')+'</span></li>').join('')+'</ul>';
   }
   function employeeSnapshot(row) {
     byId('latest').innerHTML=row?'<div class="employee-items">'+itemsOf(row).map(i=>'<div class="employee-item"><span>'+esc(i.name)+'</span><strong>'+esc(i.quantity)+'</strong></div>').join('')+'</div><p class="updated-time">'+esc(date(row.captured_at))+'</p>':'<div class="empty">Chưa có số lượng kiểm kê.</div>';
@@ -132,14 +133,13 @@
   async function load() {
     cameras=await macro(publicPage?'warehouse-camera':'warehouse-cameras-admin');
     selected=cameras.some(c=>c.camera_id===selected)?selected:(cameras[0]?.camera_id||'');
-    if(!publicPage) byId('edit').disabled=!selected;
     await Promise.all([select(selected),...(!publicPage?[loadStock()]:[])]);
   }
   async function select(id) {
     selected=id; selectedEvent=''; requestId=''; offset=0; const version=++loadVersion;eventVersion++;
-    byId('tabs').innerHTML=cameras.map(c=>'<button role="tab" aria-selected="'+(c.camera_id===id)+'" data-camera="'+esc(c.camera_id)+'">'+esc(c.area_name)+(c.enabled===0?' · Tắt':'')+'</button>').join('');
+    byId('tabs').innerHTML=cameras.map(c=>'<span class="camera-tab'+(c.camera_id===id?' is-selected':'')+'" role="presentation"><button role="tab" aria-selected="'+(c.camera_id===id)+'" data-camera="'+esc(c.camera_id)+'">'+esc(c.area_name)+(c.enabled===0?' · Tắt':'')+'</button>'+(!publicPage?'<button type="button" class="camera-settings icon-button" data-edit-camera="'+esc(c.camera_id)+'" aria-label="Cài đặt camera '+esc(c.area_name)+'" title="Cài đặt camera">'+settingsIcon+'</button>':'')+'</span>').join('');
     if(publicPage){byId('update').disabled=!id||leaving;byId('area-title').textContent=cameras.find(c=>c.camera_id===id)?.area_name||'Kiểm kê kho';byId('tabs').hidden=cameras.length<2;byId('employee-photo').innerHTML='';}
-    else{byId('history').innerHTML='';byId('more').hidden=true;byId('edit').disabled=!id;byId('qr-link').hidden=!id;byId('qr-link').href=id?cameraUrl(id):'#';}
+    else{byId('history').innerHTML='';byId('more').hidden=true;}
     byId('latest').innerHTML='<div class="empty">'+(id?'Đang tải…':'Chưa có camera.')+'</div>';
     if(!id){status('');return;}
     status('Đang tải…');
@@ -182,24 +182,16 @@
         const input=document.createElement('textarea');input.value=url;button.parentElement.appendChild(input);input.select();
         const copied=document.execCommand('copy');input.remove();if(!copied)throw Error('copy');
       }
-      button.textContent='Đã sao chép';
-    } catch (_) {button.textContent='Không thể sao chép';}
-  }
-  function showQr(id) {
-    const url=cameraUrl(id);
-    byId('detail').querySelector('h2').textContent=cameras.find(c=>c.camera_id===id)?.area_name||'Trang nhân viên';
-    byId('detail-body').innerHTML=window.BiomassQr.svg(url,260)+'<a class="button primary" href="'+esc(url)+'" target="_blank" rel="noopener">Mở trang nhân viên</a><button id="copy-qr">Sao chép link QR</button>';
-    byId('copy-qr').onclick=e=>copyQr(id,e.currentTarget);
-    byId('detail').showModal();
+      button.innerHTML='✓';button.title='Đã sao chép';button.setAttribute('aria-label','Đã sao chép');
+    } catch (_) {button.title='Không thể sao chép';button.setAttribute('aria-label','Không thể sao chép');}
   }
   function editCamera(camera) {
     let dialog=byId('camera-editor');if(dialog)dialog.remove();
     dialog=document.createElement('dialog');dialog.id='camera-editor';
-    dialog.innerHTML='<form id="camera-form"><div class="toolbar"><h2>'+(camera?'Cài đặt camera':'Thêm camera')+'</h2><button type="button" id="cancel-camera">Đóng</button></div><div class="fields"><label>Khu vực<input name="area_name" required maxlength="120" value="'+esc(camera?.area_name||'')+'"></label><label>API key<input name="api_key" type="password" autocomplete="new-password" maxlength="512" '+(camera?'placeholder="Để trống để giữ nguyên"':'required')+'></label></div><h2>Sản phẩm</h2><table class="map"><thead><tr><th>Mã Vision</th><th>Mã sản phẩm</th><th>Tên sản phẩm</th><th></th></tr></thead><tbody id="map-rows"></tbody></table><div class="toolbar"><button type="button" id="add-map">+ Sản phẩm</button><label class="check"><input name="enabled" type="checkbox" '+(camera?.enabled===0?'':'checked')+'>Hoạt động</label></div><div id="camera-error" role="alert"></div><div class="actions"><button class="primary" type="submit">Lưu camera</button></div></form>';
+    const qr=camera?'<div class="camera-qr"><a id="camera-qr-link" href="'+esc(cameraUrl(camera.camera_id))+'" target="_blank" rel="noopener" aria-label="Mở trang nhân viên '+esc(camera.area_name)+'" title="Mở trang nhân viên">'+window.BiomassQr.svg(cameraUrl(camera.camera_id),160)+'</a><button type="button" id="camera-copy-qr" class="icon-button" aria-label="Sao chép link QR" title="Sao chép link QR">'+copyIcon+'</button></div>':'';
+    dialog.innerHTML='<form id="camera-form"><div class="panel-heading"><h2>'+(camera?'Cài đặt camera':'Thêm camera')+'</h2><button type="button" id="cancel-camera" class="icon-button" aria-label="Đóng">×</button></div><div class="camera-overview'+(camera?' has-qr':'')+'"><div class="fields"><label>Khu vực<input name="area_name" required maxlength="120" value="'+esc(camera?.area_name||'')+'"></label><label>API key<input name="api_key" type="password" autocomplete="new-password" maxlength="512" '+(camera?'placeholder="Để trống để giữ nguyên"':'required')+'></label></div>'+qr+'</div><div class="panel-heading"><h2>Sản phẩm</h2><button type="button" id="add-map">+ Sản phẩm</button></div><table class="map"><thead><tr><th>Mã Vision</th><th>Mã sản phẩm</th><th>Tên sản phẩm</th><th></th></tr></thead><tbody id="map-rows"></tbody></table><div id="camera-error" role="alert"></div><div class="camera-footer"><label class="check"><input name="enabled" type="checkbox" '+(camera?.enabled===0?'':'checked')+'>Hoạt động</label><button class="primary" type="submit">Lưu camera</button></div></form>';
     root.appendChild(dialog);
     if(camera){
-      byId('camera-form').querySelector('.fields').insertAdjacentHTML('beforebegin','<div class="camera-qr-actions"><button type="button" id="camera-qr">Xem QR</button><a class="button" href="'+esc(cameraUrl(camera.camera_id))+'" target="_blank" rel="noopener">Mở trang nhân viên</a><button type="button" id="camera-copy-qr">Sao chép link QR</button></div>');
-      byId('camera-qr').onclick=()=>showQr(camera.camera_id);
       byId('camera-copy-qr').onclick=e=>copyQr(camera.camera_id,e.currentTarget);
     }
     function addMap(m={}) {byId('map-rows').insertAdjacentHTML('beforeend','<tr><td><input data-map="code" aria-label="Mã Vision" required maxlength="160" placeholder="type1" value="'+esc(m.code||'')+'"></td><td><input data-map="sku" aria-label="Mã sản phẩm" required maxlength="96" placeholder="SP01" value="'+esc(m.sku||'')+'"></td><td><input data-map="name" aria-label="Tên sản phẩm" required maxlength="160" value="'+esc(m.name||'')+'"></td><td><button type="button" data-remove aria-label="Xóa sản phẩm">×</button></td></tr>');}
