@@ -153,7 +153,7 @@
   async function loadHistory(append, version=loadVersion) {
     const rows=await macro('warehouse-history',{camera_id:selected,offset:append?offset:0});
     if(version!==loadVersion)return;
-    const html=rows.map(e=>'<tr tabindex="0" aria-selected="false" data-event="'+esc(e.request_id)+'"><td>'+esc(date(e.captured_at||Number(e.requested_at)))+'<div class="staff-email muted">'+esc(e.actor||'')+'</div></td><td><span class="badge">'+esc(labels[e.status]||e.status)+'</span></td><td class="number">'+esc(e.quantity??'—')+'</td><td class="number">'+esc(e.quantity==null?'—':delta(e.delta))+'</td></tr>').join('');
+    const html=rows.map(e=>'<tr tabindex="0" aria-selected="false" data-event="'+esc(e.request_id)+'"><td>'+esc(date(e.captured_at||Number(e.requested_at)))+'<div class="staff-phone muted">'+esc(e.actor||'')+'</div></td><td><span class="badge">'+esc(labels[e.status]||e.status)+'</span></td><td class="number">'+esc(e.quantity??'—')+'</td><td class="number">'+esc(e.quantity==null?'—':delta(e.delta))+'</td></tr>').join('');
     if(append)byId('history').insertAdjacentHTML('beforeend',html);else byId('history').innerHTML=html||'<tr><td colspan="4" class="empty">Chưa có lịch sử.</td></tr>';
     offset=(append?offset:0)+rows.length;byId('more').hidden=rows.length<30;
     if(!append){if(rows[0])await showEvent(rows[0].request_id,version);else byId('latest').innerHTML='<div class="empty">Chưa có lần kiểm kê.</div>';}

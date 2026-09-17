@@ -6,7 +6,7 @@ const Database = require('better-sqlite3');
 // This fragment is also used by the upgrade without editing camera revisions.
 const cameraPageStatements = [
   `INSERT INTO system_pages(page_id,html,require_email,require_phone,sync_id,enabled,title,meta)
-    SELECT 'warehouse-'||c.camera_id,p.html,1,0,c.sync_id,c.enabled,c.area_name,
+    SELECT 'warehouse-'||c.camera_id,p.html,0,1,c.sync_id,c.enabled,c.area_name,
       json_object('hideLink',json('true'),'publicApi',json_object('stream',json('false'),
         'context',json_object('camera_id',c.camera_id),
         'commandTarget',json_object('type','ai-count','cameraParam','camera_id'),
@@ -14,21 +14,21 @@ const cameraPageStatements = [
         'macros',json_object('warehouse-camera',json('{}'),'warehouse-latest',json('{}'))))
     FROM system_ai_cameras c JOIN system_pages p ON p.page_id='warehouse'
     WHERE c.camera_id=:camera_id AND c.sync_id=:sync_id
-    ON CONFLICT(page_id) DO UPDATE SET html=excluded.html,require_email=1,require_phone=0,
+    ON CONFLICT(page_id) DO UPDATE SET html=excluded.html,require_email=0,require_phone=1,
       sync_id=excluded.sync_id,enabled=excluded.enabled,title=excluded.title,meta=excluded.meta;`,
   `INSERT INTO system_cmds(cmd_id,command_template,require_email,require_phone,sync_id,enabled,page_only,params_schema)
-    SELECT 'warehouse-count-'||camera_id,'ai-count',1,0,sync_id,enabled,1,
+    SELECT 'warehouse-count-'||camera_id,'ai-count',0,1,sync_id,enabled,1,
       json_object('camera_id',json_object('type','string','required',json('true'),'enum',json_array(camera_id)),
         'request_id',json_object('type','string','required',json('true'),'maxLength',36,'pattern','^[0-9a-fA-F-]{36}$'))
     FROM system_ai_cameras WHERE camera_id=:camera_id AND sync_id=:sync_id
-    ON CONFLICT(cmd_id) DO UPDATE SET command_template=excluded.command_template,require_email=1,require_phone=0,
+    ON CONFLICT(cmd_id) DO UPDATE SET command_template=excluded.command_template,require_email=0,require_phone=1,
       sync_id=excluded.sync_id,enabled=excluded.enabled,page_only=1,params_schema=excluded.params_schema;`
 ];
 
 function cameraStatements(mode = 'basic') {
   if (mode !== 'iot') return cameraPageStatements;
   return [cameraPageStatements[0].replace("'commandTarget',json_object('type','ai-count','cameraParam','camera_id'),", "'warehouseMode','iot',"),
-    cameraPageStatements[1].replace("camera_id,'ai-count',1,0", "camera_id,io_command||',\"<<email>>\"',1,0")];
+    cameraPageStatements[1].replace("camera_id,'ai-count',0,1", "camera_id,io_command||',\"<<phone>>\"',0,1")];
 }
 
 function build(file = path.join(__dirname, 'sample.sqlite'), mode = 'basic') {
@@ -37,8 +37,8 @@ function build(file = path.join(__dirname, 'sample.sqlite'), mode = 'basic') {
   if (fs.existsSync(file)) fs.unlinkSync(file);
   const db = new Database(file);
   db.exec(`
-    CREATE TABLE system_pages(page_id TEXT PRIMARY KEY,html TEXT NOT NULL,require_email INTEGER DEFAULT 1,require_phone INTEGER DEFAULT 0,sync_id TEXT NOT NULL,enabled INTEGER DEFAULT 1,title TEXT,meta TEXT);
-    CREATE TABLE system_cmds(cmd_id TEXT PRIMARY KEY,command_template TEXT NOT NULL,require_email INTEGER DEFAULT 1,require_phone INTEGER DEFAULT 0,sync_id TEXT NOT NULL,params_schema TEXT,enabled INTEGER DEFAULT 1,page_only INTEGER DEFAULT 1);
+    CREATE TABLE system_pages(page_id TEXT PRIMARY KEY,html TEXT NOT NULL,require_email INTEGER DEFAULT 0,require_phone INTEGER DEFAULT 1,sync_id TEXT NOT NULL,enabled INTEGER DEFAULT 1,title TEXT,meta TEXT);
+    CREATE TABLE system_cmds(cmd_id TEXT PRIMARY KEY,command_template TEXT NOT NULL,require_email INTEGER DEFAULT 0,require_phone INTEGER DEFAULT 1,sync_id TEXT NOT NULL,params_schema TEXT,enabled INTEGER DEFAULT 1,page_only INTEGER DEFAULT 1);
     CREATE TABLE system_macros(name TEXT PRIMARY KEY,comment TEXT DEFAULT '',source TEXT NOT NULL,enabled INTEGER DEFAULT 1);
     CREATE TABLE system_service_macros(name TEXT PRIMARY KEY,service TEXT NOT NULL);
     CREATE TABLE system_ai_cameras(camera_id TEXT PRIMARY KEY,area_name TEXT NOT NULL,api_key TEXT NOT NULL,sync_id TEXT NOT NULL,enabled INTEGER NOT NULL DEFAULT 1,revision INTEGER NOT NULL DEFAULT 1,product_map TEXT NOT NULL,callback_macro TEXT NOT NULL DEFAULT '${iot ? '' : 'warehouse-ai-count-result'}'${iot ? ",io_command TEXT NOT NULL DEFAULT 'N20'" : ''});
@@ -101,7 +101,9 @@ function build(file = path.join(__dirname, 'sample.sqlite'), mode = 'basic') {
     WHERE c.sync_id=:sync_id AND c.enabled=1 AND e.camera_id=:camera_id AND e.request_id=:request_id;`);
   macro('warehouse-ai-count-result', `
     INSERT OR IGNORE INTO warehouse_events(request_id,camera_id,revision,area_name,actor,requested_at,captured_at,status,image_url,cost,error,result_json)
-    SELECT :request_id,:camera_id,CAST(:camera_revision AS INTEGER),:area_name,:actor,CAST(:requested_at AS INTEGER),json_extract(:result,'$.captured_at'),
+    SELECT :request_id,:camera_id,CAST(:camera_revision AS INTEGER),:area_name,
+      CASE WHEN instr(COALESCE(:actor,''),'@')=0 THEN :actor ELSE '' END,
+      CAST(:requested_at AS INTEGER),json_extract(:result,'$.captured_at'),
       CASE WHEN c.revision<>CAST(:camera_revision AS INTEGER) OR c.enabled<>1 THEN 'stale'
         WHEN json_extract(:result,'$.status')<>'succeeded' THEN json_extract(:result,'$.status')
         WHEN json_extract(:result,'$.image_saved')=0 THEN 'needs_review'
@@ -109,7 +111,7 @@ function build(file = path.join(__dirname, 'sample.sqlite'), mode = 'basic') {
           SELECT 1 FROM json_each(:mapping) m WHERE json_extract(m.value,'$.code')=json_extract(item.value,'$.code'))) THEN 'needs_review'
         WHEN EXISTS(SELECT 1 FROM warehouse_events WHERE camera_id=:camera_id AND status='applied' AND requested_at>CAST(:requested_at AS INTEGER)) THEN 'stale'
         ELSE 'applied' END,
-      json_extract(:result,'$.image_url'),json_extract(:result,'$.cost'),json_extract(:result,'$.error'),:result
+      json_extract(:result,'$.image_url'),json_extract(:result,'$.cost'),json_extract(:result,'$.error'),json_remove(:result,'$.metadata.email')
     FROM system_ai_cameras c WHERE c.camera_id=:camera_id AND c.sync_id=:sync_id;
     INSERT OR IGNORE INTO warehouse_items(request_id,sku,name,quantity,delta)
     SELECT :request_id,json_extract(m.value,'$.sku'),json_extract(m.value,'$.name'),
@@ -123,7 +125,7 @@ function build(file = path.join(__dirname, 'sample.sqlite'), mode = 'basic') {
   `);
   db.prepare('INSERT INTO system_service_macros VALUES (?,?)').run('warehouse-ai-count-result', 'ai-count');
   if (iot) {
-    // IO forwards the complete polling response in c1, and the command email (or empty for a sensor) in c2.
+    // IO forwards the complete polling response in c1, and the verified phone from the command (or empty for a sensor) in c2.
     // This is an ordinary authenticated data macro. Billing remains owned by ai-count.
     const resultSql = db.prepare("SELECT source FROM system_macros WHERE name='warehouse-ai-count-result'").get().source
       .replace(/:(request_id|camera_id|camera_revision|area_name|actor|requested_at|mapping|result)\b/g,
@@ -140,7 +142,8 @@ function build(file = path.join(__dirname, 'sample.sqlite'), mode = 'basic') {
         AND NOT EXISTS(SELECT 1 FROM json_each(:c1,'$.items') WHERE COALESCE(json_type(value,'$.code'),'missing') NOT IN ('text','null')
           OR json_type(value,'$.quantity') IS NOT 'integer' OR json_extract(value,'$.quantity')<0 OR json_extract(value,'$.quantity')>9007199254740991)
         AND (json_extract(:c1,'$.status')<>'succeeded' OR julianday(json_extract(:c1,'$.captured_at')) IS NOT NULL)
-        AND length(COALESCE(:c2,''))<=320
+        AND (trim(COALESCE(:c2,''))='' OR (length(trim(:c2)) BETWEEN 8 AND 16
+          AND trim(:c2) NOT GLOB '*[^0-9+]*' AND instr(substr(trim(:c2),2),'+')=0))
         AND EXISTS(SELECT 1 FROM system_ai_cameras WHERE camera_id=json_extract(:c1,'$.camera_id') AND sync_id=:sync_id)
         AND NOT EXISTS(SELECT 1 FROM warehouse_events WHERE request_id=json_extract(:c1,'$.request_id') AND camera_id<>json_extract(:c1,'$.camera_id'))
         THEN 1 ELSE 0 END;

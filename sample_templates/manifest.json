@@ -3628,7 +3628,7 @@
           "name": "Quản lý kho",
           "label": "Kho AI kèm IoT",
           "language": "vi",
-          "description": "Dùng chung giao diện kho AI. Nhân viên bấm Cập nhật để gửi N20,\"email\" xuống IO. IO hoặc cảm biến tự gọi ai-count, đọc kết quả và báo vào macro warehouse-io-result. Mỗi camera có QR, chương trình IO và lịch sử riêng. Giữ tồn hợp lệ gần nhất khi đếm lỗi.",
+          "description": "Dùng chung giao diện kho AI. Nhân viên xác minh số điện thoại rồi bấm Cập nhật để gửi N20,\"số điện thoại\" xuống IO. IO hoặc cảm biến tự gọi ai-count, đọc kết quả và báo vào macro warehouse-io-result. Mỗi camera có QR, chương trình IO và lịch sử riêng. Giữ tồn hợp lệ gần nhất khi đếm lỗi.",
           "html": "/sample_dashboards/ai-inventory-basic/dashboard_iot_vi.html",
           "setup": {
             "page": "/sample_dashboards/ai-inventory-basic/setup_vi.html"
@@ -3668,7 +3668,7 @@
                   "captured_at": "2026-09-17T12:00:00Z",
                   "cost": 0.01
                 },
-                "c2": "staff@example.com"
+                "c2": "0901234567"
               }
             }
           ]
