@@ -174,7 +174,7 @@
       setTimeout(()=>{window.close();location.replace('/iot-page');},1800);
     }catch(e){status(e.message,true);byId('update').disabled=false;}
   }
-  function cameraUrl(id) {return new URL('/iot-page/'+encodeURIComponent(ioid)+'/warehouse-'+encodeURIComponent(id),location.origin).href;}
+  function cameraUrl(id) {const link=document.createElement('a');link.href='/iot-page/'+encodeURIComponent(ioid)+'/warehouse-'+encodeURIComponent(id);return link.href;}
   async function copyQr(id,button) {
     const url=cameraUrl(id);
     try {
