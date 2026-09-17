@@ -94,6 +94,7 @@ function build(file = path.join(__dirname, 'sample.sqlite'), mode = 'basic') {
     (SELECT sum(delta) FROM warehouse_items WHERE request_id=e.request_id) AS delta
     FROM warehouse_events e JOIN system_ai_cameras c ON c.camera_id=e.camera_id
     WHERE c.sync_id=:sync_id AND c.enabled=1 AND e.camera_id=:camera_id
+      AND (COALESCE(:hide_errors,'0')<>'1' OR e.status='applied')
     ORDER BY e.requested_at DESC LIMIT 30 OFFSET max(0,CAST(COALESCE(:offset,0) AS INTEGER));`);
   macro('warehouse-event', `SELECT e.request_id,e.captured_at,e.image_url,e.status,e.error,e.actor,
     (SELECT json_group_array(json_object('sku',i.sku,'name',i.name,'quantity',i.quantity,'delta',i.delta)) FROM warehouse_items i WHERE i.request_id=e.request_id) AS items
