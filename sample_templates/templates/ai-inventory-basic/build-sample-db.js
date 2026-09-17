@@ -40,6 +40,17 @@ function build(file = path.join(__dirname, 'sample.sqlite')) {
     SELECT camera_id,area_name FROM system_ai_cameras WHERE camera_id=:camera_id AND sync_id=:sync_id;
   `);
   macro('warehouse-cameras', `SELECT camera_id,area_name FROM system_ai_cameras WHERE sync_id=:sync_id AND enabled=1 ORDER BY rowid;`);
+  macro('warehouse-stock', `WITH areas AS (
+    SELECT c.camera_id,c.product_map,(SELECT e.request_id FROM warehouse_events e
+      WHERE e.camera_id=c.camera_id AND e.status='applied' AND e.revision=c.revision
+      ORDER BY e.requested_at DESC LIMIT 1) AS latest_id
+    FROM system_ai_cameras c WHERE c.sync_id=:sync_id AND c.enabled=1
+  ), products AS (
+    SELECT a.camera_id,a.latest_id,json_extract(m.value,'$.sku') AS sku,json_extract(m.value,'$.name') AS name
+    FROM areas a,json_each(a.product_map) m
+  ) SELECT p.sku,min(p.name) AS name,sum(i.quantity) AS quantity,count(*) AS areas,count(i.quantity) AS counted_areas
+    FROM products p LEFT JOIN warehouse_items i ON i.request_id=p.latest_id AND i.sku=p.sku
+    GROUP BY p.sku ORDER BY name,p.sku;`);
   macro('warehouse-latest', `SELECT e.request_id,e.captured_at,e.image_url,e.requested_at,
     (SELECT json_group_array(json_object('sku',i.sku,'name',i.name,'quantity',i.quantity,'delta',i.delta)) FROM warehouse_items i WHERE i.request_id=e.request_id) AS items
     FROM warehouse_events e JOIN system_ai_cameras c ON c.camera_id=e.camera_id

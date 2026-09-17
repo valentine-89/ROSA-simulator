@@ -6,12 +6,34 @@
   const cfg = JSON.parse(document.getElementById(publicPage ? 'inventory-page-context' : 'inventory-config').textContent);
   const session = cfg.databaseSessionId || '';
   const ioid = publicPage ? cfg.ioid : session.split('@')[0];
-  let cameras = [], selected = '', offset = 0, loadVersion = 0, leaving = false, requestId = '';
+  let cameras = [], selected = '', selectedEvent = '', offset = 0, loadVersion = 0, eventVersion = 0, leaving = false, requestId = '';
   const byId = id => document.getElementById(id);
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const date = value => value ? new Date(value).toLocaleString('vi-VN') : '—';
   const delta = value => value == null ? 'Lần đầu' : (value > 0 ? '+' : '') + value;
   const labels = {applied:'Đã cập nhật',needs_review:'Cần kiểm tra',stale:'Cấu hình đã đổi',failed:'Đếm lỗi',partial:'Kết quả chưa đủ',busy:'Camera đang bận',unknown:'Chưa xác định'};
+  // Copied from monitoring-aquaculture-ponds; appearance comes entirely from dashboard-themes.css.
+  const themePickerHtml = `<div class="theme-picker" id="theme-picker">
+    <button class="theme-picker-toggle" type="button" id="theme-picker-toggle" aria-label="Chọn giao diện"
+      aria-haspopup="true" aria-expanded="false">&#127912;</button>
+    <div class="theme-picker-menu" id="theme-picker-menu" role="menu" aria-label="Tùy chọn giao diện">
+      <button class="theme-menu-button" type="button" data-theme-option="neumorphism"
+        role="menuitemradio">Neumorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="aurora-ui" role="menuitemradio">Aurora
+        UI</button>
+      <button class="theme-menu-button" type="button" data-theme-option="modern-flat" role="menuitemradio">Modern
+        Flat</button>
+      <button class="theme-menu-button" type="button" data-theme-option="glassmorphism"
+        role="menuitemradio">Glassmorphism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="cyberpunk"
+        role="menuitemradio">Cyberpunk</button>
+      <button class="theme-menu-button" type="button" data-theme-option="neo-brutalism" role="menuitemradio">Neo
+        Brutalism</button>
+      <button class="theme-menu-button" type="button" data-theme-option="bento-grid" role="menuitemradio">Bento
+        Grid</button>
+    </div>
+  </div>`;
+  let themePickerToggle, themePickerMenu;
   function status(text, error) { byId('status').textContent=text; byId('status').className=error?'error':''; }
   async function jsonRequest(url, body) {
     const r = await fetch(url,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -24,56 +46,123 @@
     const url = publicPage ? '/api/iot-page-macro/'+encodeURIComponent(ioid)+'/'+encodeURIComponent(cfg.pageId)
       : '/api/'+encodeURIComponent(session)+'/'+encodeURIComponent(cfg.syncId)+'/data';
     const d = await jsonRequest(url,publicPage?{macro:name,params}:Object.assign({macro:name},params));
-    return d.rows || [];
+    return Array.isArray(d) ? d : (Array.isArray(d.rows) ? d.rows : []);
   }
   function renderShell() {
-    root.innerHTML='<header><h1>'+esc(cfg.title||'Kho AI cơ bản')+'</h1><div class="toolbar">'+(publicPage?'<button id="update" class="primary" disabled>Cập nhật</button>':'<button id="add">+ Camera</button><button id="edit" disabled>Cài đặt</button><button id="refresh">↻ Tải lại</button><a id="qr-link" target="_blank" rel="noopener">Trang QR</a>')+'</div></header><nav id="tabs" class="tabs" role="tablist" aria-label="Camera"></nav><div id="status" role="status"></div><section id="latest" class="panel"><div class="empty">Đang tải…</div></section><section class="panel"><h2>Lịch sử kiểm kê</h2><div class="scroll"><table><thead><tr><th>Thời điểm</th><th>Trạng thái</th><th class="number">Tổng</th><th class="number">Thay đổi</th></tr></thead><tbody id="history"></tbody></table></div><button id="more" hidden>Xem thêm</button></section><dialog id="detail"><div class="toolbar"><h2>Chi tiết kiểm kê</h2><button id="close-detail">Đóng</button></div><div id="detail-body"></div></dialog>';
-    byId('close-detail').onclick=()=>byId('detail').close();
-    byId('more').onclick=()=>loadHistory(true).catch(e=>status(e.message,true));
-    byId('tabs').onclick=e=>{const b=e.target.closest('[data-camera]');if(b&&!leaving)select(b.dataset.camera);};
-    byId('history').onclick=e=>{const tr=e.target.closest('[data-event]');if(tr)showEvent(tr.dataset.event);};
-    if(publicPage) byId('update').onclick=update;
-    else {
+    document.body.classList.toggle('employee',publicPage);
+    const tabs='<nav id="tabs" class="tabs" role="tablist" aria-label="Camera"></nav>';
+    if(publicPage) {
+      root.innerHTML='<header><span class="eyebrow">KIỂM KÊ KHO</span><h1 id="area-title">'+esc(cfg.title||'Kho AI')+'</h1></header>'+tabs+'<div id="status" role="status"></div><section id="latest"><div class="empty">Đang tải…</div></section><div class="update-action"><button id="update" class="primary" disabled>Cập nhật</button></div><section id="employee-photo"></section>';
+      byId('update').onclick=update;
+    } else {
+      root.innerHTML='<header class="admin-header"><div><h1>Quản lý kho</h1><span class="muted">'+esc(cfg.title||'Kho AI cơ bản')+'</span></div><div class="toolbar"><button id="add">+ Camera</button><button id="refresh" aria-label="Tải lại">↻ Tải lại</button><a id="qr-link" class="button" href="#">Trang QR</a></div></header><div id="status" role="status"></div><div class="warehouse-grid"><section class="panel history-panel"><div class="panel-heading"><h2>Camera & lịch sử</h2><button id="edit" disabled>Cài đặt</button></div>'+tabs+'<div class="scroll history-scroll"><table><thead><tr><th>Thời điểm</th><th>Trạng thái</th><th class="number">Tổng</th><th class="number">±</th></tr></thead><tbody id="history"></tbody></table></div><button id="more" hidden>Xem thêm</button></section><section class="panel image-panel"><h2>Ảnh kiểm kê</h2><div id="latest"><div class="empty">Chọn lần kiểm kê để xem ảnh.</div></div></section><section class="panel stock-panel"><h2>Tổng tồn kho</h2><div id="stock"><div class="empty">Đang tải…</div></div></section></div><dialog id="detail"><div class="panel-heading"><h2>Trang nhân viên</h2><button id="close-detail">Đóng</button></div><div id="detail-body" class="qr-body"></div></dialog>';
+      byId('close-detail').onclick=()=>byId('detail').close();
+      byId('more').onclick=()=>loadHistory(true).catch(e=>status(e.message,true));
+      byId('history').onclick=e=>{const tr=e.target.closest('[data-event]');if(tr)showEvent(tr.dataset.event);};
+      byId('history').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){const tr=e.target.closest('[data-event]');if(tr){e.preventDefault();showEvent(tr.dataset.event);}}};
       byId('add').onclick=()=>editCamera(); byId('edit').onclick=()=>editCamera(cameras.find(c=>c.camera_id===selected));
       byId('refresh').onclick=()=>load().catch(e=>status(e.message,true));
       byId('qr-link').href='/iot-page/'+encodeURIComponent(ioid)+'/warehouse';
-      byId('qr-link').onclick=e=>{e.preventDefault();byId('detail-body').innerHTML=window.BiomassQr.svg(byId('qr-link').href,260);byId('detail').showModal();};
+      byId('qr-link').onclick=e=>{
+        e.preventDefault();const url=byId('qr-link').href;
+        byId('detail-body').innerHTML=window.BiomassQr.svg(url,260)+'<a class="button primary" href="'+esc(url)+'" target="_blank" rel="noopener">Mở trang nhân viên</a>';
+        byId('detail').showModal();
+      };
+      root.insertAdjacentHTML('beforeend',themePickerHtml);
+      themePickerToggle=byId('theme-picker-toggle');themePickerMenu=byId('theme-picker-menu');
+      document.addEventListener('click', function (event) {
+        var themeOption = event.target && typeof event.target.closest === 'function' ? event.target.closest('[data-theme-option]') : null;
+        if (themeOption) {
+          setTheme(String(themeOption.getAttribute('data-theme-option') || 'neumorphism'));
+          closeThemePickerMenu();
+          return;
+        }
+        var themeToggle = event.target && typeof event.target.closest === 'function' ? event.target.closest('#theme-picker-toggle') : null;
+        if (themeToggle) {
+          if (themePickerMenu.classList.contains('is-open')) closeThemePickerMenu();
+          else openThemePickerMenu();
+          return;
+        }
+        if (!themePickerMenu.contains(event.target)) closeThemePickerMenu();
+      });
+
+
     }
+    byId('tabs').onclick=e=>{const b=e.target.closest('[data-camera]');if(b&&!leaving)select(b.dataset.camera);};
+  }
+      function setTheme(nextTheme) {
+        document.documentElement.setAttribute("data-theme", nextTheme);
+        try { window.localStorage.setItem("sample-dashboard-theme", nextTheme); } catch (error) {}
+        Array.prototype.forEach.call(themePickerMenu.querySelectorAll("[data-theme-option]"), function (button) {
+          var isActive = String(button.getAttribute("data-theme-option") || "") === nextTheme;
+          button.setAttribute("aria-pressed", isActive ? "true" : "false");
+          button.setAttribute("aria-checked", isActive ? "true" : "false");
+        });
+      }
+
+      function closeThemePickerMenu() {
+        themePickerMenu.classList.remove("is-open");
+        themePickerToggle.setAttribute("aria-expanded", "false");
+      }
+
+      function openThemePickerMenu() {
+        themePickerMenu.classList.add("is-open");
+        themePickerToggle.setAttribute("aria-expanded", "true");
+      }
+
+  function itemsOf(row) {try{return JSON.parse(row?.items||'[]');}catch{return [];}}
+  function photo(row) {
+    let image='';try {const u=new URL(row.image_url);if(u.protocol==='https:')image=u.href;}catch{}
+    return image?'<a class="photo" href="'+esc(image)+'" target="_blank" rel="noopener"><img src="'+esc(image)+'" alt="Ảnh kiểm kê" loading="lazy"></a>':'<div class="empty">Chưa có ảnh</div>';
   }
   function snapshot(row) {
-    if(!row) return '<div class="empty">Chưa có lần kiểm kê thành công.</div>';
-    let items=[];try{items=JSON.parse(row.items||'[]');}catch{}
-    let image='';try {const u=new URL(row.image_url);if(u.protocol==='https:')image=u.href;}catch{}
-    return '<div class="muted">'+esc(date(row.captured_at))+'</div><div class="snapshot"><div>'+ (image?'<a href="'+esc(image)+'" target="_blank" rel="noopener"><img src="'+esc(image)+'" alt="Ảnh kiểm kê" loading="lazy"></a>':'<div class="empty">Không có ảnh</div>')+'</div><div><table><thead><tr><th>Sản phẩm</th><th class="number">Tồn</th><th class="number">Thay đổi</th></tr></thead><tbody>'+items.map(i=>'<tr><td>'+esc(i.name)+'<div class="muted">'+esc(i.sku)+'</div></td><td class="number">'+esc(i.quantity)+'</td><td class="number '+(i.delta<0?'negative':'delta')+'">'+esc(delta(i.delta))+'</td></tr>').join('')+'</tbody></table></div></div>';
+    if(!row)return '<div class="empty">Chưa có lần kiểm kê.</div>';
+    const reason=row.error==='APP_IMAGE_SAVE_FAILED'?'Không lưu được ảnh.':row.error;
+    return '<div class="snapshot-meta"><time>'+esc(date(row.captured_at||Number(row.requested_at)))+'</time><span class="badge">'+esc(labels[row.status]||row.status||'Đã cập nhật')+'</span></div>'+photo(row)+(reason?'<p class="error">'+esc(reason)+'</p>':'')+'<div class="scroll"><table><thead><tr><th>Sản phẩm</th><th class="number">Tồn</th><th class="number">±</th></tr></thead><tbody>'+itemsOf(row).map(i=>'<tr><td>'+esc(i.name)+'<div class="muted">'+esc(i.sku)+'</div></td><td class="number">'+esc(i.quantity)+'</td><td class="number">'+esc(delta(i.delta))+'</td></tr>').join('')+'</tbody></table></div>';
+  }
+  function employeeSnapshot(row) {
+    byId('latest').innerHTML=row?'<div class="employee-items">'+itemsOf(row).map(i=>'<div class="employee-item"><span>'+esc(i.name)+'</span><strong>'+esc(i.quantity)+'</strong></div>').join('')+'</div><p class="updated-time">'+esc(date(row.captured_at))+'</p>':'<div class="empty">Chưa có số lượng kiểm kê.</div>';
+    byId('employee-photo').innerHTML=row?photo(row):'';
+  }
+  async function loadStock() {
+    const rows=await macro('warehouse-stock');
+    byId('stock').innerHTML=rows.length?'<table><thead><tr><th>Sản phẩm</th><th class="number">Số lượng</th></tr></thead><tbody>'+rows.map(i=>'<tr><td>'+esc(i.name)+'<div class="muted">'+esc(i.sku)+'</div></td><td class="number"><strong class="stock-quantity">'+esc(i.quantity??'—')+'</strong>'+(i.counted_areas<i.areas?'<div class="muted">'+esc(i.counted_areas)+'/'+esc(i.areas)+' khu vực</div>':'')+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">Chưa có sản phẩm.</div>';
   }
   async function load() {
     cameras=await macro(publicPage?'warehouse-cameras':'warehouse-cameras-admin');
     selected=cameras.some(c=>c.camera_id===selected)?selected:(cameras[0]?.camera_id||'');
     if(!publicPage) byId('edit').disabled=!selected;
-    await select(selected);
+    await Promise.all([select(selected),...(!publicPage?[loadStock()]:[])]);
   }
   async function select(id) {
-    selected=id; requestId=''; offset=0; const version=++loadVersion;
+    selected=id; selectedEvent=''; requestId=''; offset=0; const version=++loadVersion;eventVersion++;
     byId('tabs').innerHTML=cameras.map(c=>'<button role="tab" aria-selected="'+(c.camera_id===id)+'" data-camera="'+esc(c.camera_id)+'">'+esc(c.area_name)+(c.enabled===0?' · Tắt':'')+'</button>').join('');
-    byId('history').innerHTML=''; byId('more').hidden=true;
-    if(publicPage)byId('update').disabled=!id||leaving;
-    if(!id){byId('latest').innerHTML='<div class="empty">Chưa có camera.</div>';return;}
+    if(publicPage){byId('update').disabled=!id||leaving;byId('area-title').textContent=cameras.find(c=>c.camera_id===id)?.area_name||'Kiểm kê kho';byId('tabs').hidden=cameras.length<2;byId('employee-photo').innerHTML='';}
+    else{byId('history').innerHTML='';byId('more').hidden=true;byId('edit').disabled=!id;}
+    byId('latest').innerHTML='<div class="empty">'+(id?'Đang tải…':'Chưa có camera.')+'</div>';
+    if(!id){status('');return;}
     status('Đang tải…');
-    try { const [rows] = await Promise.all([macro('warehouse-latest',{camera_id:id}),loadHistory(false,version)]);
-      if(version!==loadVersion)return; byId('latest').innerHTML=snapshot(rows[0]);status('');
+    try {
+      if(publicPage){const rows=await macro('warehouse-latest',{camera_id:id});if(version!==loadVersion)return;employeeSnapshot(rows[0]);}
+      else await loadHistory(false,version);
+      if(version===loadVersion)status('');
     } catch(e){if(version===loadVersion)status(e.message,true);}
   }
   async function loadHistory(append, version=loadVersion) {
     const rows=await macro('warehouse-history',{camera_id:selected,offset:append?offset:0});
     if(version!==loadVersion)return;
-    const html=rows.map(e=>'<tr data-event="'+esc(e.request_id)+'"><td>'+esc(date(e.captured_at||Number(e.requested_at)))+'</td><td><span class="badge">'+esc(labels[e.status]||e.status)+'</span></td><td class="number">'+esc(e.quantity??'—')+'</td><td class="number">'+esc(e.quantity==null?'—':delta(e.delta))+'</td></tr>').join('');
+    const html=rows.map(e=>'<tr tabindex="0" aria-selected="false" data-event="'+esc(e.request_id)+'"><td>'+esc(date(e.captured_at||Number(e.requested_at)))+'</td><td><span class="badge">'+esc(labels[e.status]||e.status)+'</span></td><td class="number">'+esc(e.quantity??'—')+'</td><td class="number">'+esc(e.quantity==null?'—':delta(e.delta))+'</td></tr>').join('');
     if(append)byId('history').insertAdjacentHTML('beforeend',html);else byId('history').innerHTML=html||'<tr><td colspan="4" class="empty">Chưa có lịch sử.</td></tr>';
     offset=(append?offset:0)+rows.length;byId('more').hidden=rows.length<30;
+    if(!append){if(rows[0])await showEvent(rows[0].request_id,version);else byId('latest').innerHTML='<div class="empty">Chưa có lần kiểm kê.</div>';}
   }
-  async function showEvent(id) {
-    try {const rows=await macro('warehouse-event',{camera_id:selected,request_id:id});if(!rows[0])return;
-      byId('detail-body').innerHTML='<p>'+esc(labels[rows[0].status]||rows[0].status)+'</p>'+snapshot(rows[0]);byId('detail').showModal();
-    }catch(e){status(e.message,true);}
+  async function showEvent(id, version=loadVersion) {
+    const detailVersion=++eventVersion;selectedEvent=id;
+    byId('history').querySelectorAll('[data-event]').forEach(tr=>tr.setAttribute('aria-selected',String(tr.dataset.event===id)));
+    byId('latest').innerHTML='<div class="empty">Đang tải ảnh…</div>';
+    try {const rows=await macro('warehouse-event',{camera_id:selected,request_id:id});if(version!==loadVersion||detailVersion!==eventVersion||selectedEvent!==id)return;
+      byId('latest').innerHTML=snapshot(rows[0]);
+    }catch(e){if(version===loadVersion&&detailVersion===eventVersion){byId('latest').innerHTML='<div class="empty">Không tải được lần kiểm kê này.</div>';status(e.message,true);}}
   }
   async function update() {
     if(leaving||!selected)return; byId('update').disabled=true;
@@ -98,12 +187,17 @@
       try {
         const productMap=Array.from(byId('map-rows').rows).map(tr=>Object.fromEntries(Array.from(tr.querySelectorAll('[data-map]')).map(n=>[n.dataset.map,n.value.trim()])));
         if(!productMap.length||new Set(productMap.map(m=>m.code)).size!==productMap.length||new Set(productMap.map(m=>m.sku)).size!==productMap.length)throw new Error('Mỗi sản phẩm cần một mã Vision và mã sản phẩm riêng.');
-        await macro('warehouse-camera-save',{camera_id:camera?.camera_id||crypto.randomUUID(),area_name:form.elements.area_name.value.trim(),api_key:form.elements.api_key.value.trim(),enabled:form.elements.enabled.checked?1:0,product_map:JSON.stringify(productMap)});
-        dialog.close();await load();
+        const cameraId=camera?.camera_id||crypto.randomUUID();
+        await macro('warehouse-camera-save',{camera_id:cameraId,area_name:form.elements.area_name.value.trim(),api_key:form.elements.api_key.value.trim(),enabled:form.elements.enabled.checked?1:0,product_map:JSON.stringify(productMap)});
+        selected=cameraId;dialog.close();await load();
       } catch(err) {byId('camera-error').textContent=err.message;} finally {submit.disabled=false;}
     };dialog.showModal();
   }
   if(publicPage) window.addEventListener('pageshow',e=>{if(e.persisted)location.replace('/iot-page');});
-  try{const theme=localStorage.getItem('sample-dashboard-theme');if(theme)document.documentElement.dataset.theme=theme;}catch{}
-  renderShell();load().catch(e=>status(e.message,true));
+  renderShell();
+  if(!publicPage){
+    try {var savedTheme=window.localStorage.getItem('sample-dashboard-theme');if(savedTheme)document.documentElement.setAttribute('data-theme',savedTheme);}catch{}
+    setTheme(document.documentElement.getAttribute('data-theme') || 'neumorphism');
+  }
+  load().catch(e=>status(e.message,true));
 })();
