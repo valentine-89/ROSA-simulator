@@ -4,6 +4,7 @@
   const contextNode = document.getElementById('inventory-page-context');
   const publicPage = Boolean(contextNode);
   const cfg = JSON.parse(document.getElementById(publicPage ? 'inventory-page-context' : 'inventory-config').textContent);
+  const pageMeta = publicPage ? JSON.parse(document.getElementById('inventory-page-meta').textContent) : null;
   const session = cfg.databaseSessionId || '';
   const ioid = publicPage ? cfg.ioid : session.split('@')[0];
   let cameras = [], selected = '', selectedEvent = '', offset = 0, loadVersion = 0, eventVersion = 0, leaving = false, requestId = '';
@@ -42,6 +43,7 @@
     return d;
   }
   async function macro(name, params = {}) {
+    if(publicPage) { params={...params}; delete params.camera_id; }
     if(!publicPage&&['warehouse-latest','warehouse-history','warehouse-event'].includes(name))name+='-admin';
     const url = publicPage ? '/api/iot-page-macro/'+encodeURIComponent(ioid)+'/'+encodeURIComponent(cfg.pageId)
       : '/api/'+encodeURIComponent(session)+'/'+encodeURIComponent(cfg.syncId)+'/data';
@@ -64,11 +66,8 @@
       byId('history').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){const tr=e.target.closest('[data-event]');if(tr){e.preventDefault();showEvent(tr.dataset.event);}}};
       byId('add').onclick=()=>editCamera(); byId('edit').onclick=()=>editCamera(cameras.find(c=>c.camera_id===selected));
       byId('refresh').onclick=()=>load().catch(e=>status(e.message,true));
-      byId('qr-link').href='/iot-page/'+encodeURIComponent(ioid)+'/warehouse';
       byId('qr-link').onclick=e=>{
-        e.preventDefault();const url=byId('qr-link').href;
-        byId('detail-body').innerHTML=window.BiomassQr.svg(url,260)+'<a class="button primary" href="'+esc(url)+'" target="_blank" rel="noopener">Mở trang nhân viên</a>';
-        byId('detail').showModal();
+        e.preventDefault();if(selected)showQr(selected);
       };
       root.insertAdjacentHTML('beforeend',themePickerHtml);
       themePickerToggle=byId('theme-picker-toggle');themePickerMenu=byId('theme-picker-menu');
@@ -120,7 +119,7 @@
   function snapshot(row) {
     if(!row)return '<div class="empty">Chưa có lần kiểm kê.</div>';
     const reason=row.error==='APP_IMAGE_SAVE_FAILED'?'Không lưu được ảnh.':row.error;
-    return '<div class="snapshot-meta"><time>'+esc(date(row.captured_at||Number(row.requested_at)))+'</time><span class="badge">'+esc(labels[row.status]||row.status||'Đã cập nhật')+'</span></div>'+photo(row)+(reason?'<p class="error">'+esc(reason)+'</p>':'')+'<div class="scroll"><table><thead><tr><th>Sản phẩm</th><th class="number">Tồn</th><th class="number">±</th></tr></thead><tbody>'+itemsOf(row).map(i=>'<tr><td>'+esc(i.name)+'<div class="muted">'+esc(i.sku)+'</div></td><td class="number">'+esc(i.quantity)+'</td><td class="number">'+esc(delta(i.delta))+'</td></tr>').join('')+'</tbody></table></div>';
+    return '<div class="snapshot-meta"><div><time>'+esc(date(row.captured_at||Number(row.requested_at)))+'</time><div class="staff-email">'+esc(row.actor||'')+'</div></div><span class="badge">'+esc(labels[row.status]||row.status||'Đã cập nhật')+'</span></div>'+photo(row)+(reason?'<p class="error">'+esc(reason)+'</p>':'')+'<div class="scroll"><table><thead><tr><th>Sản phẩm</th><th class="number">Tồn</th><th class="number">±</th></tr></thead><tbody>'+itemsOf(row).map(i=>'<tr><td>'+esc(i.name)+'<div class="muted">'+esc(i.sku)+'</div></td><td class="number">'+esc(i.quantity)+'</td><td class="number">'+esc(delta(i.delta))+'</td></tr>').join('')+'</tbody></table></div>';
   }
   function employeeSnapshot(row) {
     byId('latest').innerHTML=row?'<div class="employee-items">'+itemsOf(row).map(i=>'<div class="employee-item"><span>'+esc(i.name)+'</span><strong>'+esc(i.quantity)+'</strong></div>').join('')+'</div><p class="updated-time">'+esc(date(row.captured_at))+'</p>':'<div class="empty">Chưa có số lượng kiểm kê.</div>';
@@ -131,7 +130,7 @@
     byId('stock').innerHTML=rows.length?'<table><thead><tr><th>Sản phẩm</th><th class="number">Số lượng</th></tr></thead><tbody>'+rows.map(i=>'<tr><td>'+esc(i.name)+'<div class="muted">'+esc(i.sku)+'</div></td><td class="number"><strong class="stock-quantity">'+esc(i.quantity??'—')+'</strong>'+(i.counted_areas<i.areas?'<div class="muted">'+esc(i.counted_areas)+'/'+esc(i.areas)+' khu vực</div>':'')+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">Chưa có sản phẩm.</div>';
   }
   async function load() {
-    cameras=await macro(publicPage?'warehouse-cameras':'warehouse-cameras-admin');
+    cameras=await macro(publicPage?'warehouse-camera':'warehouse-cameras-admin');
     selected=cameras.some(c=>c.camera_id===selected)?selected:(cameras[0]?.camera_id||'');
     if(!publicPage) byId('edit').disabled=!selected;
     await Promise.all([select(selected),...(!publicPage?[loadStock()]:[])]);
@@ -140,7 +139,7 @@
     selected=id; selectedEvent=''; requestId=''; offset=0; const version=++loadVersion;eventVersion++;
     byId('tabs').innerHTML=cameras.map(c=>'<button role="tab" aria-selected="'+(c.camera_id===id)+'" data-camera="'+esc(c.camera_id)+'">'+esc(c.area_name)+(c.enabled===0?' · Tắt':'')+'</button>').join('');
     if(publicPage){byId('update').disabled=!id||leaving;byId('area-title').textContent=cameras.find(c=>c.camera_id===id)?.area_name||'Kiểm kê kho';byId('tabs').hidden=cameras.length<2;byId('employee-photo').innerHTML='';}
-    else{byId('history').innerHTML='';byId('more').hidden=true;byId('edit').disabled=!id;}
+    else{byId('history').innerHTML='';byId('more').hidden=true;byId('edit').disabled=!id;byId('qr-link').hidden=!id;byId('qr-link').href=id?cameraUrl(id):'#';}
     byId('latest').innerHTML='<div class="empty">'+(id?'Đang tải…':'Chưa có camera.')+'</div>';
     if(!id){status('');return;}
     status('Đang tải…');
@@ -153,7 +152,7 @@
   async function loadHistory(append, version=loadVersion) {
     const rows=await macro('warehouse-history',{camera_id:selected,offset:append?offset:0});
     if(version!==loadVersion)return;
-    const html=rows.map(e=>'<tr tabindex="0" aria-selected="false" data-event="'+esc(e.request_id)+'"><td>'+esc(date(e.captured_at||Number(e.requested_at)))+'</td><td><span class="badge">'+esc(labels[e.status]||e.status)+'</span></td><td class="number">'+esc(e.quantity??'—')+'</td><td class="number">'+esc(e.quantity==null?'—':delta(e.delta))+'</td></tr>').join('');
+    const html=rows.map(e=>'<tr tabindex="0" aria-selected="false" data-event="'+esc(e.request_id)+'"><td>'+esc(date(e.captured_at||Number(e.requested_at)))+'<div class="staff-email muted">'+esc(e.actor||'')+'</div></td><td><span class="badge">'+esc(labels[e.status]||e.status)+'</span></td><td class="number">'+esc(e.quantity??'—')+'</td><td class="number">'+esc(e.quantity==null?'—':delta(e.delta))+'</td></tr>').join('');
     if(append)byId('history').insertAdjacentHTML('beforeend',html);else byId('history').innerHTML=html||'<tr><td colspan="4" class="empty">Chưa có lịch sử.</td></tr>';
     offset=(append?offset:0)+rows.length;byId('more').hidden=rows.length<30;
     if(!append){if(rows[0])await showEvent(rows[0].request_id,version);else byId('latest').innerHTML='<div class="empty">Chưa có lần kiểm kê.</div>';}
@@ -170,16 +169,39 @@
     if(leaving||!selected)return; byId('update').disabled=true;
     requestId=requestId||crypto.randomUUID(); status('Đang gửi yêu cầu…');
     try {
-      const d=await jsonRequest('/api/iot-cmd/'+encodeURIComponent(ioid)+'/warehouse-count?pageId='+encodeURIComponent(cfg.pageId),{camera_id:selected,request_id:requestId});
+      const d=await jsonRequest('/api/iot-cmd/'+encodeURIComponent(ioid)+'/'+encodeURIComponent(pageMeta.publicApi.allowedCommands[0])+'?pageId='+encodeURIComponent(cfg.pageId),{camera_id:selected,request_id:requestId});
       leaving=true; root.innerHTML='<div class="notice" role="status">'+esc(d.message||'Đã nhận yêu cầu. Vui lòng quét lại QR sau để xem kết quả.')+'</div>';
       setTimeout(()=>{window.close();location.replace('/iot-page');},1800);
     }catch(e){status(e.message,true);byId('update').disabled=false;}
+  }
+  function cameraUrl(id) {return new URL('/iot-page/'+encodeURIComponent(ioid)+'/warehouse-'+encodeURIComponent(id),location.origin).href;}
+  async function copyQr(id,button) {
+    const url=cameraUrl(id);
+    try {
+      try {await navigator.clipboard.writeText(url);} catch (_) {
+        const input=document.createElement('textarea');input.value=url;button.parentElement.appendChild(input);input.select();
+        const copied=document.execCommand('copy');input.remove();if(!copied)throw Error('copy');
+      }
+      button.textContent='Đã sao chép';
+    } catch (_) {button.textContent='Không thể sao chép';}
+  }
+  function showQr(id) {
+    const url=cameraUrl(id);
+    byId('detail').querySelector('h2').textContent=cameras.find(c=>c.camera_id===id)?.area_name||'Trang nhân viên';
+    byId('detail-body').innerHTML=window.BiomassQr.svg(url,260)+'<a class="button primary" href="'+esc(url)+'" target="_blank" rel="noopener">Mở trang nhân viên</a><button id="copy-qr">Sao chép link QR</button>';
+    byId('copy-qr').onclick=e=>copyQr(id,e.currentTarget);
+    byId('detail').showModal();
   }
   function editCamera(camera) {
     let dialog=byId('camera-editor');if(dialog)dialog.remove();
     dialog=document.createElement('dialog');dialog.id='camera-editor';
     dialog.innerHTML='<form id="camera-form"><div class="toolbar"><h2>'+(camera?'Cài đặt camera':'Thêm camera')+'</h2><button type="button" id="cancel-camera">Đóng</button></div><div class="fields"><label>Khu vực<input name="area_name" required maxlength="120" value="'+esc(camera?.area_name||'')+'"></label><label>API key<input name="api_key" type="password" autocomplete="new-password" maxlength="512" '+(camera?'placeholder="Để trống để giữ nguyên"':'required')+'></label></div><h2>Sản phẩm</h2><table class="map"><thead><tr><th>Mã Vision</th><th>Mã sản phẩm</th><th>Tên sản phẩm</th><th></th></tr></thead><tbody id="map-rows"></tbody></table><div class="toolbar"><button type="button" id="add-map">+ Sản phẩm</button><label class="check"><input name="enabled" type="checkbox" '+(camera?.enabled===0?'':'checked')+'>Hoạt động</label></div><div id="camera-error" role="alert"></div><div class="actions"><button class="primary" type="submit">Lưu camera</button></div></form>';
     root.appendChild(dialog);
+    if(camera){
+      byId('camera-form').querySelector('.fields').insertAdjacentHTML('beforebegin','<div class="camera-qr-actions"><button type="button" id="camera-qr">Xem QR</button><a class="button" href="'+esc(cameraUrl(camera.camera_id))+'" target="_blank" rel="noopener">Mở trang nhân viên</a><button type="button" id="camera-copy-qr">Sao chép link QR</button></div>');
+      byId('camera-qr').onclick=()=>showQr(camera.camera_id);
+      byId('camera-copy-qr').onclick=e=>copyQr(camera.camera_id,e.currentTarget);
+    }
     function addMap(m={}) {byId('map-rows').insertAdjacentHTML('beforeend','<tr><td><input data-map="code" aria-label="Mã Vision" required maxlength="160" placeholder="type1" value="'+esc(m.code||'')+'"></td><td><input data-map="sku" aria-label="Mã sản phẩm" required maxlength="96" placeholder="SP01" value="'+esc(m.sku||'')+'"></td><td><input data-map="name" aria-label="Tên sản phẩm" required maxlength="160" value="'+esc(m.name||'')+'"></td><td><button type="button" data-remove aria-label="Xóa sản phẩm">×</button></td></tr>');}
     let mapping=[];try{mapping=JSON.parse(camera?.product_map||'[]');}catch{};(mapping.length?mapping:[{}]).forEach(addMap);
     byId('add-map').onclick=()=>addMap();byId('cancel-camera').onclick=()=>dialog.close();

@@ -2,6 +2,29 @@ const fs = require('node:fs');
 const path = require('node:path');
 const Database = require('better-sqlite3');
 
+// Reuse the IoT page/command tables. The disabled base page supplies the HTML.
+// This fragment is also used by the upgrade without editing camera revisions.
+const cameraPageStatements = [
+  `INSERT INTO system_pages(page_id,html,require_email,require_phone,sync_id,enabled,title,meta)
+    SELECT 'warehouse-'||c.camera_id,p.html,1,0,c.sync_id,c.enabled,c.area_name,
+      json_object('hideLink',json('true'),'publicApi',json_object('stream',json('false'),
+        'context',json_object('camera_id',c.camera_id),
+        'commandTarget',json_object('type','ai-count','cameraParam','camera_id'),
+        'allowedCommands',json_array('warehouse-count-'||c.camera_id),
+        'macros',json_object('warehouse-camera',json('{}'),'warehouse-latest',json('{}'))))
+    FROM system_ai_cameras c JOIN system_pages p ON p.page_id='warehouse'
+    WHERE c.camera_id=:camera_id AND c.sync_id=:sync_id
+    ON CONFLICT(page_id) DO UPDATE SET html=excluded.html,require_email=1,require_phone=0,
+      sync_id=excluded.sync_id,enabled=excluded.enabled,title=excluded.title,meta=excluded.meta;`,
+  `INSERT INTO system_cmds(cmd_id,command_template,require_email,require_phone,sync_id,enabled,page_only,params_schema)
+    SELECT 'warehouse-count-'||camera_id,'ai-count',1,0,sync_id,enabled,1,
+      json_object('camera_id',json_object('type','string','required',json('true'),'enum',json_array(camera_id)),
+        'request_id',json_object('type','string','required',json('true'),'maxLength',36,'pattern','^[0-9a-fA-F-]{36}$'))
+    FROM system_ai_cameras WHERE camera_id=:camera_id AND sync_id=:sync_id
+    ON CONFLICT(cmd_id) DO UPDATE SET command_template=excluded.command_template,require_email=1,require_phone=0,
+      sync_id=excluded.sync_id,enabled=excluded.enabled,page_only=1,params_schema=excluded.params_schema;`
+];
+
 function build(file = path.join(__dirname, 'sample.sqlite')) {
   if (fs.existsSync(file)) fs.unlinkSync(file);
   const db = new Database(file);
@@ -37,9 +60,11 @@ function build(file = path.join(__dirname, 'sample.sqlite')) {
       ON CONFLICT(camera_id) DO UPDATE SET area_name=excluded.area_name,api_key=CASE WHEN excluded.api_key='' THEN api_key ELSE excluded.api_key END,
       enabled=excluded.enabled,product_map=excluded.product_map,revision=revision+1;
     DROP TABLE _camera_guard;
+    ${cameraPageStatements.join('\n')}
     SELECT camera_id,area_name FROM system_ai_cameras WHERE camera_id=:camera_id AND sync_id=:sync_id;
   `);
   macro('warehouse-cameras', `SELECT camera_id,area_name FROM system_ai_cameras WHERE sync_id=:sync_id AND enabled=1 ORDER BY rowid;`);
+  macro('warehouse-camera', `SELECT camera_id,area_name FROM system_ai_cameras WHERE sync_id=:sync_id AND enabled=1 AND camera_id=:camera_id;`);
   macro('warehouse-stock', `WITH areas AS (
     SELECT c.camera_id,c.product_map,(SELECT e.request_id FROM warehouse_events e
       WHERE e.camera_id=c.camera_id AND e.status='applied' AND e.revision=c.revision
@@ -61,7 +86,7 @@ function build(file = path.join(__dirname, 'sample.sqlite')) {
     FROM warehouse_events e JOIN system_ai_cameras c ON c.camera_id=e.camera_id
     WHERE c.sync_id=:sync_id AND c.enabled=1 AND e.camera_id=:camera_id
     ORDER BY e.requested_at DESC LIMIT 30 OFFSET max(0,CAST(COALESCE(:offset,0) AS INTEGER));`);
-  macro('warehouse-event', `SELECT e.request_id,e.captured_at,e.image_url,e.status,e.error,
+  macro('warehouse-event', `SELECT e.request_id,e.captured_at,e.image_url,e.status,e.error,e.actor,
     (SELECT json_group_array(json_object('sku',i.sku,'name',i.name,'quantity',i.quantity,'delta',i.delta)) FROM warehouse_items i WHERE i.request_id=e.request_id) AS items
     FROM warehouse_events e JOIN system_ai_cameras c ON c.camera_id=e.camera_id
     WHERE c.sync_id=:sync_id AND c.enabled=1 AND e.camera_id=:camera_id AND e.request_id=:request_id;`);
@@ -100,8 +125,10 @@ function build(file = path.join(__dirname, 'sample.sqlite')) {
     } } };
   db.prepare('INSERT INTO system_pages(page_id,html,sync_id,title,meta) VALUES (?,?,?,?,?)').run('warehouse', fs.readFileSync(path.join(__dirname, 'warehouse_page.html'),'utf8'), '<<syncid>>', 'Kho AI', JSON.stringify(meta));
   db.prepare('INSERT INTO system_cmds(cmd_id,command_template,sync_id,params_schema) VALUES (?,?,?,?)').run('warehouse-count','ai-count','<<syncid>>',JSON.stringify({camera_id:cameraParam,request_id:{type:'string',required:true,maxLength:36,pattern:'^[0-9a-fA-F-]{36}$'}}));
+  db.prepare("UPDATE system_pages SET enabled=0 WHERE page_id='warehouse'").run();
+  db.prepare("UPDATE system_cmds SET enabled=0 WHERE cmd_id='warehouse-count'").run();
   if(db.pragma('integrity_check',{simple:true})!=='ok') throw new Error('Invalid sample database');
   db.close();
 }
 if (require.main === module) build(process.argv[2]);
-module.exports = { build };
+module.exports = { build, cameraPageStatements };
