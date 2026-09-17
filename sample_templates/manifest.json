@@ -3586,7 +3586,7 @@
       },
       "id": "ai-inventory-basic",
       "sampleDatabase": "/sample_dashboards/ai-inventory-basic/sample.sqlite",
-      "description": "Kiểm kê toàn bộ tồn bằng SightCount Vision. Nhiều camera theo khu vực, ánh xạ mã AI sang sản phẩm, ảnh và lịch sử riêng. Nhân viên đăng nhập ROSA, quét QR và bấm Cập nhật; quét lại sau để xem kết quả. Chi phí tính vào tài khoản ROSA của kho.",
+      "description": "Quản lý kho bằng SightCount Vision với hai phiên bản: Kho AI cơ bản và Kho AI kèm IoT. Dùng chung dashboard, nhiều camera theo khu vực, QR nhân viên, ánh xạ sản phẩm, ảnh và lịch sử kiểm kê. Giữ tồn hợp lệ gần nhất khi đếm lỗi.",
       "image": "/sample_dashboards/ai-inventory-basic/sample-ai.png",
       "tags": [
         "inventory",
@@ -3621,7 +3621,57 @@
           "html": "/sample_dashboards/ai-inventory-basic/dashboard_vi.html",
           "setup": {
             "page": "/sample_dashboards/ai-inventory-basic/setup_vi.html"
-          }
+          },
+          "sampleDatabase": "/sample_dashboards/ai-inventory-basic/sample.sqlite"
+        },
+        "ai-iot-vi": {
+          "name": "Quản lý kho",
+          "label": "Kho AI kèm IoT",
+          "language": "vi",
+          "description": "Dùng chung giao diện kho AI. Nhân viên bấm Cập nhật để gửi N20,\"email\" xuống IO. IO hoặc cảm biến tự gọi ai-count, đọc kết quả và báo vào macro warehouse-io-result. Mỗi camera có QR, chương trình IO và lịch sử riêng. Giữ tồn hợp lệ gần nhất khi đếm lỗi.",
+          "html": "/sample_dashboards/ai-inventory-basic/dashboard_iot_vi.html",
+          "setup": {
+            "page": "/sample_dashboards/ai-inventory-basic/setup_vi.html"
+          },
+          "sampleDatabase": "/sample_dashboards/ai-inventory-basic/sample-iot.sqlite",
+          "default-fields": [],
+          "macro-examples": [
+            {
+              "label": "Danh sách camera",
+              "payload": {
+                "macro": "warehouse-cameras"
+              }
+            },
+            {
+              "label": "Lịch sử khu vực",
+              "payload": {
+                "macro": "warehouse-history",
+                "camera_id": "CAMERA_ID",
+                "offset": 0
+              }
+            },
+            {
+              "label": "IO báo kết quả đếm (phiên bản kèm IoT)",
+              "payload": {
+                "macro": "warehouse-io-result",
+                "c1": {
+                  "request_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                  "camera_id": "CAMERA_ID",
+                  "status": "succeeded",
+                  "items": [
+                    {
+                      "code": "type1",
+                      "quantity": 12
+                    }
+                  ],
+                  "image_url": "https://vision.ioeasy.com/count-images/example.jpg",
+                  "captured_at": "2026-09-17T12:00:00Z",
+                  "cost": 0.01
+                },
+                "c2": "staff@example.com"
+              }
+            }
+          ]
         }
       }
     }

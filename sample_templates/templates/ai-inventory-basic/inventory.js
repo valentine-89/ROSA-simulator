@@ -5,6 +5,7 @@
   const publicPage = Boolean(contextNode);
   const cfg = JSON.parse(document.getElementById(publicPage ? 'inventory-page-context' : 'inventory-config').textContent);
   const pageMeta = publicPage ? JSON.parse(document.getElementById('inventory-page-meta').textContent) : null;
+  const iotMode = (publicPage ? pageMeta.publicApi.warehouseMode : cfg.warehouseMode) === 'iot';
   const session = cfg.databaseSessionId || '';
   const ioid = publicPage ? cfg.ioid : session.split('@')[0];
   let cameras = [], selected = '', selectedEvent = '', offset = 0, loadVersion = 0, eventVersion = 0, leaving = false, requestId = '';
@@ -128,7 +129,7 @@
   }
   async function loadStock() {
     const rows=await macro('warehouse-stock');
-    byId('stock').innerHTML=rows.length?'<table><thead><tr><th>Sản phẩm</th><th class="number">Số lượng</th></tr></thead><tbody>'+rows.map(i=>'<tr><td>'+esc(i.name)+'<div class="muted">'+esc(i.sku)+'</div></td><td class="number"><strong class="stock-quantity">'+esc(i.quantity??'—')+'</strong>'+(i.counted_areas<i.areas?'<div class="muted">'+esc(i.counted_areas)+'/'+esc(i.areas)+' khu vực</div>':'')+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">Chưa có sản phẩm.</div>';
+    byId('stock').innerHTML=rows.length?'<table><thead><tr><th>Sản phẩm</th><th class="number">Số lượng</th></tr></thead><tbody>'+rows.map(i=>'<tr><td><strong class="stock-name">'+esc(i.name)+'</strong><div class="muted">'+esc(i.sku)+'</div></td><td class="number"><strong class="stock-quantity">'+esc(i.quantity??'—')+'</strong>'+(i.counted_areas<i.areas?'<div class="muted">'+esc(i.counted_areas)+'/'+esc(i.areas)+' khu vực</div>':'')+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">Chưa có sản phẩm.</div>';
   }
   async function load() {
     cameras=await macro(publicPage?'warehouse-camera':'warehouse-cameras-admin');
@@ -191,6 +192,7 @@
     const qr=camera?'<div class="camera-qr"><a id="camera-qr-link" href="'+esc(cameraUrl(camera.camera_id))+'" target="_blank" rel="noopener" aria-label="Mở trang nhân viên '+esc(camera.area_name)+'" title="Mở trang nhân viên">'+window.BiomassQr.svg(cameraUrl(camera.camera_id),160)+'</a><button type="button" id="camera-copy-qr" class="icon-button" aria-label="Sao chép link QR" title="Sao chép link QR">'+copyIcon+'</button></div>':'';
     dialog.innerHTML='<form id="camera-form"><div class="panel-heading"><h2>'+(camera?'Cài đặt camera':'Thêm camera')+'</h2><button type="button" id="cancel-camera" class="icon-button" aria-label="Đóng">×</button></div><div class="camera-overview'+(camera?' has-qr':'')+'"><div class="fields"><label>Khu vực<input name="area_name" required maxlength="120" value="'+esc(camera?.area_name||'')+'"></label><label>API key<input name="api_key" type="password" autocomplete="new-password" maxlength="512" '+(camera?'placeholder="Để trống để giữ nguyên"':'required')+'></label></div>'+qr+'</div><div class="panel-heading"><h2>Sản phẩm</h2><button type="button" id="add-map">+ Sản phẩm</button></div><table class="map"><thead><tr><th>Mã Vision</th><th>Mã sản phẩm</th><th>Tên sản phẩm</th><th></th></tr></thead><tbody id="map-rows"></tbody></table><div id="camera-error" role="alert"></div><div class="camera-footer"><label class="check"><input name="enabled" type="checkbox" '+(camera?.enabled===0?'':'checked')+'>Hoạt động</label><button class="primary" type="submit">Lưu camera</button></div></form>';
     root.appendChild(dialog);
+    if(iotMode) dialog.querySelector('.fields').insertAdjacentHTML('beforeend','<label>Chương trình IO<input name="io_command" required pattern="N[0-9]{1,4}" maxlength="5" value="'+esc(camera?.io_command||'N20')+'"></label>');
     if(camera){
       byId('camera-copy-qr').onclick=e=>copyQr(camera.camera_id,e.currentTarget);
     }
@@ -204,7 +206,7 @@
         const productMap=Array.from(byId('map-rows').rows).map(tr=>Object.fromEntries(Array.from(tr.querySelectorAll('[data-map]')).map(n=>[n.dataset.map,n.value.trim()])));
         if(!productMap.length||new Set(productMap.map(m=>m.code)).size!==productMap.length||new Set(productMap.map(m=>m.sku)).size!==productMap.length)throw new Error('Mỗi sản phẩm cần một mã Vision và mã sản phẩm riêng.');
         const cameraId=camera?.camera_id||crypto.randomUUID();
-        await macro('warehouse-camera-save',{camera_id:cameraId,area_name:form.elements.area_name.value.trim(),api_key:form.elements.api_key.value.trim(),enabled:form.elements.enabled.checked?1:0,product_map:JSON.stringify(productMap)});
+        await macro('warehouse-camera-save',{camera_id:cameraId,area_name:form.elements.area_name.value.trim(),api_key:form.elements.api_key.value.trim(),enabled:form.elements.enabled.checked?1:0,product_map:JSON.stringify(productMap),...(iotMode?{io_command:form.elements.io_command.value.trim()}: {})});
         selected=cameraId;dialog.close();await load();
       } catch(err) {byId('camera-error').textContent=err.message;} finally {submit.disabled=false;}
     };dialog.showModal();
