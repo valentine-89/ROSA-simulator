@@ -49,6 +49,7 @@ function build(file = path.join(__dirname, 'sample.sqlite'), mode = 'basic') {
   `);
   const macro = (name, source) => db.prepare('INSERT INTO system_macros(name,source) VALUES (?,?)').run(name, source.trim());
   macro('warehouse-cameras-admin', `SELECT camera_id,area_name,enabled,revision,product_map,${iot ? 'io_command,' : ''}CASE WHEN api_key<>'' THEN 1 ELSE 0 END AS has_key FROM system_ai_cameras WHERE sync_id=:sync_id ORDER BY rowid;`);
+  macro('warehouse-camera-config', `SELECT api_key FROM system_ai_cameras WHERE camera_id=:camera_id AND sync_id=:sync_id;`);
   macro('warehouse-camera-save', `
     DROP TABLE IF EXISTS temp._camera_guard;
     CREATE TEMP TABLE _camera_guard(valid INTEGER NOT NULL CHECK(valid=1));

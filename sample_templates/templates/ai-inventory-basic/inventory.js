@@ -64,13 +64,12 @@
       root.innerHTML='<header><span class="eyebrow">KIỂM KÊ KHO</span><h1 id="area-title">Kiểm kê kho</h1></header>'+tabs+'<div id="status" role="status"></div><section id="latest"><div class="empty">Đang tải…</div></section><div class="update-action"><button id="update" class="primary" disabled>Cập nhật</button></div><section id="employee-photo"></section>';
       byId('update').onclick=update;
     } else {
-      root.innerHTML='<header class="admin-header"><div><h1>'+esc(title)+'</h1></div><div class="toolbar"><button id="add">+ Camera</button><button id="refresh" aria-label="Tải lại">↻ Tải lại</button></div></header><div id="status" role="status"></div><div class="warehouse-grid"><section class="panel history-panel"><div class="history-heading"><h2>Camera & lịch sử</h2><div class="history-tools"><label class="check"><input id="hide-errors" type="checkbox">Ẩn lỗi</label><nav class="history-pager" aria-label="Phân trang lịch sử"><button id="history-prev" type="button" aria-label="Trang trước" title="Trang trước" disabled>‹</button><span id="history-page" aria-label="Trang 1" aria-live="polite">1</span><button id="history-next" type="button" aria-label="Trang sau" title="Trang sau" disabled>›</button></nav></div></div>'+tabs+'<div class="scroll history-scroll"><table><thead><tr><th>Thời điểm</th><th>SĐT</th><th>Trạng thái</th><th class="number">Tổng</th><th class="number">±</th></tr></thead><tbody id="history"></tbody></table></div></section><section class="panel image-panel" aria-label="Ảnh và sản phẩm kiểm kê"><div id="latest"><div class="empty">Chọn lần kiểm kê để xem ảnh.</div></div></section><section class="panel stock-panel"><h2>Tổng tồn kho</h2><div id="stock"><div class="empty">Đang tải…</div></div></section></div>';
+      root.innerHTML='<div id="status" role="status"></div><div class="warehouse-grid"><section class="panel history-panel"><div class="history-heading"><div class="history-title"><h2>Camera & lịch sử</h2><button id="refresh" class="icon-button" aria-label="Tải lại" title="Tải lại">↻</button></div><div class="history-tools"><label class="check"><input id="hide-errors" type="checkbox">Ẩn lỗi</label><nav class="history-pager" aria-label="Phân trang lịch sử"><button id="history-prev" type="button" aria-label="Trang trước" title="Trang trước" disabled>‹</button><span id="history-page" aria-label="Trang 1" aria-live="polite">1</span><button id="history-next" type="button" aria-label="Trang sau" title="Trang sau" disabled>›</button></nav></div></div>'+tabs+'<div class="scroll history-scroll"><table><thead><tr><th>Thời điểm</th><th>SĐT</th><th>Trạng thái</th><th class="number">Tổng</th><th class="number">±</th></tr></thead><tbody id="history"></tbody></table></div><div id="camera-editor" role="tabpanel" aria-label="Cài đặt camera" hidden></div></section><section class="panel image-panel" aria-label="Ảnh và sản phẩm kiểm kê"><div id="latest"><div class="empty">Chọn lần kiểm kê để xem ảnh.</div></div></section><section class="panel stock-panel"><h2>Tổng tồn kho</h2><div id="stock"><div class="empty">Đang tải…</div></div></section></div>';
       byId('hide-errors').onchange=()=>select(selected);
       byId('history-prev').onclick=()=>changeHistoryPage(-1);
       byId('history-next').onclick=()=>changeHistoryPage(1);
       byId('history').onclick=e=>{const tr=e.target.closest('[data-event]');if(tr)showEvent(tr.dataset.event);};
       byId('history').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){const tr=e.target.closest('[data-event]');if(tr){e.preventDefault();showEvent(tr.dataset.event);}}};
-      byId('add').onclick=()=>editCamera();
       byId('refresh').onclick=()=>load().catch(e=>status(e.message,true));
       root.insertAdjacentHTML('beforeend',themePickerHtml);
       themePickerToggle=byId('theme-picker-toggle');themePickerMenu=byId('theme-picker-menu');
@@ -93,6 +92,7 @@
 
     }
     byId('tabs').onclick=e=>{
+      if(!publicPage&&e.target.closest('[data-add-camera]')){editCamera();return;}
       const edit=e.target.closest('[data-edit-camera]');
       if(edit&&!publicPage){editCamera(cameras.find(c=>c.camera_id===edit.dataset.editCamera));return;}
       const b=e.target.closest('[data-camera]');if(b&&!leaving)select(b.dataset.camera);
@@ -140,9 +140,19 @@
     selected=cameras.some(c=>c.camera_id===selected)?selected:(cameras[0]?.camera_id||'');
     await Promise.all([select(selected),...(!publicPage?[loadStock()]:[])]);
   }
+  function revealCameraTab() {
+    const tabs=byId('tabs'),button=tabs.querySelector('[aria-selected=true]');if(!button)return;
+    const tab=button.closest('.camera-tab')||button,box=tab.getBoundingClientRect(),view=tabs.getBoundingClientRect();
+    if(box.right>view.right)tabs.scrollLeft+=box.right-view.right;else if(box.left<view.left)tabs.scrollLeft-=view.left-box.left;
+  }
+  function renderCameraTabs(id) {
+    byId('tabs').innerHTML=cameras.map(c=>'<span class="camera-tab'+(c.camera_id===id?' is-selected':'')+'" role="presentation"><button role="tab" aria-selected="'+(c.camera_id===id)+'" data-camera="'+esc(c.camera_id)+'">'+esc(c.area_name)+(c.enabled===0?' · Tắt':'')+'</button>'+(!publicPage?'<button type="button" class="camera-settings icon-button" data-edit-camera="'+esc(c.camera_id)+'" aria-label="Cài đặt camera '+esc(c.area_name)+'" title="Cài đặt camera">'+settingsIcon+'</button>':'')+'</span>').join('')+(!publicPage?'<button type="button" role="tab" class="add-camera-tab" data-add-camera aria-label="Thêm camera" title="Thêm camera" aria-selected="'+(id==='__new__')+'">+</button>':'');
+    if(!publicPage)revealCameraTab();
+  }
   async function select(id) {
     selected=id; selectedEvent=''; requestId=''; offset=0; const version=++loadVersion;eventVersion++;
-    byId('tabs').innerHTML=cameras.map(c=>'<span class="camera-tab'+(c.camera_id===id?' is-selected':'')+'" role="presentation"><button role="tab" aria-selected="'+(c.camera_id===id)+'" data-camera="'+esc(c.camera_id)+'">'+esc(c.area_name)+(c.enabled===0?' · Tắt':'')+'</button>'+(!publicPage?'<button type="button" class="camera-settings icon-button" data-edit-camera="'+esc(c.camera_id)+'" aria-label="Cài đặt camera '+esc(c.area_name)+'" title="Cài đặt camera">'+settingsIcon+'</button>':'')+'</span>').join('');
+    if(!publicPage)closeCameraEditor();
+    renderCameraTabs(id);
     if(publicPage){byId('update').disabled=!id||leaving;byId('area-title').textContent=cameras.find(c=>c.camera_id===id)?.area_name||'Kiểm kê kho';byId('tabs').hidden=cameras.length<2;byId('employee-photo').innerHTML='';}
     else{byId('history').innerHTML='';hasNextPage=false;renderHistoryPager(Boolean(id));}
     byId('latest').innerHTML='<div class="empty">'+(id?'Đang tải…':'Chưa có camera.')+'</div>';
@@ -211,19 +221,28 @@
       button.innerHTML='✓';button.title='Đã sao chép';button.setAttribute('aria-label','Đã sao chép');
     } catch (_) {button.title='Không thể sao chép';button.setAttribute('aria-label','Không thể sao chép');}
   }
+  function closeCameraEditor() {
+    const editor=byId('camera-editor');editor.hidden=true;editor.innerHTML='';
+    document.querySelector('.history-scroll').hidden=false;
+    document.querySelector('.history-tools').hidden=false;
+  }
   function editCamera(camera) {
-    let dialog=byId('camera-editor');if(dialog)dialog.remove();
-    dialog=document.createElement('dialog');dialog.id='camera-editor';
+    if(camera&&camera.camera_id!==selected)select(camera.camera_id);
+    const editor=byId('camera-editor');
+    renderCameraTabs(camera?camera.camera_id:'__new__');
+    editor.hidden=false;
+    document.querySelector('.history-scroll').hidden=true;
+    document.querySelector('.history-tools').hidden=true;
     const qr=camera?'<div class="camera-qr"><a id="camera-qr-link" href="'+esc(cameraUrl(camera.camera_id))+'" target="_blank" rel="noopener" aria-label="Mở trang nhân viên '+esc(camera.area_name)+'" title="Mở trang nhân viên">'+window.BiomassQr.svg(cameraUrl(camera.camera_id),160)+'</a><button type="button" id="camera-copy-qr" class="icon-button" aria-label="Sao chép link QR" title="Sao chép link QR">'+copyIcon+'</button></div>':'';
-    dialog.innerHTML='<form id="camera-form"><div class="panel-heading"><h2>'+(camera?'Cài đặt camera':'Thêm camera')+'</h2><button type="button" id="cancel-camera" class="icon-button" aria-label="Đóng">×</button></div><div class="camera-overview'+(camera?' has-qr':'')+'"><div class="fields"><label>Khu vực<input name="area_name" required maxlength="120" value="'+esc(camera?.area_name||'')+'"></label><label>API key<input name="api_key" type="password" autocomplete="new-password" maxlength="512" '+(camera?'placeholder="Để trống để giữ nguyên"':'required')+'></label></div>'+qr+'</div><div class="panel-heading"><h2>Sản phẩm</h2><button type="button" id="add-map">+ Sản phẩm</button></div><table class="map"><thead><tr><th>Mã Vision</th><th>Mã sản phẩm</th><th>Tên sản phẩm</th><th></th></tr></thead><tbody id="map-rows"></tbody></table><div id="camera-error" role="alert"></div><div class="camera-footer"><label class="check"><input name="enabled" type="checkbox" '+(camera?.enabled===0?'':'checked')+'>Hoạt động</label><button class="primary" type="submit">Lưu camera</button></div></form>';
-    root.appendChild(dialog);
-    if(iotMode) dialog.querySelector('.fields').insertAdjacentHTML('beforeend','<label>Chương trình IO<input name="io_command" required pattern="N[0-9]{1,4}" maxlength="5" value="'+esc(camera?.io_command||'N20')+'"></label>');
+    editor.innerHTML='<form id="camera-form"><div class="panel-heading"><h2>'+(camera?'Cài đặt camera':'Thêm camera')+'</h2><div class="editor-actions"><a id="camera-config" class="button" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">Config ↗</a><button type="button" id="cancel-camera" class="icon-button" aria-label="Đóng">×</button></div></div><div class="camera-overview'+(camera?' has-qr':'')+'"><div class="fields"><label>Khu vực<input name="area_name" required maxlength="120" value="'+esc(camera?.area_name||'')+'"></label><label>API key<input name="api_key" type="password" autocomplete="new-password" maxlength="512" '+(camera?'placeholder="Để trống để giữ nguyên"':'required')+'></label></div>'+qr+'</div><div class="panel-heading"><h2>Sản phẩm</h2><button type="button" id="add-map">+ Sản phẩm</button></div><table class="map"><thead><tr><th>Mã Vision</th><th>Mã sản phẩm</th><th>Tên sản phẩm</th><th></th></tr></thead><tbody id="map-rows"></tbody></table><div id="camera-error" role="alert"></div><div class="camera-footer"><label class="check"><input name="enabled" type="checkbox" '+(camera?.enabled===0?'':'checked')+'>Hoạt động</label><button class="primary" type="submit">Lưu camera</button></div></form>';
+
+    if(iotMode) editor.querySelector('.fields').insertAdjacentHTML('beforeend','<label>Chương trình IO<input name="io_command" required pattern="N[0-9]{1,4}" maxlength="5" value="'+esc(camera?.io_command||'N20')+'"></label>');
     if(camera){
       byId('camera-copy-qr').onclick=e=>copyQr(camera.camera_id,e.currentTarget);
     }
     function addMap(m={}) {byId('map-rows').insertAdjacentHTML('beforeend','<tr><td><input data-map="code" aria-label="Mã Vision" required maxlength="160" placeholder="type1" value="'+esc(m.code||'')+'"></td><td><input data-map="sku" aria-label="Mã sản phẩm" required maxlength="96" placeholder="SP01" value="'+esc(m.sku||'')+'"></td><td><input data-map="name" aria-label="Tên sản phẩm" required maxlength="160" value="'+esc(m.name||'')+'"></td><td><button type="button" data-remove aria-label="Xóa sản phẩm">×</button></td></tr>');}
     let mapping=[];try{mapping=JSON.parse(camera?.product_map||'[]');}catch{};(mapping.length?mapping:[{}]).forEach(addMap);
-    byId('add-map').onclick=()=>addMap();byId('cancel-camera').onclick=()=>dialog.close();
+    byId('add-map').onclick=()=>addMap();byId('cancel-camera').onclick=()=>{closeCameraEditor();renderCameraTabs(selected);};
     byId('map-rows').onclick=e=>{if(e.target.closest('[data-remove]'))e.target.closest('tr').remove();};
     byId('camera-form').onsubmit=async e=>{
       e.preventDefault();const form=e.target;const submit=form.querySelector('[type=submit]');submit.disabled=true;
@@ -232,13 +251,21 @@
         if(!productMap.length||new Set(productMap.map(m=>m.code)).size!==productMap.length||new Set(productMap.map(m=>m.sku)).size!==productMap.length)throw new Error('Mỗi sản phẩm cần một mã Vision và mã sản phẩm riêng.');
         const cameraId=camera?.camera_id||crypto.randomUUID();
         await macro('warehouse-camera-save',{camera_id:cameraId,area_name:form.elements.area_name.value.trim(),api_key:form.elements.api_key.value.trim(),enabled:form.elements.enabled.checked?1:0,product_map:JSON.stringify(productMap),...(iotMode?{io_command:form.elements.io_command.value.trim()}: {})});
-        selected=cameraId;dialog.close();await load();
-      } catch(err) {byId('camera-error').textContent=err.message;} finally {submit.disabled=false;}
-    };dialog.showModal();
+        selected=cameraId;closeCameraEditor();await load();
+      } catch(err) {form.querySelector('#camera-error').textContent=err.message;} finally {submit.disabled=false;}
+    };
+    const keyInput=editor.querySelector('[name=api_key]');
+    const configLink=byId('camera-config');
+    const form=byId('camera-form');let savedKey='';
+    const updateConfigLink=()=>{const key=keyInput.value.trim()||savedKey;configLink.setAttribute('aria-disabled',String(!key));if(key)configLink.href='https://vision.ioeasy.com/config?apikey='+encodeURIComponent(key);else configLink.removeAttribute('href');};
+    keyInput.addEventListener('input',updateConfigLink);updateConfigLink();
+    if(camera)macro('warehouse-camera-config',{camera_id:camera.camera_id}).then(rows=>{if(byId('camera-form')!==form)return;savedKey=rows[0]?.api_key||'';updateConfigLink();}).catch(()=>{if(byId('camera-form')===form)byId('camera-error').textContent='Không tải được link Config. Vui lòng mở lại cài đặt.';});
+    editor.scrollTop=0;
   }
   if(publicPage) window.addEventListener('pageshow',e=>{if(e.persisted)location.replace('/iot-page');});
   renderShell();
   if(!publicPage){
+    new ResizeObserver(revealCameraTab).observe(byId('tabs'));
     try {var savedTheme=window.localStorage.getItem('sample-dashboard-theme');if(savedTheme)document.documentElement.setAttribute('data-theme',savedTheme);}catch{}
     setTheme(document.documentElement.getAttribute('data-theme') || 'neumorphism');
   }

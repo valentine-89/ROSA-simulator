@@ -34,3 +34,27 @@ h1{font-size:25px;letter-spacing:-.6px;margin:0}h2{font-size:17px;margin:0}.mute
 
 @container(max-width:310px){.history-heading h2{font-size:15px}.history-tools{gap:5px}.history-heading .check{font-size:12px;gap:3px}.history-pager button{width:24px}}
 @media(max-width:380px){.stock-grid{grid-template-columns:repeat(auto-fill,minmax(min(125px,100%),1fr))}}
+
+/* Camera tabs and their editor share the history panel. */
+body:not(.employee) .warehouse-grid{margin-top:0}
+.history-title,.editor-actions{display:flex;align-items:center;gap:6px}
+.history-title #refresh{width:26px;height:26px;padding:0;font-size:20px}
+body:not(.employee) .tabs{border-bottom:1px solid color-mix(in srgb,currentColor 20%,transparent);gap:3px;padding:0;margin:10px 0}
+body:not(.employee) .camera-tab{border:1px solid color-mix(in srgb,currentColor 22%,transparent);border-radius:8px 8px 0 0;border-bottom-width:3px}
+body:not(.employee) .camera-tab.is-selected{border-bottom-color:var(--theme-primary,#087961);background:color-mix(in srgb,var(--theme-primary,#087961) 12%,transparent);color:var(--theme-text,inherit)}
+body:not(.employee) .camera-tab button[aria-selected=true]{background:transparent;color:inherit}
+body:not(.employee) .tabs .add-camera-tab{border:1px solid color-mix(in srgb,currentColor 22%,transparent);border-radius:8px 8px 0 0;min-width:38px;font-size:24px;padding:0 8px;flex:none}
+#camera-editor{flex:1;min-height:0;overflow:auto;padding:2px 2px 10px}
+#camera-editor .camera-overview.has-qr{grid-template-columns:minmax(0,1fr) 150px;gap:12px}
+#camera-editor .camera-qr{padding-right:26px}
+#camera-editor .camera-qr .icon-button{width:24px;height:28px}
+#camera-editor .camera-qr .icon-button svg{width:15px}
+#camera-editor .camera-overview:not(.has-qr) .fields{grid-template-columns:1fr}
+#camera-editor .camera-footer{gap:8px}
+#camera-config{padding:5px 9px;font-size:13px}
+#camera-config[aria-disabled=true]{opacity:.45;cursor:default}
+@container(max-width:350px){.history-heading h2{font-size:14px}.history-title{gap:3px}.history-title #refresh{width:22px}.history-tools{gap:4px}.history-heading .check{font-size:12px;gap:3px}.history-pager button{width:23px}.history-pager span{min-width:13px}.history-pager{gap:2px}#camera-editor .camera-overview.has-qr{grid-template-columns:minmax(0,1fr) 118px;gap:8px}#camera-editor .fields{gap:7px}#camera-editor input{padding:6px;font-size:12px}}
+
+@container(max-width:280px){.history-heading{gap:3px}.history-heading h2{font-size:13px}.history-title{gap:3px;flex-shrink:0}.history-tools{gap:2px}.history-heading .check{gap:0}.history-heading input{margin:3px}.history-pager button{width:21px}.history-title #refresh{width:20px}}
+
+@media(max-width:680px){.warehouse-grid:has(#camera-editor:not([hidden])){grid-template-rows:minmax(0,1.9fr) minmax(0,.8fr) minmax(0,.8fr)}}
