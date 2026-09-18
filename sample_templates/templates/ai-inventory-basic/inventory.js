@@ -11,6 +11,7 @@
   let cameras = [], selected = '', selectedEvent = '', offset = 0, loadVersion = 0, eventVersion = 0, leaving = false, requestId = '';
   const historyPageSize = 30;
   let hasNextPage = false;
+  let databaseStream = null, refreshTimer = null, refreshPending = false, refreshRunning = false;
   const byId = id => document.getElementById(id);
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const date = value => value ? new Date(value).toLocaleString('vi-VN') : '—';
@@ -177,7 +178,7 @@
     try {await loadHistory(offset+direction*historyPageSize,version);if(version===loadVersion)status('');}
     catch(e){if(version===loadVersion)status(e.message,true);}
   }
-  async function loadHistory(pageOffset, version=loadVersion) {
+  async function loadHistory(pageOffset, version=loadVersion, keepEvent='') {
     renderHistoryPager(true);
     try {
       const params={camera_id:selected,offset:pageOffset,hide_errors:byId('hide-errors').checked?1:0};
@@ -190,8 +191,48 @@
       byId('history').innerHTML=html||'<tr><td colspan="5" class="empty">Chưa có lịch sử.</td></tr>';
       offset=pageOffset;hasNextPage=tail.length>1;
       byId('history').closest('.history-scroll').scrollTop=0;
-      if(rows[0])await showEvent(rows[0].request_id,version);else byId('latest').innerHTML='<div class="empty">Chưa có lần kiểm kê.</div>';
-    } finally {if(version===loadVersion)renderHistoryPager();}
+      if(rows[0])await showEvent(rows.find(row=>row.request_id===keepEvent)?.request_id||rows[0].request_id,version);else byId('latest').innerHTML='<div class="empty">Chưa có lần kiểm kê.</div>';
+    } finally {if(version===loadVersion){renderHistoryPager();if(refreshPending)queueDatabaseRefresh();}}
+  }
+  function databaseRefreshBlocked() {
+    return document.hidden || !byId('camera-editor').hidden || byId('history').closest('.history-scroll').getAttribute('aria-busy')==='true';
+  }
+  function queueDatabaseRefresh() {
+    refreshPending=true;
+    if(refreshTimer||refreshRunning||databaseRefreshBlocked())return;
+    refreshTimer=setTimeout(async()=>{
+      refreshTimer=null;
+      if(databaseRefreshBlocked())return;
+      refreshPending=false;refreshRunning=true;
+      const version=loadVersion;
+      // Follow new results only when already viewing the newest event on page 1.
+      const keepEvent=offset===0&&selectedEvent===byId('history').querySelector('[data-event]')?.dataset.event?'':selectedEvent;
+      try {
+        const rows=await macro('warehouse-cameras-admin');
+        if(version!==loadVersion||databaseRefreshBlocked()){refreshPending=true;return;}
+        cameras=rows;
+        if(cameras.some(camera=>camera.camera_id===selected)){
+          renderCameraTabs(selected);
+          await Promise.all([loadHistory(offset,version,keepEvent),loadStock()]);
+        } else await Promise.all([select(cameras[0]?.camera_id||''),loadStock()]);
+      } catch(error){if(version===loadVersion)status(error.message,true);}
+      finally {refreshRunning=false;if(refreshPending)queueDatabaseRefresh();}
+    },400);
+  }
+  function connectDatabaseStream() {
+    if(publicPage||!session||databaseStream)return;
+    databaseStream=new EventSource('/api/'+encodeURIComponent(session)+'/stream?historyMs=0');
+    // Catch up after connection/reconnection; EventSource handles reconnects itself.
+    databaseStream.onopen=()=>queueDatabaseRefresh();
+    databaseStream.onmessage=event=>{
+      let data;try{data=JSON.parse(event.data);}catch{return;}
+      if(data?.type!=='iodata_changed'||(data.syncId&&data.syncId!==cfg.syncId))return;
+      queueDatabaseRefresh();
+    };
+  }
+  function disconnectDatabaseStream() {
+    databaseStream?.close();databaseStream=null;
+    clearTimeout(refreshTimer);refreshTimer=null;
   }
   async function showEvent(id, version=loadVersion) {
     const detailVersion=++eventVersion;selectedEvent=id;
@@ -225,6 +266,7 @@
     const editor=byId('camera-editor');editor.hidden=true;editor.innerHTML='';
     document.querySelector('.history-scroll').hidden=false;
     document.querySelector('.history-tools').hidden=false;
+    if(refreshPending)queueDatabaseRefresh();
   }
   function editCamera(camera) {
     if(camera&&camera.camera_id!==selected)select(camera.camera_id);
@@ -265,6 +307,10 @@
   if(publicPage) window.addEventListener('pageshow',e=>{if(e.persisted)location.replace('/iot-page');});
   renderShell();
   if(!publicPage){
+    connectDatabaseStream();
+    window.addEventListener('pagehide',disconnectDatabaseStream);
+    window.addEventListener('pageshow',event=>{if(event.persisted)connectDatabaseStream();});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueDatabaseRefresh();});
     new ResizeObserver(revealCameraTab).observe(byId('tabs'));
     try {var savedTheme=window.localStorage.getItem('sample-dashboard-theme');if(savedTheme)document.documentElement.setAttribute('data-theme',savedTheme);}catch{}
     setTheme(document.documentElement.getAttribute('data-theme') || 'neumorphism');
