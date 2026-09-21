@@ -1,0 +1,1002 @@
+{
+  "io_objects": [
+    {
+      "ob_id": 0,
+      "ob_type": "variable",
+      "ob_content": "#801",
+      "ob_name": "API ROSA của kho",
+      "ob_value": "rosa.technology/api/<<sessionid>>/<<syncid>>",
+      "ob_desc": "Tự điền theo thiết bị và tài khoản khi nạp trang mẫu.",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 1,
+      "ob_type": "variable",
+      "ob_content": "#1001",
+      "ob_name": "API key camera Vision",
+      "ob_value": "",
+      "ob_desc": "Nhập cùng camera key đã khai báo trong cài đặt kho; mẫu một camera dùng N20.",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 2,
+      "ob_type": "variable",
+      "ob_content": "#1002",
+      "ob_name": "Chu kỳ đọc kết quả AI (giây)",
+      "ob_value": "5",
+      "ob_desc": "Chỉ đọc khi đang có yêu cầu đếm.",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 3,
+      "ob_type": "variable",
+      "ob_content": "#1003",
+      "ob_name": "Chu kỳ thử lại báo kho (giây)",
+      "ob_value": "10",
+      "ob_desc": "Giữ nguyên request_id khi thử lại.",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 4,
+      "ob_type": "variable",
+      "ob_content": "#101",
+      "ob_name": "Đang thực hiện kiểm kê",
+      "ob_value": "0",
+      "ob_desc": "0: rảnh; 1: đang đếm hoặc gửi báo cáo.",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 5,
+      "ob_type": "variable",
+      "ob_content": "#102",
+      "ob_name": "SĐT người yêu cầu",
+      "ob_value": "",
+      "ob_desc": "Nhận từ N20; để trống khi cảm biến kích hoạt.",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 6,
+      "ob_type": "variable",
+      "ob_content": "#103",
+      "ob_name": "Mã yêu cầu đếm AI",
+      "ob_value": "",
+      "ob_desc": "UUID do ROSA trả về ở c3.",
+      "ob_state": 1
+    },
+    {
+      "ob_id": 7,
+      "ob_type": "variable",
+      "ob_content": "#104",
+      "ob_name": "Trạng thái kiểm kê",
+      "ob_value": "idle",
+      "ob_desc": "accepted/running/checking hoặc trạng thái cuối/lỗi giao tiếp.",
+      "ob_state": 1
+    }
+  ],
+  "io_actions": [],
+  "io_events": [],
+  "io_programs": [
+    {
+      "io_group_id": 0,
+      "io_group": "Kích hoạt kiểm kê",
+      "io_group_desc": "Nhận lệnh từ trang nhân viên hoặc cảm biến; mẫu một camera.",
+      "io_n_list": [
+        {
+          "n_id": "20",
+          "n_mode": "1",
+          "n_name": "Yêu cầu kiểm kê từ nhân viên",
+          "n_desc": "Điểm vào của nút Cập nhật trên trang nhân viên. Mẫu một camera; SĐT được giữ để ghi lịch sử.",
+          "n_natural": "",
+          "n_content": "// N20,\"số điện thoại\"; không khởi tạo job khác khi đang bận\n[#101=1](D8)\n[#1001=\"\"](D4#104,\"missing_camera_key\"D8)\nD4#101,1\nD4#102,#1\nD4#103,\"\"\nD4#104,\"submitting\"\nD6N21\n",
+          "n_local_def": [
+            {
+              "l_id": 2001,
+              "l_type": "variable",
+              "l_cm": "#1",
+              "l_natural": "SĐT nhân viên đã xác minh"
+            }
+          ]
+        },
+        {
+          "n_id": "23",
+          "n_mode": "1",
+          "n_name": "Yêu cầu kiểm kê từ cảm biến",
+          "n_desc": "Gọi D5N23 trong sự kiện cảm biến phù hợp. Chưa gắn chân I hay điều kiện phần cứng.",
+          "n_natural": "",
+          "n_content": "D5N20,\"\"\n",
+          "n_local_def": []
+        }
+      ]
+    },
+    {
+      "io_group_id": 1,
+      "io_group": "Đếm AI và báo cáo kho",
+      "io_group_desc": "Gửi đếm, đọc kết quả và điểm nối ghi lịch sử. Mẫu chưa test, còn thiếu JSON đầy đủ từ API.",
+      "io_n_list": [
+        {
+          "n_id": "21",
+          "n_mode": "1",
+          "n_name": "Gửi yêu cầu và đọc kết quả AI",
+          "n_desc": "Chờ AI bằng chu kỳ #1002, không giới hạn 60 giây. Cần hoàn thiện metadata.phone và nhận toàn bộ JSON; xem ghi chú gói mẫu.",
+          "n_natural": "",
+          "n_content": "// Bản cơ bản: ROSA tạo UUID; không tự gửi lại ai-count khi mất ACK\nD4#1,\"\"\nD23,#801,#1,\"ai-count\",#1001\n[#1<>\"OK\"](D4#104,\"submit_error\"D4#101,0D8)\nD4#103,#3\nD4#104,#4\nL(\n W#1002\n D4#1,\"\"\n D4#6,\"\"\n D23,#801,#1,\"ai-count-result\",#103\n [#1=\"OK\"](\n  D4#104,#4\n  [#4=\"succeeded\"|#4=\"failed\"|#4=\"partial\"|#4=\"busy\"|#4=\"unknown\"](\n   // API hiện chỉ có c1..c5; c6 đầy đủ JSON chưa được cung cấp\n   D6N22,#6\n   D8\n  )\n )\n)\n",
+          "n_local_def": [
+            {
+              "l_id": 2101,
+              "l_type": "variable",
+              "l_cm": "#1",
+              "l_natural": "Mã phản hồi API — c1"
+            },
+            {
+              "l_id": 2102,
+              "l_type": "variable",
+              "l_cm": "#2",
+              "l_natural": "Cờ phản hồi API — c2"
+            },
+            {
+              "l_id": 2103,
+              "l_type": "variable",
+              "l_cm": "#3",
+              "l_natural": "UUID phản hồi — c3"
+            },
+            {
+              "l_id": 2104,
+              "l_type": "variable",
+              "l_cm": "#4",
+              "l_natural": "Trạng thái đếm — c4"
+            },
+            {
+              "l_id": 2105,
+              "l_type": "variable",
+              "l_cm": "#5",
+              "l_natural": "Danh sách sản phẩm JSON — c5"
+            },
+            {
+              "l_id": 2106,
+              "l_type": "variable",
+              "l_cm": "#6",
+              "l_natural": "JSON kết quả đầy đủ — chờ hợp đồng API"
+            }
+          ]
+        },
+        {
+          "n_id": "22",
+          "n_mode": "1",
+          "n_name": "Ghi kết quả kiểm kê vào kho",
+          "n_desc": "Điểm nối báo kho; chưa hoạt động trọn luồng vì API đếm chưa có c6 JSON đầy đủ. Dừng rõ lỗi missing_result_json thay vì ghi sai tồn.",
+          "n_natural": "",
+          "n_content": "// #1 phải chứa JSON đầy đủ, không phải chỉ danh sách sản phẩm c5\n[#1=\"\"](D4#104,\"missing_result_json\"D4#101,0D8)\nL(\n D4#2,\"\"\n D23,#801,#2,\"data\",\"warehouse-io-result\",#1,#102\n [#2=\"OK\"](D4#104,\"reported\"D4#101,0D8)\n W#1003\n)\n",
+          "n_local_def": [
+            {
+              "l_id": 2201,
+              "l_type": "variable",
+              "l_cm": "#1",
+              "l_natural": "JSON đầy đủ của lần đếm"
+            },
+            {
+              "l_id": 2202,
+              "l_type": "variable",
+              "l_cm": "#2",
+              "l_natural": "Mã xác nhận ghi kho — c1"
+            },
+            {
+              "l_id": 2203,
+              "l_type": "variable",
+              "l_cm": "#3",
+              "l_natural": "UUID đã ghi kho — c2"
+            },
+            {
+              "l_id": 2204,
+              "l_type": "variable",
+              "l_cm": "#4",
+              "l_natural": "Trạng thái bản ghi kho — c3"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "io_controls": [],
+  "io_dashboards": [],
+  "events": [],
+  "io_id": "<<ioid>>",
+  "io_source": "<<io_source>>",
+  "io_console": {
+    "consoleHistory": [],
+    "consolePinned": [
+      "#101;#103;#104"
+    ]
+  },
+  "io_settings": {
+    "programParameters": []
+  },
+  "io_params": {
+    "cm_default": [],
+    "cm_define": []
+  },
+  "io_commands": {
+    "cm_default": [
+      {
+        "cm_cmn": "D1",
+        "cm_id": "1",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D1",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D2",
+        "cm_id": "2",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D2",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D3",
+        "cm_id": "3",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D3",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D4",
+        "cm_id": "4",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D4",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D5",
+        "cm_id": "5",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D5",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D6",
+        "cm_id": "6",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D6",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D7",
+        "cm_id": "7",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D7",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D8",
+        "cm_id": "8",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D8",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D9",
+        "cm_id": "9",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D9",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D10",
+        "cm_id": "10",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D10",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D11",
+        "cm_id": "11",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D11",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D12",
+        "cm_id": "12",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D12",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D13",
+        "cm_id": "13",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D13",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D14",
+        "cm_id": "14",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D14",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D15",
+        "cm_id": "15",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D15",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D16",
+        "cm_id": "16",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D16",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D17",
+        "cm_id": "17",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D17",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D18",
+        "cm_id": "18",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D18",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D19",
+        "cm_id": "19",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D19",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D20",
+        "cm_id": "20",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D20",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D21",
+        "cm_id": "21",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D21",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D22",
+        "cm_id": "22",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D22",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D23",
+        "cm_id": "23",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D23",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D24",
+        "cm_id": "24",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D24",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D25",
+        "cm_id": "25",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D25",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D27",
+        "cm_id": "27",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D27"
+      },
+      {
+        "cm_cmn": "D28",
+        "cm_id": "28",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D28",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D29",
+        "cm_id": "29",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D29",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D30",
+        "cm_id": "30",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D30",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D31",
+        "cm_id": "31",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D31",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D32",
+        "cm_id": "32",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D32",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D33",
+        "cm_id": "33",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D33",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D34",
+        "cm_id": "34",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D34",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D35",
+        "cm_id": "35",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D35",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D36",
+        "cm_id": "36",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D36",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D37",
+        "cm_id": "37",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D37",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D38",
+        "cm_id": "38",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D38",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D39",
+        "cm_id": "39",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D39",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D40",
+        "cm_id": "40",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D40",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D41",
+        "cm_id": "41",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D41",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D42",
+        "cm_id": "42",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D42",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D43",
+        "cm_id": "43",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D43",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D44",
+        "cm_id": "44",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D44",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D45",
+        "cm_id": "45",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D45",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D46",
+        "cm_id": "46",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D46",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D51",
+        "cm_id": "51",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D51",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D52",
+        "cm_id": "52",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D52",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D53",
+        "cm_id": "53",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D53",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D61",
+        "cm_id": "61",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D61",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D62",
+        "cm_id": "62",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D62",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D63",
+        "cm_id": "63",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D63",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D64",
+        "cm_id": "64",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D64",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "W",
+        "cm_id": "65",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_WAIT",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "L",
+        "cm_id": "66",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_LOOP",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "T",
+        "cm_id": "67",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "cond",
+        "cm_desc": "ACTION_TIME",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "[ ]",
+        "cm_id": "68",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "cond",
+        "cm_desc": "ACTION_IF",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": ",",
+        "cm_id": "69",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "separator",
+        "cm_desc": "SEPARATOR",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "D96",
+        "cm_id": "70",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "verb",
+        "cm_desc": "ACTION_D96",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "&",
+        "cm_id": "71",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "cond",
+        "cm_desc": "ACTION_&",
+        "cm_name": ""
+      },
+      {
+        "cm_cmn": "|",
+        "cm_id": "72",
+        "cm_ratio": "",
+        "cm_state": 1,
+        "cm_type": "cond",
+        "cm_desc": "ACTION_|",
+        "cm_name": ""
+      }
+    ],
+    "cm_define": [
+      {
+        "cm_id": "1",
+        "cm_name": "bật"
+      },
+      {
+        "cm_id": "2",
+        "cm_name": "tắt"
+      },
+      {
+        "cm_id": "3",
+        "cm_name": "đảo"
+      },
+      {
+        "cm_id": "4",
+        "cm_name": "ghi vào,gán,cho hiện lên"
+      },
+      {
+        "cm_id": "5",
+        "cm_name": "chạy chương trình"
+      },
+      {
+        "cm_id": "6",
+        "cm_name": "gọi chương trình"
+      },
+      {
+        "cm_id": "7",
+        "cm_name": "thoát vòng lặp"
+      },
+      {
+        "cm_id": "8",
+        "cm_name": "thoát chương trình"
+      },
+      {
+        "cm_id": "9",
+        "cm_name": "trả về dữ liệu"
+      },
+      {
+        "cm_id": "10",
+        "cm_name": "khóa chương trình"
+      },
+      {
+        "cm_id": "11",
+        "cm_name": "mở khóa chương trình"
+      },
+      {
+        "cm_id": "12",
+        "cm_name": "gửi tin nhắn SMS"
+      },
+      {
+        "cm_id": "13",
+        "cm_name": "gọi điện thoại"
+      },
+      {
+        "cm_id": "14",
+        "cm_name": "ngừng chương trình"
+      },
+      {
+        "cm_id": "15",
+        "cm_name": "tạm dừng chương trình"
+      },
+      {
+        "cm_id": "16",
+        "cm_name": "hủy tạm dừng chương trình"
+      },
+      {
+        "cm_id": "17",
+        "cm_name": "đảo ngược tạm dừng"
+      },
+      {
+        "cm_id": "18",
+        "cm_name": "bắt máy cuộc gọi"
+      },
+      {
+        "cm_id": "19",
+        "cm_name": "ngắt cuộc gọi"
+      },
+      {
+        "cm_id": "20",
+        "cm_name": "gửi bảo đảm HTTP thường"
+      },
+      {
+        "cm_id": "21",
+        "cm_name": "gửi bảo đảm HTTP JSON"
+      },
+      {
+        "cm_id": "22",
+        "cm_name": "gửi http GET"
+      },
+      {
+        "cm_id": "23",
+        "cm_name": "gửi HTTP POST"
+      },
+      {
+        "cm_id": "24",
+        "cm_name": "điều khiển từ xa đến bộ IO"
+      },
+      {
+        "cm_id": "25",
+        "cm_name": "cài đặt chức năng IO"
+      },
+      {
+        "cm_id": "27",
+        "cm_name": "kết nối server"
+      },
+      {
+        "cm_id": "28",
+        "cm_name": "tìm dữ liệu"
+      },
+      {
+        "cm_id": "29",
+        "cm_name": "tìm dữ liệu khác"
+      },
+      {
+        "cm_id": "30",
+        "cm_name": "tìm dữ liệu có chứa chuỗi"
+      },
+      {
+        "cm_id": "31",
+        "cm_name": "xoá hàng loạt ô nhớ"
+      },
+      {
+        "cm_id": "32",
+        "cm_name": "dịch chuyển dãy dữ liệu"
+      },
+      {
+        "cm_id": "33",
+        "cm_name": "sao chép dãy dữ liệu"
+      },
+      {
+        "cm_id": "34",
+        "cm_name": "hoán đổi dãy dữ liệu"
+      },
+      {
+        "cm_id": "35",
+        "cm_name": "tăng thập phân"
+      },
+      {
+        "cm_id": "36",
+        "cm_name": "giảm thập phân"
+      },
+      {
+        "cm_id": "37",
+        "cm_name": "đếm chiều dài"
+      },
+      {
+        "cm_id": "38",
+        "cm_name": "lấy chuỗi từ trái"
+      },
+      {
+        "cm_id": "39",
+        "cm_name": "lấy chuỗi từ phải"
+      },
+      {
+        "cm_id": "40",
+        "cm_name": "lấy chuỗi ở giữa"
+      },
+      {
+        "cm_id": "41",
+        "cm_name": "lấy chuỗi con từ"
+      },
+      {
+        "cm_id": "42",
+        "cm_name": "bỏ viết hoa chuỗi"
+      },
+      {
+        "cm_id": "43",
+        "cm_name": "viết hoa chuỗi"
+      },
+      {
+        "cm_id": "44",
+        "cm_name": "tìm kiếm trong chuỗi"
+      },
+      {
+        "cm_id": "45",
+        "cm_name": "thay thế trong chuỗi"
+      },
+      {
+        "cm_id": "46",
+        "cm_name": "tách lấy phần số trong chuỗi"
+      },
+      {
+        "cm_id": "51",
+        "cm_name": "tạo chương trình"
+      },
+      {
+        "cm_id": "52",
+        "cm_name": "ghép chương trình"
+      },
+      {
+        "cm_id": "53",
+        "cm_name": "xóa chương trình"
+      },
+      {
+        "cm_id": "61",
+        "cm_name": "gửi lên dữ liệu"
+      },
+      {
+        "cm_id": "62",
+        "cm_name": "truy vấn dữ liệu"
+      },
+      {
+        "cm_id": "63",
+        "cm_name": "đếm dữ liệu"
+      },
+      {
+        "cm_id": "64",
+        "cm_name": "xóa dữ liệu"
+      },
+      {
+        "cm_id": "65",
+        "cm_name": "chờ"
+      },
+      {
+        "cm_id": "66",
+        "cm_name": "lặp"
+      },
+      {
+        "cm_id": "67",
+        "cm_name": "vào lúc"
+      },
+      {
+        "cm_id": "68",
+        "cm_name": "nếu"
+      },
+      {
+        "cm_id": "69",
+        "cm_name": "và,với,vào,đến,từ,trong"
+      },
+      {
+        "cm_id": "70",
+        "cm_name": "gửi bản ghi gỡ lỗi"
+      },
+      {
+        "cm_id": "71",
+        "cm_name": "&"
+      },
+      {
+        "cm_id": "72",
+        "cm_name": "hoặc"
+      }
+    ]
+  }
+}

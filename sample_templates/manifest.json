@@ -3628,12 +3628,13 @@
           "name": "Quản lý kho",
           "label": "Kho AI kèm IoT",
           "language": "vi",
-          "description": "Dùng chung giao diện kho AI. Nhân viên xác minh số điện thoại rồi bấm Cập nhật để gửi N20,\"số điện thoại\" xuống IO. IO hoặc cảm biến tự gọi ai-count, đọc kết quả và báo vào macro warehouse-io-result. Mỗi camera có QR, chương trình IO và lịch sử riêng. Giữ tồn hợp lệ gần nhất khi đếm lỗi.",
+          "description": "Dùng chung giao diện kho AI. Nhân viên xác minh số điện thoại rồi bấm Cập nhật để gửi N20,\"số điện thoại\" xuống IO. IO hoặc cảm biến tự gọi ai-count, đọc kết quả và báo vào macro warehouse-io-result. Mỗi camera có QR, chương trình IO và lịch sử riêng. Giữ tồn hợp lệ gần nhất khi đếm lỗi. Có chương trình thiết bị mẫu N20–N23 để nạp bằng giao diện trang mẫu; khai báo đầy đủ tên tham số và nhóm chương trình. Bản nháp chưa test; bước báo kho còn cần JSON đầy đủ từ API (c6 chưa có).",
           "html": "/sample_dashboards/ai-inventory-basic/dashboard_iot_vi.html",
           "setup": {
             "page": "/sample_dashboards/ai-inventory-basic/setup_vi.html"
           },
           "sampleDatabase": "/sample_dashboards/ai-inventory-basic/sample-iot.sqlite",
+          "sampleDevice": "/sample_dashboards/ai-inventory-basic/warehouse-ai-iot.iodata",
           "default-fields": [],
           "macro-examples": [
             {
