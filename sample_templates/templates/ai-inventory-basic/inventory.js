@@ -178,7 +178,7 @@
     try {await loadHistory(offset+direction*historyPageSize,version);if(version===loadVersion)status('');}
     catch(e){if(version===loadVersion)status(e.message,true);}
   }
-  async function loadHistory(pageOffset, version=loadVersion, keepEvent='') {
+  async function loadHistory(pageOffset, version=loadVersion, keepEvent='', fromDatabaseEvent=false) {
     renderHistoryPager(true);
     try {
       const params={camera_id:selected,offset:pageOffset,hide_errors:byId('hide-errors').checked?1:0};
@@ -191,7 +191,12 @@
       byId('history').innerHTML=html||'<tr><td colspan="5" class="empty">Chưa có lịch sử.</td></tr>';
       offset=pageOffset;hasNextPage=tail.length>1;
       byId('history').closest('.history-scroll').scrollTop=0;
-      if(rows[0])await showEvent(rows.find(row=>row.request_id===keepEvent)?.request_id||rows[0].request_id,version);else byId('latest').innerHTML='<div class="empty">Chưa có lần kiểm kê.</div>';
+      if(rows[0]){
+        const nextEvent=rows.find(row=>row.request_id===keepEvent)?.request_id||rows[0].request_id;
+        if(fromDatabaseEvent&&nextEvent===selectedEvent&&byId('latest').querySelector('.photo, .snapshot-products')){
+          byId('history').querySelectorAll('[data-event]').forEach(tr=>tr.setAttribute('aria-selected',String(tr.dataset.event===nextEvent)));
+        }else await showEvent(nextEvent,version);
+      }else byId('latest').innerHTML='<div class="empty">Chưa có lần kiểm kê.</div>';
     } finally {if(version===loadVersion){renderHistoryPager();if(refreshPending)queueDatabaseRefresh();}}
   }
   function databaseRefreshBlocked() {
@@ -208,13 +213,7 @@
       // Follow new results only when already viewing the newest event on page 1.
       const keepEvent=offset===0&&selectedEvent===byId('history').querySelector('[data-event]')?.dataset.event?'':selectedEvent;
       try {
-        const rows=await macro('warehouse-cameras-admin');
-        if(version!==loadVersion||databaseRefreshBlocked()){refreshPending=true;return;}
-        cameras=rows;
-        if(cameras.some(camera=>camera.camera_id===selected)){
-          renderCameraTabs(selected);
-          await Promise.all([loadHistory(offset,version,keepEvent),loadStock()]);
-        } else await Promise.all([select(cameras[0]?.camera_id||''),loadStock()]);
+        await Promise.all([...(selected?[loadHistory(offset,version,keepEvent,true)]:[]),loadStock()]);
       } catch(error){if(version===loadVersion)status(error.message,true);}
       finally {refreshRunning=false;if(refreshPending)queueDatabaseRefresh();}
     },400);
@@ -222,11 +221,12 @@
   function connectDatabaseStream() {
     if(publicPage||!session||databaseStream)return;
     databaseStream=new EventSource('/api/'+encodeURIComponent(session)+'/stream?historyMs=0');
-    // Catch up after connection/reconnection; EventSource handles reconnects itself.
-    databaseStream.onopen=()=>queueDatabaseRefresh();
+    // Reconnecting alone is not a database change. EventSource reconnects itself.
     databaseStream.onmessage=event=>{
       let data;try{data=JSON.parse(event.data);}catch{return;}
-      if(data?.type!=='iodata_changed'||(data.syncId&&data.syncId!==cfg.syncId))return;
+      if(data?.type!=='iodata_changed'||data.syncId!==cfg.syncId)return;
+      if(!['warehouse-ai-count-result','warehouse-io-result'].includes(data.macro))return;
+      if(data.sessionId&&data.sessionId.split('@')[0]!==ioid)return;
       queueDatabaseRefresh();
     };
   }
@@ -310,7 +310,7 @@
     connectDatabaseStream();
     window.addEventListener('pagehide',disconnectDatabaseStream);
     window.addEventListener('pageshow',event=>{if(event.persisted)connectDatabaseStream();});
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueDatabaseRefresh();});
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden&&refreshPending)queueDatabaseRefresh();});
     new ResizeObserver(revealCameraTab).observe(byId('tabs'));
     try {var savedTheme=window.localStorage.getItem('sample-dashboard-theme');if(savedTheme)document.documentElement.setAttribute('data-theme',savedTheme);}catch{}
     setTheme(document.documentElement.getAttribute('data-theme') || 'neumorphism');
