@@ -1147,7 +1147,8 @@ class SimulatorStore {
         pageId: context.pageId,
         title: context.page.title
       }));
-    return { html: rendered, context };
+    const sdk = `<script id="rosa-backend-context" type="application/json">${htmlScriptJson({ioid:context.ioid,pageId:context.pageId})}</script><script src="/backend/page-sdk.js?v=1"></script>`;
+    return { html: /<head\b[^>]*>/i.test(rendered)?rendered.replace(/<head\b[^>]*>/i,match=>match+sdk):sdk+rendered, context };
   }
 
   getPublicPageReadContext(ioid, pageId) {
@@ -1329,6 +1330,10 @@ class SimulatorStore {
       rows,
       chargedCost: 0
     };
+  }
+
+  normalizeBackendCommandParams(params, schema) {
+    return normalizeCommandParams(params, parseParamsSchema(schema));
   }
 
   readSystemCommand(ioid, cmdId) {

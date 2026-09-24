@@ -1,3 +1,4 @@
+if(process.env.ROSA_SIMULATOR_NODE_MODULES){process.env.NODE_PATH=process.env.ROSA_SIMULATOR_NODE_MODULES;require('module').Module._initPaths();}
 const http = require('http');
 const crypto = require('crypto');
 const fs = require('fs');
@@ -16,7 +17,7 @@ const TEMPLATE_ROOT = path.join(SAMPLE_ROOT, 'templates');
 const SHARED_ROOT = path.join(SAMPLE_ROOT, 'shared');
 const LEGACY_ROOT = path.join(SAMPLE_ROOT, 'legacy');
 const UI_ROOT = path.join(ROOT, 'simulator_ui');
-const STATE_ROOT = path.join(ROOT, '.sim', 'state');
+const STATE_ROOT = process.env.SIM_STATE_DIR ? path.resolve(process.env.SIM_STATE_DIR) : path.join(ROOT, '.sim', 'state');
 const DEFAULT_SESSION_ID = process.env.SIM_SESSION_ID || 'IO123abcd@simulate';
 const DEFAULT_SYNC_ID = process.env.SIM_SYNC_ID || 'SIM_SYNC';
 
@@ -28,6 +29,7 @@ const store = new SimulatorStore({
   defaultSyncId: DEFAULT_SYNC_ID
 });
 
+const backendApi = require('./src/backends').createBackendApi(store);
 const generatorTimers = new Map();
 const publicRateBuckets = new Map();
 const batchViewerLeases = new Map();
@@ -1119,6 +1121,7 @@ async function handleRuntimeApi(req, res, url) {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url || '/', `http://${req.headers.host || '127.0.0.1'}`);
+    if (await backendApi.handle(req, res, url)) return;
     if (await handleSimApi(req, res, url)) return;
     if (await handlePublicPageApi(req, res, url)) return;
     if (await handleRuntimeApi(req, res, url)) return;

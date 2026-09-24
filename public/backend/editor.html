@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ROSA Backend</title>
+    <link rel="stylesheet" href="/backend/editor.css" />
+  </head>
+  <body>
+    <header>
+      <strong>Backend</strong><span id="context"></span><span id="mode"></span
+      ><button id="refresh">↻</button
+      ><button id="changeDevice">Đổi thiết bị</button
+      ><a href="/backend/guide.html" target="_blank" rel="noopener"
+        >Hướng dẫn</a
+      >
+    </header>
+    <form id="connect">
+      <input
+        id="session"
+        type="password"
+        placeholder="IOID@API key thiết bị"
+        autocomplete="off"
+        aria-label="Credential thiết bị"
+      /><button>Kết nối</button>
+    </form>
+    <main>
+      <aside>
+        <button id="new">+ Backend</button>
+        <nav id="list"></nav>
+      </aside>
+      <section id="workspace">
+        <div class="toolbar">
+          <input
+            id="name"
+            placeholder="ten-backend"
+            aria-label="Tên backend"
+          /><button id="save">Lưu nháp</button
+          ><button id="syntax">Cú pháp</button
+          ><button id="analyze">Phân tích tĩnh</button
+          ><button id="publish">Phát hành</button
+          ><button id="disable">Tắt</button
+          ><select id="examples" aria-label="Chèn ví dụ">
+            <option value="">Ví dụ…</option>
+          </select>
+        </div>
+        <div class="tabs">
+          <button data-tab="code">Code</button
+          ><button data-tab="permissions">Quyền SDK</button
+          ><button data-tab="api">API &amp; SyncID</button>
+        </div>
+        <div id="code" class="tab"><div id="editor"></div></div>
+        <div id="permissions" class="tab" hidden>
+          <label
+            >Quyền macro / thiết bị<textarea
+              id="permissionsJson"
+              rows="12"
+              spellcheck="false"
+            ></textarea></label
+          ><label
+            >Xác minh thiết bị khác (IOID → IOID@API key)<textarea
+              id="deviceSessions"
+              rows="3"
+              spellcheck="false"
+              autocomplete="off"
+            >
+{}</textarea
+            >
+          </label>
+        </div>
+        <div id="api" class="tab" hidden>
+          <div class="row">
+            <label
+              >SyncID trả phí<input
+                id="syncId"
+                type="password"
+                autocomplete="off" /></label
+            ><label
+              ><input id="external" type="checkbox" /> Truy cập từ ngoài</label
+            >
+          </div>
+          <div id="externalConfig" hidden>
+            <div class="row">
+              <label
+                >Loại xác thực<select id="authType">
+                  <option value="bearer">Bearer</option>
+                  <option value="api-key">API-Key header</option>
+                  <option value="basic">Basic</option>
+                </select></label
+              ><label id="usernameLabel" hidden
+                >Username<input id="username" autocomplete="off" /></label
+              ><label
+                >API key mới<input
+                  id="apiKey"
+                  type="password"
+                  autocomplete="off"
+                  placeholder="Giữ khóa đã lưu" /></label
+              ><button id="generateKey">Tạo khóa</button>
+            </div>
+            <code id="url"></code>
+            <pre id="curl"></pre>
+          </div>
+          <div class="schemaFields">
+            <strong>Các trường input</strong>
+            <div id="inputFields"></div>
+            <button id="addInput">+ Input</button
+            ><strong>Các trường output</strong>
+            <div id="outputFields"></div>
+            <button id="addOutput">+ Output</button>
+          </div>
+          <details>
+            <summary>
+              JSON Schema nâng cao (enum, giới hạn, object/array lồng nhau)
+            </summary>
+            <div class="row schemas">
+              <label
+                >Input schema<textarea
+                  id="inputSchema"
+                  rows="8"
+                  spellcheck="false"
+                ></textarea></label
+              ><label
+                >Output schema<textarea
+                  id="outputSchema"
+                  rows="8"
+                  spellcheck="false"
+                ></textarea>
+              </label>
+            </div>
+          </details>
+          <button id="configSave">Lưu cấu hình</button>
+        </div>
+        <section id="trial">
+          <div class="toolbar">
+            <strong>Chạy thử</strong><button id="run">Chạy thật</button
+            ><span id="usage"></span>
+          </div>
+          <div class="results">
+            <label
+              >Input JSON<textarea id="input" spellcheck="false">
+{}</textarea
+              ></label
+            ><label
+              >Kết quả / log
+              <pre id="output" tabindex="0"></pre>
+            </label>
+          </div>
+        </section>
+        <div id="status" role="status"></div>
+        <div id="diagnostics"></div>
+      </section>
+    </main>
+    <script src="/backend/editor.js"></script>
+  </body>
+</html>

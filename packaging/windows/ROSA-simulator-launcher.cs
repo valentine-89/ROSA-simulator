@@ -203,7 +203,7 @@ namespace RosaSimulatorLauncher
 
             string version = RunAndCapture(nodeExe, "-p \"process.versions.node\"", Path.GetDirectoryName(nodeExe));
             int major = ParseMajorVersion(version);
-            if (major < 20 || major > 26) return null;
+            if (major != 24) return null;
 
             return new NodeRuntime
             {
@@ -270,7 +270,8 @@ namespace RosaSimulatorLauncher
             string nodeModules = Path.Combine(depsRoot, "node_modules");
             string sqliteNative = Path.Combine(nodeModules, "better-sqlite3", "build", "Release", "better_sqlite3.node");
 
-            if (File.Exists(sqliteNative))
+            string readyMarker = Path.Combine(depsRoot, "backend-native-ready");
+            if (File.Exists(sqliteNative) && File.Exists(readyMarker))
             {
                 PrintInfo("THU VIEN", "DEPENDENCIES", "OK");
                 return nodeModules;
@@ -282,6 +283,10 @@ namespace RosaSimulatorLauncher
             Directory.CreateDirectory(depsRoot);
             File.Copy(packageJson, Path.Combine(depsRoot, "package.json"), true);
             File.Copy(packageLock, Path.Combine(depsRoot, "package-lock.json"), true);
+            string backendSource = Path.Combine(root, "packages", "rosa-backend");
+            string backendTarget = Path.Combine(depsRoot, "packages", "rosa-backend");
+            Directory.CreateDirectory(backendTarget);
+            foreach (string file in Directory.GetFiles(backendSource)) File.Copy(file, Path.Combine(backendTarget, Path.GetFileName(file)), true);
 
             Dictionary<string, string> installEnv = NodeEnvironment(node, nodeModules);
             RunProcess(node.NpmCmd, "ci --omit=dev --ignore-scripts --no-audit --no-fund", depsRoot, installEnv);
@@ -293,6 +298,10 @@ namespace RosaSimulatorLauncher
             RunProcess(node.NodeExe, Quote(prebuildScript), betterSqliteDir, installEnv);
 
             if (!File.Exists(sqliteNative)) throw new FileNotFoundException("better-sqlite3 native binary was not installed.", sqliteNative);
+            string duckInstaller = Path.Combine(nodeModules, "@mapbox", "node-pre-gyp", "bin", "node-pre-gyp");
+            RunProcess(node.NodeExe, Quote(duckInstaller) + " install", Path.Combine(nodeModules, "duckdb"), installEnv);
+            RunProcess(node.NodeExe, "--no-node-snapshot -e \"const I=require('isolated-vm'); const i=new I.Isolate({memoryLimit:10}); i.dispose(); new (require('better-sqlite3'))(':memory:').close(); require('duckdb');\"", depsRoot, installEnv);
+            File.WriteAllText(readyMarker, "V8, SQLite and DuckDB ready for " + node.Version);
             PrintInfo("THU VIEN", "DEPENDENCIES", "OK");
             return nodeModules;
         }
@@ -304,7 +313,7 @@ namespace RosaSimulatorLauncher
 
             ProcessStartInfo psi = new ProcessStartInfo();
             psi.FileName = node.NodeExe;
-            psi.Arguments = Quote(serverPath);
+            psi.Arguments = "--no-node-snapshot " + Quote(serverPath);
             psi.WorkingDirectory = root;
             psi.UseShellExecute = false;
             psi.CreateNoWindow = false;
@@ -505,7 +514,13 @@ namespace RosaSimulatorLauncher
             {
                 try
                 {
-                    Directory.Delete(path, true);
+                    foreach (string file in Directory.GetFiles(path)) File.Delete(file);
+                    foreach (string child in Directory.GetDirectories(path))
+                    {
+                        if ((File.GetAttributes(child) & FileAttributes.ReparsePoint) != 0) Directory.Delete(child, false);
+                        else RemoveTree(child);
+                    }
+                    Directory.Delete(path, false);
                     return;
                 }
                 catch

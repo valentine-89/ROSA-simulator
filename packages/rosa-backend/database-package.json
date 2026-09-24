@@ -1,0 +1,6 @@
+{
+  "name": "rosa-backend-database-runner",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": { "better-sqlite3": "12.10.0", "duckdb": "1.4.4" }
+}

@@ -1,6 +1,14 @@
 {
   "samples": [
     {
+      "id":"backend-lab","name":"Backend Lab — V8 / SQLite / IoT",
+      "description":"Mẫu backend lưu trong database, gọi macro và đọc IoT bằng SDK, thử offline rồi phát hành. Nạp sample DB, mở Backend, cấu hình SIM_SYNC và phát hành kiem-tra-ton-kho.",
+      "html":"/sample_dashboards/backend-lab/dashboard.html","image":"/sample_dashboards/backend-lab/sample.svg","sampleDatabase":"/sample_dashboards/backend-lab/sample.sqlite","defaultLocale":"vi",
+      "default-fields":[{"field":"O101","kind":"onoff"},{"field":"temperature","kind":"timeseries","min":20,"max":35}],
+      "macro-examples":[{"label":"Tra tồn kho SP001","payload":{"macro":"stock-find","sku":"SP001"}}],
+      "tags":["backend","v8","sqlite","offline","iot"]
+    },
+    {
       "id": "fuel-price-network",
       "name": "Quản lý bảng giá xăng dầu",
       "description": "Tổng quan:\nDashboard bảng giá xăng dầu dành cho một trạm. Mỗi tài khoản/Device key đăng nhập chỉ xem và điều khiển trạm của mình, với bảng LED 5 chữ số theo hồ sơ kỹ thuật.\n\nLoại:\ntelemetry + commands + nguồn dữ liệu công khai qua frontend\n\nChức năng chính:\n- Quản lý 5 mặt hàng: E10 RON 95-V, E10 RON 95-III, E5 RON 92-II, DO 0,001S-V và DO 0,05S-II\n- Tải tự động giá Vùng 1/Vùng 2 từ Petrolimex hoặc nhập tay\n- Xem trước và xác nhận bảng giá trước khi gửi xuống thiết bị tính tiền\n- Theo dõi ACK phiên bản, kết nối, độ sáng và nhiệt bộ điều khiển\n- Chỉnh độ sáng ngay hoặc cấu hình nhiều mốc giờ/phút/độ sáng\n- Bảng log ghi lấy giá, gửi lệnh, lỗi và trạng thái kết nối realtime\n- GUI setup cho trạm, sản phẩm, lịch độ sáng, field và giao thức thiết bị\n\nGhi chú:\n- Không bao gồm Dầu hỏa và Mazút.\n- Mỗi tài khoản quản lý một trạm; trạm khác dùng tài khoản/Device key khác nhưng cùng giao diện.\n- Giá online chỉ được nạp vào vùng chờ duyệt, không tự động phát hành.\n- Giá đi một chiều từ ROSA xuống thiết bị; firmware chỉ phản hồi ACK đúng phiên bản sau khi áp dụng.\n- Mẫu lệnh PRICESET/BRIGHT/BRIGHTSCHEDULE phải đổi theo firmware thực tế.\n- Context-aware với <<sessionid>> và <<syncid>>.\n- Không cần backend hoặc database bổ sung.",

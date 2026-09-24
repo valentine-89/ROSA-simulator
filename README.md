@@ -34,6 +34,8 @@ Sau đó mở `http://localhost:4177`.
 
 ### Tạo template mới bằng AI
 
+Backend V8 đã được tích hợp tại `/backend`: lưu code trong SQLite, kiểm tra cú pháp/phân tích tĩnh, chạy thử với CPU đo thật và phí mô phỏng. Xem [hướng dẫn backend và template offline](docs/backend-authoring.md), chọn mẫu **Backend Lab**. Dùng Node.js 24; chạy `npm run check:backend-native` sau khi cài dependencies.
+
 Khi dùng AI để tạo template mới từ một dự án sẵn có:
 
 1. Yêu cầu AI đọc `docs/ai-template-brief.md` trước khi sửa file.

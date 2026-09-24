@@ -1,0 +1,13 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Backend Lab</title><style>body{font:15px system-ui;padding:20px;color:#172033}a,input,button{font:inherit;padding:8px}p{line-height:1.7}a{color:#1d4ed8}</style></head><body>
+<!-- AI-BRIDGE-EDITABLE HTML LAYOUT: START -->
+<h1>Backend Lab</h1><p>1. Nạp sample database bằng nút <b>Load sample DB</b>.<br>2. Mở Backend, chọn <b>kiem-tra-ton-kho</b>, lưu SyncID mô phỏng và phát hành.<br>3. Mở trang kho để chạy backend qua tên.</p>
+<p><a href="/backend" target="_blank" rel="noopener">Soạn và chạy thử backend</a> <a href="/backend/guide.html" target="_blank" rel="noopener">Hướng dẫn / prompt AI</a></p>
+<label>IOID <input id="ioid" value="IO123abcd"></label><button id="open">Mở trang kho</button>
+<!-- AI-BRIDGE-EDITABLE HTML LAYOUT: END -->
+<!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: START -->
+<script id="dashboard-config" type="application/json">{"pageId":"backend-stock"}</script>
+<!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
+<!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+<script>document.getElementById('open').onclick=function(){var ioid=document.getElementById('ioid').value.trim();if(!/^IO[A-Za-z0-9_-]+$/.test(ioid))return;window.open('/iot-page/'+encodeURIComponent(ioid)+'/backend-stock','_blank','noopener');};</script>
+<!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
+</body></html>

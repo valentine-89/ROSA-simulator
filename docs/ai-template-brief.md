@@ -7,6 +7,7 @@ Use this short brief before creating or editing a ROSA sample template.
 1. Read `docs/template-authoring.md`.
 2. If the template has QR pages, public displays, customer self-service pages, or any `system_pages` entry, also read `docs/secure-iot-page-flow.md`.
 3. Inspect `sample_templates/manifest.json` and the closest existing template in `sample_templates/templates/`.
+4. For backend logic, read `docs/backend-authoring.md` and inspect `backend-lab`. V8 code stored in the template database is supported; modifying Simulator core is unnecessary.
 
 ## Work scope
 
@@ -16,6 +17,7 @@ Create the template by copying and adapting the closest working template. Keep t
 - Shared browser assets may be reused from `sample_templates/shared/`.
 - Register the template in `sample_templates/manifest.json`.
 - Add dashboard HTML, setup HTML/JS, browser JS/CSS, images, and sample `.sqlite` files only when the template needs them.
+- Add V8 ES module source, input/output schemas, SDK permissions and `system_backends` rows in sample SQLite when backend logic is needed. Use `self` for the owning IOID.
 
 Do not edit simulator runtime files, packaging files, npm files, backend routes, or build tooling. Do not add dependencies, frameworks, background services, Node workers, or a separate backend.
 

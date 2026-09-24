@@ -17,14 +17,30 @@ $PackageRoot = Join-Path $OutputRoot $PackageName
 $LauncherSource = Join-Path $RepoRoot "packaging\windows\ROSA-simulator-launcher.cs"
 
 function Remove-Tree($Path) {
+  $ResolvedTarget = [System.IO.Path]::GetFullPath($Path)
+  $ResolvedRoot = [System.IO.Path]::GetFullPath($OutputRoot).TrimEnd('\') + '\'
+  if (!$ResolvedTarget.StartsWith($ResolvedRoot, [System.StringComparison]::OrdinalIgnoreCase)) { throw "Refusing removal outside package output: $ResolvedTarget" }
   if (!(Test-Path $Path)) { return }
   for ($Attempt = 1; $Attempt -le 5; $Attempt += 1) {
     try {
-      Remove-Item $Path -Recurse -Force -ErrorAction Stop
+      $Files = [System.Collections.Generic.List[string]]::new()
+      $Directories = [System.Collections.Generic.List[string]]::new()
+      function Get-RemovalList([string]$Directory) {
+        foreach ($Entry in Get-ChildItem -LiteralPath $Directory -Force) {
+          if ($Entry.PSIsContainer -and !($Entry.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) { Get-RemovalList $Entry.FullName }
+          else { $Files.Add($Entry.FullName) }
+        }
+        $Directories.Add($Directory)
+      }
+      Get-RemovalList $ResolvedTarget
+      foreach ($File in $Files) { Remove-Item -LiteralPath $File -Force -ErrorAction Stop }
+      foreach ($Directory in $Directories) {
+        if (@(Get-ChildItem -LiteralPath $Directory -Force).Count -ne 0) { throw "Directory is not empty: $Directory" }
+        Remove-Item -LiteralPath $Directory -Force -ErrorAction Stop
+      }
       return
     }
     catch {
-      cmd.exe /d /c ("rmdir /s /q """ + $Path + """") | Out-Null
       if (!(Test-Path $Path)) { return }
       if ($Attempt -ge 5) { throw }
       Start-Sleep -Milliseconds (400 * $Attempt)
@@ -49,7 +65,7 @@ function Compile-Launcher($TargetRoot) {
     throw "Launcher source not found: $LauncherSource"
   }
 
-  $CscPath = Join-Path ([System.Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory()) "csc.exe"
+  $CscPath = Join-Path $env:WINDIR "Microsoft.NET\Framework64\v4.0.30319\csc.exe"
   if (!(Test-Path $CscPath)) {
     throw "C# compiler not found: $CscPath"
   }
@@ -83,9 +99,14 @@ function Build-SourcePackage() {
   Copy-Item (Join-Path $RepoRoot "package-lock.json") $PackageRoot -Force
   Copy-Item (Join-Path $RepoRoot "README.md") $PackageRoot -Force
   Copy-Directory (Join-Path $RepoRoot "src") (Join-Path $PackageRoot "src")
+  Copy-Directory (Join-Path $RepoRoot "public") (Join-Path $PackageRoot "public")
+  $BackendPackageTarget = Join-Path $PackageRoot "packages\rosa-backend"
+  New-Item -ItemType Directory -Force -Path $BackendPackageTarget | Out-Null
+  Get-ChildItem -LiteralPath (Join-Path $RepoRoot "packages\rosa-backend") -File | Copy-Item -Destination $BackendPackageTarget
   Copy-Directory (Join-Path $RepoRoot "simulator_ui") (Join-Path $PackageRoot "simulator_ui")
   Copy-Directory (Join-Path $RepoRoot "sample_templates") (Join-Path $PackageRoot "sample_templates")
   Copy-Directory (Join-Path $RepoRoot "docs") (Join-Path $PackageRoot "docs")
+  Copy-Directory (Join-Path $RepoRoot "scripts") (Join-Path $PackageRoot "scripts")
   Compile-Launcher $PackageRoot
 
   Write-TextFile (Join-Path $PackageRoot "README-Windows.txt") @"

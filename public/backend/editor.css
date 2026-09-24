@@ -1,0 +1,360 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  background: #f4f6fa;
+  color: #172033;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+header {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+  border-bottom: 1px solid #d7deeb;
+  background: #fff;
+}
+header strong {
+  font-size: 16px;
+}
+header a {
+  margin-left: auto;
+  color: #365dc4;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  border: 1px solid #cad3e3;
+  border-radius: 6px;
+  padding: 6px 9px;
+  background: #fff;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+  white-space: nowrap;
+}
+button:hover {
+  background: #e9efff;
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+input[type="checkbox"] {
+  width: auto;
+}
+input {
+  min-width: 0;
+}
+textarea {
+  display: block;
+  resize: vertical;
+  width: 100%;
+  font: 12px/1.5 monospace;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+label:has(input[type="checkbox"]) {
+  flex-direction: row;
+  align-items: center;
+}
+#connect {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+}
+#connect input {
+  width: 320px;
+}
+main {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  height: calc(100vh - 44px);
+}
+aside {
+  padding: 10px;
+  border-right: 1px solid #d7deeb;
+  overflow: auto;
+}
+nav {
+  display: grid;
+  gap: 5px;
+  margin-top: 10px;
+}
+nav button {
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+nav button.active {
+  background: #dde7ff;
+  border-color: #8ca9ed;
+}
+#workspace {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 10px;
+  gap: 8px;
+  overflow: auto;
+}
+.toolbar,
+.row,
+.tabs {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.toolbar #name {
+  flex: 1;
+  min-width: 150px;
+}
+.tabs button {
+  border: 0;
+}
+.tabs button.active {
+  background: #dce6ff;
+}
+.tab {
+  min-height: 150px;
+}
+#code {
+  flex: 1;
+  min-height: 250px;
+}
+#editor {
+  height: 100%;
+  border: 1px solid #cad3e3;
+  border-radius: 7px;
+  overflow: hidden;
+}
+.cm-editor {
+  height: 100%;
+  font: 13px/1.6 monospace;
+}
+.cm-scroller {
+  overflow: auto;
+}
+.cm-focused {
+  outline: 0 !important;
+}
+#trial {
+  border-top: 1px solid #cad3e3;
+  padding-top: 8px;
+}
+#run,
+#publish {
+  background: #294fb8;
+  color: white;
+}
+.results {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+.results textarea,
+.results pre {
+  height: 135px;
+  overflow: auto;
+  margin: 0;
+}
+.results pre,
+#curl {
+  background: #e9edf5;
+  padding: 9px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+#status[data-error="true"] {
+  color: #b52232;
+}
+#diagnostics button {
+  display: block;
+  text-align: left;
+  width: 100%;
+  color: #943229;
+  margin-bottom: 4px;
+}
+.schemas {
+  align-items: stretch;
+  margin: 10px 0;
+}
+.schemas label {
+  flex: 1;
+  min-width: 230px;
+}
+#url {
+  display: block;
+  margin-top: 10px;
+  overflow-wrap: anywhere;
+}
+#curl {
+  font-size: 11px;
+}
+#usage {
+  font-size: 11px;
+  color: #54617a;
+}
+.row > label {
+  flex: 1;
+  min-width: 140px;
+}
+[hidden] {
+  display: none !important;
+}
+@media (max-width: 700px) {
+  main {
+    grid-template-columns: 110px minmax(0, 1fr);
+  }
+  aside {
+    padding: 5px;
+  }
+  .toolbar {
+    gap: 4px;
+  }
+  .results {
+    grid-template-columns: 1fr;
+  }
+  #workspace {
+    padding: 6px;
+  }
+  .results textarea {
+    height: 70px;
+  }
+  .toolbar button {
+    padding: 5px;
+  }
+  #code {
+    min-height: 230px;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    background: #101724;
+    color: #dce5f5;
+  }
+  header,
+  button,
+  input,
+  select,
+  textarea {
+    background: #172132;
+    color: #dce5f5;
+    border-color: #35435a;
+  }
+  aside,
+  header,
+  #trial {
+    border-color: #35435a;
+  }
+  button:hover,
+  nav button.active,
+  .tabs button.active {
+    background: #263b62;
+  }
+  .results pre,
+  #curl {
+    background: #172132;
+  }
+  #usage {
+    color: #a5b5ce;
+  }
+}
+.schemaFields {
+  margin: 12px 0;
+  display: grid;
+  gap: 8px;
+}
+.schemaFields > button {
+  justify-self: start;
+}
+.fieldRow {
+  margin: 5px 0;
+}
+.fieldRow > input {
+  flex: 1;
+  width: 100px;
+}
+.fieldRow > label {
+  flex: 0;
+  min-width: 100px;
+}
+details {
+  margin: 12px 0;
+}
+summary {
+  cursor: pointer;
+}
+.tab:not(#code),
+#trial,
+.toolbar,
+.tabs {
+  flex-shrink: 0;
+}
+@media (max-width: 700px) {
+  header {
+    height: 44px;
+    gap: 6px;
+    padding: 5px;
+    font-size: 11px;
+  }
+  header strong {
+    font-size: 14px;
+  }
+  header #mode {
+    display: none;
+  }
+  header a {
+    margin-left: auto;
+  }
+  header button {
+    padding: 5px;
+  }
+  main {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 44px);
+  }
+  aside {
+    display: flex;
+    flex-shrink: 0;
+    gap: 6px;
+    max-height: 48px;
+    border-right: 0;
+    border-bottom: 1px solid #cad3e3;
+  }
+  nav {
+    display: flex;
+    margin: 0;
+    overflow: auto;
+  }
+  nav button {
+    max-width: 180px;
+    flex-shrink: 0;
+  }
+  #workspace {
+    flex: 1;
+    min-width: 0;
+  }
+  .fieldRow > input {
+    min-width: 90px;
+  }
+  .fieldRow > label {
+    min-width: 90px;
+  }
+}

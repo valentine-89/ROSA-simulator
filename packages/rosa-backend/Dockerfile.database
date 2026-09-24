@@ -1,0 +1,10 @@
+FROM node:24-bookworm-slim
+WORKDIR /runtime
+COPY database-package.json ./package.json
+COPY database-package-lock.json ./package-lock.json
+RUN npm ci --ignore-scripts --no-audit --no-fund
+RUN cd node_modules/better-sqlite3 && node ../prebuild-install/bin.js
+RUN cd node_modules/duckdb && node ../@mapbox/node-pre-gyp/bin/node-pre-gyp install
+COPY database-worker.cjs database-container.cjs dependencies.cjs ./
+USER 10001:10001
+CMD ["node", "--max-old-space-size=32", "database-container.cjs"]

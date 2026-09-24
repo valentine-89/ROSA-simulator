@@ -8,7 +8,7 @@ If the template includes QR pages, public displays, customer self-service pages,
 
 ## Non-negotiable template scope
 
-A new ROSA sample template is frontend-only. Build it as plain HTML, CSS, and browser JavaScript that runs inside the existing simulator. Do not add backend code.
+A ROSA sample template uses plain HTML, CSS, browser JavaScript and optional V8 backend definitions stored in its sample SQLite database. Read `docs/backend-authoring.md` when server-side logic is needed. Backend source belongs to the template, in `system_backends`; the existing Simulator runtime executes it.
 
 Allowed template changes:
 
@@ -26,7 +26,7 @@ Forbidden changes unless the human explicitly asks for simulator development wor
 - Do not put business logic into simulator backend files just because a dashboard needs data. Express the behavior through frontend config, existing telemetry/timeseries APIs, command APIs, or SQLite macros in a sample `.sqlite` file.
 - Do not put direct device credentials, `sessionId@apikey`, real `sync_id`, or direct `/api/{sessionId}/{syncId}/...` URLs into public page HTML/JavaScript.
 
-If the requested template appears to need backend behavior, stop and model it within the existing template boundary instead. If that is not possible, explain the limitation and ask the human for permission before changing simulator/backend code.
+For backend behavior, use database macros and the built-in V8 SDK described in `docs/backend-authoring.md`. Create backend source and database build scripts inside the template directory. Do not change Simulator core to run a template.
 
 ## Required structure
 

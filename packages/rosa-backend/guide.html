@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ROSA Backend — hướng dẫn</title>
+    <style>
+      body {
+        font: 15px/1.7 system-ui;
+        max-width: 900px;
+        margin: 30px auto;
+        padding: 20px;
+        color: #172033;
+      }
+      pre {
+        background: #f1f5f9;
+        padding: 16px;
+        white-space: pre-wrap;
+        border-radius: 8px;
+      }
+      code {
+        font-family: monospace;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th,
+      td {
+        padding: 9px;
+        border: 1px solid #cbd5e1;
+        text-align: left;
+      }
+      h2 {
+        margin-top: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Backend ROSA</h1>
+    <p>
+      Soạn JavaScript, lưu nháp vào database thiết bị, kiểm tra và chạy thử.
+      <b>Phát hành</b> tạo phiên bản dùng cho trang IoT/API; sửa bản nháp không
+      đổi phiên bản đang chạy.
+    </p>
+    <h2>Bắt đầu</h2>
+    <ol>
+      <li>
+        Mở menu thiết bị → Backend, hoặc /backend và kết nối IOID@API key thiết
+        bị.
+      </li>
+      <li>
+        Đặt tên như <code>kiem-tra-ton-kho</code>. Mỗi IOID có không gian tên
+        riêng.
+      </li>
+      <li>
+        Viết <code>export default async function main(input, rosa)</code>. Chọn
+        Ví dụ để chèn mẫu.
+      </li>
+      <li>Khai báo quyền SDK, schema input/output và SyncID trả phí.</li>
+      <li>Kiểm tra Cú pháp, Phân tích tĩnh; nhập Input JSON và chạy thử.</li>
+      <li>Phát hành để trang IoT/API gọi được. Nút Tắt dừng nhận lượt mới.</li>
+    </ol>
+    <p>
+      Chạy thật trên ROSA có thể ghi database/điều khiển thiết bị và tính phí.
+      Simulator dùng V8 thật, SQLite và thiết bị mô phỏng; chi phí hiển thị chỉ
+      là mô phỏng.
+    </p>
+    <h2>SDK</h2>
+    <table>
+      <tr>
+        <th>Lệnh</th>
+        <th>Kết quả / quyền</th>
+      </tr>
+      <tr>
+        <td>await rosa.db.macro('stock-find', {sku:input.sku})</td>
+        <td>
+          Mảng dòng, quyền macros. SQL nằm trong system_macros; dùng :sku.
+        </td>
+      </tr>
+      <tr>
+        <td>await rosa.db.report('stock-report', {})</td>
+        <td>
+          Mảng dòng từ DuckDB, quyền reports. Một SELECT/WITH; snapshot tối đa
+          100.000 dòng / 16 MiB.
+        </td>
+      </tr>
+      <tr>
+        <td>await rosa.iot.latest('device')</td>
+        <td>Trạng thái mới nhất của các fields được cấp quyền.</td>
+      </tr>
+      <tr>
+        <td>
+          await rosa.iot.timeseries('device',
+          {from:Date.now()-3600000,to:Date.now()})
+        </td>
+        <td>Lịch sử, khoảng thời gian tối đa 31 ngày.</td>
+      </tr>
+      <tr>
+        <td>await rosa.iot.command('device', 'switch', {state:'ON'})</td>
+        <td>
+          Gửi lệnh system_cmds được cấp quyền; accepted là gateway nhận yêu cầu.
+        </td>
+      </tr>
+    </table>
+    <pre>
+{
+  "macros": ["stock-find"], "reports": ["stock-report"],
+  "devices": {"device": {"ioid":"self", "read":true,
+    "fields":["temperature","O101"], "commands":["switch"]}}
+}</pre
+    >
+    <p>
+      <code>self</code> là IOID chứa backend. Với IOID khác, xác minh credential
+      trong ô thiết bị khác. Credential không được đưa vào isolate. Lệnh dùng
+      placeholder <code>&lt;&lt;state&gt;&gt;</code>; không dùng các lệnh yêu
+      cầu danh tính hoặc page_only từ backend.
+    </p>
+    <h2>Gọi từ trang IoT</h2>
+    <p>
+      Trong <code>system_pages.meta</code>, thêm
+      <code>{"publicApi":{"backends":["kiem-tra-ton-kho"]}}</code>. Backend phải
+      được phát hành; không cần bật truy cập ngoài.
+    </p>
+    <pre>
+const result = await rosa.backend.run('kiem-tra-ton-kho', {sku:'SP001'});</pre
+    >
+    <p>
+      SDK được ROSA/Simulator tự chèn vào trang. Browser không nhận API key,
+      SyncID trả phí hoặc địa chỉ runner. Khi lỗi mạng, giữ
+      <code>error.requestId</code> và dùng lại trong tùy chọn
+      <code>{requestId}</code> để kiểm tra lượt cũ thay vì lặp tác động.
+    </p>
+    <h2>API ngoài</h2>
+    <p>
+      Bật Truy cập từ ngoài, chọn Bearer, X-API-Key hoặc Basic, tạo khóa và lưu
+      cấu hình. URL: <code>/bw/IO282xxxx/ten-backend</code>. Với Basic, dùng
+      username đã đặt và API key làm password. Khóa chỉ lưu dạng hash.
+    </p>
+    <pre>
+curl -X POST 'https://rosa.technology/bw/IO282xxxx/kiem-tra-ton-kho' \
+ -H 'Authorization: Bearer YOUR_API_KEY' \
+ -H 'Content-Type: application/json' -H 'Idempotency-Key: order-0001' \
+ -d '{"sku":"SP001"}'
+# HTTP 202: lưu runId; GET cùng URL với ?runId=... và cùng xác thực.
+</pre
+    >
+    <p>
+      Lịch sử và Idempotency-Key được giữ 7 ngày. Dùng lại Idempotency-Key cho
+      cùng yêu cầu sau lỗi mạng trong thời gian này. Đổi input với cùng key trả
+      409. Không tự gửi lại lệnh thiết bị khi trạng thái báo không chắc chắn.
+    </p>
+    <h2>Giới hạn và phí</h2>
+    <p>
+      Timeout mặc định 180 giây gồm cả thời gian chờ, đặt trong /manage. CPU
+      time của isolate được tính riêng với phí macro/lệnh, trừ vào SyncID của
+      backend. Chờ database/IoT không tính thành CPU. Mặc định V8 memory limit
+      10 MiB; đây là giới hạn heap của V8, có thể vượt tạm thời. Production bổ
+      sung giới hạn RAM/CPU cứng cho từng pool container.
+    </p>
+    <p>
+      Không có require/import, filesystem, npm hoặc HTTP tùy ý. Output tối đa
+      256 KiB, input 64 KiB; tối đa 1.000 lời gọi SDK và 16 lời gọi đang chờ mỗi
+      lượt. SQLite chờ khóa theo deadline. Timeout hoàn tác transaction chưa
+      commit, không hoàn tác những macro/lệnh đã hoàn tất trước đó.
+    </p>
+    <h2>Nhờ AI tạo template offline</h2>
+    <p>
+      Sau khi Simulator chuẩn bị Node/dependencies lần đầu, mẫu và backend chạy
+      không cần Internet. Dùng mẫu Backend Lab và prompt sau:
+    </p>
+    <pre>
+Đọc docs/template-authoring.md, docs/backend-authoring.md và
+docs/secure-iot-page-flow.md của ROSA-simulator.
+Tạo template [mô tả chức năng] trong sample_templates/templates/[id].
+Dùng mẫu backend-lab: code ES module lưu system_backends, macro SQL lưu
+system_macros. Khai báo schema input/output, quyền SDK tối thiểu,
+ioid self; không ghi key/SyncID thật vào mẫu. Trang IoT gọi
+rosa.backend.run theo tên và khai báo publicApi.backends.
+Không sửa core Simulator, không thêm dependency/HTTP/Node API vào code.
+Tạo sample.sqlite, source build database, dashboard có AI-BRIDGE markers,
+đăng ký manifest. Chạy kiểm tra template và native Backend test trước
+khi bàn giao; hướng dẫn nạp database, phát hành local và chạy mô phỏng.</pre
+    >
+    <p>
+      Xuất template/sample database từ Simulator rồi nhập vào ROSA. Cấu hình lại
+      SyncID, quyền thiết bị và API key tại ROSA, kiểm tra rồi phát hành.
+      Database nhập không tự bật endpoint ngoài.
+    </p>
+  </body>
+</html>

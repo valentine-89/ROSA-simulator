@@ -5,15 +5,20 @@
   "description": "Local-only simulator for ROSA sample dashboard templates.",
   "main": "server.js",
   "scripts": {
+    "check:backend-native": "node --no-node-snapshot scripts/check-backend-native.cjs",
+    "test:backend": "node --test --test-timeout=90000 packages/rosa-backend/test.cjs packages/rosa-backend/integration.test.cjs packages/rosa-backend/remote.test.cjs scripts/test-backends.cjs",
+    "validate:backends": "node scripts/validate-backends.cjs",
     "start": "node server.js",
     "validate": "node scripts/validate.js",
     "check": "node --check server.js && node --check src/store.js && node --check src/dashboardEditableSections.js && node --check scripts/validate.js && node --check scripts/test-page-bound-command.js",
     "test:page-command": "node scripts/test-page-bound-command.js",
-    "refresh:bootstrapper:win": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/package-windows.ps1 -RootLauncher",
+    "refresh:bootstrapper:win": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/package-windows.ps1 -RootLauncher",
     "package:win": "bash scripts/package-windows.sh",
-    "package:win:powershell": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/package-windows.ps1"
+    "package:win:powershell": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/package-windows.ps1"
   },
   "dependencies": {
+    "@rosa/backend": "file:packages/rosa-backend",
+    "duckdb": "^1.4.4",
     "better-sqlite3": "^12.10.0"
   }
 }
