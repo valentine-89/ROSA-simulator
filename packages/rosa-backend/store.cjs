@@ -69,7 +69,7 @@ class BackendStore {
       db.close();
     }
   }
-  save(ioid, raw) {
+  save(ioid, raw, expectedRevision) {
     const value = C.json(raw, C.LIMITS.source + 131072);
     const d = Object.fromEntries(
       [
@@ -92,13 +92,38 @@ class BackendStore {
       throw C.fail("INVALID_SOURCE", "Mã nguồn quá lớn.");
     const db = this.data(ioid);
     try {
-      db.prepare(
-        "INSERT INTO system_backends(name,definition,updated_at) VALUES(?,?,?) ON CONFLICT(name) DO UPDATE SET definition=excluded.definition,updated_at=excluded.updated_at",
-      ).run(d.name, JSON.stringify(d), Date.now());
+      db.transaction(() => {
+        this.assertDraftRevision(db, d.name, expectedRevision);
+        db.prepare(
+          "INSERT INTO system_backends(name,definition,updated_at) VALUES(?,?,?) ON CONFLICT(name) DO UPDATE SET definition=excluded.definition,updated_at=excluded.updated_at",
+        ).run(d.name, JSON.stringify(d), Date.now());
+      }).immediate();
     } finally {
       db.close();
     }
     return d;
+  }
+  assertDraftRevision(db, name, expectedRevision) {
+    if (expectedRevision === undefined) return;
+    const row = db.prepare("SELECT definition FROM system_backends WHERE name=?").get(name);
+    const actual = row ? C.hash(JSON.parse(row.definition)) : null;
+    if (actual !== expectedRevision)
+      throw C.fail("REVISION_CONFLICT", "Backend đã thay đổi. Đọc lại trước khi sửa hoặc xóa.", 409);
+  }
+  remove(ioid, name, expectedRevision) {
+    C.name(name);
+    if (typeof expectedRevision !== "string") throw C.fail("REVISION_REQUIRED", "Cần revision từ get_backend.");
+    const db = this.data(ioid);
+    try {
+      return db.transaction(() => {
+        this.assertDraftRevision(db, name, expectedRevision);
+        // Revoke new invocations first. Existing runs retain their immutable source and billing records.
+        this.db.prepare("DELETE FROM backend_bindings WHERE ioid=? AND name=?").run(ioid, name);
+        db.prepare("DELETE FROM system_backend_versions WHERE name=?").run(name);
+        const deleted = db.prepare("DELETE FROM system_backends WHERE name=?").run(name).changes > 0;
+        return { name, deleted };
+      }).immediate();
+    } finally { db.close(); }
   }
   config(ioid, name, redact = false) {
     const row = this.db
@@ -166,8 +191,11 @@ class BackendStore {
       .run(ioid, name, JSON.stringify(c));
     return this.config(ioid, name, true);
   }
-  publish(ioid, name, deviceGrants = {}) {
-    const d = C.definition(this.draft(ioid, name));
+  publish(ioid, name, deviceGrants = {}, expectedRevision) {
+    const draft = this.draft(ioid, name);
+    if (expectedRevision !== undefined && C.hash(draft) !== expectedRevision)
+      throw C.fail("REVISION_CONFLICT", "Backend đã thay đổi. Đọc lại trước khi phát hành.", 409);
+    const d = C.definition(draft);
     const version = C.hash(d);
     const db = this.data(ioid);
     try {

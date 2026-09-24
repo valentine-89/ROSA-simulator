@@ -114,5 +114,6 @@ module.exports = {
   IsolatePool,
   ...require("./database.cjs"),
   ...require("./remote.cjs"),
+  ...require("./authoring.cjs"),
   ...C,
 };
