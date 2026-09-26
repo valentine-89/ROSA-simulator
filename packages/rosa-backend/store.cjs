@@ -5,9 +5,10 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 const C = require("./contract.cjs");
 class BackendStore {
-  constructor({ statePath, iodataDir, simulation = false }) {
+  constructor({ statePath, iodataDir, simulation = false, settings = () => ({}) }) {
     this.iodataDir = iodataDir;
     this.simulation = simulation;
+    this.settings = settings;
     fs.mkdirSync(path.dirname(statePath), { recursive: true });
     fs.mkdirSync(iodataDir, { recursive: true });
     this.db = new Database(statePath);
@@ -24,6 +25,7 @@ class BackendStore {
       CREATE TABLE IF NOT EXISTS backend_operations(id TEXT PRIMARY KEY,run_id TEXT NOT NULL,status TEXT NOT NULL,result TEXT,cost REAL NOT NULL DEFAULT 0,kind TEXT,updated INTEGER NOT NULL);
       CREATE INDEX IF NOT EXISTS backend_operations_run ON backend_operations(run_id);
     `);
+    this.initScheduling();
     if (simulation)
       this.db.exec(
         `CREATE TABLE IF NOT EXISTS sync_data(syncId TEXT PRIMARY KEY,costLimit REAL DEFAULT 1000000,costUsed REAL DEFAULT 0,lastActivityTime INTEGER);INSERT OR IGNORE INTO sync_data(syncId) VALUES('SIM_SYNC');`,
@@ -52,6 +54,7 @@ class BackendStore {
           ...JSON.parse(row.definition),
           updatedAt: row.updated_at,
           config: this.config(ioid, row.name, true),
+          schedule: this.schedule(ioid, row.name),
         }));
     } finally {
       db.close();
@@ -94,6 +97,9 @@ class BackendStore {
     try {
       db.transaction(() => {
         this.assertDraftRevision(db, d.name, expectedRevision);
+        if (!db.prepare('SELECT 1 FROM system_backends WHERE name=?').get(d.name) &&
+            db.prepare('SELECT COUNT(*) n FROM system_backends').get().n >= require('./scheduling.cjs').limits(this.settings()).maxBackendsPerDevice)
+          throw C.fail('BACKEND_LIMIT', 'Thiết bị đã đạt giới hạn số backend.', 409);
         db.prepare(
           "INSERT INTO system_backends(name,definition,updated_at) VALUES(?,?,?) ON CONFLICT(name) DO UPDATE SET definition=excluded.definition,updated_at=excluded.updated_at",
         ).run(d.name, JSON.stringify(d), Date.now());
@@ -119,6 +125,7 @@ class BackendStore {
         this.assertDraftRevision(db, name, expectedRevision);
         // Revoke new invocations first. Existing runs retain their immutable source and billing records.
         this.db.prepare("DELETE FROM backend_bindings WHERE ioid=? AND name=?").run(ioid, name);
+        this.clearSchedule(ioid, name);
         db.prepare("DELETE FROM system_backend_versions WHERE name=?").run(name);
         const deleted = db.prepare("DELETE FROM system_backends WHERE name=?").run(name).changes > 0;
         return { name, deleted };
@@ -157,6 +164,7 @@ class BackendStore {
       username: String(raw.username || ""),
       enabled: raw.enabled !== false,
     };
+    this.draft(ioid,name);
     if (!["bearer", "api-key", "basic"].includes(c.authType))
       throw C.fail("INVALID_AUTH", "Loại xác thực không hợp lệ.");
     if (raw.apiKey) {
@@ -189,6 +197,7 @@ class BackendStore {
         "INSERT INTO backend_bindings(ioid,name,config) VALUES(?,?,?) ON CONFLICT(ioid,name) DO UPDATE SET config=excluded.config",
       )
       .run(ioid, name, JSON.stringify(c));
+    if (!c.enabled) this.db.prepare('UPDATE backend_schedules SET enabled=0,pending_at=NULL,next_at=NULL,revision=revision+1 WHERE ioid=? AND name=? AND enabled=1').run(ioid,name);
     return this.config(ioid, name, true);
   }
   publish(ioid, name, deviceGrants = {}, expectedRevision) {
@@ -199,6 +208,7 @@ class BackendStore {
     const version = C.hash(d);
     const db = this.data(ioid);
     try {
+      require('./quota.cjs').assertDatabaseBackendQuota(db, require('./scheduling.cjs').limits(this.settings()).maxBackendsPerDevice);
       db.prepare(
         "INSERT OR IGNORE INTO system_backend_versions VALUES(?,?,?,?)",
       ).run(version, name, JSON.stringify(d), Date.now());
@@ -377,18 +387,30 @@ class BackendStore {
   claim(owner, limit = 32) {
     return this.db
       .transaction(() => {
+        const state = this.schedulingStatus();
+        const available = Math.max(0, Math.min(limit, state.maxConcurrent-state.running));
+        if (!available) return [];
         const rows = this.db
           .prepare(
-            "SELECT * FROM backend_runs WHERE status='queued' ORDER BY created LIMIT ?",
+            "SELECT * FROM backend_runs WHERE status='queued' AND scope<>'schedule' ORDER BY created,id LIMIT ?",
           )
-          .all(limit);
-        for (const row of rows)
+          .all(available);
+        const accepted=[];
+        for (const row of rows) {
+          if (row.deadline <= Date.now() || this.available(row.sync_id,row.id)<=0) {
+            this.complete(row.id,{cpuMs:0,error:{code:row.deadline<=Date.now()?'RUN_TIMEOUT':'BALANCE_EXHAUSTED',message:'Lượt chạy hết hạn hoặc SyncID hết số dư.'}});
+            continue;
+          }
           this.db
             .prepare(
               "UPDATE backend_runs SET status='running',owner=?,heartbeat=? WHERE id=? AND status='queued'",
             )
             .run(owner, Date.now(), row.id);
-        return rows.map((r) => ({ ...r, status: "running", owner }));
+          accepted.push({...row,status:'running',owner});
+        }
+        if (!this.db.prepare("SELECT 1 FROM backend_runs WHERE status='queued' AND scope<>'schedule' LIMIT 1").get())
+          accepted.push(...this.claimScheduled(owner,Math.min(available-accepted.length,Math.max(0,state.maxScheduled-state.scheduledRunning))));
+        return accepted;
       })
       .immediate();
   }
@@ -489,6 +511,8 @@ class BackendStore {
             outcome.incomplete ? 1 : 0,
             id,
           );
+        if (row.scope === 'schedule') this.db.prepare('UPDATE backend_schedules SET last_status=?,last_error=? WHERE last_run_id=?')
+          .run(error?'failed':'succeeded',error?String(error.message || error.code).slice(0,500):null,id);
         return this.view(this.raw(id));
       })
       .immediate();
@@ -597,9 +621,9 @@ class BackendStore {
       .immediate();
     const rows = this.db
       .prepare(
-        "SELECT * FROM backend_runs WHERE status='running' AND heartbeat<?",
+        "SELECT * FROM backend_runs WHERE status='running' AND heartbeat<? AND deadline<?",
       )
-      .all(Date.now() - 30000);
+      .all(Date.now() - 30000, Date.now() - 2000);
     for (const row of rows)
       this.complete(row.id, {
         error: {
@@ -627,4 +651,5 @@ class BackendStore {
     this.db.close();
   }
 }
+require('./scheduling.cjs').installScheduling(BackendStore);
 module.exports = { BackendStore };

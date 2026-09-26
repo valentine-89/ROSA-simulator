@@ -187,5 +187,16 @@ khi bàn giao; hướng dẫn nạp database, phát hành local và chạy mô p
       SyncID, quyền thiết bị và API key tại ROSA, kiểm tra rồi phát hành.
       Database nhập không tự bật endpoint ngoài.
     </p>
+    <section>
+      <h2>Chạy định kỳ và mô phỏng lịch</h2>
+      <p>Phát hành backend nhận input {}, bật Định kỳ, chọn số nguyên giờ rồi Lưu lịch. Chu kỳ tối thiểu và hạn mức 100 backend/thiết bị nằm trong /manage. Cờ định kỳ không mở API ngoài.</p>
+      <p>Job đến hạn chờ trong SQLite, chưa có isolate hoặc phí. Lượt gọi trực tiếp được ưu tiên; lịch dùng tối đa 20% trần đồng thời toàn server. SyncID hết tiền thì bỏ kỳ; job lỗi không retry. Kỳ tiếp theo vẫn được xét. Lần đầu là mốc giờ sau đủ chu kỳ, các kỳ lỡ không chạy bù hàng loạt.</p>
+      <pre>Tạo backend tong-hop chạy mỗi 2 giờ, input {}, đọc macro inventory-report.
+Sinh template offline cho ROSA Simulator; không thêm credential thật.
+Kiểm tra cú pháp/phân tích tĩnh, chạy thử V8 và kiểm tra log/CPU.
+Phát hành trong simulator, bật lịch và dùng +1 giờ mô phỏng đến hạn.
+Khi nhập ROSA, cấu hình SyncID, phát hành và bật lịch riêng.</pre>
+      <p>AI chat có schedule_backend / schedule_device_backend; đọc get_backend trước để lấy revision của source và lịch. Kết quả gần nhất mở log/CPU/phí. Đồng hồ mô phỏng chỉ thay thời gian lịch, không thay timeout thực thi.</p>
+    </section>
   </body>
 </html>

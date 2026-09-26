@@ -160,6 +160,11 @@ class IsolatePool {
     if (slot.child.stdin.writable)
       slot.child.stdin.write(JSON.stringify(value) + "\n");
   }
+  availableSlots(memoryMb) {
+    const reserve = memoryMb * 3;
+    return Math.max(0, this.children.reduce((n,s) => n + Math.max(0,Math.floor((this.poolMemoryMb-s.reserved)/reserve)),0)
+      + Math.max(0,this.poolCount-this.children.length)*Math.max(0,Math.floor((this.poolMemoryMb-128)/reserve)) - this.queue.length);
+  }
   execute(job, sdk, onUsage) {
     if (this.closed) throw fail("RUNNER_CLOSED", "Runner đã đóng.", 503);
     return new Promise((resolve) => {

@@ -13,17 +13,41 @@ class BackendService {
     this.timer = setInterval(() => this.pump(), 500);
     this.timer.unref();
     this.lastRecovery = 0;
+    this.closed = false;
+    this.scanTimer = setTimeout(() => this.scan(), 0);
+    this.scanTimer.unref();
+  }
+  scan() {
+    if (this.closed) return;
+    try {
+      if (this.store.scanSchedules() === 100) {
+        this.scanTimer=setTimeout(() => this.scan(),0);
+      } else {
+        const hour=3600000;
+        this.scanTimer=setTimeout(() => this.scan(), hour-Date.now()%hour);
+      }
+      this.scanTimer.unref();
+      this.pump();
+    } catch(e) {
+      this.lastError=String(e.message);
+      this.scanTimer=setTimeout(() => this.scan(),3600000-Date.now()%3600000);
+      this.scanTimer.unref();
+    }
   }
   pump() {
+    if (this.closed) return;
     try {
       if (Date.now() - this.lastRecovery > 10000) {
         this.store.recover();
         this.lastRecovery = Date.now();
       }
-      if (this.running.size >= 2048) return;
+      const queuedMemory=this.store.db.prepare("SELECT MAX(memory_mb) m FROM backend_runs WHERE status='queued'").get().m || 0;
+      const memory=Math.max(queuedMemory,this.store.settings().memoryMb || 10);
+      const slots=this.pool.availableSlots ? this.pool.availableSlots(memory) : Math.max(0,this.store.schedulingStatus().maxConcurrent-this.running.size);
+      if (!slots) return;
       for (const run of this.store.claim(
         this.owner,
-        Math.min(32, 2048 - this.running.size),
+        Math.min(32,slots),
       ))
         void this.execute(run);
     } catch (e) {
@@ -32,7 +56,6 @@ class BackendService {
   }
   async execute(run) {
     this.running.add(run.id);
-    const definition = this.store.runDefinition(run);
     let cpu = 0;
     const operations = new Set();
     const heartbeat = setInterval(() => {
@@ -43,6 +66,7 @@ class BackendService {
     }, 1000);
     heartbeat.unref();
     try {
+      const definition = this.store.runDefinition(run);
       const outcome = await this.pool.execute(
         {
           id: run.id,
@@ -101,9 +125,12 @@ class BackendService {
     } finally {
       clearInterval(heartbeat);
       this.running.delete(run.id);
+      if (!this.closed) setImmediate(() => this.pump());
     }
   }
   close() {
+    this.closed=true;
+    clearTimeout(this.scanTimer);
     clearInterval(this.timer);
     this.pool.close();
   }
@@ -115,5 +142,6 @@ module.exports = {
   ...require("./database.cjs"),
   ...require("./remote.cjs"),
   ...require("./authoring.cjs"),
+  ...require("./quota.cjs"),
   ...C,
 };

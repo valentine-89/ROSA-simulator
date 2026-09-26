@@ -358,3 +358,20 @@ summary {
     min-width: 90px;
   }
 }
+#scheduleControls {
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  flex: 0 0 auto;
+}
+#scheduleControls label {
+  flex-direction: row;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  min-width: 0;
+}
+#scheduleControls input { margin: 0; }
+#scheduleState { font-size: 12px; }

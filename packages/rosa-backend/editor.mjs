@@ -62,6 +62,18 @@ let ioid = "",
   busy = false,
   requestId = "",
   lastInputHash = "";
+let scheduleRevision=0, scheduleMinimum=1, deviceQuota=100, scheduleRunId='';
+function showSchedule(s={}) {
+  scheduleRevision=s.revision || 0;
+  scheduleRunId=s.lastRunId || '';
+  $("scheduleResult").disabled=!scheduleRunId;
+  $("scheduleEnabled").checked=!!s.enabled;
+  $("scheduleHours").min=String(scheduleMinimum);
+  $("scheduleHours").value=String(s.intervalHours || scheduleMinimum);
+  const states={running:'Đang chạy',succeeded:'Đã chạy',failed:'Lỗi',skipped:'Bỏ lượt'};
+  $("scheduleState").textContent=[s.pendingAt?'Đang chờ':s.enabled&&s.nextAt?'Tiếp: '+new Date(s.nextAt).toLocaleString():'',states[s.lastStatus] || ''].filter(Boolean).join(' · ');
+  $("scheduleState").title=s.lastError || '';
+}
 const emptySchema = {
   type: "object",
   properties: {},
@@ -145,6 +157,7 @@ function load(d) {
     2,
   );
   const c = d.config || {};
+  showSchedule(d.schedule);
   $("syncId").value =
     c.syncId ||
     (simulation ? "SIM_SYNC" : sessionStorage.getItem("backend-payer") || "");
@@ -183,7 +196,12 @@ async function refresh() {
   ioid = value.ioid;
   simulation = value.simulation;
   backends = value.backends;
-  $("context").textContent = ioid;
+  scheduleMinimum=value.settings.scheduleMinHours || 1;
+  deviceQuota=value.settings.maxBackendsPerDevice || 100;
+  $("context").textContent = `${ioid} · ${backends.length}/${deviceQuota}`;
+  $("advanceSchedule").hidden=!simulation;
+  const current=backends.find(d=>d.name===selected);
+  if(current) showSchedule(current.schedule);
   $("mode").textContent = simulation ? "Mô phỏng local" : "";
   $("run").textContent = simulation ? "Chạy mô phỏng" : "Chạy thật";
   $("connect").hidden = true;
@@ -238,6 +256,18 @@ $("new").onclick = () =>
   load({ name: "backend-moi", source: exampleSources["Trả JSON"] });
 $("save").onclick = () => action(save);
 $("configSave").onclick = () => action(configure);
+$("scheduleSave").onclick = () => action(async()=>{
+  const s=await api({action:'schedule',name:$("name").value,expectedScheduleRevision:scheduleRevision,schedule:{enabled:$("scheduleEnabled").checked,intervalHours:Number($("scheduleHours").value)}});
+  showSchedule(s);status('Đã lưu lịch.');await refresh();
+});
+$("advanceSchedule").onclick = () => action(async()=>{
+  await api({action:'advanceSchedule',hours:1});await refresh();status('Đã tiến 1 giờ mô phỏng.');
+});
+$("scheduleResult").onclick = () => action(async()=>{
+  const r=await api(null,`?runId=${encodeURIComponent(scheduleRunId)}`);
+  $("output").textContent=JSON.stringify({result:r.result,error:r.error,logs:r.logs},null,2);
+  $("usage").textContent=`${r.status} · CPU ${r.cpuMs.toFixed(2)} ms · CPU ${r.cpuCost.toFixed(6)} + dịch vụ ${r.serviceCost.toFixed(6)}`;
+});
 for (const id of ["syntax", "analyze"])
   $(id).onclick = () =>
     action(async () => {

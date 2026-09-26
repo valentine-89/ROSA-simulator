@@ -1,9 +1,9 @@
 const C = require('./contract.cjs');
-const TOOLS = ['list_backends', 'get_backend', 'upsert_backend', 'delete_backend', 'check_backend', 'publish_backend', 'run_backend', 'get_backend_run'];
+const TOOLS = ['list_backends', 'get_backend', 'upsert_backend', 'delete_backend', 'check_backend', 'publish_backend', 'run_backend', 'get_backend_run', 'schedule_backend'];
 function createBackendAuthoring({ store, verifySession, verifyDevices, settings, pump, changed }) {
     const detail = (ioid, name) => {
         const definition = store.draft(ioid, name);
-        return { definition, revision: C.hash(definition), config: store.config(ioid, name, true) };
+        return { definition, revision: C.hash(definition), config: store.config(ioid, name, true), schedule: store.schedule(ioid,name) };
     };
     return async function execute(tool, raw, context) {
         if (!TOOLS.includes(tool))
@@ -20,7 +20,7 @@ function createBackendAuthoring({ store, verifySession, verifyDevices, settings,
         if (context.signal?.aborted)
             throw C.fail('WORKFLOW_CANCELLED', 'Tác vụ đã hủy.');
         if (tool === 'list_backends')
-            return { ioid, backends: store.list(ioid).map(d => ({ name: d.name, description: d.description || '', revision: C.hash(Object.fromEntries(Object.entries(d).filter(([k]) => !['config', 'updatedAt'].includes(k)))), enabled: d.config.enabled, published: d.config.published || false, externalEnabled: d.config.externalEnabled })), editorUrl: '/backend' };
+            return { ioid, backends: store.list(ioid).map(d => ({ name: d.name, description: d.description || '', revision: C.hash(Object.fromEntries(Object.entries(d).filter(([k]) => !['config', 'updatedAt','schedule'].includes(k)))), enabled: d.config.enabled, published: d.config.published || false, externalEnabled: d.config.externalEnabled, schedule:d.schedule })), limits:store.schedulingStatus(), editorUrl: '/backend' };
         if (tool === 'get_backend_run') {
             const row = store.raw(String(parameters.runId || parameters.runid || ''));
             if (row.ioid !== ioid)
@@ -31,6 +31,13 @@ function createBackendAuthoring({ store, verifySession, verifyDevices, settings,
         if (tool === 'get_backend')
             return detail(ioid, name);
         const expected = parameters.expectedRevision ?? parameters.expectedrevision;
+        if (tool === 'schedule_backend') {
+            const current=detail(ioid,name);
+            if (expected!==current.revision) throw C.fail('REVISION_CONFLICT','Đọc lại backend trước khi đổi lịch.',409);
+            const schedule=store.setSchedule(ioid,name,parameters.schedule,parameters.expectedScheduleRevision ?? parameters.expectedschedulerevision);
+            changed?.(ioid,name,context.syncId);
+            return {...detail(ioid,name),schedule};
+        }
         if (tool === 'delete_backend') {
             const result = store.remove(ioid, name, expected);
             changed?.(ioid, name, context.syncId);

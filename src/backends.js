@@ -1,9 +1,9 @@
 const fs=require('fs'),path=require('path'),crypto=require('crypto');
 const C=require('../packages/rosa-backend/index.cjs');const {DatabasePool}=require('../packages/rosa-backend/database.cjs');
-const settings={timeoutSeconds:180,memoryMb:10,cpuPrice:1,servicePrice:0.001};
+const settings={timeoutSeconds:180,memoryMb:10,cpuPrice:1,servicePrice:0.001,maxConcurrent:20,maxBackendsPerDevice:100,scheduleMinHours:1};
 function createBackendApi(sim){
   const dbPool=new DatabasePool(4);
-  const service=new C.BackendService({statePath:path.join(sim.stateDir,'backends.sqlite'),iodataDir:sim.iodataDir,simulation:true,runner:{mode:'local',poolCount:2,poolMemoryMb:512},sdk:async({run,definition,method,args,operationId,store})=>{
+  const service=new C.BackendService({settings:()=>settings,statePath:path.join(sim.stateDir,'backends.sqlite'),iodataDir:sim.iodataDir,simulation:true,runner:{mode:'local',poolCount:2,poolMemoryMb:512},sdk:async({run,definition,method,args,operationId,store})=>{
     const cost=method==='db.report'?run.service_price*10:method==='iot.command'?run.service_price*5:method==='db.macro'?run.service_price:0;
     const prior=store.beginOperation(run.id,operationId,method==='db.report'?'db_report':'db_exec',cost);if(prior){if(prior.status==='done')return JSON.parse(prior.result);throw C.fail('OPERATION_UNCERTAIN','Thao tác đã gửi.');}
     try{let result;if(method.startsWith('db.')){
@@ -27,12 +27,14 @@ function createBackendApi(sim){
     if(url.pathname!=='/api/backends'&&!external&&!page)return false;
     try{
       if(url.pathname==='/api/backends'){
-        if(req.method==='GET'){const ioid=editorIoid(req),id=url.searchParams.get('runId');if(id){const row=service.store.raw(id);if(row.ioid!==ioid)throw C.fail('NOT_FOUND','Không tìm thấy lượt chạy.',404);json(res,200,valueFor(row,true));}else json(res,200,{ioid,simulation:true,settings,backends:service.store.list(ioid)});return true;}
+        if(req.method==='GET'){const ioid=editorIoid(req),id=url.searchParams.get('runId');if(id){const row=service.store.raw(id);if(row.ioid!==ioid)throw C.fail('NOT_FOUND','Không tìm thấy lượt chạy.',404);json(res,200,valueFor(row,true));}else json(res,200,{ioid,simulation:true,settings,scheduling:service.store.schedulingStatus(),backends:service.store.list(ioid)});return true;}
         sameOrigin(req);const b=await body(req);
         if(b.action==='connect'){const ioid=C.ioid(String(b.sessionId).split('@')[0]);res.setHeader('Set-Cookie','rosa_backend_session='+service.store.session(ioid)+'; HttpOnly; SameSite=Strict; Path=/');json(res,200,{ok:true,ioid});return true;}
         const ioid=editorIoid(req);let value;
         if(b.action==='check')value=C.analyze(b.source,b.syntaxOnly===true);
         else if(b.action==='save'){service.store.save(ioid,b.definition);value={ok:true};}
+        else if(b.action==='schedule')value=service.store.setSchedule(ioid,C.name(b.name),b.schedule,b.expectedScheduleRevision);
+        else if(b.action==='advanceSchedule'){if(!Number.isSafeInteger(b.hours)||b.hours<1||b.hours>8760)throw C.fail('INVALID_INTERVAL','Số giờ không hợp lệ.');service.store.db.prepare('INSERT INTO backend_schedule_clock VALUES(1,?) ON CONFLICT(id) DO UPDATE SET offset_ms=offset_ms+excluded.offset_ms').run(b.hours*3600000);while(service.store.scanSchedules()===100){}service.pump();value={now:service.store.scheduleNow(),scheduling:service.store.schedulingStatus()};}
         else if(b.action==='configure')value=service.store.configure(ioid,C.name(b.name),{...b.config,syncId:'SIM_SYNC'});
         else if(b.action==='publish')value=service.store.publish(ioid,b.name);
         else if(b.action==='run'){const d=C.definition(service.store.draft(ioid,b.name));value=service.store.submit({ioid,name:b.name,input:b.input,requestKey:b.requestId,scope:'editor',definition:d,settings,test:true});service.pump();}

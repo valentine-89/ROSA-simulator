@@ -50,6 +50,14 @@
           ><button data-tab="api">API &amp; SyncID</button>
         </div>
         <div id="code" class="tab"><div id="editor"></div></div>
+        <div class="row" id="scheduleControls">
+          <label><input id="scheduleEnabled" type="checkbox" /> Định kỳ</label>
+          <label>Mỗi <input id="scheduleHours" type="number" min="1" max="8760" value="1" style="width:5em" aria-label="Chu kỳ giờ" /> giờ</label>
+          <button id="scheduleSave">Lưu lịch</button>
+          <span id="scheduleState"></span>
+          <button id="scheduleResult" disabled>Kết quả gần nhất</button>
+          <button id="advanceSchedule" hidden>+1 giờ mô phỏng</button>
+        </div>
         <div id="permissions" class="tab" hidden>
           <label
             >Quyền macro / thiết bị<textarea

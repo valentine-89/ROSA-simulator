@@ -826,6 +826,7 @@ class SimulatorStore {
 
   replaceIoDataFile(sessionId, sourcePath, options = {}) {
     if (!fs.existsSync(sourcePath)) throw new Error('Sample database file not found.');
+    require('../packages/rosa-backend/quota.cjs').validateBackendImport(fs.readFileSync(sourcePath),100);
     const target = this.getIoDataFilePath(sessionId);
     ensureDir(path.dirname(target));
     fs.copyFileSync(sourcePath, target);

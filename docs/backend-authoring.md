@@ -42,3 +42,11 @@ CPU đo bằng V8; phí chỉ trừ trong sổ mô phỏng `.sim/state/backends.
 Xuất package template từ Simulator, gồm sample database có code. Import database vào ROSA, mở Backend, cấu hình SyncID thật, xác minh thiết bị khác nếu có, kiểm tra và phát hành. API key, cấu hình trả phí và publication của Simulator không đi theo database. ROSA cần quản trị đặt giá CPU trong `/manage` trước khi nhận lượt chạy thật.
 
 Code sinh bởi AI chỉ sửa template và manifest. Không sửa `server.js`, `src`, package dependencies hoặc runner. Không dùng credential thật trong ví dụ. Timeout hoàn tác transaction đang mở nhưng không hoàn tác macro/lệnh đã commit; khi runner mất kết nối, đối soát tác động trước khi chạy lại.
+
+## Lịch định kỳ offline
+
+Backend nhận input `{}`; phát hành rồi bật **Định kỳ**, chọn số nguyên giờ và **Lưu lịch**. Mặc định tối thiểu 1 giờ, tối đa 100 backend/thiết bị, 20 lượt chạy toàn simulator; job định kỳ dùng tối đa 4 lượt sau các lượt gọi trực tiếp. Không có isolate/giữ ngân sách cho lịch chưa tới lượt.
+
+Dùng **+1 giờ mô phỏng** để đi tới lần chạy hiển thị. Lần đầu là mốc giờ sau đủ chu kỳ (có thể cần bấm hai lần với chu kỳ 1h). Đồng hồ này chỉ đổi lịch; code vẫn chạy V8 native, timeout và CPU tính thật. **Kết quả gần nhất** mở kết quả, lỗi, log và phí mô phỏng. Lỗi không retry, kỳ sau vẫn được xét; các kỳ lỡ không chạy bù hàng loạt.
+
+Prompt AI: “Tạo backend tong-hop nhận input {}, đọc macro inventory-report, tạo template offline cho ROSA Simulator và hướng dẫn kiểm tra lịch mỗi 2 giờ. Không nhúng key/SyncID thật.” Import sang ROSA không tự bật lịch hay chép payer; phải cấu hình và bật lịch riêng.

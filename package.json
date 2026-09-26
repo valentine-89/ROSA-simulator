@@ -6,7 +6,7 @@
   "main": "server.js",
   "scripts": {
     "check:backend-native": "node --no-node-snapshot scripts/check-backend-native.cjs",
-    "test:backend": "node --test --test-timeout=90000 packages/rosa-backend/test.cjs packages/rosa-backend/integration.test.cjs packages/rosa-backend/remote.test.cjs scripts/test-backends.cjs",
+    "test:backend": "node --test --test-timeout=90000 packages/rosa-backend/test.cjs packages/rosa-backend/integration.test.cjs packages/rosa-backend/remote.test.cjs packages/rosa-backend/scheduling.test.cjs scripts/test-backends.cjs",
     "validate:backends": "node scripts/validate-backends.cjs",
     "start": "node server.js",
     "validate": "node scripts/validate.js",
