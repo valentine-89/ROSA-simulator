@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  const assetRoot=new URL('.',document.currentScript.src).pathname;
   const root = document.getElementById('inventory-root');
   const contextNode = document.getElementById('inventory-page-context');
   const publicPage = Boolean(contextNode);
@@ -187,7 +188,7 @@
       // Reuse the existing 30-row macro; one overlapping probe avoids an empty last page.
       const tail=rows.length===historyPageSize?await macro('warehouse-history',{...params,offset:pageOffset+historyPageSize-1}):[];
       if(version!==loadVersion)return;
-      const html=rows.map(e=>'<tr tabindex="0" aria-selected="false" data-event="'+esc(e.request_id)+'"><td>'+esc(date(e.captured_at||Number(e.requested_at)))+'</td><td class="staff-phone">'+esc(e.actor||'—')+'</td><td><span class="badge" title="'+esc(e.error||'')+'">'+esc(e.error==='IMAGE_TOO_DARK'?'Ảnh quá tối':labels[e.status]||e.status)+'</span></td><td class="number">'+esc(e.quantity??'—')+'</td><td class="number">'+esc(e.quantity==null?'—':delta(e.delta))+'</td></tr>').join('');
+      const html=rows.map(e=>'<tr tabindex="0" aria-selected="false" data-event="'+esc(e.request_id)+'"><td>'+esc(date(e.captured_at||Number(e.requested_at)))+'</td><td class="staff-phone">'+esc(String(e.actor||'').startsWith('backend:')?'Tự động':e.actor||'—')+'</td><td><span class="badge" title="'+esc(e.error||'')+'">'+esc(e.error==='IMAGE_TOO_DARK'?'Ảnh quá tối':labels[e.status]||e.status)+'</span></td><td class="number">'+esc(e.quantity??'—')+'</td><td class="number">'+esc(e.quantity==null?'—':delta(e.delta))+'</td></tr>').join('');
       byId('history').innerHTML=html||'<tr><td colspan="5" class="empty">Chưa có lịch sử.</td></tr>';
       offset=pageOffset;hasNextPage=tail.length>1;
       byId('history').closest('.history-scroll').scrollTop=0;
@@ -286,13 +287,18 @@
     let mapping=[];try{mapping=JSON.parse(camera?.product_map||'[]');}catch{};(mapping.length?mapping:[{}]).forEach(addMap);
     byId('add-map').onclick=()=>addMap();byId('cancel-camera').onclick=()=>{closeCameraEditor();renderCameraTabs(selected);};
     byId('map-rows').onclick=e=>{if(e.target.closest('[data-remove]'))e.target.closest('tr').remove();};
+    const scheduleReady=cfg.cameraSchedules ? import(assetRoot+'camera-schedules-ui.js?v=1').then(module=>module.mount(byId('camera-form'),camera,cfg,macro)) : Promise.resolve(null);
+    scheduleReady.catch(error=>{if(editor.contains(byId('camera-form')))byId('camera-error').textContent=error.message;});
     byId('camera-form').onsubmit=async e=>{
       e.preventDefault();const form=e.target;const submit=form.querySelector('[type=submit]');submit.disabled=true;
       try {
+        const scheduleEditor=await scheduleReady;
         const productMap=Array.from(byId('map-rows').rows).map(tr=>Object.fromEntries(Array.from(tr.querySelectorAll('[data-map]')).map(n=>[n.dataset.map,n.value.trim()])));
         if(!productMap.length||new Set(productMap.map(m=>m.code)).size!==productMap.length||new Set(productMap.map(m=>m.sku)).size!==productMap.length)throw new Error('Mỗi sản phẩm cần một mã Vision và mã sản phẩm riêng.');
         const cameraId=camera?.camera_id||crypto.randomUUID();
         await macro('warehouse-camera-save',{camera_id:cameraId,area_name:form.elements.area_name.value.trim(),api_key:form.elements.api_key.value.trim(),enabled:form.elements.enabled.checked?1:0,product_map:JSON.stringify(productMap),...(iotMode?{io_command:form.elements.io_command.value.trim()}: {})});
+        camera={...(camera||{}),camera_id:cameraId};
+        if(scheduleEditor)try{await scheduleEditor.save(cameraId,form.elements.enabled.checked);}catch(error){throw new Error('Đã lưu camera; chưa lưu được lịch: '+error.message);}
         selected=cameraId;closeCameraEditor();await load();
       } catch(err) {form.querySelector('#camera-error').textContent=err.message;} finally {submit.disabled=false;}
     };

@@ -1076,7 +1076,7 @@ async function handleRuntimeApi(req, res, url) {
     return true;
   }
 
-  const apiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/(iotelemetry|iotimeseries|iodata|dataquery)$/);
+  const apiMatch = url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/(iotelemetry|iotimeseries|iodata|dataquery|data)$/);
   if (!apiMatch) return false;
   const sessionId = decodeURIComponent(apiMatch[1]);
   const syncId = decodeURIComponent(apiMatch[2]);
@@ -1110,7 +1110,7 @@ async function handleRuntimeApi(req, res, url) {
     json(res, 200, { c1: 'ok', c2: 0 });
     return true;
   }
-  if ((action === 'iodata' || action === 'dataquery') && req.method === 'POST') {
+  if ((action === 'iodata' || action === 'dataquery' || action === 'data') && req.method === 'POST') {
     const body = await readBody(req);
     json(res, 200, store.executeMacro(sessionId, syncId, body));
     return true;

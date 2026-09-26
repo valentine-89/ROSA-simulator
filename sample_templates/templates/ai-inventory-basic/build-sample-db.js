@@ -181,6 +181,7 @@ function build(file = path.join(__dirname, 'sample.sqlite'), mode = 'basic') {
   db.prepare('INSERT INTO system_cmds(cmd_id,command_template,sync_id,params_schema) VALUES (?,?,?,?)').run('warehouse-count','ai-count','<<syncid>>',JSON.stringify({camera_id:cameraParam,request_id:{type:'string',required:true,maxLength:36,pattern:'^[0-9a-fA-F-]{36}$'}}));
   db.prepare("UPDATE system_pages SET enabled=0 WHERE page_id='warehouse'").run();
   db.prepare("UPDATE system_cmds SET enabled=0 WHERE cmd_id='warehouse-count'").run();
+  require('./camera-schedules.cjs').install(db);
   if(db.pragma('integrity_check',{simple:true})!=='ok') throw new Error('Invalid sample database');
   db.close();
 }

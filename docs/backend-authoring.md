@@ -50,3 +50,7 @@ Backend nhận input `{}`; phát hành rồi bật **Định kỳ**, chọn số
 Dùng **+1 giờ mô phỏng** để đi tới lần chạy hiển thị. Lần đầu là mốc giờ sau đủ chu kỳ (có thể cần bấm hai lần với chu kỳ 1h). Đồng hồ này chỉ đổi lịch; code vẫn chạy V8 native, timeout và CPU tính thật. **Kết quả gần nhất** mở kết quả, lỗi, log và phí mô phỏng. Lỗi không retry, kỳ sau vẫn được xét; các kỳ lỡ không chạy bù hàng loạt.
 
 Prompt AI: “Tạo backend tong-hop nhận input {}, đọc macro inventory-report, tạo template offline cho ROSA Simulator và hướng dẫn kiểm tra lịch mỗi 2 giờ. Không nhúng key/SyncID thật.” Import sang ROSA không tự bật lịch hay chép payer; phải cấu hình và bật lịch riêng.
+
+## Command và lịch camera
+
+SDK có rosa.page.command(pageId,commandId,params), cùng permissions.pages và quyền publicApi.backendCommands trên trang. Xem [template kho AI, dữ liệu giả và prompt AI](warehouse-camera-schedules.md).

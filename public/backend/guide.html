@@ -198,5 +198,17 @@ Phát hành trong simulator, bật lịch và dùng +1 giờ mô phỏng đến 
 Khi nhập ROSA, cấu hình SyncID, phát hành và bật lịch riêng.</pre>
       <p>AI chat có schedule_backend / schedule_device_backend; đọc get_backend trước để lấy revision của source và lịch. Kết quả gần nhất mở log/CPU/phí. Đồng hồ mô phỏng chỉ thay thời gian lịch, không thay timeout thực thi.</p>
     </section>
+    <section><h2>Gọi command của trang</h2>
+      <pre>await rosa.page.command('warehouse-auto-camera1', 'warehouse-auto-count-camera1', {camera_id:'camera1'});</pre>
+      <p>Backend cần permissions.pages với đúng trang/command. Trang cần publicApi.allowedCommands và publicApi.backendCommands cho đúng tên backend; cùng thiết bị và SyncID. Host giữ khóa và request_id, không dùng danh tính người đăng nhập. Command cần số điện thoại người thực hiện không dùng cho lượt tự động.</p>
+      <p>Kho AI: trong cài đặt camera bật Tự động mỗi giờ, chọn Cả ngày hoặc Khung giờ UTC+7. Luồng tự động dùng AI trực tiếp cho cả bản cơ bản và IoT. Hàng chờ AI không giữ isolate; tắt lịch hoặc hết khung giờ sẽ bỏ yêu cầu chưa gửi. Native Date.now(), toISOString() và getUTCHours() đọc thời gian máy.</p>
+      <pre>AI: tạo template kho AI offline với cameraSchedules:true; dùng camera-schedules.cjs,
+camera-schedules-ui.js, warehouse-schedule-get và rosa.page.command.
+Mock trong SIM_STATE_DIR/mock-camera-counts.json:
+{"IO123abcd":{"camera-id":{"type1":12}}}
+Chọn Cả ngày, dùng +1 giờ mô phỏng tới lần chạy; kiểm tra tồn kho và actor Tự động.
+Không nhúng khóa; không gửi IoT khi tự động; giữ QR thủ công.</pre>
+      <p>Mock thiếu số đếm trả 0, không có ảnh và không gọi camera thật. Đồng hồ mô phỏng lịch không đổi Date trong code. Import sang ROSA không tự bật lịch hoặc sao chép payer.</p>
+    </section>
   </body>
 </html>

@@ -11,6 +11,7 @@ import { autocompletion } from "@codemirror/autocomplete";
 import { setDiagnostics } from "@codemirror/lint";
 const $ = (id) => document.getElementById(id);
 const exampleSources = {
+  "Command của trang": 'export default async (input, rosa) => {\n  return await rosa.page.command("my-page", "my-command", input);\n}',
   "Trả JSON":
     'export default async function main(input, rosa) {\n  console.log("Bắt đầu");\n  return { ok: true, input };\n}',
   "Đọc / ghi macro":
@@ -32,6 +33,7 @@ const sdkOptions = [
   "rosa.iot.latest",
   "rosa.iot.timeseries",
   "rosa.iot.command",
+  "rosa.page.command",
   "console.log",
 ].map((label) => ({ label, type: "function" }));
 const editor = new EditorView({

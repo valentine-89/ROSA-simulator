@@ -20,6 +20,7 @@ const METHODS = [
   "iot.latest",
   "iot.timeseries",
   "iot.command",
+  "page.command",
 ];
 function fail(code, message, status = 400) {
   return Object.assign(new Error(message), { code, status });
@@ -232,6 +233,14 @@ function definition(raw) {
   );
   d.outputSchema = validateSchema(d.outputSchema || { type: "object" });
   d.permissions = d.permissions || { macros: [], reports: [], devices: {} };
+  if (d.permissions.pages !== undefined) {
+    const pages = d.permissions.pages;
+    const id = /^[A-Za-z0-9._:-]{1,128}$/;
+    if (!pages || typeof pages !== 'object' || Array.isArray(pages) || Object.keys(pages).length > 100 ||
+        Object.entries(pages).some(([page, commands]) => !id.test(page) || !Array.isArray(commands) ||
+          commands.length > 100 || commands.some(command => typeof command !== 'string' || !id.test(command))))
+      throw fail('INVALID_PERMISSIONS', 'pages phải khai báo tên trang và danh sách command.');
+  }
   for (const field of ["macros", "reports"])
     if (
       !Array.isArray(d.permissions[field]) ||
@@ -279,6 +288,11 @@ function assertCapability(d, method, args) {
   json(args);
   if (!METHODS.includes(method))
     throw fail("CAPABILITY_DENIED", "SDK không được hỗ trợ.", 403);
+  if (method === 'page.command') {
+    if (!d.permissions.pages?.[args[0]]?.includes(args[1]))
+      throw fail('CAPABILITY_DENIED', 'Trang/command chưa được cấp quyền.', 403);
+    return;
+  }
   if (method.startsWith("db.")) {
     if (
       !(

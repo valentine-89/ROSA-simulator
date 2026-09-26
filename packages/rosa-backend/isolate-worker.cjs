@@ -78,6 +78,7 @@ async function execute(message) {
         return response.value;
       };
       globalThis.rosa=Object.freeze({
+        page:Object.freeze({command:(page,name,params={})=>call('page.command',[page,name,params])}),
         db:Object.freeze({macro:(name,params={})=>call('db.macro',[name,params]),report:(name,params={})=>call('db.report',[name,params])}),
         iot:Object.freeze({latest:alias=>call('iot.latest',[alias]),timeseries:(alias,query={})=>call('iot.timeseries',[alias,query]),command:(alias,name,params={})=>call('iot.command',[alias,name,params])})
       });
