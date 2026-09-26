@@ -9,6 +9,8 @@ function backendPageCommand(sim,run,args,operationId){
     const {api}=pageCommandGrant(db,{pageId,commandId,backendName:run.name,syncId:run.sync_id});
     const cmd=sim.readSystemCommand(run.ioid,commandId);
     if(api.commandTarget?.type!=='ai-count'){
+      const target=sim.readPageCommandTarget(run.ioid,pageId,commandId);
+      if(target.targetIoid!==run.ioid)throw Error('Backend command chỉ được dùng thiết bị hiện tại.');
       if(/<<(phone|email|username)>>/i.test(cmd.command_template))throw Error('Command cần người thực hiện.');
       const value=sim.normalizeBackendCommandParams(params,cmd.params_schema);
       const command=String(cmd.command_template).replace(/<<([A-Za-z_][A-Za-z0-9_]*)>>/g,(_,k)=>value[k]);
@@ -17,7 +19,7 @@ function backendPageCommand(sim,run,args,operationId){
     const hex=crypto.createHash('sha256').update(run.id+':'+operationId).digest('hex');
     const requestId=hex.slice(0,8)+'-'+hex.slice(8,12)+'-4'+hex.slice(13,16)+'-a'+hex.slice(17,20)+'-'+hex.slice(20,32);
     const values=sim.normalizeBackendCommandParams({...params,request_id:requestId},cmd.params_schema);
-    const camera=db.prepare('SELECT * FROM system_ai_cameras WHERE camera_id=? AND sync_id=? AND enabled=1').get(values.camera_id,run.sync_id);
+    const camera=db.prepare('SELECT * FROM system_ai_cameras WHERE camera_id=? AND sync_id=? AND enabled=1').get(values[api.commandTarget.cameraParam||'camera_id'],run.sync_id);
     if(!camera)throw Error('Camera không thuộc SyncID này.');
     const macro=api.commandTarget.callbackMacro||camera.callback_macro;
     if(!db.prepare("SELECT 1 FROM system_service_macros WHERE name=? AND service='ai-count'").get(macro))throw Error('AI callback không hợp lệ.');
