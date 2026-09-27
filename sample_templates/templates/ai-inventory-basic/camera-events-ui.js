@@ -37,8 +37,8 @@ export async function mount(form,camera,cfg,macro,onSettings) {
       const registered=settings.events.url===settings.expected_url;
       status.textContent=(registered?'Đã đăng ký':settings.events.url?'Đã đăng ký nơi khác':'Chưa đăng ký')+
         (settings.motion?.enabled?(settings.motion.mode==='settled'?' · Sau ổn định':' · Khi thay đổi'):' · Phát hiện đang tắt');
-      button.textContent=registered?'Đăng ký lại':settings.events.url?'Đăng ký thay thế':'Đăng ký sự kiện';
-      button.disabled=!camera.enabled||!!key.value.trim();
+      button.textContent=registered?'Đã đăng ký':settings.events.url?'Đăng ký thay thế':'Đăng ký sự kiện';
+      button.disabled=registered||!camera.enabled||!!key.value.trim();
     }
     key.addEventListener('input',render);render();
     button.onclick=async()=>{
