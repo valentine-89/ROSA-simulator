@@ -58,3 +58,23 @@ body:not(.employee) .tabs .add-camera-tab{border:1px solid color-mix(in srgb,cur
 @container(max-width:280px){.history-heading{gap:3px}.history-heading h2{font-size:13px}.history-title{gap:3px;flex-shrink:0}.history-tools{gap:2px}.history-heading .check{gap:0}.history-heading input{margin:3px}.history-pager button{width:21px}.history-title #refresh{width:20px}}
 
 @media(max-width:680px){.warehouse-grid:has(#camera-editor:not([hidden])){grid-template-rows:minmax(0,1.9fr) minmax(0,.8fr) minmax(0,.8fr)}}
+
+/* Compact camera settings, with persistent labels on the input border. */
+#camera-editor .camera-overview{margin:12px 0 8px}
+#camera-editor .camera-overview.has-qr{grid-template-columns:minmax(0,1fr) 118px;gap:10px;align-items:center}
+#camera-editor .fields{gap:12px}
+#camera-editor .camera-field{position:relative;display:block}
+#camera-editor .camera-field>span{position:absolute;z-index:1;top:-8px;left:8px;max-width:calc(100% - 16px);padding:0 4px;background:var(--theme-card,#fff);font-size:11px;line-height:16px;white-space:nowrap}
+#camera-editor .camera-field>input{height:38px;padding:9px 10px 6px;font-size:13px}
+#camera-editor .camera-field:focus-within>span{color:var(--theme-primary,#087961)}
+#camera-editor .panel-heading h2{font-size:15px}
+#camera-editor .camera-schedule-controls{gap:6px;margin:8px 0;font-size:12px}
+#camera-editor .camera-schedule-controls select{padding:4px 6px;font-size:12px}
+.camera-event-controls{display:flex;align-items:center;justify-content:space-between;gap:5px 8px;flex-wrap:wrap;margin:8px 0 10px;font-size:12px}
+.camera-event-controls [role=status]{flex:1;min-width:130px}
+.camera-event-actions{display:flex;gap:5px;flex-wrap:wrap}
+#camera-editor .camera-event-actions button,#camera-editor #add-map{padding:5px 8px;font-size:12px}
+#camera-editor .map{margin:4px 0 8px}
+#camera-editor .map th{padding:5px 4px;font-size:11px}
+#camera-editor .camera-footer{margin-top:6px}
+@container(max-width:290px){#camera-editor .camera-overview.has-qr{grid-template-columns:minmax(0,1fr) 96px;gap:8px}}

@@ -28,5 +28,7 @@ for(const mode of ['basic','iot'])test(mode+': registered event reaches standard
   let run=first;for(let i=0;i<200&&['queued','running'].includes(run.status);i++){await new Promise(r=>setTimeout(r,30));run=await send('/bw/IOtest/'+name+'?runId='+first.runId,'GET',null,headers);}
   assert.equal(run.status,'succeeded',JSON.stringify(run));assert.equal(db.prepare('SELECT count(*) n FROM warehouse_events').get().n,1);
   assert.equal(db.prepare('SELECT quantity FROM warehouse_items').get().quantity,17);assert.equal(sim.listCommandLog(10).length,0);
+  await send(registration,'DELETE');assert.equal((await send(registration,'GET')).events.url,'');
+  await send(registration,'PUT',{name,token});assert.equal((await send(registration,'GET')).events.url,origin+'/bw/IOtest/'+name);
  } finally {api.close();await new Promise(r=>server.close(r));await new Promise(r=>setTimeout(r,300));api.service.store.close();db.close();sim.db.close();require('../packages/rosa-backend/test-cleanup.cjs')(state);}
 });

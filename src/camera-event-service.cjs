@@ -32,6 +32,9 @@ class CameraEventService {
       events:value.events,expected_url:this.url(ioid,name),
       config_url:`${this.visionUrl}/config?apikey=${encodeURIComponent(camera.api_key)}`};
   }
+  async unregister(ioid,syncId,cameraId) {
+    return this.request(this.camera(ioid,syncId,cameraId),'/api/camera/events','PUT',{url:''});
+  }
   async register(ioid,syncId,cameraId,{name,token}) {
     const camera=this.camera(ioid,syncId,cameraId),config=this.store.config(ioid,C.name(name));
     if(!camera.enabled||!config.enabled||!config.externalEnabled||config.authType!=='bearer'||config.syncId!==syncId||!C.secretMatches(token,config.keyHash))

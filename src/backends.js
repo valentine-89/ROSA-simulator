@@ -44,7 +44,7 @@ function createBackendApi(sim){
           const current=service.store.db.prepare('SELECT url FROM simulated_camera_subscriptions WHERE camera_hash=?').get(cameraHash)?.url||'';
           return new Response(JSON.stringify(init.method==='GET'?{id:camera.camera_id,events:{url:current},config:{motion:{enabled:true,mode:'settled'}},connection:{connected:true}}:{url:current}));
         }});
-        const value=req.method==='GET'?await api.read(ioid,'SIM_SYNC',cameraId,name):await api.register(ioid,'SIM_SYNC',cameraId,await body(req,4096));
+        const value=req.method==='GET'?await api.read(ioid,'SIM_SYNC',cameraId,name):req.method==='DELETE'?await api.unregister(ioid,'SIM_SYNC',cameraId):await api.register(ioid,'SIM_SYNC',cameraId,await body(req,4096));
         json(res,200,{...value,simulated:true});return true;
       }
       if(url.pathname==='/api/backends'){

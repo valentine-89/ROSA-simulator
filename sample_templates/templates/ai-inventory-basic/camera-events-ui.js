@@ -9,10 +9,11 @@ export function source(cameraId) {
 }
 export async function mount(form,camera,cfg,macro,onSettings) {
   const box=document.createElement('div');box.className='camera-event-controls';
-  box.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0';
   const status=document.createElement('span');status.setAttribute('role','status');
   const button=document.createElement('button');button.type='button';button.textContent='Đăng ký sự kiện';button.disabled=true;
-  box.append(status,button);form.querySelector('#add-map').closest('.panel-heading').before(box);
+  const remove=document.createElement('button');remove.type='button';remove.textContent='Hủy đăng ký';remove.hidden=true;
+  const actions=document.createElement('div');actions.className='camera-event-actions';actions.append(button,remove);
+  box.append(status,actions);form.querySelector('#add-map').closest('.panel-heading').before(box);
   if(!camera){status.textContent='Lưu camera để đăng ký';return;}
   status.textContent='Đang đọc camera…';
   const ioid=cfg.databaseSessionId.split('@')[0];
@@ -33,16 +34,20 @@ export async function mount(form,camera,cfg,macro,onSettings) {
     if(!form.isConnected)return;
     onSettings(settings);
     const key=form.querySelector('[name=api_key]');
+    let busy=false;
     function render(){
       const registered=settings.events.url===settings.expected_url;
       status.textContent=(registered?'Đã đăng ký':settings.events.url?'Đã đăng ký nơi khác':'Chưa đăng ký')+
         (settings.motion?.enabled?(settings.motion.mode==='settled'?' · Sau ổn định':' · Khi thay đổi'):' · Phát hiện đang tắt');
       button.textContent=registered?'Đã đăng ký':settings.events.url?'Đăng ký thay thế':'Đăng ký sự kiện';
-      button.disabled=registered||!camera.enabled||!!key.value.trim();
+      button.hidden=registered;
+      button.disabled=busy||!camera.enabled||!!key.value.trim();
+      remove.hidden=!settings.events.url;
+      remove.disabled=busy||!!key.value.trim();
     }
     key.addEventListener('input',render);render();
     button.onclick=async()=>{
-      button.disabled=true;
+      busy=true;render();
       try {
         const current=await backend(),existing=current.backends.find(item=>item.name===saved.backend_name);
         const definition={name:saved.backend_name,description:'Đếm camera khi nhận sự kiện Vision',source:source(camera.camera_id),
@@ -59,7 +64,18 @@ export async function mount(form,camera,cfg,macro,onSettings) {
         const result=await response.json();if(!response.ok)throw Error(result.message||'Không đăng ký được camera.');
         settings.events=result;form.querySelector('#camera-error').textContent='';
       } catch(error){if(form.isConnected)form.querySelector('#camera-error').textContent=error.message;}
-      finally{if(form.isConnected)render();}
+      finally{busy=false;if(form.isConnected)render();}
+    };
+    remove.onclick=async()=>{
+      busy=true;render();
+      try {
+        const response=await fetch(url,{method:'DELETE',credentials:'same-origin'});
+        const result=await response.json();if(!response.ok)throw Error(result.message||'Không hủy được đăng ký.');
+        settings.events=result;
+        await macro('warehouse-motion-save',{camera_id:camera.camera_id,vision_camera_id:settings.camera_id,enabled:'0'});
+        if(form.isConnected)form.querySelector('#camera-error').textContent='';
+      } catch(error){if(form.isConnected)form.querySelector('#camera-error').textContent=error.message;}
+      finally{busy=false;if(form.isConnected)render();}
     };
   } catch(error) {if(form.isConnected){status.textContent='Không đọc được đăng ký';form.querySelector('#camera-error').textContent=error.message;}}
 }
