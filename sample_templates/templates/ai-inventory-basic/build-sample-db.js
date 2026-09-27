@@ -182,6 +182,7 @@ function build(file = path.join(__dirname, 'sample.sqlite'), mode = 'basic') {
   db.prepare("UPDATE system_pages SET enabled=0 WHERE page_id='warehouse'").run();
   db.prepare("UPDATE system_cmds SET enabled=0 WHERE cmd_id='warehouse-count'").run();
   require('./camera-schedules.cjs').install(db);
+  require('./camera-events.cjs').install(db);
   if(db.pragma('integrity_check',{simple:true})!=='ok') throw new Error('Invalid sample database');
   db.close();
 }

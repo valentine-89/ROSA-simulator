@@ -25,8 +25,28 @@ function createBackendApi(sim){
     const asset=url.pathname.match(/^\/backend\/(editor\.(html|css|js)|page-sdk\.js|guide\.html)$/);
     if(req.method==='GET'&&(asset||url.pathname==='/backend')){const file=asset?asset[1]:'editor.html';res.writeHead(200,{'Content-Type':file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':'text/html; charset=utf-8'});res.end(fs.readFileSync(path.join(__dirname,'../public/backend',file)));return true;}
     const external=url.pathname.match(/^\/bw\/([^/]+)\/([^/]+)$/),page=url.pathname.match(/^\/api\/iot-page-backend\/([^/]+)\/([^/]+)$/);
-    if(url.pathname!=='/api/backends'&&!external&&!page)return false;
+    const cameraEvents=url.pathname.match(/^\/api\/ai-cameras\/([^/]+)\/events$/);
+    if(url.pathname!=='/api/backends'&&!external&&!page&&!cameraEvents)return false;
     try{
+      if(cameraEvents){
+        if(req.method!=='GET')sameOrigin(req);
+        const ioid=editorIoid(req),cameraId=decodeURIComponent(cameraEvents[1]),name=url.searchParams.get('name');
+        if(ioid!==url.searchParams.get('ioid'))throw C.fail('SESSION_CHANGED','Phiên thiết bị đã thay đổi.',409);
+        const {CameraEventService}=require('./camera-event-service.cjs');
+        const Database=require('../packages/rosa-backend/dependencies.cjs')('better-sqlite3');
+        service.store.db.exec('CREATE TABLE IF NOT EXISTS simulated_camera_subscriptions(camera_hash TEXT PRIMARY KEY,url TEXT NOT NULL)');
+        const api=new CameraEventService({file:id=>sim.getIoDataFilePath(id),store:service.store,publicUrl:'http://'+req.headers.host,fetch:async(target,init)=>{
+          const key=new URL(target).searchParams.get('apikey'),db=new Database(sim.getIoDataFilePath(ioid),{readonly:true});
+          let camera;try{camera=db.prepare('SELECT camera_id FROM system_ai_cameras WHERE api_key=?').get(key);}finally{db.close();}
+          if(!camera)throw C.fail('CAMERA_NOT_FOUND','Không tìm thấy camera.',404);
+          const cameraHash=C.hash(key);
+          if(init.method==='PUT')service.store.db.prepare('INSERT INTO simulated_camera_subscriptions VALUES(?,?) ON CONFLICT(camera_hash) DO UPDATE SET url=excluded.url').run(cameraHash,JSON.parse(init.body).url);
+          const current=service.store.db.prepare('SELECT url FROM simulated_camera_subscriptions WHERE camera_hash=?').get(cameraHash)?.url||'';
+          return new Response(JSON.stringify(init.method==='GET'?{id:camera.camera_id,events:{url:current},config:{motion:{enabled:true,mode:'settled'}},connection:{connected:true}}:{url:current}));
+        }});
+        const value=req.method==='GET'?await api.read(ioid,'SIM_SYNC',cameraId,name):await api.register(ioid,'SIM_SYNC',cameraId,await body(req,4096));
+        json(res,200,{...value,simulated:true});return true;
+      }
       if(url.pathname==='/api/backends'){
         if(req.method==='GET'){const ioid=editorIoid(req),id=url.searchParams.get('runId');if(id){const row=service.store.raw(id);if(row.ioid!==ioid)throw C.fail('NOT_FOUND','Không tìm thấy lượt chạy.',404);json(res,200,valueFor(row,true));}else json(res,200,{ioid,simulation:true,settings,scheduling:service.store.schedulingStatus(),backends:service.store.list(ioid)});return true;}
         sameOrigin(req);const b=await body(req);

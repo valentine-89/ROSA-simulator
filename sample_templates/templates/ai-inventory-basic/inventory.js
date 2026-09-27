@@ -307,7 +307,10 @@
     const form=byId('camera-form');let savedKey='';
     const updateConfigLink=()=>{const key=keyInput.value.trim()||savedKey;configLink.setAttribute('aria-disabled',String(!key));if(key)configLink.href='https://vision.ioeasy.com/config?apikey='+encodeURIComponent(key);else configLink.removeAttribute('href');};
     keyInput.addEventListener('input',updateConfigLink);updateConfigLink();
-    if(camera)macro('warehouse-camera-config',{camera_id:camera.camera_id}).then(rows=>{if(byId('camera-form')!==form)return;savedKey=rows[0]?.api_key||'';updateConfigLink();}).catch(()=>{if(byId('camera-form')===form)byId('camera-error').textContent='Không tải được link Config. Vui lòng mở lại cài đặt.';});
+    import(assetRoot+'camera-events-ui.js?v=1').then(module=>module.mount(form,camera,cfg,macro,settings=>{
+      if(byId('camera-form')!==form)return;
+      savedKey=new URL(settings.config_url).searchParams.get('apikey')||'';updateConfigLink();
+    })).catch(()=>{if(byId('camera-form')===form)byId('camera-error').textContent='Không tải được cài đặt sự kiện.';});
     editor.scrollTop=0;
   }
   if(publicPage) window.addEventListener('pageshow',e=>{if(e.persisted)location.replace('/iot-page');});
