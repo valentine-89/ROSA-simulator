@@ -132,6 +132,7 @@
       var historyReconnectTimer = null;
       var historyCooldownTimer = null;
       var historyRefreshQueued = false;
+      var devicePresence = Object.create(null);
       var historyCooldownActive = false;
       var historyRequestId = 0;
       var historyConfig = config.history || {};
@@ -230,7 +231,7 @@
 
       function buildIoDataUrl(sessionId, nextSyncId) {
         if (!sessionId || !nextSyncId) return "";
-        return "/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(nextSyncId) + "/iodata";
+        return "/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(nextSyncId) + "/data";
       }
 
       function numericValue(value) {
@@ -904,7 +905,7 @@
         var complete = !!compactTime && !!selection;
         return {
           enabled: complete ? enabled : false,
-          time: complete ? formatScheduleTime(compactTime) : '',
+          time: formatScheduleTime(compactTime),
           contactor: complete ? selection : '',
           action: action,
           empty: !complete
@@ -921,7 +922,7 @@
           command: row.fieldKey + '=' + (complete ? compactTime : '0000') + ',' + ((row.enabled && complete) ? 'enable' : 'disable') + ',' + action + ',' + outputs.first + ',' + outputs.second,
           snapshot: {
             enabled: complete ? !!row.enabled : false,
-            time: complete ? formatScheduleTime(compactTime) : '',
+            time: formatScheduleTime(complete ? compactTime : '0000'),
             contactor: complete ? outputs.selection : '',
             action: action === 'OFF' ? 'off' : 'on',
             empty: !complete
@@ -1003,7 +1004,7 @@
       function normalizeScheduleFieldList(scheduleFields) {
         return (Array.isArray(scheduleFields) ? scheduleFields : []).map(function (field) {
           return String(field || '').trim();
-        }).filter(Boolean).slice(0, 4);
+        }).filter(Boolean).slice(0, 6);
       }
 
       function createScheduleFieldLookup(scheduleFields) {
@@ -1079,15 +1080,17 @@
           + '<option value="1">' + esc(getUi("schedule.outputLabels.out1", "Out 1")) + '</option>'
           + '<option value="2">' + esc(getUi("schedule.outputLabels.out2", "Out 2")) + '</option>'
           + '<option value="12">' + esc(getUi("schedule.outputLabels.out12", "Out 1&2")) + '</option>';
-        var totalRows = Math.max(0, Math.min(4, Number(rowCount || 0)));
+        var totalRows = Math.max(0, Math.min(6, Number(rowCount || 0)));
         for (var index = 0; index < totalRows; index += 1) {
+          var number = String(index + 1);
           rows += ''
-            + '<tr class="scheduler-row is-disabled" data-role="schedule-row" data-index="' + index + '">'
-            + '<td><label class="scheduler-enable" data-role="schedule-enable-shell"><input type="checkbox" data-role="schedule-enable" aria-label="' + esc(formatUi("schedule.enableAriaLabel", "Enable schedule {index}", { index: String(index + 1) })) + '"><span class="scheduler-enable-thumb"></span></label></td>'
-            + '<td><input class="scheduler-time" type="time" data-role="schedule-time"></td>'
-            + '<td><select class="scheduler-select" data-role="schedule-contactor">' + outputOptionHtml + '</select></td>'
-            + '<td><button class="scheduler-action-toggle" type="button" data-role="schedule-action" data-state="on" aria-label="' + esc(formatUi("schedule.toggleActionAriaLabel", "Toggle schedule action {index}", { index: String(index + 1) })) + '"><span class="scheduler-action-label" data-side="on">' + esc(actionOnLabel) + '</span><span class="scheduler-action-label" data-side="off">' + esc(actionOffLabel) + '</span></button></td>'
-            + '</tr>';
+            + '<div class="scheduler-row is-disabled" data-role="schedule-row" data-index="' + index + '" role="group" aria-label="' + esc(getUi("schedule.title", "Schedule setup") + ' ' + number) + '">'
+            + '<span class="scheduler-number" aria-hidden="true">' + number + '</span>'
+            + '<label class="scheduler-enable" data-role="schedule-enable-shell"><input type="checkbox" data-role="schedule-enable" aria-label="' + esc(formatUi("schedule.enableAriaLabel", "Enable schedule {index}", { index: number })) + '"><span class="scheduler-enable-thumb"></span></label>'
+            + '<input class="scheduler-time" type="time" data-role="schedule-time" aria-label="' + esc(getUi("schedule.columns.time", "Time") + ' ' + number) + '">'
+            + '<select class="scheduler-select" data-role="schedule-contactor" aria-label="' + esc(getUi("schedule.columns.contactor", "Out") + ' ' + number) + '">' + outputOptionHtml + '</select>'
+            + '<button class="scheduler-action-toggle" type="button" data-role="schedule-action" data-state="on" aria-label="' + esc(formatUi("schedule.toggleActionAriaLabel", "Toggle schedule action {index}", { index: number })) + '"><span class="scheduler-action-label" data-side="on">' + esc(actionOnLabel) + '</span><span class="scheduler-action-label" data-side="off">' + esc(actionOffLabel) + '</span></button>'
+            + '</div>';
         }
         return rows;
       }
@@ -1109,12 +1112,12 @@
         var schedulerHtml = state.commandApiUrl && state.scheduleFields.length ? ''
           + '<section class="schedule-card schedule-card--overview">'
           + '<div class="section-head section-head--schedule"><button class="section-toggle section-toggle--schedule" type="button" data-role="schedule-toggle" aria-expanded="' + (scheduleExpanded ? 'true' : 'false') + '"><span><h3>' + esc(getUi("schedule.title", "Schedule setup")) + '</h3></span><span class="section-toggle-indicator">&#9662;</span></button><div class="section-toolbar section-toolbar--schedule"><button class="toolbar-button schedule-save-button" type="button" data-role="schedule-save" hidden>' + esc(getUi("schedule.save", "Save")) + '</button></div></div>'
-          + '<div class="table-wrap schedule-content" data-role="schedule-content"' + (scheduleExpanded ? '' : ' hidden') + '><table class="scheduler-table"><thead><tr><th>' + esc(getUi("schedule.columns.enable", "Enable")) + '</th><th>' + esc(getUi("schedule.columns.time", "Time")) + '</th><th>' + esc(getUi("schedule.columns.contactor", "Out")) + '</th><th>' + esc(getUi("schedule.columns.action", "Action")) + '</th></tr></thead><tbody data-role="schedule-body">' + createScheduleRowsHtml(state.scheduleFields.length) + '</tbody></table></div>'
+          + '<div class="schedule-content" data-role="schedule-content"' + (scheduleExpanded ? '' : ' hidden') + '><div class="scheduler-grid" data-role="schedule-body">' + createScheduleRowsHtml(state.scheduleFields.length) + '</div></div>'
           + '</section>'
           : '';
 
         return {
-          html: '<div class="overview-grid">' + alarmCardHtml + contactorCardsHtml + schedulerHtml + '</div>',
+          html: '<div class="overview-grid' + (schedulerHtml ? ' overview-grid--schedules' : '') + '">' + alarmCardHtml + contactorCardsHtml + schedulerHtml + '</div>',
           hasVoltageChart: false,
           hasCurrentChart: false,
           hasTemperatureChart: false
@@ -1260,7 +1263,7 @@
         state.node.innerHTML = ''
           + '<div class="pond-header">'
           + '<button class="section-toggle pond-toggle" type="button" data-role="pond-toggle" aria-expanded="false"><span class="pond-title"><h2>' + esc(state.title) + '</h2><span class="pond-update-status" data-role="update-status" hidden>' + esc(getUi('pond.updatesDisabled', document.documentElement.lang === 'vi' ? 'Đã tắt cập nhật' : 'Updates disabled')) + '</span><p>' + esc(state.description || formatUi("pond.deviceDescription", "Device: {ioid}", { ioid: ioid })) + '</p></span><span class="section-toggle-indicator">&#9662;</span></button>'
-          + '<div class="pond-toolbar">' + (state.hasSettings ? '<button type="button" class="toolbar-button pond-settings-button" data-role="settings-button" aria-label="' + esc(formatUi("pond.settingsButtonAria", "Open pond settings for {title}", { title: state.title })) + '">' + esc(getUi("pond.settingsButton", "Settings")) + '</button>' : '') + '<div class="live-pill" data-role="live" data-state="connecting">' + esc(getUi("pond.connecting", "Connecting")) + '</div></div>'
+          + '<div class="pond-toolbar">' + (state.hasSettings ? '<button type="button" class="toolbar-button pond-settings-button" data-role="settings-button" aria-label="' + esc(formatUi("pond.settingsButtonAria", "Open pond settings for {title}", { title: state.title })) + '">' + esc(getUi("pond.settingsButton", "Settings")) + '</button>' : '') + '<button type="button" class="device-power" data-role="live" data-state="error"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 3v9M6.3 5.7a9 9 0 1 0 11.4 0" /></svg></button></div>'
           + '</div>'
           + '<div class="pond-content" data-role="pond-content" hidden>' + (state.contentInitialized ? state.contentHtml : '') + '</div>';
         pondGrid.appendChild(state.node);
@@ -1286,11 +1289,15 @@
         state.scheduleLoading = false;
         state.scheduleSaving = false;
         state.alarmText = '';
-        state.lastUpdatedAt = 0;
         state.isBusy = false;
         state.staleTimer = null;
         state.bootstrapLoaded = false;
         state.bootstrapPromise = null;
+
+        if (state.live) {
+          state.live.addEventListener('click', function () { restartDevice(state); });
+          refreshLiveState(state);
+        }
 
         if (state.pondToggle) {
           state.pondToggle.addEventListener('click', function () {
@@ -1377,7 +1384,7 @@
         state.staleTimer = window.setTimeout(function () {
           state.staleTimer = null;
           refreshLiveState(state);
-        }, 30050);
+        }, Math.max(0, 30050 - (Date.now() - getDevicePresence(state).lastUpdatedAt)));
       }
 
       function ensureScheduleRowsLoaded(state) {
@@ -1686,18 +1693,82 @@
 
       function setLiveState(state, mode, label) {
         if (!state.live) return;
-        state.live.setAttribute('data-state', mode);
-        state.live.textContent = label;
+        var presence = getDevicePresence(state);
+        var online = mode === 'live' && !presence.waiting;
+        state.live.setAttribute('data-state', online ? 'live' : 'error');
+        state.live.disabled = !state.commandApiUrl || presence.sending;
+        var isVi = document.documentElement.lang === 'vi';
+        var status = presence.waiting ? (isVi ? 'Đang chờ thiết bị khởi động lại' : 'Waiting for device restart') : label;
+        var action = (isVi ? 'Khởi động lại ' : 'Restart ') + state.ioid;
+        state.live.setAttribute('title', action + ' · ' + status);
+        state.live.setAttribute('aria-label', action + ' · ' + status);
+        state.live.setAttribute('aria-busy', presence.sending ? 'true' : 'false');
+      }
+
+      function getDevicePresence(state) {
+        var key = state.ioid || state.sessionId;
+        if (!devicePresence[key]) {
+          var cutoff = 0;
+          try { cutoff = Number(window.sessionStorage.getItem('aquaculture-restart:' + key)) || 0; } catch (error) {}
+          devicePresence[key] = { lastUpdatedAt: 0, cutoff: cutoff, waiting: cutoff > 0, sending: false };
+        }
+        return devicePresence[key];
+      }
+
+      function refreshDeviceLiveState(state) {
+        (pondStates || []).forEach(function (peer) {
+          if (peer.ioid === state.ioid) refreshLiveState(peer);
+        });
+      }
+
+      function observeDeviceTelemetry(state, data, timestamp, fromStream) {
+        if (!data || typeof data !== 'object' || Array.isArray(data) || !Object.keys(data).length) return;
+        var ts = Number(timestamp);
+        if (!Number.isFinite(ts) || ts <= 0) return;
+        var presence = getDevicePresence(state);
+        // A bootstrap snapshot, command ACK or replay predating the restart cannot restore online.
+        if (presence.waiting && (!fromStream || ts <= presence.cutoff)) return;
+        if (ts <= presence.lastUpdatedAt) return;
+        presence.lastUpdatedAt = ts;
+        if (presence.waiting) {
+          presence.waiting = false;
+          try { window.sessionStorage.removeItem('aquaculture-restart:' + (state.ioid || state.sessionId)); } catch (error) {}
+        }
+        (pondStates || []).forEach(function (peer) {
+          if (peer.ioid !== state.ioid) return;
+          scheduleLiveStateCheck(peer);
+          refreshLiveState(peer);
+        });
+      }
+
+      function restartDevice(state) {
+        var presence = getDevicePresence(state);
+        if (!state.commandApiUrl || presence.sending) return Promise.resolve(false);
+        presence.cutoff = Math.max(Date.now(), presence.lastUpdatedAt);
+        presence.waiting = true;
+        presence.sending = true;
+        try { window.sessionStorage.setItem('aquaculture-restart:' + (state.ioid || state.sessionId), String(presence.cutoff)); } catch (error) {}
+        refreshDeviceLiveState(state);
+        ensurePondConnection(state);
+        // Send once: a lost reboot response must never trigger an automatic second restart.
+        return postCommandRaw(state.commandApiUrl, 'A7,1', 5000).then(function (text) {
+          if (!responseHasOk(text) && !responseMatchesCommandEcho(text, 'A7,1')) throw new Error('Restart not acknowledged');
+          showToast(document.documentElement.lang === 'vi' ? 'Đã gửi lệnh khởi động lại.' : 'Restart command sent.', 'success');
+          return true;
+        }).catch(function () {
+          showToast(document.documentElement.lang === 'vi' ? 'Chưa xác nhận được lệnh khởi động lại.' : 'Restart command could not be confirmed.', 'error');
+          return false;
+        }).finally(function () {
+          presence.sending = false;
+          refreshDeviceLiveState(state);
+        });
       }
 
       function refreshLiveState(state) {
-        var ageMs = state.lastUpdatedAt > 0 ? (Date.now() - state.lastUpdatedAt) : Infinity;
+        var presence = getDevicePresence(state);
+        var ageMs = !presence.waiting && presence.lastUpdatedAt > 0 ? (Date.now() - presence.lastUpdatedAt) : Infinity;
         if (ageMs < 30000) {
           setLiveState(state, 'live', getUi('pond.live', 'Live'));
-          return;
-        }
-        if (state.eventSource) {
-          setLiveState(state, 'connecting', getUi('pond.stale', 'Stale'));
           return;
         }
         setLiveState(state, 'error', getUi('pond.offline', 'Offline'));
@@ -1800,9 +1871,6 @@
           }
         });
         if (matched && !meterMatched) {
-          state.lastUpdatedAt = eventTs;
-          scheduleLiveStateCheck(state);
-          refreshLiveState(state);
           return;
         }
 
@@ -1859,11 +1927,6 @@
           matched = true;
         }
 
-        if (matched || meterMatched) {
-          state.lastUpdatedAt = eventTs;
-          scheduleLiveStateCheck(state);
-          refreshLiveState(state);
-        }
       }
 
       function handleStreamPayload(state, payload) {
@@ -1873,6 +1936,7 @@
           return;
         }
         if (payload.type === 'telemetry' && payload.payload && typeof payload.payload === 'object') {
+          observeDeviceTelemetry(state, payload.payload, payload.serverTime, true);
           Object.keys(payload.payload).forEach(function (field) {
             updateTelemetryField(state, field, payload.payload[field], payload.serverTime || Date.now());
           });
@@ -2190,6 +2254,7 @@
         }).then(function (payload) {
           var data = payload && payload.c2 && payload.c2.payload;
           if (!data || typeof data !== 'object') return;
+          observeDeviceTelemetry(state, data, payload.c2.serverTime, false);
           Object.keys(data).forEach(function (field) {
             updateTelemetryField(state, field, data[field], payload.c2.serverTime || Date.now());
           });
@@ -2197,27 +2262,9 @@
       }
 
       function connectPond(state) {
-        var streamFields = [
-          state.fields.contactor1,
-          state.fields.contactor2,
-          state.fields.contactor3,
-          state.fields.alarm,
-          state.fields.currentThreshold,
-          state.fields.alarmPhone,
-          state.fields.runWindow,
-          state.fields.updateEnabled
-        ].reduce(function (result, value) {
-          return result.concat(expandConfiguredStreamFields(value));
-        }, [])
-          .concat((state.scheduleFields || []).reduce(function (result, value) {
-            return result.concat(expandConfiguredStreamFields(value));
-          }, []))
-          .filter(Boolean)
-          .filter(function (value, index, list) { return list.indexOf(value) === index; });
-
         ensurePondBootstrap(state).finally(function () {
-          setLiveState(state, 'connecting', getUi('pond.connecting', 'Connecting'));
-          state.eventSource = new EventSource(buildStreamUrl(state.sessionId, streamFields, 0));
+          refreshLiveState(state);
+          state.eventSource = new EventSource(buildStreamUrl(state.sessionId, [], 0) + '&telemetryOnly=1');
           state.eventSource.onmessage = function (event) {
             try { handleStreamPayload(state, JSON.parse(event.data)); } catch (error) {}
           };
@@ -2226,7 +2273,7 @@
               state.eventSource.close();
               state.eventSource = null;
             }
-            setLiveState(state, 'connecting', getUi('pond.reconnecting', 'Reconnecting'));
+            refreshLiveState(state);
             if (state.reconnectTimer) window.clearTimeout(state.reconnectTimer);
             state.reconnectTimer = window.setTimeout(function () {
               state.reconnectTimer = null;

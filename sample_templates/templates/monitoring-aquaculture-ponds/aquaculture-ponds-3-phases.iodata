@@ -13,7 +13,7 @@
   "io_objects": [
     {
       "ob_id": 0,
-      "ob_name": "rosa api",
+      "ob_name": "API cập nhật",
       "ob_type": "variable",
       "ob_content": "#801",
       "ob_value": "rosa.technology/api/<<sessionid>>/<<syncid>>",
@@ -31,10 +31,10 @@
     },
     {
       "ob_id": 2,
-      "ob_name": "cài đặt ngưỡng dòng",
+      "ob_name": "ngưỡng dòng ao 1",
       "ob_type": "variable",
       "ob_content": "#1011",
-      "ob_value": "1,10",
+      "ob_value": "1,10,1,10",
       "ob_desc": "",
       "ob_state": 1
     },
@@ -67,10 +67,10 @@
     },
     {
       "ob_id": 8,
-      "ob_name": "cho phép sử dụng ao 1",
+      "ob_name": "cho phép cập nhật ao 1–2",
       "ob_type": "variable",
       "ob_content": "#1003",
-      "ob_value": "ON,OFF,OFF,OFF",
+      "ob_value": "ON,OFF",
       "ob_desc": "",
       "ob_state": 1
     },
@@ -88,7 +88,7 @@
       "ob_name": "mã ao",
       "ob_type": "variable",
       "ob_content": "#1001",
-      "ob_value": "A1,A2,A3,A4",
+      "ob_value": "A1,A2",
       "ob_desc": "",
       "ob_state": 1
     },
@@ -97,7 +97,7 @@
       "ob_name": "số điện thoại báo động",
       "ob_type": "variable",
       "ob_content": "#1002",
-      "ob_value": "0123456789,0123456789,0123456789,0123456789",
+      "ob_value": "0123456789,0123456789",
       "ob_desc": "",
       "ob_state": 1
     },
@@ -112,64 +112,64 @@
     },
     {
       "ob_id": 13,
-      "ob_name": "thông tin hẹn giờ 1",
+      "ob_name": "hẹn giờ 1 ao 1",
       "ob_type": "variable",
       "ob_content": "#1021",
-      "ob_value": "0000,disable,ON,1,2",
+      "ob_value": "0000,disable,OFF,0,0",
       "ob_desc": "",
       "ob_state": 1
     },
     {
       "ob_id": 14,
-      "ob_name": "thông tin hẹn giờ 2",
+      "ob_name": "hẹn giờ 2 ao 1",
       "ob_type": "variable",
       "ob_content": "#1022",
-      "ob_value": "0000,disable,ON,1,2",
+      "ob_value": "0000,disable,OFF,0,0",
       "ob_desc": "",
       "ob_state": 1
     },
     {
       "ob_id": 15,
-      "ob_name": "thông tin hẹn giờ 3",
+      "ob_name": "hẹn giờ 3 ao 1",
       "ob_type": "variable",
       "ob_content": "#1023",
-      "ob_value": "null",
+      "ob_value": "0000,disable,OFF,0,0",
       "ob_desc": "",
       "ob_state": 1
     },
     {
       "ob_id": 16,
-      "ob_name": "thông tin hẹn giờ 4",
+      "ob_name": "hẹn giờ 4 ao 1",
       "ob_type": "variable",
       "ob_content": "#1024",
-      "ob_value": "",
+      "ob_value": "0000,disable,OFF,0,0",
       "ob_desc": "",
       "ob_state": 1
     },
     {
       "ob_id": 17,
-      "ob_name": "thông tin hẹn giờ 5",
+      "ob_name": "hẹn giờ 5 ao 1",
       "ob_type": "variable",
       "ob_content": "#1025",
-      "ob_value": "",
+      "ob_value": "0000,disable,OFF,0,0",
       "ob_desc": "",
       "ob_state": 1
     },
     {
       "ob_id": 18,
-      "ob_name": "khung giờ chạy",
+      "ob_name": "khung giờ chạy ao 1",
       "ob_type": "variable",
       "ob_content": "#1005",
-      "ob_value": "0600,0700",
+      "ob_value": "0600,0700,0600,0700",
       "ob_desc": "",
       "ob_state": 1
     },
     {
       "ob_id": 19,
-      "ob_name": "khung giờ ngừng",
+      "ob_name": "khung giờ chạy ao 2",
       "ob_type": "variable",
       "ob_content": "#1006",
-      "ob_value": "0000,0500",
+      "ob_value": "0600,0700,0600,0700",
       "ob_desc": "",
       "ob_state": 1
     },
@@ -208,15 +208,6 @@
       "ob_state": 1
     },
     {
-      "ob_id": 22,
-      "ob_name": "số hẹn giờ mỗi ao",
-      "ob_type": "variable",
-      "ob_content": "#1007",
-      "ob_value": "4",
-      "ob_desc": "",
-      "ob_state": 1
-    },
-    {
       "ob_id": 23,
       "ob_name": "tham số ao 1 cũ",
       "ob_type": "variable",
@@ -230,24 +221,6 @@
       "ob_name": "tham số ao 2 cũ",
       "ob_type": "variable",
       "ob_content": "#118",
-      "ob_value": null,
-      "ob_desc": "",
-      "ob_state": 1
-    },
-    {
-      "ob_id": 25,
-      "ob_name": "tham số ao 3 cũ",
-      "ob_type": "variable",
-      "ob_content": "#119",
-      "ob_value": null,
-      "ob_desc": "",
-      "ob_state": 1
-    },
-    {
-      "ob_id": 26,
-      "ob_name": "tham số ao 4 cũ",
-      "ob_type": "variable",
-      "ob_content": "#120",
       "ob_value": null,
       "ob_desc": "",
       "ob_state": 1
@@ -290,7 +263,7 @@
     },
     {
       "ob_id": 31,
-      "ob_name": "rosa api log chung",
+      "ob_name": "API báo động",
       "ob_type": "variable",
       "ob_content": "#802",
       "ob_value": "rosa.technology/api/<<sessionid>>/<<syncid>>",
@@ -422,6 +395,78 @@
       "ob_content": "I99",
       "ob_desc": "",
       "ob_state": 1
+    },
+    {
+      "ob_id": 46,
+      "ob_name": "ngưỡng dòng ao 2",
+      "ob_type": "variable",
+      "ob_content": "#1012",
+      "ob_desc": "",
+      "ob_state": 1,
+      "ob_value": "1,10,1,10"
+    },
+    {
+      "ob_id": 47,
+      "ob_name": "hẹn giờ 6 ao 1",
+      "ob_type": "variable",
+      "ob_content": "#1026",
+      "ob_desc": "",
+      "ob_state": 1,
+      "ob_value": "0000,disable,OFF,0,0"
+    },
+    {
+      "ob_id": 48,
+      "ob_name": "hẹn giờ 1 ao 2",
+      "ob_type": "variable",
+      "ob_content": "#1027",
+      "ob_desc": "",
+      "ob_state": 1,
+      "ob_value": "0000,disable,OFF,0,0"
+    },
+    {
+      "ob_id": 49,
+      "ob_name": "hẹn giờ 2 ao 2",
+      "ob_type": "variable",
+      "ob_content": "#1028",
+      "ob_desc": "",
+      "ob_state": 1,
+      "ob_value": "0000,disable,OFF,0,0"
+    },
+    {
+      "ob_id": 50,
+      "ob_name": "hẹn giờ 3 ao 2",
+      "ob_type": "variable",
+      "ob_content": "#1029",
+      "ob_desc": "",
+      "ob_state": 1,
+      "ob_value": "0000,disable,OFF,0,0"
+    },
+    {
+      "ob_id": 51,
+      "ob_name": "hẹn giờ 4 ao 2",
+      "ob_type": "variable",
+      "ob_content": "#1030",
+      "ob_desc": "",
+      "ob_state": 1,
+      "ob_value": "0000,disable,OFF,0,0"
+    },
+    {
+      "ob_id": 52,
+      "ob_name": "hẹn giờ 5 ao 2",
+      "ob_type": "variable",
+      "ob_content": "#1031",
+      "ob_desc": "",
+      "ob_state": 1,
+      "ob_value": "0000,disable,OFF,0,0"
+    },
+    {
+      "ob_id": 53,
+      "ob_name": "hẹn giờ 6 ao 2",
+      "ob_type": "variable",
+      "ob_content": "#1032",
+      "ob_desc": "",
+      "ob_state": 1,
+      "ob_value": "0000,disable,OFF,0,0"
     }
   ],
   "io_actions": [],
@@ -430,28 +475,37 @@
     {
       "io_group_id": 0,
       "io_group": "Chương trình chính",
-      "io_group_desc": "",
       "io_n_list": [
         {
           "n_id": "1",
+          "n_name": "cập nhật chung",
+          "n_content": "// N1: Vong cap nhat ao 1-2 va gui co cho phep cap nhat\n\tI99-1\n\tW5\n\tL(\n\t\tD4#103,#904-#3\n\t\tD4#3,#904\n\t\t[#1003.1=\"ON\"](\n\t\t\tD1O1'2'\n\t\t\tD6N41,#1\n\t\t\tD2O1\n\t\t\t[#891>0](\n\t\t\t\tW3\n\t\t\t)(\n\t\t\t\tW1\n\t\t\t)\n\t\t)\n\t\t[#1003.2=\"ON\"](\n\t\t\tD1O1'2'\n\t\t\tD6N42,#1\n\t\t\tD2O1\n\t\t\t[#891>0](\n\t\t\t\tW3\n\t\t\t)(\n\t\t\t\tW1\n\t\t\t)\n\t\t)\n\t\t[#891>10](\n\t\t\tW10\n\t\t)\n\t\t[#1003<>#2|#1%60=0](\n\t\t\tD4#2,#1003\n\t\t\tD23,#801,,\"telemetry\",\"#1003.1=\"#1003.1,\"#1003.2=\"#1003.2\n\t\t)\n\t\tD4#1,#1+1\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "I99-1\nW5\nL(\n  D4#103,#904-#3\n  D4#3,#904\n  [#1003.1=\"ON\"](D1O1'2'D6N41,#1D2O1[#891>0](W3)(W2))\n  [#1003.2=\"ON\"](D1O1'2'D6N42,#1D2O1[#891>0](W3)(W2))\n  [#1003.3=\"ON\"](D1O1'2'D6N43,#1D2O1[#891>0](W3)(W2))\n  [#1003.4=\"ON\"](D1O1'2'D6N44,#1D2O1[#891>0](W3)(W2))\n  [#891>10](W10)\n  [#1003<>#2|#1%60=0](\n    D4#2,#1003\n    D23,#801,,\"telemetry\",\"#1003.1=\"#1003.1,\"#1003.2=\"#1003.2,\"#1003.3=\"#1003.3,\"#1003.4=\"#1003.4\n  )\n  D4#1,#1+1\n)",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "cập nhật chung"
+          "n_local_def": []
         },
         {
           "n_id": "2",
-          "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "//nếu 2 bơm không lỗi thì gửi chung để tiết kiệm số lần gửi\n[(#2<>\"ERROR\"&#6<>\"ERROR\")](\n  D23,#801,,\"timeseries\",\"Voltage\"#1.1\"_V=\"#2,\"Current\"#1.1\"_A1=\"#3,\"Current\"#1.1\"_A2=\"#4,\"Current\"#1.1\"_A3=\"#5,\"Voltage\"#1.2\"_V=\"#6,\"Current\"#1.2\"_A1=\"#7,\"Current\"#1.2\"_A2=\"#8,\"Current\"#1.2\"_A3=\"#9\n)(\n  [#2<>\"ERROR\"](\n    D23,#801,,\"timeseries\",\"Voltage\"#1.1\"_V=\"#2,\"Current\"#1.1\"_A1=\"#3,\"Current\"#1.1\"_A2=\"#4,\"Current\"#1.1\"_A3=\"#5\n  )\n  [#6<>\"ERROR\"](\n    D23,#801,,\"timeseries\",\"Voltage\"#1.2\"_V=\"#6,\"Current\"#1.2\"_A1=\"#7,\"Current\"#1.2\"_A2=\"#8,\"Current\"#1.2\"_A3=\"#9\n  )\n)\n",
-          "n_natural": "",
           "n_name": "gửi timeseries",
-          "n_desc": ""
+          "n_content": "// N2: Gui dien ap va dong dien ba pha theo du lieu hop le\n\t[(#2<>\"ERROR\"&#6<>\"ERROR\")](\n\t\tD23,#801,,\"timeseries\",\"Voltage\"#1.1\"_V=\"#2,\"Current\"#1.1\"_A1=\"#3,\"Current\"#1.1\"_A2=\"#4,\"Current\"#1.1\"_A3=\"#5,\"Voltage\"#1.2\"_V=\"#6,\"Current\"#1.2\"_A1=\"#7,\"Current\"#1.2\"_A2=\"#8,\"Current\"#1.2\"_A3=\"#9\n\t)(\n\t\t[#2<>\"ERROR\"](\n\t\t\tD23,#801,,\"timeseries\",\"Voltage\"#1.1\"_V=\"#2,\"Current\"#1.1\"_A1=\"#3,\"Current\"#1.1\"_A2=\"#4,\"Current\"#1.1\"_A3=\"#5\n\t\t)\n\t\t[#6<>\"ERROR\"](\n\t\t\tD23,#801,,\"timeseries\",\"Voltage\"#1.2\"_V=\"#6,\"Current\"#1.2\"_A1=\"#7,\"Current\"#1.2\"_A2=\"#8,\"Current\"#1.2\"_A3=\"#9\n\t\t)\n\t)\n",
+          "n_mode": "1",
+          "n_returncm": false,
+          "n_disabledcm": false,
+          "n_natural": "",
+          "n_desc": "",
+          "n_local_def": []
         },
         {
           "n_id": "41",
+          "n_name": "cập nhật ao 1",
+          "n_content": "// N41: Doc hai quat ao 1; cap nhat sau lich #1021-#1026\n\tD4#2,\n\tI101\n\tD4#3,\n\tI102\n\t[#1%3=0](\n\t\tD6N2,\"11,12\",#2.1,#2.8,#2.9,#2.10,#3.1,#3.8,#3.9,#3.10\n\t)\n\tD6,#4,N102,11,#2.8\",\"#2.9\",\"#2.10,#2.11\n\tD6,#5,N102,12,#3.8\",\"#3.9\",\"#3.10,#3.11\n\t[#5=\"null\"](\n\t\tD4#5,#4\n\t)\n\tD5N7,#2.11#3.11,#5.1,#5.2\"A \"#5.3\"A \"#5.4\"A\"\n\tD4#5,#2.11\",\"#3.11\",\"#1002\",\"#1003\",\"#1004\",\"#1005\",\"#1006\",\"#1010\",\"#1011\",\"#1021\",\"#1022\",\"#1023\",\"#1024\",\"#1025\",\"#1026\n\t[(#5<>#117|#1%60=0)](\n\t\tD4#117,#5\n\t\tD23,#801,,\"timeseries\",\"Temper11=\"#2.12,\"Temper12=\"#3.12\n\t\tD23,#801,,\"telemetry\",\"#1021=\"#1021,\"#1022=\"#1022,\"#1023=\"#1023,\"#1024=\"#1024,\"#1025=\"#1025,\"#1026=\"#1026,\"O101=\"#2.11,\"O102=\"#3.11,\"Energy11_Wh=\"#2.6,\"Energy12_Wh=\"#3.6\n\t\tD23,#801,,\"telemetry\",\"#1002=\"#1002,\"#1004=\"#1004,\"#1005=\"#1005,\"#1011=\"#1011\n\t)\n",
           "n_mode": "1",
+          "n_returncm": false,
+          "n_disabledcm": false,
+          "n_natural": "",
+          "n_desc": "",
           "n_local_def": [
             {
               "l_id": 70896,
@@ -471,49 +525,34 @@
               "l_cm": "#1",
               "l_natural": "timer đếm tới"
             }
-          ],
-          "n_content": "D4#2,I101\nD4#3,I102\nD6N2,\"11,12\",#2.1,#2.8,#2.9,#2.10,#3.1,#3.8,#3.9,#3.10\n//kiểm tra tình trạng và báo lỗi\nD6,#4,N102,#2.8,#2.9,#2.10,#2.11\nD6,#5,N102,#3.8,#3.9,#3.10,#3.11\n//#5 chứa lỗi chung của 2 bơm\n[#5=\"null\"](D4#5,#4)  //#5 không lỗi thì copy từ #4\nD5N7,#2.11#3.11,#5.1,#5.2\n\n//các cập nhật chậm khác\nD4#5,#2.11\",\"#3.11\",\"#1002\",\"#1003\",\"#1004\",\"#1005\",\"#1006\",\"#1010\",\"#1011\",\"#1021\",\"#1022\",\"#1023\",\"#1024\n//cập nhật khi thay đổi hoặc mỗi 5 phút (60*5)\n[(#5<>#117|#1%60=0)](\n  D4#117,#5\n  D23,#801,,\"timeseries\",\"Temper11=\"#2.12,\"Temper12=\"#3.12\n  D21,#801,\"telemetry\",\"#1021=\"#1021,\"#1022=\"#1022,\"#1023=\"#1023,\"#1024=\"#1024,\"O101=\"#2.11,\"O102=\"#3.11,\"Energy11_Wh=\"#2.6,\"Energy12_Wh=\"#3.6\n  //các tham số dùng chung nhiều ao\n  D21,#801,\"telemetry\",\"#1002=\"#1002,\"#1004=\"#1004,\"#1005=\"#1005,\"#1006=\"#1006,\"#1010=\"#1010,\"#1011=\"#1011\n)\n",
-          "n_natural": "",
-          "n_name": "cập nhật ao 1",
-          "n_desc": ""
+          ]
         },
         {
           "n_id": "42",
-          "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "D4#2,I103\nD4#3,I104\nD6N2,\"21,22\",#2.1,#2.8,#2.9,#2.10,#3.1,#3.8,#3.9,#3.10\n//kiểm tra tình trạng và báo lỗi\nD6,#4,N102,#2.8,#2.9,#2.10,#2.11\nD6,#5,N102,#3.8,#3.9,#3.10,#3.11\n//#6 chứa lỗi chung của 2 bơm\n[#5=\"null\"](D4#5,#4)  //#6 không lỗi thì copy từ #5\nD5N8,#2.11#3.11,#5.1,#5.2\n\nD4#5,#2.11\",\"#3.11\",\"#1002\",\"#1003\",\"#1004\",\"#1005\",\"#1006\",\"#1010\",\"#1011\",\"#1021\",\"#1022\",\"#1023\",\"#1024\n//cập nhật khi thay đổi hoặc mỗi 5 phút (60*5)\n[(#5<>#118|#1%60=0)](\n  D4#118,#5\n  D23,#801,,\"timeseries\",\"Temper21=\"#2.12,\"Temper22=\"#3.12\n  D21,#801,\"telemetry\",\"#1025=\"#1025,\"#1026=\"#1026,\"#1027=\"#1027,\"#1028=\"#1028,\"O103=\"#2.11,\"O104=\"#3.11,\"Energy21_Wh=\"#2.6,\"Energy22_Wh=\"#3.6\n)",
-          "n_natural": "",
           "n_name": "cập nhật ao 2",
-          "n_desc": ""
-        },
-        {
-          "n_id": "43",
+          "n_content": "// N42: Doc hai quat ao 2; cap nhat sau lich #1027-#1032\n\tD4#2,\n\tI103\n\tD4#3,\n\tI104\n\t[#1%3=0](\n\t\tD6N2,\"21,22\",#2.1,#2.8,#2.9,#2.10,#3.1,#3.8,#3.9,#3.10\n\t)\n\tD6,#4,N102,21,#2.8\",\"#2.9\",\"#2.10,#2.11\n\tD6,#5,N102,22,#3.8\",\"#3.9\",\"#3.10,#3.11\n\t[#5=\"null\"](\n\t\tD4#5,#4\n\t)\n\tD5N8,#2.11#3.11,#5.1,#5.2\"A \"#5.3\"A \"#5.4\"A\"\n\tD4#5,#2.11\",\"#3.11\",\"#1002\",\"#1003\",\"#1004\",\"#1006\",\"#1010\",\"#1012\",\"#1027\",\"#1028\",\"#1029\",\"#1030\",\"#1031\",\"#1032\n\t[(#5<>#118|#1%60=0)](\n\t\tD4#118,#5\n\t\tD23,#801,,\"timeseries\",\"Temper21=\"#2.12,\"Temper22=\"#3.12\n\t\tD23,#801,,\"telemetry\",\"#1027=\"#1027,\"#1028=\"#1028,\"#1029=\"#1029,\"#1030=\"#1030,\"#1031=\"#1031,\"#1032=\"#1032,\"O103=\"#2.11,\"O104=\"#3.11,\"Energy21_Wh=\"#2.6,\"Energy22_Wh=\"#3.6,\"#1006=\"#1006,\"#1012=\"#1012\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "D4#2,I105\nD4#3,I106\nD6N2,\"31,32\",#2.1,#2.8,#2.9,#2.10,#3.1,#3.8,#3.9,#3.10\n//kiểm tra tình trạng và báo lỗi\nD6,#4,N102,#2.8,#2.9,#2.10,#2.11\nD6,#5,N102,#3.8,#3.9,#3.10,#3.11\n//#6 chứa lỗi chung của 2 bơm\n[#5=\"null\"](D4#5,#4)  //#6 không lỗi thì copy từ #5\nD5N9,#2.11#3.11,#5.1,#5.2\n\nD4#5,#2.11\",\"#3.11\",\"#1002\",\"#1003\",\"#1004\",\"#1005\",\"#1006\",\"#1010\",\"#1011\",\"#1021\",\"#1022\",\"#1023\",\"#1024\n//cập nhật khi thay đổi hoặc mỗi 5 phút (60*5)\n[(#5<>#119|#1%60=0)](\n  D4#119,#5\n  D23,#801,,\"timeseries\",\"Temper31=\"#2.12,\"Temper32=\"#3.12\n  D21,#801,\"telemetry\",\"#1029=\"#1029,\"#1030=\"#1030,\"#1031=\"#1031,\"#1032=\"#1032,\"O105=\"#2.11,\"O106=\"#3.11,\"Energy31_Wh=\"#2.6,\"Energy32_Wh=\"#3.6\n)\n",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "cập nhật ao 3",
-          "n_desc": ""
-        },
-        {
-          "n_id": "44",
-          "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "D4#2,I107\nD4#3,I108\nD6N2,\"41,42\",#2.1,#2.8,#2.9,#2.10,#3.1,#3.8,#3.9,#3.10\n//kiểm tra tình trạng và báo lỗi\nD6,#4,N102,#2.8,#2.9,#2.10,#2.11\nD6,#5,N102,#3.8,#3.9,#3.10,#3.11\n//#6 chứa lỗi chung của 2 bơm\n[#5=\"null\"](D4#5,#4)  //#6 không lỗi thì copy từ #5\nD5N10,#2.11#3.11,#5.1,#5.2\n\nD4#5,#2.11\",\"#3.11\",\"#1002\",\"#1003\",\"#1004\",\"#1005\",\"#1006\",\"#1010\",\"#1011\",\"#1021\",\"#1022\",\"#1023\",\"#1024\n//cập nhật khi thay đổi hoặc mỗi 5 phút (60*5)\n[(#5<>#120|#1%60=0)](\n  D4#120,#5\n  D23,#801,,\"timeseries\",\"Temper41=\"#2.12,\"Temper42=\"#3.12\n  D21,#801,\"telemetry\",\"#1033=\"#1033,\"#1034=\"#1034,\"#1035=\"#1035,\"#1036=\"#1036,\"O107=\"#2.11,\"O108=\"#3.11,\"Energy41_Wh=\"#2.6,\"Energy42_Wh=\"#3.6\n)",
-          "n_natural": "",
-          "n_name": "cập nhật ao 4",
-          "n_desc": ""
+          "n_desc": "",
+          "n_local_def": []
         }
       ]
     },
     {
       "io_group_id": 4,
       "io_group": "API",
-      "io_group_desc": "",
       "io_n_list": [
         {
           "n_id": "3",
+          "n_name": "điều khiển từ xa",
+          "n_content": "// N3: Dieu khien bang tay ao 1-2, quat 1-2; giu co tra ket qua\n\t[#4=\"\"](\n\t\tD9\"không có quyền điều khiển\"\n\t)\n\t[(#1<>1&#1<>2)|(#2<>1&#2<>2)](\n\t\tD9\"Ao va quat phai 1-2\"\n\t)\n\tD4#5,(#1-1)*2+100+#2\n\t[#3=\"ON\"](\n\t\tD1O#5\n\t\tD5N101,#1,\"on\",\"bật bơm \"#2\" bằng tay\",#4\n\t)\n\t[#3=\"OFF\"](\n\t\tD2O#5\n\t\tD5N101,#1,\"off\",\"tắt O1 bằng tay\",#4\n\t)\n\tD21,#801,\"telemetry\",\"O\"#5\"=\"O#5\n\tD9\"Điều khiển thành công O\"#5\n",
           "n_mode": "1",
+          "n_returncm": true,
+          "n_disabledcm": false,
+          "n_natural": "",
+          "n_desc": "",
           "n_local_def": [
             {
               "l_id": 87225,
@@ -539,16 +578,17 @@
               "l_cm": "#1",
               "l_natural": "mã ao"
             }
-          ],
-          "n_content": "[#4=\"\"](D9\"không có quyền điều khiển\")\n//tính ra mã ngoại vi\nD4#5,(#1-1)*2+100+#2\n[#3=\"ON\"](D1O#5D5N101,#1,\"on\",\"bật bơm \"#2\" bằng tay\",#4)\n[#3=\"OFF\"](D2O#5D5N101,#1,\"off\",\"tắt O1 bằng tay\",#4)\nD21,#801,\"telemetry\",\"O\"#5\"=\"O#5\nD9\"Điều khiển thành công O\"#5",
-          "n_natural": "",
-          "n_name": "điều khiển từ xa",
-          "n_desc": "",
-          "n_returncm": true
+          ]
         },
         {
           "n_id": "4",
+          "n_name": "tắt báo động",
+          "n_content": "// N4: Dung bao dong theo ma ao 1-2\n\t[#1=\"\"](\n\t\tD9\"Cần đăng nhập\"\n\t)\n\t[#2<>1&#2<>2](\n\t\tD9\"Mã ao phải 1-2\"\n\t)\n\tD4#3,#2+10\n\tD15N#3\n\tD21,#801,\"telemetry\",\"alarm\"#2\"=\"\n\tD6N101,#2,\"alarm_off\",#1053,#1\n",
           "n_mode": "1",
+          "n_returncm": false,
+          "n_disabledcm": false,
+          "n_natural": "",
+          "n_desc": "",
           "n_local_def": [
             {
               "l_id": 77779,
@@ -562,22 +602,23 @@
               "l_cm": "#1",
               "l_natural": "email"
             }
-          ],
-          "n_content": "[#1=\"\"](D9\"Cần đăng nhập\")\n[(#2=0|#2>4)](D9\"Mã ao phải 1-4\")\nD4#3,#2+10\nD15N#3\t\t    //tạm dừng quy trình báo động\nD21,#801,\"telemetry\",\"alarm\"#2\"=\"\t//xóa thông báo\nD6N101,#2,\"alarm_off\",#1053,#1",
-          "n_natural": "",
-          "n_name": "tắt báo động",
-          "n_desc": ""
+          ]
         }
       ]
     },
     {
       "io_group_id": 3,
       "io_group": "Kiểm tra lỗi",
-      "io_group_desc": "",
       "io_n_list": [
         {
           "n_id": "7",
+          "n_name": "kiểm tra lỗi ao 1",
+          "n_content": "// N7: Ghi thay doi trang thai va kich hoat bao dong ao 1\n\t[#1=#102.1](\n\t\t[#101.1<>#2](\n\t\t\t[#2:\"shaft_break\",\"overload\",\"off_time\",\"on_time\",\"disconnect\"](\n\t\t\t\tD5N101,1,#2,#1051#3\n\t\t\t\tD5N11,#1001.1\" \"#1051#3\n\t\t\t)(\n\t\t\t\tD5N101,1,#2,#1052#3\n\t\t\t\tD5N11,#1001.1\" \"#1052#3\n\t\t\t)(\n\t\t\t\tD5N101,1,#2,#1054\n\t\t\t\tD5N11,#1001.1\" \"#1054\n\t\t\t)(\n\t\t\t\tD5N101,1,#2,#1055\n\t\t\t\tD5N11,#1001.1\" \"#1055\n\t\t\t)(\n\t\t\t\tD5N101,1,#2,#1056\n\t\t\t\tD5N11,#1001.1\" \"#1056\n\t\t\t)\n\t\t)\n\t\t[#2=\"null\"](\n\t\t\tD14N11\n\t\t\t[#101.1<>\"null\"](\n\t\t\t\tD6N103,\"alarm1=\"\n\t\t\t)\n\t\t)\n\t\tD4#101.1,#2\n\t)\n\tD4#102.1,#1\n",
           "n_mode": "1",
+          "n_returncm": false,
+          "n_disabledcm": false,
+          "n_natural": "",
+          "n_desc": "",
           "n_local_def": [
             {
               "l_id": 67341,
@@ -597,42 +638,28 @@
               "l_cm": "#1",
               "l_natural": "trạng thái bơm cũ"
             }
-          ],
-          "n_content": "//nếu đã bật ON và trạng thái đã từng cập nhật (sau 5 giây)\n[#1=#102.1](\n  //có lỗi thì báo động và ghi cờ\n  [#101.1<>#2](\n    [#2:\"shaft_break\",\"overload\",\"off_time\",\"on_time\",\"disconnect\"]\n    (D5N101,1,#2,#1051#3D5N11,#1001.1\" \"#1051#3)\n    (D5N101,1,#2,#1052#3D5N11,#1001.1\" \"#1052#3)\n    (D5N101,1,#2,#1054D5N11,#1001.1\" \"#1054)\n    (D5N101,1,#2,#1055D5N11,#1001.1\" \"#1055)\n    (D5N101,1,#2,#1056D5N11,#1001.1\" \"#1056)\n  )\n  //không còn lỗi nào thì xóa cờ và hủy báo động\n  [#2=\"null\"](\n    D14N11\n    [#101.1<>\"null\"](D6N103,\"alarm1=\")\n  )\n  D4#101.1,#2\n)\nD4#102.1,#1\n",
-          "n_natural": "",
-          "n_name": "kiểm tra lỗi ao 1",
-          "n_desc": ""
+          ]
         },
         {
           "n_id": "8",
-          "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "//nếu đã bật ON và trạng thái đã từng cập nhật (sau 5 giây)\n[#1=#102.2](\n  //có lỗi thì báo động và ghi cờ\n  [#101.2<>#2](\n    [#2:\"shaft_break\",\"overload\",\"off_time\",\"on_time\",\"disconnect\"]\n    (D5N101,2,#2,#1051#3D5N12,#1001.2\" \"#1051#3)\n    (D5N101,2,#2,#1052#3D5N12,#1001.2\" \"#1052#3)\n    (D5N101,2,#2,#1054D5N12,#1001.2\" \"#1054)\n    (D5N101,2,#2,#1055D5N12,#1001.2\" \"#1055)\n    (D5N101,2,#2,#1056D5N12,#1001.2\" \"#1056)\n  )\n  //không còn lỗi nào thì xóa cờ và hủy báo động\n  [#2=\"null\"](\n    D14N12\n    [#101.2<>\"null\"](D6N103,\"alarm2=\")\n  )\n  D4#101.2,#2\n)\nD4#102.2,#1\n",
-          "n_natural": "",
           "n_name": "kiểm tra lỗi ao 2",
-          "n_desc": ""
-        },
-        {
-          "n_id": "9",
+          "n_content": "// N8: Ghi thay doi trang thai va kich hoat bao dong ao 2\n\t[#1=#102.2](\n\t\t[#101.2<>#2](\n\t\t\t[#2:\"shaft_break\",\"overload\",\"off_time\",\"on_time\",\"disconnect\"](\n\t\t\t\tD5N101,2,#2,#1051#3\n\t\t\t\tD5N12,#1001.2\" \"#1051#3\n\t\t\t)(\n\t\t\t\tD5N101,2,#2,#1052#3\n\t\t\t\tD5N12,#1001.2\" \"#1052#3\n\t\t\t)(\n\t\t\t\tD5N101,2,#2,#1054\n\t\t\t\tD5N12,#1001.2\" \"#1054\n\t\t\t)(\n\t\t\t\tD5N101,2,#2,#1055\n\t\t\t\tD5N12,#1001.2\" \"#1055\n\t\t\t)(\n\t\t\t\tD5N101,2,#2,#1056\n\t\t\t\tD5N12,#1001.2\" \"#1056\n\t\t\t)\n\t\t)\n\t\t[#2=\"null\"](\n\t\t\tD14N12\n\t\t\t[#101.2<>\"null\"](\n\t\t\t\tD6N103,\"alarm2=\"\n\t\t\t)\n\t\t)\n\t\tD4#101.2,#2\n\t)\n\tD4#102.2,#1\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "//nếu đã bật ON và trạng thái đã từng cập nhật (sau 5 giây)\n[#1=#102.3](\n  //có lỗi thì báo động và ghi cờ\n  [#101.3<>#2](\n    [#2:\"shaft_break\",\"overload\",\"off_time\",\"on_time\",\"disconnect\"]\n    (D5N101,3,#2,#1051#3D5N13,#1001.3\" \"#1051#3)\n    (D5N101,3,#2,#1052#3D5N13,#1001.3\" \"#1052#3)\n    (D5N101,3,#2,#1054D5N13,#1001.3\" \"#1054)\n    (D5N101,3,#2,#1055D5N13,#1001.3\" \"#1055)\n    (D5N101,3,#2,#1056D5N13,#1001.3\" \"#1056)\n  )\n  //không còn lỗi nào thì xóa cờ và hủy báo động\n  [#2=\"null\"](\n    D14N13\n    [#101.3<>\"null\"](D6N103,\"alarm3=\")\n  )\n  D4#101.3,#2\n)\nD4#102.3,#1\n",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "kiểm tra lỗi ao 3",
-          "n_desc": ""
-        },
-        {
-          "n_id": "10",
-          "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "//nếu đã bật ON và trạng thái đã từng cập nhật (sau 5 giây)\n[#1=#102.4](\n  //có lỗi thì báo động và ghi cờ\n  [#101.4<>#2](\n    [#2:\"shaft_break\",\"overload\",\"off_time\",\"on_time\",\"disconnect\"]\n    (D5N101,4,#2,#1051#3D5N14,#1001.4\" \"#1051#3)\n    (D5N101,4,#2,#1052#3D5N14,#1001.4\" \"#1052#3)\n    (D5N101,4,#2,#1054D5N14,#1001.4\" \"#1054)\n    (D5N101,4,#2,#1055D5N14,#1001.4\" \"#1055)\n    (D5N101,4,#2,#1056D5N14,#1001.4\" \"#1056)\n  )\n  //không còn lỗi nào thì xóa cờ và hủy báo động\n  [#2=\"null\"](\n    D14N14\n    [#101.4<>\"null\"](D6N103,\"alarm4=\")\n  )\n  D4#101.4,#2\n)\nD4#102.4,#1\n",
-          "n_natural": "",
-          "n_name": "kiểm tra lỗi ao 4",
-          "n_desc": ""
+          "n_desc": "",
+          "n_local_def": []
         },
         {
           "n_id": "11",
+          "n_name": "báo động ao 1",
+          "n_content": "// N11: Bao dong ao 1: telemetry, SMS, cuoc goi qua API #802\n\tD6N103,\"alarm1=\"#1\n\tD23,#802,,\"sms\",#1002.1,#1\n\tW10\n\tD23,#802,,\"call\",#1002.1,#1\n\tW300\n\tD23,#802,,\"call\",#1004,#1\n",
           "n_mode": "4",
+          "n_returncm": false,
+          "n_disabledcm": false,
+          "n_natural": "",
+          "n_desc": "",
           "n_local_def": [
             {
               "l_id": 44379,
@@ -640,49 +667,34 @@
               "l_cm": "#1",
               "l_natural": "nội dung báo động"
             }
-          ],
-          "n_content": "D6N103,\"alarm1=\"#1\nD12,#1002.1,#1\nW10\nD13,#1002.1\nW300\nD13,#1004",
-          "n_natural": "",
-          "n_name": "báo động ao 1",
-          "n_desc": ""
+          ]
         },
         {
           "n_id": "12",
-          "n_mode": "4",
-          "n_local_def": [],
-          "n_content": "D6N103,\"alarm2=\"#1\nD12,#1002.2,#1\nW10\nD13,#1002.2\nW300\nD13,#1004",
-          "n_natural": "",
           "n_name": "báo động ao 2",
-          "n_desc": ""
-        },
-        {
-          "n_id": "13",
+          "n_content": "// N12: Bao dong ao 2: telemetry, SMS, cuoc goi qua API #802\n\tD6N103,\"alarm2=\"#1\n\tD23,#802,,\"sms\",#1002.2,#1\n\tW10\n\tD23,#802,,\"call\",#1002.2,#1\n\tW300\n\tD23,#802,,\"call\",#1004,#1\n",
           "n_mode": "4",
-          "n_local_def": [],
-          "n_content": "D6N103,\"alarm3=\"#1\nD12,#1002.3,#1\nW10\nD13,#1002.3\nW300\nD13,#1004",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "báo động ao 3",
-          "n_desc": ""
-        },
-        {
-          "n_id": "14",
-          "n_mode": "4",
-          "n_local_def": [],
-          "n_content": "D6N103,\"alarm4=\"#1\nD12,#1002.4,#1\nW10\nD13,#1002.4\nW300\nD13,#1004",
-          "n_natural": "",
-          "n_name": "báo động ao 4",
-          "n_desc": ""
+          "n_desc": "",
+          "n_local_def": []
         }
       ]
     },
     {
       "io_group_id": 2,
       "io_group": "Chương trình con",
-      "io_group_desc": "",
       "io_n_list": [
         {
           "n_id": "101",
+          "n_name": "ghi log",
+          "n_content": "// N101: Ghi nhat ky su kien theo ten ao va nguoi dieu khien\n\tD21,#802,\"data\",\"IO-pond-event-log\",#1001.#1,#2,#3,#4\n",
           "n_mode": "1",
+          "n_returncm": false,
+          "n_disabledcm": false,
+          "n_natural": "",
+          "n_desc": "",
           "n_local_def": [
             {
               "l_id": 38754,
@@ -690,33 +702,58 @@
               "l_cm": "#1",
               "l_natural": "thứ tự ao"
             }
-          ],
-          "n_content": "D21,#802,\"data\",\"IO-pond-event-log\",#1001.#1,#2,#3,#4\n//D23,#801,,\"telegram\",#905\": \"#1\" - \"#2\n",
-          "n_natural": "",
-          "n_name": "ghi log",
-          "n_desc": ""
+          ]
         },
         {
           "n_id": "102",
-          "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "[#4=\"\"](D9\"disconnect\")\n[#4=\"ON\"](\n  [(#1<#1011.1|#2<#1011.1|#3<#1011.1)](D9\"shaft_break,\"#1\"|\"#2\"|\"#3)\n  [(#1>#1011.2|#2>#1011.2|#3>#1011.2)](D9\"overload,\"#1\"|\"#2\"|\"#3)\n  D6,#5,N104,#1006[#5=\"IN\"](D9\"off_time\")\n)(\n  D6,#5,N104,#1005[#5=\"IN\"](D9\"on_time\")\n)\nD9\"null\"",
-          "n_natural": "",
           "n_name": "kiểm tra dòng điện",
-          "n_desc": ""
+          "n_content": "// N102: Kiem tra nguong dong va khung gio cua hai quat moi ao\n\t[#1<>11&#1<>12&#1<>21&#1<>22](\n\t\tD9\"null\"\n\t)\n\t[#3:\"ON\",\"OFF\"](\n\t\t[#1:11,12,21,22](\n\t\t\tD4#4,#1011.1\",\"#1011.2\n\t\t)(\n\t\t\tD4#4,#1011.3\",\"#1011.4\n\t\t)(\n\t\t\tD4#4,#1012.1\",\"#1012.2\n\t\t)(\n\t\t\tD4#4,#1012.3\",\"#1012.4\n\t\t)\n\t\t[(#2.1<#4.1|#2.2<#4.1|#2.3<#4.1)](\n\t\t\tD9\"shaft_break,\"#2\n\t\t)\n\t\t[(#2.1>#4.2|#2.2>#4.2|#2.3>#4.2)](\n\t\t\tD9\"overload,\"#2\n\t\t)\n\t)(\n\t\t[#1:11,12,21,22](\n\t\t\tD4#4,#1005.1\",\"#1005.2\n\t\t)(\n\t\t\tD4#4,#1005.3\",\"#1005.4\n\t\t)(\n\t\t\tD4#4,#1006.1\",\"#1006.2\n\t\t)(\n\t\t\tD4#4,#1006.3\",\"#1006.4\n\t\t)\n\t\tD6,#5,N104,#4\n\t\t[#5=\"IN\"](\n\t\t\tD9\"on_time\"\n\t\t)\n\t)\n\tD9\"null\"\n",
+          "n_mode": "1",
+          "n_returncm": false,
+          "n_disabledcm": false,
+          "n_natural": "",
+          "n_desc": "",
+          "n_local_def": [
+            {
+              "l_id": 79301,
+              "l_type": "variable",
+              "l_cm": "#3",
+              "l_natural": "trạng thái bơm"
+            },
+            {
+              "l_id": 15186,
+              "l_type": "variable",
+              "l_cm": "#2",
+              "l_natural": "dòng các pha"
+            },
+            {
+              "l_id": 87329,
+              "l_type": "variable",
+              "l_cm": "#1",
+              "l_natural": "mã bơm"
+            }
+          ]
         },
         {
           "n_id": "103",
-          "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "D21,#801,\"telemetry\",#1,#2,#3,#4,#5,#6,#7//,#8,#9,#10",
-          "n_natural": "",
           "n_name": "cập nhật telemetry",
-          "n_desc": ""
+          "n_content": "// N103: Gui telemetry qua API #801\n\tD21,#801,\"telemetry\",#1,#2,#3,#4,#5,#6,#7\n",
+          "n_mode": "1",
+          "n_returncm": false,
+          "n_disabledcm": false,
+          "n_natural": "",
+          "n_desc": "",
+          "n_local_def": []
         },
         {
           "n_id": "104",
+          "n_name": "kiểm tra khung giờ",
+          "n_content": "// N104: Kiem tra thoi diem hien tai trong khung gio cho phep\n\tD4#2,#911#912\n\t[#1.1>#1.2](\n\t\t[#1.1<#2|#1.2>#2](\n\t\t\tD9\"IN\"\n\t\t)\n\t)(\n\t\t[#1.1<#2&#1.2>#2](\n\t\t\tD9\"IN\"\n\t\t)\n\t)\n\tD9\"OUT\"\n",
           "n_mode": "1",
+          "n_returncm": false,
+          "n_disabledcm": false,
+          "n_natural": "",
+          "n_desc": "",
           "n_local_def": [
             {
               "l_id": 86896,
@@ -724,158 +761,137 @@
               "l_cm": "#1",
               "l_natural": "thời gian bắt đầu, kết thúc"
             }
-          ],
-          "n_content": "D4#2,#911#912\t//giờ phút hiện tại\n[#1.1>#1.2](        //khung giờ xuyên ngày\n  [#1.1<#2|#1.2>#2](D9\"IN\")\n)(\n  [#1.1<#2&#1.2>#2](D9\"IN\")\n)\nD9\"OUT\"",
-          "n_natural": "",
-          "n_name": "kiểm tra khung giờ",
-          "n_desc": ""
+          ]
         }
       ]
     },
     {
       "io_group_id": 1,
       "io_group": "Hẹn giờ điều khiển",
-      "io_group_desc": "",
       "io_n_list": [
         {
           "n_id": "21",
+          "n_name": "hẹn giờ 11",
+          "n_content": "// N21: Ao 1, hen gio 1: giu dia chi #1021 va anh xa quat hien tai\n\tT#1021\n\t[#1021.2=\"enable\"](\n\t\t[#1021.4=1](\n\t\t\t[#1021.3=\"ON\"](\n\t\t\t\tD1O101\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 11\"\n\t\t\t)(\n\t\t\t\tD2O101\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 11\"\n\t\t\t)\n\t\t)\n\t\t[#1021.5=2](\n\t\t\t[#1021.3=\"ON\"](\n\t\t\t\tD1O102\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 11\"\n\t\t\t)(\n\t\t\t\tD2O102\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 11\"\n\t\t\t)\n\t\t)\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1021[#1021.2=\"enable\"](\n  D4#1,#1021.4\n  [#1<>\"\"](\n    [#1021.3=\"ON\"](D1O101D5N101,1,\"on\",\"từ hẹn giờ 11\")(D2O101D5N101,1,\"off\",\"từ hẹn giờ 11\")\n  )\n  D4#1,#1021.5\n  [#1<>\"\"](\n    [#1021.3=\"ON\"](D1O102D5N101,1,\"on\",\"từ hẹn giờ 11\")(D2O102D5N101,1,\"off\",\"từ hẹn giờ 11\")\n  )\n)",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "hẹn giờ 11"
+          "n_local_def": []
         },
         {
           "n_id": "22",
+          "n_name": "hẹn giờ 12",
+          "n_content": "// N22: Ao 1, hen gio 2: giu dia chi #1022 va anh xa quat hien tai\n\tT#1022\n\t[#1022.2=\"enable\"](\n\t\t[#1022.4=1](\n\t\t\t[#1022.3=\"ON\"](\n\t\t\t\tD1O101\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 12\"\n\t\t\t)(\n\t\t\t\tD2O101\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 12\"\n\t\t\t)\n\t\t)\n\t\t[#1022.5=2](\n\t\t\t[#1022.3=\"ON\"](\n\t\t\t\tD1O102\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 12\"\n\t\t\t)(\n\t\t\t\tD2O102\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 12\"\n\t\t\t)\n\t\t)\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1022[#1022.2=\"enable\"](\n  D4#1,#1022.4\n  [#1<>\"\"](\n    [#1022.3=\"ON\"](D1O101D5N101,1,\"on\",\"từ hẹn giờ 12\")(D2O101D5N101,1,\"off\",\"từ hẹn giờ 12\")\n  )\n  D4#1,#1022.5\n  [#1<>\"\"](\n    [#1022.3=\"ON\"](D1O102D5N101,1,\"on\",\"từ hẹn giờ 12\")(D2O102D5N101,1,\"off\",\"từ hẹn giờ 12\")\n  )\n)",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "hẹn giờ 12"
+          "n_local_def": []
         },
         {
           "n_id": "23",
+          "n_name": "hẹn giờ 13",
+          "n_content": "// N23: Ao 1, hen gio 3: giu dia chi #1023 va anh xa quat hien tai\n\tT#1023\n\t[#1023.2=\"enable\"](\n\t\t[#1023.4=1](\n\t\t\t[#1023.3=\"ON\"](\n\t\t\t\tD1O101\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 13\"\n\t\t\t)(\n\t\t\t\tD2O101\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 13\"\n\t\t\t)\n\t\t)\n\t\t[#1023.5=2](\n\t\t\t[#1023.3=\"ON\"](\n\t\t\t\tD1O102\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 13\"\n\t\t\t)(\n\t\t\t\tD2O102\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 13\"\n\t\t\t)\n\t\t)\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1023[#1023.2=\"enable\"](\n  D4#1,#1023.4\n  [#1<>\"\"](\n    [#1023.3=\"ON\"](D1O101D5N101,1,\"on\",\"từ hẹn giờ 13\")(D2O101D5N101,1,\"off\",\"từ hẹn giờ 13\")\n  )\n  D4#1,#1023.5\n  [#1<>\"\"](\n    [#1023.3=\"ON\"](D1O102D5N101,1,\"on\",\"từ hẹn giờ 13\")(D2O102D5N101,1,\"off\",\"từ hẹn giờ 13\")\n  )\n)",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "hẹn giờ 13"
+          "n_local_def": []
         },
         {
           "n_id": "24",
+          "n_name": "hẹn giờ 14",
+          "n_content": "// N24: Ao 1, hen gio 4: giu dia chi #1024 va anh xa quat hien tai\n\tT#1024\n\t[#1024.2=\"enable\"](\n\t\t[#1024.4=1](\n\t\t\t[#1024.3=\"ON\"](\n\t\t\t\tD1O101\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 14\"\n\t\t\t)(\n\t\t\t\tD2O101\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 14\"\n\t\t\t)\n\t\t)\n\t\t[#1024.5=2](\n\t\t\t[#1024.3=\"ON\"](\n\t\t\t\tD1O102\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 14\"\n\t\t\t)(\n\t\t\t\tD2O102\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 14\"\n\t\t\t)\n\t\t)\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1024[#1024.2=\"enable\"](\n  D4#1,#1024.4\n  [#1<>\"\"](\n    [#1024.3=\"ON\"](D1O101D5N101,1,\"on\",\"từ hẹn giờ 14\")(D2O101D5N101,1,\"off\",\"từ hẹn giờ 14\")\n  )\n  D4#1,#1024.5\n  [#1<>\"\"](\n    [#1024.3=\"ON\"](D1O102D5N101,1,\"on\",\"từ hẹn giờ 14\")(D2O102D5N101,1,\"off\",\"từ hẹn giờ 14\")\n  )\n)",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "hẹn giờ 14"
+          "n_local_def": []
         },
         {
           "n_id": "25",
+          "n_name": "hẹn giờ 15",
+          "n_content": "// N25: Ao 1, hen gio 5, tham so #1025\n\tT#1025\n\t[#1025.2=\"enable\"](\n\t\t[#1025.4=1](\n\t\t\t[#1025.3=\"ON\"](\n\t\t\t\tD1O101\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 15\"\n\t\t\t)(\n\t\t\t\tD2O101\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 15\"\n\t\t\t)\n\t\t)\n\t\t[#1025.5=2](\n\t\t\t[#1025.3=\"ON\"](\n\t\t\t\tD1O102\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 15\"\n\t\t\t)(\n\t\t\t\tD2O102\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 15\"\n\t\t\t)\n\t\t)\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1025[#1025.2=\"enable\"](\n  D4#1,#1025.4\n  [#1<>\"\"](\n    [#1025.3=\"ON\"](D1O103D5N101,2,\"on\",\"từ hẹn giờ 21\")(D2O103D5N101,2,\"off\",\"từ hẹn giờ 21\")\n  )\n  D4#1,#1025.5\n  [#1<>\"\"](\n    [#1025.3=\"ON\"](D1O104D5N101,2,\"on\",\"từ hẹn giờ 21\")(D2O104D5N101,2,\"off\",\"từ hẹn giờ 21\")\n  )\n)",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "hẹn giờ 21",
-          "n_desc": ""
+          "n_desc": "",
+          "n_local_def": []
         },
         {
           "n_id": "26",
+          "n_name": "hẹn giờ 16",
+          "n_content": "// N26: Ao 1, hen gio 6, tham so #1026\n\tT#1026\n\t[#1026.2=\"enable\"](\n\t\t[#1026.4=1](\n\t\t\t[#1026.3=\"ON\"](\n\t\t\t\tD1O101\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 16\"\n\t\t\t)(\n\t\t\t\tD2O101\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 16\"\n\t\t\t)\n\t\t)\n\t\t[#1026.5=2](\n\t\t\t[#1026.3=\"ON\"](\n\t\t\t\tD1O102\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 16\"\n\t\t\t)(\n\t\t\t\tD2O102\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 16\"\n\t\t\t)\n\t\t)\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1026[#1026.2=\"enable\"](\n  D4#1,#1026.4\n  [#1<>\"\"](\n    [#1026.3=\"ON\"](D1O103D5N101,2,\"on\",\"từ hẹn giờ 22\")(D2O103D5N101,2,\"off\",\"từ hẹn giờ 22\")\n  )\n  D4#1,#1026.5\n  [#1<>\"\"](\n    [#1026.3=\"ON\"](D1O104D5N101,2,\"on\",\"từ hẹn giờ 22\")(D2O104D5N101,2,\"off\",\"từ hẹn giờ 22\")\n  )\n)",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "hẹn giờ 22",
-          "n_desc": ""
+          "n_desc": "",
+          "n_local_def": []
         },
         {
           "n_id": "27",
+          "n_name": "hẹn giờ 21",
+          "n_content": "// N27: Ao 2, hen gio 1, tham so #1027\n\tT#1027\n\t[#1027.2=\"enable\"](\n\t\t[#1027.4=1](\n\t\t\t[#1027.3=\"ON\"](\n\t\t\t\tD1O103\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 21\"\n\t\t\t)(\n\t\t\t\tD2O103\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 21\"\n\t\t\t)\n\t\t)\n\t\t[#1027.5=2](\n\t\t\t[#1027.3=\"ON\"](\n\t\t\t\tD1O104\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 21\"\n\t\t\t)(\n\t\t\t\tD2O104\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 21\"\n\t\t\t)\n\t\t)\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1027[#1027.2=\"enable\"](\n  D4#1,#1027.4\n  [#1<>\"\"](\n    [#1027.3=\"ON\"](D1O103D5N101,2,\"on\",\"từ hẹn giờ 1\")(D2O103D5N101,2,\"off\",\"từ hẹn giờ 1\")\n  )\n  D4#1,#1027.5\n  [#1<>\"\"](\n    [#1027.3=\"ON\"](D1O104D5N101,2,\"on\",\"từ hẹn giờ 1\")(D2O104D5N101,2,\"off\",\"từ hẹn giờ 1\")\n  )\n)",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "hẹn giờ 23",
-          "n_desc": ""
+          "n_desc": "",
+          "n_local_def": []
         },
         {
           "n_id": "28",
+          "n_name": "hẹn giờ 22",
+          "n_content": "// N28: Ao 2, hen gio 2, tham so #1028\n\tT#1028\n\t[#1028.2=\"enable\"](\n\t\t[#1028.4=1](\n\t\t\t[#1028.3=\"ON\"](\n\t\t\t\tD1O103\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 22\"\n\t\t\t)(\n\t\t\t\tD2O103\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 22\"\n\t\t\t)\n\t\t)\n\t\t[#1028.5=2](\n\t\t\t[#1028.3=\"ON\"](\n\t\t\t\tD1O104\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 22\"\n\t\t\t)(\n\t\t\t\tD2O104\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 22\"\n\t\t\t)\n\t\t)\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1028[#1028.2=\"enable\"](\n  D4#1,#1028.4\n  [#1<>\"\"](\n    [#1028.3=\"ON\"](D1O103D5N101,2,\"on\",\"từ hẹn giờ 24\")(D2O103D5N101,2,\"off\",\"từ hẹn giờ 24\")\n  )\n  D4#1,#1028.5\n  [#1<>\"\"](\n    [#1028.3=\"ON\"](D1O104D5N101,2,\"on\",\"từ hẹn giờ 24\")(D2O104D5N101,2,\"off\",\"từ hẹn giờ 24\")\n  )\n)",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "hẹn giờ 24",
-          "n_desc": ""
+          "n_desc": "",
+          "n_local_def": []
         },
         {
           "n_id": "29",
+          "n_name": "hẹn giờ 23",
+          "n_content": "// N29: Ao 2, hen gio 3, tham so #1029\n\tT#1029\n\t[#1029.2=\"enable\"](\n\t\t[#1029.4=1](\n\t\t\t[#1029.3=\"ON\"](\n\t\t\t\tD1O103\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 23\"\n\t\t\t)(\n\t\t\t\tD2O103\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 23\"\n\t\t\t)\n\t\t)\n\t\t[#1029.5=2](\n\t\t\t[#1029.3=\"ON\"](\n\t\t\t\tD1O104\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 23\"\n\t\t\t)(\n\t\t\t\tD2O104\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 23\"\n\t\t\t)\n\t\t)\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1029[#1029.2=\"enable\"](\n  D4#1,#1029.4\n  [#1<>\"\"](\n    [#1029.3=\"ON\"](D1O105D5N101,3,\"on\",\"từ hẹn giờ 31\")(D2O105D5N101,3,\"off\",\"từ hẹn giờ 31\")\n  )\n  D4#1,#1029.5\n  [#1<>\"\"](\n    [#1029.3=\"ON\"](D1O106D5N101,3,\"on\",\"từ hẹn giờ 31\")(D2O106D5N101,3,\"off\",\"từ hẹn giờ 31\")\n  )\n)",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "hẹn giờ 31",
-          "n_desc": ""
+          "n_local_def": []
         },
         {
           "n_id": "30",
+          "n_name": "hẹn giờ 24",
+          "n_content": "// N30: Ao 2, hen gio 4, tham so #1030\n\tT#1030\n\t[#1030.2=\"enable\"](\n\t\t[#1030.4=1](\n\t\t\t[#1030.3=\"ON\"](\n\t\t\t\tD1O103\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 24\"\n\t\t\t)(\n\t\t\t\tD2O103\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 24\"\n\t\t\t)\n\t\t)\n\t\t[#1030.5=2](\n\t\t\t[#1030.3=\"ON\"](\n\t\t\t\tD1O104\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 24\"\n\t\t\t)(\n\t\t\t\tD2O104\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 24\"\n\t\t\t)\n\t\t)\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1030[#1030.2=\"enable\"](\n  D4#1,#1030.4\n  [#1<>\"\"](\n    [#1030.3=\"ON\"](D1O105D5N101,3,\"on\",\"từ hẹn giờ 32\")(D2O105D5N101,3,\"off\",\"từ hẹn giờ 32\")\n  )\n  D4#1,#1030.5\n  [#1<>\"\"](\n    [#1030.3=\"ON\"](D1O106D5N101,3,\"on\",\"từ hẹn giờ 32\")(D2O106D5N101,3,\"off\",\"từ hẹn giờ 32\")\n  )\n)",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "hẹn giờ 32",
-          "n_desc": ""
+          "n_local_def": []
         },
         {
           "n_id": "31",
+          "n_name": "hẹn giờ 25",
+          "n_content": "// N31: Ao 2, hen gio 5, tham so #1031\n\tT#1031\n\t[#1031.2=\"enable\"](\n\t\t[#1031.4=1](\n\t\t\t[#1031.3=\"ON\"](\n\t\t\t\tD1O103\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 25\"\n\t\t\t)(\n\t\t\t\tD2O103\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 25\"\n\t\t\t)\n\t\t)\n\t\t[#1031.5=2](\n\t\t\t[#1031.3=\"ON\"](\n\t\t\t\tD1O104\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 25\"\n\t\t\t)(\n\t\t\t\tD2O104\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 25\"\n\t\t\t)\n\t\t)\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1031[#1031.2=\"enable\"](\n  D4#1,#1031.4\n  [#1<>\"\"](\n    [#1031.3=\"ON\"](D1O105D5N101,3,\"on\",\"từ hẹn giờ 33\")(D2O105D5N101,3,\"off\",\"từ hẹn giờ 33\")\n  )\n  D4#1,#1031.5\n  [#1<>\"\"](\n    [#1031.3=\"ON\"](D1O106D5N101,3,\"on\",\"từ hẹn giờ 33\")(D2O106D5N101,3,\"off\",\"từ hẹn giờ 33\")\n  )\n)",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "hẹn giờ 33",
-          "n_desc": ""
+          "n_local_def": []
         },
         {
           "n_id": "32",
+          "n_name": "hẹn giờ 26",
+          "n_content": "// N32: Ao 2, hen gio 6, tham so #1032\n\tT#1032\n\t[#1032.2=\"enable\"](\n\t\t[#1032.4=1](\n\t\t\t[#1032.3=\"ON\"](\n\t\t\t\tD1O103\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 26\"\n\t\t\t)(\n\t\t\t\tD2O103\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 26\"\n\t\t\t)\n\t\t)\n\t\t[#1032.5=2](\n\t\t\t[#1032.3=\"ON\"](\n\t\t\t\tD1O104\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 26\"\n\t\t\t)(\n\t\t\t\tD2O104\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 26\"\n\t\t\t)\n\t\t)\n\t)\n",
           "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1032[#1032.2=\"enable\"](\n  D4#1,#1032.4\n  [#1<>\"\"](\n    [#1032.3=\"ON\"](D1O105D5N101,3,\"on\",\"từ hẹn giờ 34\")(D2O105D5N101,3,\"off\",\"từ hẹn giờ 34\")\n  )\n  D4#1,#1032.5\n  [#1<>\"\"](\n    [#1032.3=\"ON\"](D1O106D5N101,3,\"on\",\"từ hẹn giờ 34\")(D2O106D5N101,3,\"off\",\"từ hẹn giờ 34\")\n  )\n)",
+          "n_returncm": false,
+          "n_disabledcm": false,
           "n_natural": "",
-          "n_name": "hẹn giờ 34",
-          "n_desc": ""
-        },
-        {
-          "n_id": "33",
-          "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1033[#1033.2=\"enable\"](\n  D4#1,#1033.4\n  [#1<>\"\"](\n    [#1033.3=\"ON\"](D1O107D5N101,4,\"on\",\"từ hẹn giờ 41\")(D2O107D5N101,4,\"off\",\"từ hẹn giờ 41\")\n  )\n  D4#1,#1033.5\n  [#1<>\"\"](\n    [#1033.3=\"ON\"](D1O108D5N101,4,\"on\",\"từ hẹn giờ 41\")(D2O108D5N101,4,\"off\",\"từ hẹn giờ 41\")\n  )\n)",
-          "n_natural": "",
-          "n_name": "hẹn giờ 41",
-          "n_desc": ""
-        },
-        {
-          "n_id": "34",
-          "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1034[#1034.2=\"enable\"](\n  D4#1,#1034.4\n  [#1<>\"\"](\n    [#1034.3=\"ON\"](D1O107D5N101,4,\"on\",\"từ hẹn giờ 42\")(D2O107D5N101,4,\"off\",\"từ hẹn giờ 42\")\n  )\n  D4#1,#1034.5\n  [#1<>\"\"](\n    [#1034.3=\"ON\"](D1O108D5N101,4,\"on\",\"từ hẹn giờ 42\")(D2O108D5N101,4,\"off\",\"từ hẹn giờ 42\")\n  )\n)",
-          "n_natural": "",
-          "n_name": "hẹn giờ 42",
-          "n_desc": ""
-        },
-        {
-          "n_id": "35",
-          "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1035[#1035.2=\"enable\"](\n  D4#1,#1035.4\n  [#1<>\"\"](\n    [#1035.3=\"ON\"](D1O107D5N101,4,\"on\",\"từ hẹn giờ 43\")(D2O107D5N101,4,\"off\",\"từ hẹn giờ 43\")\n  )\n  D4#1,#1035.5\n  [#1<>\"\"](\n    [#1035.3=\"ON\"](D1O108D5N101,4,\"on\",\"từ hẹn giờ 43\")(D2O108D5N101,4,\"off\",\"từ hẹn giờ 43\")\n  )\n)",
-          "n_natural": "",
-          "n_name": "hẹn giờ 43",
-          "n_desc": ""
-        },
-        {
-          "n_id": "36",
-          "n_mode": "1",
-          "n_local_def": [],
-          "n_content": "T#1036[#1036.2=\"enable\"](\n  D4#1,#1036.4\n  [#1<>\"\"](\n    [#1036.3=\"ON\"](D1O107D5N101,4,\"on\",\"từ hẹn giờ 44\")(D2O107D5N101,4,\"off\",\"từ hẹn giờ 44\")\n  )\n  D4#1,#1036.5\n  [#1<>\"\"](\n    [#1036.3=\"ON\"](D1O108D5N101,4,\"on\",\"từ hẹn giờ 44\")(D2O108D5N101,4,\"off\",\"từ hẹn giờ 44\")\n  )\n)",
-          "n_natural": "",
-          "n_name": "hẹn giờ 44",
-          "n_desc": ""
+          "n_local_def": []
         }
       ]
     }

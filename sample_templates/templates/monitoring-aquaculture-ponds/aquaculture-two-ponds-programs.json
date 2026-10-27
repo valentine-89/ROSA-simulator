@@ -1,0 +1,117 @@
+{
+  "source_device": "IO282Mopw",
+  "programs": {
+    "1": {
+      "source": "// N1: Vong cap nhat ao 1-2 va gui co cho phep cap nhat\n\tI99-1\n\tW5\n\tL(\n\t\tD4#103,#904-#3\n\t\tD4#3,#904\n\t\t[#1003.1=\"ON\"](\n\t\t\tD1O1'2'\n\t\t\tD6N41,#1\n\t\t\tD2O1\n\t\t\t[#891>0](\n\t\t\t\tW3\n\t\t\t)(\n\t\t\t\tW1\n\t\t\t)\n\t\t)\n\t\t[#1003.2=\"ON\"](\n\t\t\tD1O1'2'\n\t\t\tD6N42,#1\n\t\t\tD2O1\n\t\t\t[#891>0](\n\t\t\t\tW3\n\t\t\t)(\n\t\t\t\tW1\n\t\t\t)\n\t\t)\n\t\t[#891>10](\n\t\t\tW10\n\t\t)\n\t\t[#1003<>#2|#1%60=0](\n\t\t\tD4#2,#1003\n\t\t\tD23,#801,,\"telemetry\",\"#1003.1=\"#1003.1,\"#1003.2=\"#1003.2\n\t\t)\n\t\tD4#1,#1+1\n\t)\n",
+      "flags": "",
+      "mode": 1
+    },
+    "2": {
+      "source": "// N2: Gui dien ap va dong dien ba pha theo du lieu hop le\n\t[(#2<>\"ERROR\"&#6<>\"ERROR\")](\n\t\tD23,#801,,\"timeseries\",\"Voltage\"#1.1\"_V=\"#2,\"Current\"#1.1\"_A1=\"#3,\"Current\"#1.1\"_A2=\"#4,\"Current\"#1.1\"_A3=\"#5,\"Voltage\"#1.2\"_V=\"#6,\"Current\"#1.2\"_A1=\"#7,\"Current\"#1.2\"_A2=\"#8,\"Current\"#1.2\"_A3=\"#9\n\t)(\n\t\t[#2<>\"ERROR\"](\n\t\t\tD23,#801,,\"timeseries\",\"Voltage\"#1.1\"_V=\"#2,\"Current\"#1.1\"_A1=\"#3,\"Current\"#1.1\"_A2=\"#4,\"Current\"#1.1\"_A3=\"#5\n\t\t)\n\t\t[#6<>\"ERROR\"](\n\t\t\tD23,#801,,\"timeseries\",\"Voltage\"#1.2\"_V=\"#6,\"Current\"#1.2\"_A1=\"#7,\"Current\"#1.2\"_A2=\"#8,\"Current\"#1.2\"_A3=\"#9\n\t\t)\n\t)\n",
+      "flags": "",
+      "mode": 1
+    },
+    "3": {
+      "source": "// N3: Dieu khien bang tay ao 1-2, quat 1-2; giu co tra ket qua\n\t[#4=\"\"](\n\t\tD9\"không có quyền điều khiển\"\n\t)\n\t[(#1<>1&#1<>2)|(#2<>1&#2<>2)](\n\t\tD9\"Ao va quat phai 1-2\"\n\t)\n\tD4#5,(#1-1)*2+100+#2\n\t[#3=\"ON\"](\n\t\tD1O#5\n\t\tD5N101,#1,\"on\",\"bật bơm \"#2\" bằng tay\",#4\n\t)\n\t[#3=\"OFF\"](\n\t\tD2O#5\n\t\tD5N101,#1,\"off\",\"tắt O1 bằng tay\",#4\n\t)\n\tD21,#801,\"telemetry\",\"O\"#5\"=\"O#5\n\tD9\"Điều khiển thành công O\"#5\n",
+      "flags": "^",
+      "mode": 1
+    },
+    "4": {
+      "source": "// N4: Dung bao dong theo ma ao 1-2\n\t[#1=\"\"](\n\t\tD9\"Cần đăng nhập\"\n\t)\n\t[#2<>1&#2<>2](\n\t\tD9\"Mã ao phải 1-2\"\n\t)\n\tD4#3,#2+10\n\tD15N#3\n\tD21,#801,\"telemetry\",\"alarm\"#2\"=\"\n\tD6N101,#2,\"alarm_off\",#1053,#1\n",
+      "flags": "",
+      "mode": 1
+    },
+    "7": {
+      "source": "// N7: Ghi thay doi trang thai va kich hoat bao dong ao 1\n\t[#1=#102.1](\n\t\t[#101.1<>#2](\n\t\t\t[#2:\"shaft_break\",\"overload\",\"off_time\",\"on_time\",\"disconnect\"](\n\t\t\t\tD5N101,1,#2,#1051#3\n\t\t\t\tD5N11,#1001.1\" \"#1051#3\n\t\t\t)(\n\t\t\t\tD5N101,1,#2,#1052#3\n\t\t\t\tD5N11,#1001.1\" \"#1052#3\n\t\t\t)(\n\t\t\t\tD5N101,1,#2,#1054\n\t\t\t\tD5N11,#1001.1\" \"#1054\n\t\t\t)(\n\t\t\t\tD5N101,1,#2,#1055\n\t\t\t\tD5N11,#1001.1\" \"#1055\n\t\t\t)(\n\t\t\t\tD5N101,1,#2,#1056\n\t\t\t\tD5N11,#1001.1\" \"#1056\n\t\t\t)\n\t\t)\n\t\t[#2=\"null\"](\n\t\t\tD14N11\n\t\t\t[#101.1<>\"null\"](\n\t\t\t\tD6N103,\"alarm1=\"\n\t\t\t)\n\t\t)\n\t\tD4#101.1,#2\n\t)\n\tD4#102.1,#1\n",
+      "flags": "",
+      "mode": 1
+    },
+    "8": {
+      "source": "// N8: Ghi thay doi trang thai va kich hoat bao dong ao 2\n\t[#1=#102.2](\n\t\t[#101.2<>#2](\n\t\t\t[#2:\"shaft_break\",\"overload\",\"off_time\",\"on_time\",\"disconnect\"](\n\t\t\t\tD5N101,2,#2,#1051#3\n\t\t\t\tD5N12,#1001.2\" \"#1051#3\n\t\t\t)(\n\t\t\t\tD5N101,2,#2,#1052#3\n\t\t\t\tD5N12,#1001.2\" \"#1052#3\n\t\t\t)(\n\t\t\t\tD5N101,2,#2,#1054\n\t\t\t\tD5N12,#1001.2\" \"#1054\n\t\t\t)(\n\t\t\t\tD5N101,2,#2,#1055\n\t\t\t\tD5N12,#1001.2\" \"#1055\n\t\t\t)(\n\t\t\t\tD5N101,2,#2,#1056\n\t\t\t\tD5N12,#1001.2\" \"#1056\n\t\t\t)\n\t\t)\n\t\t[#2=\"null\"](\n\t\t\tD14N12\n\t\t\t[#101.2<>\"null\"](\n\t\t\t\tD6N103,\"alarm2=\"\n\t\t\t)\n\t\t)\n\t\tD4#101.2,#2\n\t)\n\tD4#102.2,#1\n",
+      "flags": "",
+      "mode": 1
+    },
+    "11": {
+      "source": "// N11: Bao dong ao 1: telemetry, SMS, cuoc goi qua API #802\n\tD6N103,\"alarm1=\"#1\n\tD23,#802,,\"sms\",#1002.1,#1\n\tW10\n\tD23,#802,,\"call\",#1002.1,#1\n\tW300\n\tD23,#802,,\"call\",#1004,#1\n",
+      "flags": "",
+      "mode": 4
+    },
+    "12": {
+      "source": "// N12: Bao dong ao 2: telemetry, SMS, cuoc goi qua API #802\n\tD6N103,\"alarm2=\"#1\n\tD23,#802,,\"sms\",#1002.2,#1\n\tW10\n\tD23,#802,,\"call\",#1002.2,#1\n\tW300\n\tD23,#802,,\"call\",#1004,#1\n",
+      "flags": "",
+      "mode": 4
+    },
+    "101": {
+      "source": "// N101: Ghi nhat ky su kien theo ten ao va nguoi dieu khien\n\tD21,#802,\"data\",\"IO-pond-event-log\",#1001.#1,#2,#3,#4\n",
+      "flags": "",
+      "mode": 1
+    },
+    "102": {
+      "source": "// N102: Kiem tra nguong dong va khung gio cua hai quat moi ao\n\t[#1<>11&#1<>12&#1<>21&#1<>22](\n\t\tD9\"null\"\n\t)\n\t[#3:\"ON\",\"OFF\"](\n\t\t[#1:11,12,21,22](\n\t\t\tD4#4,#1011.1\",\"#1011.2\n\t\t)(\n\t\t\tD4#4,#1011.3\",\"#1011.4\n\t\t)(\n\t\t\tD4#4,#1012.1\",\"#1012.2\n\t\t)(\n\t\t\tD4#4,#1012.3\",\"#1012.4\n\t\t)\n\t\t[(#2.1<#4.1|#2.2<#4.1|#2.3<#4.1)](\n\t\t\tD9\"shaft_break,\"#2\n\t\t)\n\t\t[(#2.1>#4.2|#2.2>#4.2|#2.3>#4.2)](\n\t\t\tD9\"overload,\"#2\n\t\t)\n\t)(\n\t\t[#1:11,12,21,22](\n\t\t\tD4#4,#1005.1\",\"#1005.2\n\t\t)(\n\t\t\tD4#4,#1005.3\",\"#1005.4\n\t\t)(\n\t\t\tD4#4,#1006.1\",\"#1006.2\n\t\t)(\n\t\t\tD4#4,#1006.3\",\"#1006.4\n\t\t)\n\t\tD6,#5,N104,#4\n\t\t[#5=\"IN\"](\n\t\t\tD9\"on_time\"\n\t\t)\n\t)\n\tD9\"null\"\n",
+      "flags": "",
+      "mode": 1
+    },
+    "103": {
+      "source": "// N103: Gui telemetry qua API #801\n\tD21,#801,\"telemetry\",#1,#2,#3,#4,#5,#6,#7\n",
+      "flags": "",
+      "mode": 1
+    },
+    "104": {
+      "source": "// N104: Kiem tra thoi diem hien tai trong khung gio cho phep\n\tD4#2,#911#912\n\t[#1.1>#1.2](\n\t\t[#1.1<#2|#1.2>#2](\n\t\t\tD9\"IN\"\n\t\t)\n\t)(\n\t\t[#1.1<#2&#1.2>#2](\n\t\t\tD9\"IN\"\n\t\t)\n\t)\n\tD9\"OUT\"\n",
+      "flags": "",
+      "mode": 1
+    },
+    "21": {
+      "source": "// N21: Ao 1, hen gio 1: giu dia chi #1021 va anh xa quat hien tai\n\tT#1021\n\t[#1021.2=\"enable\"](\n\t\t[#1021.4=1](\n\t\t\t[#1021.3=\"ON\"](\n\t\t\t\tD1O101\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 11\"\n\t\t\t)(\n\t\t\t\tD2O101\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 11\"\n\t\t\t)\n\t\t)\n\t\t[#1021.5=2](\n\t\t\t[#1021.3=\"ON\"](\n\t\t\t\tD1O102\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 11\"\n\t\t\t)(\n\t\t\t\tD2O102\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 11\"\n\t\t\t)\n\t\t)\n\t)\n",
+      "flags": "",
+      "mode": 1
+    },
+    "22": {
+      "source": "// N22: Ao 1, hen gio 2: giu dia chi #1022 va anh xa quat hien tai\n\tT#1022\n\t[#1022.2=\"enable\"](\n\t\t[#1022.4=1](\n\t\t\t[#1022.3=\"ON\"](\n\t\t\t\tD1O101\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 12\"\n\t\t\t)(\n\t\t\t\tD2O101\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 12\"\n\t\t\t)\n\t\t)\n\t\t[#1022.5=2](\n\t\t\t[#1022.3=\"ON\"](\n\t\t\t\tD1O102\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 12\"\n\t\t\t)(\n\t\t\t\tD2O102\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 12\"\n\t\t\t)\n\t\t)\n\t)\n",
+      "flags": "",
+      "mode": 1
+    },
+    "23": {
+      "source": "// N23: Ao 1, hen gio 3: giu dia chi #1023 va anh xa quat hien tai\n\tT#1023\n\t[#1023.2=\"enable\"](\n\t\t[#1023.4=1](\n\t\t\t[#1023.3=\"ON\"](\n\t\t\t\tD1O101\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 13\"\n\t\t\t)(\n\t\t\t\tD2O101\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 13\"\n\t\t\t)\n\t\t)\n\t\t[#1023.5=2](\n\t\t\t[#1023.3=\"ON\"](\n\t\t\t\tD1O102\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 13\"\n\t\t\t)(\n\t\t\t\tD2O102\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 13\"\n\t\t\t)\n\t\t)\n\t)\n",
+      "flags": "",
+      "mode": 1
+    },
+    "24": {
+      "source": "// N24: Ao 1, hen gio 4: giu dia chi #1024 va anh xa quat hien tai\n\tT#1024\n\t[#1024.2=\"enable\"](\n\t\t[#1024.4=1](\n\t\t\t[#1024.3=\"ON\"](\n\t\t\t\tD1O101\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 14\"\n\t\t\t)(\n\t\t\t\tD2O101\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 14\"\n\t\t\t)\n\t\t)\n\t\t[#1024.5=2](\n\t\t\t[#1024.3=\"ON\"](\n\t\t\t\tD1O102\n\t\t\t\tD5N101,1,\"on\",\"từ hẹn giờ 14\"\n\t\t\t)(\n\t\t\t\tD2O102\n\t\t\t\tD5N101,1,\"off\",\"từ hẹn giờ 14\"\n\t\t\t)\n\t\t)\n\t)\n",
+      "flags": "",
+      "mode": 1
+    },
+    "25": {
+      "source": "// N25: Ao 2, hen gio 1: giu dia chi #1025 va anh xa quat hien tai\n\tT#1025\n\t[#1025.2=\"enable\"](\n\t\t[#1025.4=1](\n\t\t\t[#1025.3=\"ON\"](\n\t\t\t\tD1O103\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 21\"\n\t\t\t)(\n\t\t\t\tD2O103\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 21\"\n\t\t\t)\n\t\t)\n\t\t[#1025.5=2](\n\t\t\t[#1025.3=\"ON\"](\n\t\t\t\tD1O104\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 21\"\n\t\t\t)(\n\t\t\t\tD2O104\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 21\"\n\t\t\t)\n\t\t)\n\t)\n",
+      "flags": "",
+      "mode": 1
+    },
+    "26": {
+      "source": "// N26: Ao 2, hen gio 2: giu dia chi #1026 va anh xa quat hien tai\n\tT#1026\n\t[#1026.2=\"enable\"](\n\t\t[#1026.4=1](\n\t\t\t[#1026.3=\"ON\"](\n\t\t\t\tD1O103\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 22\"\n\t\t\t)(\n\t\t\t\tD2O103\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 22\"\n\t\t\t)\n\t\t)\n\t\t[#1026.5=2](\n\t\t\t[#1026.3=\"ON\"](\n\t\t\t\tD1O104\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 22\"\n\t\t\t)(\n\t\t\t\tD2O104\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 22\"\n\t\t\t)\n\t\t)\n\t)\n",
+      "flags": "",
+      "mode": 1
+    },
+    "27": {
+      "source": "// N27: Ao 2, hen gio 3: giu dia chi #1027 va anh xa quat hien tai\n\tT#1027\n\t[#1027.2=\"enable\"](\n\t\t[#1027.4=1](\n\t\t\t[#1027.3=\"ON\"](\n\t\t\t\tD1O103\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 23\"\n\t\t\t)(\n\t\t\t\tD2O103\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 23\"\n\t\t\t)\n\t\t)\n\t\t[#1027.5=2](\n\t\t\t[#1027.3=\"ON\"](\n\t\t\t\tD1O104\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 23\"\n\t\t\t)(\n\t\t\t\tD2O104\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 23\"\n\t\t\t)\n\t\t)\n\t)\n",
+      "flags": "",
+      "mode": 1
+    },
+    "28": {
+      "source": "// N28: Ao 2, hen gio 4: giu dia chi #1028 va anh xa quat hien tai\n\tT#1028\n\t[#1028.2=\"enable\"](\n\t\t[#1028.4=1](\n\t\t\t[#1028.3=\"ON\"](\n\t\t\t\tD1O103\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 24\"\n\t\t\t)(\n\t\t\t\tD2O103\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 24\"\n\t\t\t)\n\t\t)\n\t\t[#1028.5=2](\n\t\t\t[#1028.3=\"ON\"](\n\t\t\t\tD1O104\n\t\t\t\tD5N101,2,\"on\",\"từ hẹn giờ 24\"\n\t\t\t)(\n\t\t\t\tD2O104\n\t\t\t\tD5N101,2,\"off\",\"từ hẹn giờ 24\"\n\t\t\t)\n\t\t)\n\t)\n",
+      "flags": "",
+      "mode": 1
+    },
+    "41": {
+      "source": "// N41: Doc hai quat ao 1; cap nhat nguong va bon lich ao 1\n\tD4#2,\n\tI101\n\tD4#3,\n\tI102\n\t[#1%3=0](\n\t\tD6N2,\"11,12\",#2.1,#2.8,#2.9,#2.10,#3.1,#3.8,#3.9,#3.10\n\t)\n\tD6,#4,N102,11,#2.8\",\"#2.9\",\"#2.10,#2.11\n\tD6,#5,N102,12,#3.8\",\"#3.9\",\"#3.10,#3.11\n\t[#5=\"null\"](\n\t\tD4#5,#4\n\t)\n\tD5N7,#2.11#3.11,#5.1,#5.2\"A \"#5.3\"A \"#5.4\"A\"\n\tD4#5,#2.11\",\"#3.11\",\"#1002\",\"#1003\",\"#1004\",\"#1005\",\"#1006\",\"#1010\",\"#1011\",\"#1021\",\"#1022\",\"#1023\",\"#1024\n\t[(#5<>#117|#1%60=0)](\n\t\tD4#117,#5\n\t\tD23,#801,,\"timeseries\",\"Temper11=\"#2.12,\"Temper12=\"#3.12\n\t\tD23,#801,,\"telemetry\",\"#1021=\"#1021,\"#1022=\"#1022,\"#1023=\"#1023,\"#1024=\"#1024,\"O101=\"#2.11,\"O102=\"#3.11,\"Energy11_Wh=\"#2.6,\"Energy12_Wh=\"#3.6\n\t\tD23,#801,,\"telemetry\",\"#1002=\"#1002,\"#1004=\"#1004,\"#1005=\"#1005,\"#1011=\"#1011\n\t)\n",
+      "flags": "",
+      "mode": 1
+    },
+    "42": {
+      "source": "// N42: Doc hai quat ao 2; phat hien thay doi theo #1012 va #1025-#1028\n\tD4#2,\n\tI103\n\tD4#3,\n\tI104\n\t[#1%3=0](\n\t\tD6N2,\"21,22\",#2.1,#2.8,#2.9,#2.10,#3.1,#3.8,#3.9,#3.10\n\t)\n\tD6,#4,N102,21,#2.8\",\"#2.9\",\"#2.10,#2.11\n\tD6,#5,N102,22,#3.8\",\"#3.9\",\"#3.10,#3.11\n\t[#5=\"null\"](\n\t\tD4#5,#4\n\t)\n\tD5N8,#2.11#3.11,#5.1,#5.2\"A \"#5.3\"A \"#5.4\"A\"\n\tD4#5,#2.11\",\"#3.11\",\"#1002\",\"#1003\",\"#1004\",\"#1006\",\"#1010\",\"#1012\",\"#1025\",\"#1026\",\"#1027\",\"#1028\n\t[(#5<>#118|#1%60=0)](\n\t\tD4#118,#5\n\t\tD23,#801,,\"timeseries\",\"Temper21=\"#2.12,\"Temper22=\"#3.12\n\t\tD23,#801,,\"telemetry\",\"#1025=\"#1025,\"#1026=\"#1026,\"#1027=\"#1027,\"#1028=\"#1028,\"O103=\"#2.11,\"O104=\"#3.11,\"Energy21_Wh=\"#2.6,\"Energy22_Wh=\"#3.6,\"#1006=\"#1006,\"#1012=\"#1012\n\t)\n",
+      "flags": "",
+      "mode": 1
+    }
+  },
+  "phase": "two-ponds-four-schedules-v1",
+  "baseline_sha256": "d48665dbea324ff08e701a3bf5f1ac971d1d6b7e9bdf01cc0c1d176e7270650b"
+}

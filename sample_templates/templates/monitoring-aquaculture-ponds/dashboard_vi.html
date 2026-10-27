@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Giám sát ao nuôi</title>
   <link rel="stylesheet" href="/dashboard-themes.css?v=2026.04.18" />
-  <link rel="stylesheet" href="/sample_dashboards/monitoring-aquaculture-ponds/dashboard.css?v=2026.04.28.7" />
+  <link rel="stylesheet" href="/sample_dashboards/monitoring-aquaculture-ponds/dashboard.css?v=2026.10.27.1" />
   <script>
     (function () {
       try {
@@ -372,15 +372,17 @@
                 "contactor1Off": "N3,1,1,\"OFF\",\"<<username>>\"",
                 "contactor2On": "N3,1,2,\"ON\",\"<<username>>\"",
                 "contactor2Off": "N3,1,2,\"OFF\",\"<<username>>\"",
-                "contactor3On": "N3,1,3,\"ON\",\"<<username>>\"",
-                "contactor3Off": "N3,1,3,\"OFF\",\"<<username>>\"",
+                "contactor3On": "",
+                "contactor3Off": "",
                 "alarmOff": "N4,\"<<username>>\",1"
             },
             "scheduleFields": [
                 "#1021",
                 "#1022",
                 "#1023",
-                "#1024"
+                "#1024",
+                "#1025",
+                "#1026"
             ],
             "meters": {
                 "contactor1": {
@@ -422,15 +424,17 @@
                 "contactor1Off": "N3,2,1,\"OFF\",\"<<username>>\"",
                 "contactor2On": "N3,2,2,\"ON\",\"<<username>>\"",
                 "contactor2Off": "N3,2,2,\"OFF\",\"<<username>>\"",
-                "contactor3On": "N3,2,3,\"ON\",\"<<username>>\"",
-                "contactor3Off": "N3,2,3,\"OFF\",\"<<username>>\"",
+                "contactor3On": "",
+                "contactor3Off": "",
                 "alarmOff": "N4,\"<<username>>\",2"
             },
             "scheduleFields": [
-                "#1025",
-                "#1026",
                 "#1027",
-                "#1028"
+                "#1028",
+                "#1029",
+                "#1030",
+                "#1031",
+                "#1032"
             ],
             "meters": {
                 "contactor1": {
@@ -450,106 +454,6 @@
                     "current3": "Current22_A3",
                     "temperature": "Temper22",
                     "energy": "Energy22_Wh"
-                }
-            }
-        },
-        {
-            "title": "Tủ ao nuôi 3",
-            "sessionId": "<<sessionid>>",
-            "description": "",
-            "fields": {
-                "contactor1": "O105",
-                "contactor2": "O106",
-                "contactor3": "",
-                "alarm": "alarm3",
-                "currentThreshold": "#1013",
-                "alarmPhone": "#1002.3",
-                "runWindow": "#1007",
-                "updateEnabled": "#1003.3"
-            },
-            "commands": {
-                "contactor1On": "N3,3,1,\"ON\",\"<<username>>\"",
-                "contactor1Off": "N3,3,1,\"OFF\",\"<<username>>\"",
-                "contactor2On": "N3,3,2,\"ON\",\"<<username>>\"",
-                "contactor2Off": "N3,3,2,\"OFF\",\"<<username>>\"",
-                "contactor3On": "N3,3,3,\"ON\",\"<<username>>\"",
-                "contactor3Off": "N3,3,3,\"OFF\",\"<<username>>\"",
-                "alarmOff": "N4,\"<<username>>\",3"
-            },
-            "scheduleFields": [
-                "#1029",
-                "#1030",
-                "#1031",
-                "#1032"
-            ],
-            "meters": {
-                "contactor1": {
-                    "title": "Mô tơ 1",
-                    "voltage": "Voltage31_V",
-                    "current1": "Current31_A1",
-                    "current2": "Current31_A2",
-                    "current3": "Current31_A3",
-                    "temperature": "Temper31",
-                    "energy": "Energy31_Wh"
-                },
-                "contactor2": {
-                    "title": "Mô tơ 2",
-                    "voltage": "Voltage32_V",
-                    "current1": "Current32_A1",
-                    "current2": "Current32_A2",
-                    "current3": "Current32_A3",
-                    "temperature": "Temper32",
-                    "energy": "Energy32_Wh"
-                }
-            }
-        },
-        {
-            "title": "Tủ ao nuôi 4",
-            "sessionId": "<<sessionid>>",
-            "description": "",
-            "fields": {
-                "contactor1": "O107",
-                "contactor2": "O108",
-                "contactor3": "",
-                "alarm": "alarm4",
-                "currentThreshold": "#1014",
-                "alarmPhone": "#1002.4",
-                "runWindow": "#1008",
-                "updateEnabled": "#1003.4"
-            },
-            "commands": {
-                "contactor1On": "N3,4,1,\"ON\",\"<<username>>\"",
-                "contactor1Off": "N3,4,1,\"OFF\",\"<<username>>\"",
-                "contactor2On": "N3,4,2,\"ON\",\"<<username>>\"",
-                "contactor2Off": "N3,4,2,\"OFF\",\"<<username>>\"",
-                "contactor3On": "N3,4,3,\"ON\",\"<<username>>\"",
-                "contactor3Off": "N3,4,3,\"OFF\",\"<<username>>\"",
-                "alarmOff": "N4,\"<<username>>\",4"
-            },
-            "scheduleFields": [
-                "#1033",
-                "#1034",
-                "#1035",
-                "#1036"
-            ],
-            "meters": {
-                "contactor1": {
-                    "title": "Mô tơ 1",
-                    "voltage": "Voltage41_V",
-                    "current1": "Current41_A1",
-                    "current2": "Current41_A2",
-                    "current3": "Current41_A3",
-                    "temperature": "Temper41",
-                    "energy": "Energy41_Wh"
-                },
-                "contactor2": {
-                    "title": "Mô tơ 2",
-                    "voltage": "Voltage42_V",
-                    "current1": "Current42_A1",
-                    "current2": "Current42_A2",
-                    "current3": "Current42_A3",
-                    "temperature": "Temper42",
-                    "energy": "Energy42_Wh"
                 }
             }
         }
@@ -753,12 +657,12 @@
     },
     "locale": "vi"
 }
-</script>
+  </script>
   <!-- AI-BRIDGE-EDITABLE DASHBOARD CONFIG: END -->
 
   <script src="/dashboard-command-template.js?v=2026.04.18.1"></script>
   <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
-  <script src="/sample_dashboards/monitoring-aquaculture-ponds/dashboard-runtime-v2.js?v=2026.05.28.1"></script>
+  <script src="/sample_dashboards/monitoring-aquaculture-ponds/dashboard-runtime-v2.js?v=2026.10.27.1"></script>
   <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: END -->
 </body>
 

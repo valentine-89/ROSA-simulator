@@ -225,7 +225,7 @@
           contactor3Off: motorCount >= 3 ? 'N3,' + ordinal + ',3,"OFF","<<username>>"' : "",
           alarmOff: 'N4,"<<username>>",' + ordinal
         };
-        var scheduleStart = 1021 + (index * 4);
+        var scheduleStart = 1021 + (index * 6);
         var meters = {};
         for (var motorIndex = 1; motorIndex <= motorCount; motorIndex += 1) {
           meters["contactor" + motorIndex] = {
@@ -246,7 +246,7 @@
           motorCount: motorCount,
           fields: fields,
           commands: commands,
-          scheduleFields: ["#" + scheduleStart, "#" + (scheduleStart + 1), "#" + (scheduleStart + 2), "#" + (scheduleStart + 3)],
+          scheduleFields: ["#" + scheduleStart, "#" + (scheduleStart + 1), "#" + (scheduleStart + 2), "#" + (scheduleStart + 3), "#" + (scheduleStart + 4), "#" + (scheduleStart + 5)],
           meters: meters
         };
       }
@@ -266,7 +266,7 @@
           next.fields = Object.assign({}, generated.fields, clone(controller.fields));
           next.commands = Object.assign({}, generated.commands, clone(controller.commands));
           next.scheduleFields = Array.isArray(controller.scheduleFields) && controller.scheduleFields.length
-            ? controller.scheduleFields.map(function (field) { return safeText(field, ""); }).slice(0, 4)
+            ? controller.scheduleFields.map(function (field) { return safeText(field, ""); }).slice(0, 6)
             : generated.scheduleFields;
           next.meters = clone(generated.meters);
           var sourceMeters = controller.meters && typeof controller.meters === "object" ? controller.meters : {};
@@ -286,7 +286,7 @@
           motorCount: motorCountFromSession(source),
           fields: clone(source.fields),
           commands: clone(source.commands),
-          scheduleFields: Array.isArray(source.scheduleFields) ? source.scheduleFields.slice(0, 4) : [],
+          scheduleFields: Array.isArray(source.scheduleFields) ? source.scheduleFields.slice(0, 6) : [],
           meters: clone(source.meters)
         };
       }
@@ -378,7 +378,7 @@
           + Object.keys(controller.commands || {}).map(function (key) { return commandInput(key, controller.commands[key]); }).join("")
           + '</div></div>'
           + '<div class="advanced-section"><h3>Field hẹn giờ</h3><div class="schedule-grid">'
-          + [0, 1, 2, 3].map(function (slot) {
+          + [0, 1, 2, 3, 4, 5].map(function (slot) {
             return '<label>Dòng ' + (slot + 1) + '<input data-schedule-index="' + slot + '" value="' + esc(schedule[slot] || "") + '" /></label>';
           }).join("")
           + '</div></div>'
@@ -441,7 +441,7 @@
             description: safeText(controller.description, ""),
             fields: controller.fields || {},
             commands: controller.commands || {},
-            scheduleFields: (controller.scheduleFields || []).filter(Boolean).slice(0, 4),
+            scheduleFields: (controller.scheduleFields || []).filter(Boolean).slice(0, 6),
             meters: controller.meters || {}
           };
           return item;

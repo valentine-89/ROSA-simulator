@@ -215,7 +215,7 @@
 
       function buildIoDataUrl(sessionId, nextSyncId) {
         if (!sessionId || !nextSyncId) return "";
-        return "/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(nextSyncId) + "/iodata";
+        return "/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(nextSyncId) + "/data";
       }
 
       function numericValue(value) {
@@ -781,7 +781,7 @@
         var complete = !!compactTime && !!selection;
         return {
           enabled: complete ? enabled : false,
-          time: complete ? formatScheduleTime(compactTime) : '',
+          time: formatScheduleTime(compactTime),
           contactor: complete ? selection : '',
           action: action,
           empty: !complete
@@ -798,7 +798,7 @@
           command: row.fieldKey + '=' + (complete ? compactTime : '0000') + ',' + ((row.enabled && complete) ? 'enable' : 'disable') + ',' + action + ',' + outputs.first + ',' + outputs.second,
           snapshot: {
             enabled: complete ? !!row.enabled : false,
-            time: complete ? formatScheduleTime(compactTime) : '',
+            time: formatScheduleTime(complete ? compactTime : '0000'),
             contactor: complete ? outputs.selection : '',
             action: action === 'OFF' ? 'off' : 'on',
             empty: !complete
@@ -868,7 +868,7 @@
       function normalizeScheduleFieldList(scheduleFields) {
         return (Array.isArray(scheduleFields) ? scheduleFields : []).map(function (field) {
           return String(field || '').trim();
-        }).filter(Boolean).slice(0, 4);
+        }).filter(Boolean).slice(0, 6);
       }
 
       function createScheduleFieldLookup(scheduleFields) {
@@ -944,15 +944,17 @@
           + '<option value="1">' + esc(getUi("schedule.outputLabels.out1", "Out 1")) + '</option>'
           + '<option value="2">' + esc(getUi("schedule.outputLabels.out2", "Out 2")) + '</option>'
           + '<option value="12">' + esc(getUi("schedule.outputLabels.out12", "Out 1&2")) + '</option>';
-        var totalRows = Math.max(0, Math.min(4, Number(rowCount || 0)));
+        var totalRows = Math.max(0, Math.min(6, Number(rowCount || 0)));
         for (var index = 0; index < totalRows; index += 1) {
+          var number = String(index + 1);
           rows += ''
-            + '<tr class="scheduler-row is-disabled" data-role="schedule-row" data-index="' + index + '">'
-            + '<td><label class="scheduler-enable" data-role="schedule-enable-shell"><input type="checkbox" data-role="schedule-enable" aria-label="' + esc(formatUi("schedule.enableAriaLabel", "Enable schedule {index}", { index: String(index + 1) })) + '"><span class="scheduler-enable-thumb"></span></label></td>'
-            + '<td><input class="scheduler-time" type="time" data-role="schedule-time"></td>'
-            + '<td><select class="scheduler-select" data-role="schedule-contactor">' + outputOptionHtml + '</select></td>'
-            + '<td><button class="scheduler-action-toggle" type="button" data-role="schedule-action" data-state="on" aria-label="' + esc(formatUi("schedule.toggleActionAriaLabel", "Toggle schedule action {index}", { index: String(index + 1) })) + '"><span class="scheduler-action-label" data-side="on">' + esc(actionOnLabel) + '</span><span class="scheduler-action-label" data-side="off">' + esc(actionOffLabel) + '</span></button></td>'
-            + '</tr>';
+            + '<div class="scheduler-row is-disabled" data-role="schedule-row" data-index="' + index + '" role="group" aria-label="' + esc(getUi("schedule.title", "Schedule setup") + ' ' + number) + '">'
+            + '<span class="scheduler-number" aria-hidden="true">' + number + '</span>'
+            + '<label class="scheduler-enable" data-role="schedule-enable-shell"><input type="checkbox" data-role="schedule-enable" aria-label="' + esc(formatUi("schedule.enableAriaLabel", "Enable schedule {index}", { index: number })) + '"><span class="scheduler-enable-thumb"></span></label>'
+            + '<input class="scheduler-time" type="time" data-role="schedule-time" aria-label="' + esc(getUi("schedule.columns.time", "Time") + ' ' + number) + '">'
+            + '<select class="scheduler-select" data-role="schedule-contactor" aria-label="' + esc(getUi("schedule.columns.contactor", "Out") + ' ' + number) + '">' + outputOptionHtml + '</select>'
+            + '<button class="scheduler-action-toggle" type="button" data-role="schedule-action" data-state="on" aria-label="' + esc(formatUi("schedule.toggleActionAriaLabel", "Toggle schedule action {index}", { index: number })) + '"><span class="scheduler-action-label" data-side="on">' + esc(actionOnLabel) + '</span><span class="scheduler-action-label" data-side="off">' + esc(actionOffLabel) + '</span></button>'
+            + '</div>';
         }
         return rows;
       }
@@ -974,12 +976,12 @@
         var schedulerHtml = state.commandApiUrl && state.scheduleFields.length ? ''
           + '<section class="schedule-card schedule-card--overview">'
           + '<div class="section-head section-head--schedule"><button class="section-toggle section-toggle--schedule" type="button" data-role="schedule-toggle" aria-expanded="' + (scheduleExpanded ? 'true' : 'false') + '"><span><h3>' + esc(getUi("schedule.title", "Schedule setup")) + '</h3></span><span class="section-toggle-indicator">&#9662;</span></button><div class="section-toolbar section-toolbar--schedule"><button class="toolbar-button schedule-save-button" type="button" data-role="schedule-save" hidden>' + esc(getUi("schedule.save", "Save")) + '</button></div></div>'
-          + '<div class="table-wrap schedule-content" data-role="schedule-content"' + (scheduleExpanded ? '' : ' hidden') + '><table class="scheduler-table"><thead><tr><th>' + esc(getUi("schedule.columns.enable", "Enable")) + '</th><th>' + esc(getUi("schedule.columns.time", "Time")) + '</th><th>' + esc(getUi("schedule.columns.contactor", "Out")) + '</th><th>' + esc(getUi("schedule.columns.action", "Action")) + '</th></tr></thead><tbody data-role="schedule-body">' + createScheduleRowsHtml(state.scheduleFields.length) + '</tbody></table></div>'
+          + '<div class="schedule-content" data-role="schedule-content"' + (scheduleExpanded ? '' : ' hidden') + '><div class="scheduler-grid" data-role="schedule-body">' + createScheduleRowsHtml(state.scheduleFields.length) + '</div></div>'
           + '</section>'
           : '';
 
         return {
-          html: '<div class="overview-grid">' + alarmCardHtml + contactorCardsHtml + schedulerHtml + '</div>',
+          html: '<div class="overview-grid' + (schedulerHtml ? ' overview-grid--schedules' : '') + '">' + alarmCardHtml + contactorCardsHtml + schedulerHtml + '</div>',
           hasVoltageChart: false,
           hasCurrentChart: false,
           hasTemperatureChart: false

@@ -193,7 +193,7 @@
       contactor3Off: motorCount >= 3 ? 'N3,' + ordinal + ',3,"OFF","<<username>>"' : "",
       alarmOff: 'N4,"<<username>>",' + ordinal
     };
-    var scheduleStart = 1021 + (index * 4);
+    var scheduleStart = 1021 + (index * 6);
     var meters = {};
     for (var motorIndex = 1; motorIndex <= motorCount; motorIndex += 1) {
       meters["contactor" + motorIndex] = {
@@ -213,7 +213,7 @@
       motorCount: motorCount,
       fields: fields,
       commands: commands,
-      scheduleFields: ["#" + scheduleStart, "#" + (scheduleStart + 1), "#" + (scheduleStart + 2), "#" + (scheduleStart + 3)],
+      scheduleFields: ["#" + scheduleStart, "#" + (scheduleStart + 1), "#" + (scheduleStart + 2), "#" + (scheduleStart + 3), "#" + (scheduleStart + 4), "#" + (scheduleStart + 5)],
       meters: meters
     };
   }
@@ -312,7 +312,7 @@
       motorCount: count,
       fields: clone(source.fields),
       commands: clone(source.commands),
-      scheduleFields: Array.isArray(source.scheduleFields) ? source.scheduleFields.slice(0, 4) : [],
+      scheduleFields: Array.isArray(source.scheduleFields) ? source.scheduleFields.slice(0, 6) : [],
       meters: clone(source.meters)
     };
   }
@@ -388,7 +388,7 @@
       next.fields = Object.assign({}, generated.fields, clone(item && item.fields));
       next.commands = Object.assign({}, generated.commands, clone(item && item.commands));
       next.scheduleFields = Array.isArray(item && item.scheduleFields) && item.scheduleFields.length
-        ? item.scheduleFields.map(function (field) { return safeText(field, ""); }).slice(0, 4)
+        ? item.scheduleFields.map(function (field) { return safeText(field, ""); }).slice(0, 6)
         : generated.scheduleFields;
       next.meters = clone(generated.meters);
       var sourceMeters = item && item.meters && typeof item.meters === "object" ? item.meters : {};
@@ -571,7 +571,7 @@
         + '<label>' + esc(T.motorCount) + '<select data-basic="motorCount">' + countOptions(1, 3, item.motorCount) + '</select></label>'
         + '<label class="full">' + esc(T.description) + '<input data-basic="description" value="' + esc(item.description) + '" /></label>'
         + '</div>';
-      advanced = advancedFieldsHtml(item, 4)
+      advanced = advancedFieldsHtml(item, 6)
         + (Object.keys(item.meters || {}).map(function (meterKey) {
           return meterInputs(meterKey, item.meters[meterKey] || {});
         }).join("") || '<div class="empty">' + esc(T.noMeter) + '</div>');
@@ -719,7 +719,7 @@
         description: safeText(item.description, ""),
         fields: item.fields || {},
         commands: item.commands || {},
-        scheduleFields: (item.scheduleFields || []).filter(Boolean).slice(0, 4),
+        scheduleFields: (item.scheduleFields || []).filter(Boolean).slice(0, 6),
         meters: item.meters || {}
       };
     });

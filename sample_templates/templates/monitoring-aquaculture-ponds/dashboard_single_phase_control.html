@@ -621,7 +621,7 @@
 
       function buildIoDataUrl(sessionId, nextSyncId) {
         if (!sessionId || !nextSyncId) return "";
-        return "/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(nextSyncId) + "/iodata";
+        return "/api/" + encodeURIComponent(sessionId) + "/" + encodeURIComponent(nextSyncId) + "/data";
       }
 
       function unique(values) {
