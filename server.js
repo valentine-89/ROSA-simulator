@@ -741,6 +741,9 @@ function rescheduleAllGenerators() {
 }
 
 async function handleSimApi(req, res, url) {
+  if (req.method === 'GET' && url.pathname === '/api/account/context') {
+    json(res, 200, store.accountContext()); return true;
+  }
   if (req.method === 'GET' && url.pathname === '/sim/api/context') {
     json(res, 200, { sessionId: DEFAULT_SESSION_ID, syncId: DEFAULT_SYNC_ID, ioid: normalizeIoDataKey(DEFAULT_SESSION_ID) });
     return true;
@@ -897,6 +900,18 @@ async function handlePublicPageApi(req, res, url) {
   }
 
   const telemetryMatch = url.pathname.match(/^\/api\/iot-page-telemetry\/([^/]+)\/([^/]+)$/);
+  if (req.method === 'POST' && telemetryMatch) {
+    try {
+      assertSameOrigin(req);
+      const context = store.getPublicPageReadContext(decodeURIComponent(telemetryMatch[1]), decodeURIComponent(telemetryMatch[2]));
+      const body = await readBody(req, 4096), allowed = new Set(context.publicApi.writeFields);
+      if (!allowed.size || !body || typeof body !== 'object' || Array.isArray(body) || !Object.keys(body).length || Object.keys(body).some(field => !allowed.has(field))) throw new PublicPageError(403, 'INVALID_REQUEST', 'Field is not writable by this page.');
+      checkPublicRateLimit(`telemetry:${requestClientKey(req)}:${context.ioid}:${context.pageId}`, context.publicApi.rateLimit);
+      store.ingestTelemetry(context.publicSessionId, context.page.sync_id, body);
+      json(res, 200, { c1: 'ok', c2: 0 });
+    } catch (error) { publicErrorJson(res, error, 400); }
+    return true;
+  }
   if (req.method === 'GET' && telemetryMatch) {
     try {
       const ioid = decodeURIComponent(telemetryMatch[1]);
@@ -1060,7 +1075,7 @@ async function handleRuntimeApi(req, res, url) {
   if (req.method === 'POST' && url.pathname === '/api/sample-dashboards/database') {
     const body = await readBody(req);
     const source = resolveSampleDatabase(body.templateId, body.locale);
-    const result = store.replaceIoDataFile(body.sessionId || DEFAULT_SESSION_ID, source, {
+    const result = store[body.mode === 'merge' ? 'mergeIoDataFile' : 'replaceIoDataFile'](body.sessionId || DEFAULT_SESSION_ID, source, {
       syncId: body.syncId || DEFAULT_SYNC_ID
     });
     if (result.publicGenerators) rescheduleAllGenerators();
@@ -1071,6 +1086,7 @@ async function handleRuntimeApi(req, res, url) {
   const streamMatch = url.pathname.match(/^\/api\/([^/]+)\/stream$/);
   if (req.method === 'GET' && streamMatch) {
     const sessionId = decodeURIComponent(streamMatch[1]);
+    store.assertSourceCredentials(sessionId, url.searchParams.get('syncId'));
     const fields = parseFieldsParam(url.searchParams.get('fields'));
     openTelemetryStream(req, res, sessionId, fields);
     return true;
@@ -1080,6 +1096,7 @@ async function handleRuntimeApi(req, res, url) {
   if (!apiMatch) return false;
   const sessionId = decodeURIComponent(apiMatch[1]);
   const syncId = decodeURIComponent(apiMatch[2]);
+  store.assertSourceCredentials(sessionId, syncId);
   const action = apiMatch[3];
 
   if (action === 'iotelemetry' && req.method === 'GET') {

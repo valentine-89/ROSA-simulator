@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { timingSafeEqual } = require('crypto');
+const { timingSafeEqual, createHash } = require('crypto');
 
 function requireDatabaseModule() {
   const bootstrapModules = process.env.ROSA_SIMULATOR_NODE_MODULES;
@@ -64,6 +64,7 @@ function ensureDir(dirPath) {
 
 function normalizeIoDataKey(sessionId) {
   const raw = String(sessionId || '').trim();
+  if (isAccountEmail(raw)) return 'AC_' + createHash('sha256').update(raw.toLowerCase()).digest('hex');
   const beforeAt = raw.includes('@') ? raw.slice(0, raw.indexOf('@')) : raw;
   const sanitized = beforeAt.replace(/[^A-Za-z0-9._-]/g, '_').trim();
   if (!sanitized) throw new Error('Invalid sessionId.');
@@ -72,6 +73,7 @@ function normalizeIoDataKey(sessionId) {
 
 function parseDeviceSession(sessionId) {
   const raw = String(sessionId || '').trim();
+  if (isAccountEmail(raw)) return null;
   const separator = raw.indexOf('@');
   if (separator <= 0 || separator >= raw.length - 1) return null;
   return {
@@ -128,6 +130,7 @@ function quoteIdentifier(value) {
 
 function normalizePublicIoid(value) {
   const normalized = String(value || '').trim();
+  if (isAccountEmail(normalized)) return normalized.toLowerCase();
   if (!ID_PATTERN.test(normalized) || !normalized.startsWith('IO')) {
     throw new PublicPageError(400, 'INVALID_IOID', 'Invalid ioid.');
   }
@@ -343,6 +346,7 @@ function parsePublicPageApiConfig(meta) {
   return {
     stream: isTruthy(rawPublicApi.stream),
     fields,
+    writeFields: normalizePublicFields(rawPublicApi.writeFields),
     maxBodyBytes: clampInteger(
       rawPublicApi.maxBodyBytes,
       PUBLIC_IOT_PAGE_DEFAULT_BODY_BYTES,
@@ -599,7 +603,12 @@ function htmlScriptJson(value) {
 }
 
 function publicSessionIdForIoid(ioid) {
+  if (isAccountEmail(ioid)) return String(ioid).trim().toLowerCase();
   return `${normalizePublicIoid(ioid)}@${PUBLIC_SESSION_SUFFIX}`;
+}
+
+function isAccountEmail(value) {
+  return /^[^\s@/]+@[^\s@/]+\.[^\s@/]+$/.test(String(value || '').trim()) && !String(value).startsWith('IO');
 }
 
 function defaultPublicValueForField(field) {
@@ -820,11 +829,23 @@ class SimulatorStore {
     return path.join(this.iodataDir, `${normalizeIoDataKey(sessionId)}.sqlite`);
   }
 
+  accountContext() {
+    const email = isAccountEmail(this.defaultSessionId) ? this.defaultSessionId : process.env.SIM_ACCOUNT_EMAIL || 'developer@rosa.local';
+    return { email: email.toLowerCase(), sessionId: email.toLowerCase(), syncId: this.defaultSyncId, kind: 'account' };
+  }
+
+  assertSourceCredentials(sessionId, syncId) {
+    if (!isAccountEmail(sessionId)) return;
+    const account = this.accountContext();
+    if (String(sessionId).toLowerCase() !== account.email || syncId !== account.syncId) throw new PublicPageError(403, 'INVALID_ACCOUNT_PAIR', 'Email must use its own system SyncID.');
+  }
+
   hasIoDataFile(sessionId) {
     return fs.existsSync(this.getIoDataFilePath(sessionId));
   }
 
   replaceIoDataFile(sessionId, sourcePath, options = {}) {
+    this.assertSourceCredentials(sessionId, options.syncId || this.defaultSyncId);
     if (!fs.existsSync(sourcePath)) throw new Error('Sample database file not found.');
     require('../packages/rosa-backend/quota.cjs').validateBackendImport(fs.readFileSync(sourcePath),100);
     const target = this.getIoDataFilePath(sessionId);
@@ -837,7 +858,7 @@ class SimulatorStore {
       sessionId: String(sessionId || this.defaultSessionId),
       syncId
     });
-    const publicGenerators = this.seedPublicPageGenerators(ioid);
+    const publicGenerators = this.seedPublicPageGenerators(isAccountEmail(sessionId) ? sessionId : ioid);
     return { ioid, size: fs.statSync(target).size, publicGenerators };
   }
 
@@ -848,6 +869,45 @@ class SimulatorStore {
         type: String(column.type || '').toUpperCase()
       }))
       .filter((column) => column.name);
+  }
+
+  mergeIoDataFile(sessionId, sourcePath, options = {}) {
+    this.assertSourceCredentials(sessionId, options.syncId || this.defaultSyncId);
+    if (!this.hasIoDataFile(sessionId)) return this.replaceIoDataFile(sessionId, sourcePath, options);
+    require('../packages/rosa-backend/quota.cjs').validateBackendImport(fs.readFileSync(sourcePath), 100);
+    const target = this.getIoDataFilePath(sessionId);
+    const temporary = path.join(this.iodataDir, 'merge-' + require('crypto').randomUUID() + '.sqlite');
+    fs.copyFileSync(sourcePath, temporary);
+    const db = new Database(target);
+    let rowsInserted = 0;
+    try {
+      this.replaceIoDataPlaceholders(temporary, { ioid: isAccountEmail(sessionId) ? sessionId : normalizeIoDataKey(sessionId), sessionId, syncId: options.syncId || this.defaultSyncId });
+      db.pragma('foreign_keys = ON');
+      db.prepare('ATTACH DATABASE ? AS sample_import').run(temporary);
+      db.transaction(() => {
+        const tables = db.prepare("SELECT name,sql FROM sample_import.sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all();
+        for (const table of tables) {
+          if (!db.prepare("SELECT 1 FROM main.sqlite_master WHERE type='table' AND name=?").get(table.name)) db.exec(table.sql);
+        }
+        for (const table of tables) {
+          const source = db.prepare('PRAGMA sample_import.table_info(' + quoteIdentifier(table.name) + ')').all();
+          const targetColumns = db.prepare('PRAGMA main.table_info(' + quoteIdentifier(table.name) + ')').all();
+          for (const col of source) {
+            const existing = targetColumns.find(item => item.name === col.name);
+            if (!existing || existing.type.toUpperCase() !== col.type.toUpperCase()) throw Error('Incompatible sample table: ' + table.name + '.' + col.name);
+          }
+          const columns = source.filter(col => !(/\bAUTOINCREMENT\b/i.test(table.sql) && col.pk && col.type.toUpperCase() === 'INTEGER'));
+          const names = columns.map(col => quoteIdentifier(col.name)).join(',');
+          const values = columns.map(col => 's.' + quoteIdentifier(col.name)).join(',');
+          const equal = columns.map(col => 't.' + quoteIdentifier(col.name) + ' IS s.' + quoteIdentifier(col.name)).join(' AND ');
+          rowsInserted += db.prepare(`INSERT OR IGNORE INTO main.${quoteIdentifier(table.name)} (${names}) SELECT ${values} FROM sample_import.${quoteIdentifier(table.name)} s WHERE NOT EXISTS (SELECT 1 FROM main.${quoteIdentifier(table.name)} t WHERE ${equal})`).run().changes;
+        }
+        for (const index of db.prepare("SELECT name,sql FROM sample_import.sqlite_master WHERE type='index' AND sql IS NOT NULL").all()) {
+          if (!db.prepare("SELECT 1 FROM main.sqlite_master WHERE type='index' AND name=?").get(index.name)) db.exec(index.sql);
+        }
+      })();
+      return { ioid: normalizeIoDataKey(sessionId), size: fs.statSync(target).size, merged: true, rowsInserted };
+    } finally { db.close(); fs.unlinkSync(temporary); }
   }
 
   replaceIoDataPlaceholders(filePath, context) {
@@ -1025,6 +1085,7 @@ class SimulatorStore {
   }
 
   executeMacro(sessionId, syncId, payload) {
+    this.assertSourceCredentials(sessionId, syncId);
     const macroName = String(payload && payload.macro || '').trim();
     if (!macroName) throw new Error('Macro name is required in the "macro" field.');
     const filePath = this.getIoDataFilePath(sessionId);
@@ -1103,6 +1164,7 @@ class SimulatorStore {
       if (!row || !row.page_id) {
         throw new PublicPageError(404, 'PAGE_NOT_FOUND', `Page "${normalizedPageId}" was not found.`);
       }
+      this.assertSourceCredentials(normalizedIoid, row.sync_id);
       return {
         page_id: String(row.page_id || ''),
         html: String(row.html || ''),

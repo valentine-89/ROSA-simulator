@@ -1,6 +1,45 @@
 {
   "samples": [
     {
+      "id": "media-manager",
+      "dataSources": [
+        "device",
+        "account"
+      ],
+      "accountHtml": "/sample_dashboards/media-manager/dashboard.html",
+      "accountSetup": "/sample_dashboards/media-manager/setup.html",
+      "name": "Media Only · Quản lý màn hình",
+      "description": "Tạo, sửa, xóa nhiều cặp trang điều khiển và hiển thị /iot-page theo email và SyncID hệ thống của tài khoản, không cần thiết bị IoT. Ai có link quản lý, điều khiển hoặc hiển thị đều dùng được, không cần đăng nhập. Prefix frontdoor → frontdoor_media; để trống → media. Người nạp tự quản lý tên telemetry. Nạp database mẫu ở chế độ Gộp (bổ sung). Hỗ trợ văn bản, ảnh, web, video, YouTube, âm thanh và macro được cho phép.",
+      "html": "/sample_dashboards/media-manager/dashboard.html",
+      "image": "/sample_dashboards/media-manager/sample.svg",
+      "sampleDatabase": "/sample_dashboards/media-manager/sample.sqlite",
+      "macro-examples": [
+        {
+          "label": "Danh sách màn hình",
+          "payload": {
+            "macro": "media-screens-list"
+          }
+        }
+      ],
+      "setup": {
+        "page": "/sample_dashboards/media-manager/setup.html"
+      },
+      "defaultLocale": "vi",
+      "tags": [
+        "media",
+        "management",
+        "iot-page",
+        "telemetry",
+        "multi-display"
+      ],
+      "default-fields": [
+        {
+          "field": "media",
+          "kind": "text"
+        }
+      ]
+    },
+    {
       "id":"backend-lab","name":"Backend Lab — V8 / SQLite / IoT",
       "description":"Mẫu backend lưu trong database, gọi macro và đọc IoT bằng SDK, thử offline rồi phát hành. Nạp sample DB, mở Backend, cấu hình SIM_SYNC và phát hành kiem-tra-ton-kho.",
       "html":"/sample_dashboards/backend-lab/dashboard.html","image":"/sample_dashboards/backend-lab/sample.svg","sampleDatabase":"/sample_dashboards/backend-lab/sample.sqlite","defaultLocale":"vi",
@@ -218,6 +257,12 @@
     },
     {
       "id": "media-only",
+      "dataSources": [
+        "device",
+        "account"
+      ],
+      "accountHtml": "/sample_dashboards/media-only/dashboard.html",
+      "accountSetup": "/sample_dashboards/media-only/setup.html",
       "name": "Media Only",
       "description": "Overview:\nFull-screen media stage driven by telemetry field media. Supports image, web, video, youtube, audio, text, and data:macro rendering.\n\nType:\ntelemetry + database\n\nMain parameters used:\n- Telemetry field: media\n- Optional database macro when payload starts with data:macro_name\n- Supported styles: black, white, warm, sunrise, tech, spotlight, ani1..ani10\n- Supported text syntax: text@style:message\n\nDevice API to install:\n#801=rosa.technology/api/<<sessionid>>/<<syncid>>\n\nExample device commands:\nD23,#801,,\"telemetry\",\"media=text@ani1:Welcome Mr Tuan\"\nD23,#801,,\"telemetry\",\"media=image:https://example.com/banner.jpg\"\nD23,#801,,\"telemetry\",\"media=data@tech:factory-production-overview\"\n\nNotes:\n- Context-aware: <<sessionid>> and <<syncid>> are injected when loaded from the template picker.\n- Best for kiosks, welcome screens, public displays, and signage where one telemetry field controls the whole stage.",
       "image": "/sample_dashboards/media-only/sample.png",

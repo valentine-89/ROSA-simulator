@@ -825,6 +825,7 @@
 {
   "sessionId": "<<sessionid>>",
   "syncId": "<<syncid>>",
+  "prefix": "",
   "field": "media",
   "defaultSignal": "text@ani1:Waiting for media",
   "historyMs": 86400000
@@ -851,10 +852,21 @@
         }
         var SESSION_ID = String(searchParams.get("sessionId") || searchParams.get("sessionid") || config.sessionId || "<<sessionid>>").trim();
         var SYNC_ID = String(searchParams.get("syncId") || searchParams.get("syncid") || config.syncId || "<<syncid>>").trim();
-        var MEDIA_FIELD = String(config.field || "media").trim() || "media";
+        var publicContext = null;
+        var publicMetaNode = document.getElementById("media-page-meta");
+        if (publicMetaNode) {
+          try {
+            var publicMeta = JSON.parse(publicMetaNode.textContent);
+            publicContext = JSON.parse(document.getElementById("media-page-context").textContent);
+            config = publicMeta.mediaScreen;
+          } catch (error) { return; }
+        }
+        var PUBLIC_PAGE_BASE = publicContext ? encodeURIComponent(publicContext.ioid) + "/" + encodeURIComponent(publicContext.pageId) : "";
+        var MEDIA_PREFIX = String(config.prefix || "").trim();
+        var MEDIA_FIELD = (MEDIA_PREFIX ? MEDIA_PREFIX + "_" : "") + (String(config.field || "media").trim() || "media");
         var STREAM_FIELDS = [MEDIA_FIELD];
         var DEFAULT_MEDIA_SIGNAL = String(config.defaultSignal || "text@ani1:Waiting for media").trim() || "text@ani1:Waiting for media";
-        var STREAM_HISTORY_MS = Math.max(0, Number(config.historyMs || 24 * 60 * 60 * 1000) || 24 * 60 * 60 * 1000);
+        var STREAM_HISTORY_MS = config.historyMs == null ? 86400000 : Math.max(0, Number(config.historyMs) || 0);
 
       var stage = document.getElementById("stage");
       var fxLayer = document.getElementById("fx-layer");
@@ -1489,7 +1501,7 @@
         box.appendChild(tableShell);
         contentLayer.appendChild(box);
 
-        if (!SESSION_ID || !SYNC_ID || typeof fetch !== "function" || window.location.protocol === "file:") {
+        if ((!PUBLIC_PAGE_BASE && (!SESSION_ID || !SYNC_ID)) || typeof fetch !== "function" || window.location.protocol === "file:") {
           subtitle.textContent = "Unavailable";
           empty.textContent = "IoData is only available when this sample is opened through the app with sessionId and syncId.";
           return;
@@ -1504,7 +1516,7 @@
           }
         };
 
-        fetch("/api/" + encodeURIComponent(SESSION_ID) + "/" + encodeURIComponent(SYNC_ID) + "/iodata", {
+        fetch(PUBLIC_PAGE_BASE ? "/api/iot-page-macro/" + PUBLIC_PAGE_BASE : "/api/" + encodeURIComponent(SESSION_ID) + "/" + encodeURIComponent(SYNC_ID) + "/data", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
@@ -1523,7 +1535,7 @@
             if (renderToken !== currentRenderToken) {
               return;
             }
-            var safeRows = Array.isArray(rows) ? rows : [];
+            var safeRows = Array.isArray(rows) ? rows : (rows && Array.isArray(rows.rows) ? rows.rows : []);
             subtitle.textContent = safeRows.length ? (safeRows.length + " row" + (safeRows.length === 1 ? "" : "s")) : "No rows";
             tableShell.innerHTML = "";
 
@@ -1665,13 +1677,13 @@
       }
 
       function fetchLatestMedia() {
-        if (!SESSION_ID || !SYNC_ID || typeof fetch !== "function") {
+        if ((!PUBLIC_PAGE_BASE && (!SESSION_ID || !SYNC_ID)) || typeof fetch !== "function") {
           return Promise.resolve(false);
         }
         if (window.location.protocol === "file:") {
           return Promise.resolve(false);
         }
-        var latestUrl = "/api/" + encodeURIComponent(SESSION_ID) + "/" + encodeURIComponent(SYNC_ID) + "/iotelemetry";
+        var latestUrl = PUBLIC_PAGE_BASE ? "/api/iot-page-telemetry/" + PUBLIC_PAGE_BASE : "/api/" + encodeURIComponent(SESSION_ID) + "/" + encodeURIComponent(SYNC_ID) + "/iotelemetry?fields=" + encodeURIComponent(MEDIA_FIELD);
         return fetch(latestUrl, { cache: "no-store" })
           .then(function (response) {
             if (!response.ok) {
@@ -1693,13 +1705,14 @@
       }
 
       function connectStream() {
-        if (typeof EventSource === "undefined" || !SESSION_ID) return;
+        if (typeof EventSource === "undefined" || (!PUBLIC_PAGE_BASE && !SESSION_ID)) return;
         if (eventSource && typeof eventSource.close === "function") eventSource.close();
         setConnectionState("connecting");
         var params = new URLSearchParams();
         params.set("historyMs", String(STREAM_HISTORY_MS));
-        params.set("fields", STREAM_FIELDS.join(","));
-        eventSource = new EventSource("/api/" + encodeURIComponent(SESSION_ID) + "/stream?" + params.toString());
+        if (!PUBLIC_PAGE_BASE && !/^IO/.test(SESSION_ID)) params.set("syncId", SYNC_ID);
+        if (!PUBLIC_PAGE_BASE) params.set("fields", STREAM_FIELDS.join(","));
+        eventSource = new EventSource((PUBLIC_PAGE_BASE ? "/api/iot-page-realtime/" + PUBLIC_PAGE_BASE : "/api/" + encodeURIComponent(SESSION_ID) + "/stream") + "?" + params.toString());
         eventSource.onmessage = function (event) {
           try {
             var parsed = JSON.parse(event.data);
