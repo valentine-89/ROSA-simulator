@@ -4,7 +4,7 @@ Chọn **Hệ thống → Nạp trang mẫu → Media Only → Quản lý màn h
 
 Đây là một phiên bản dashboard của **Media Only**. Setup chỉ cấu hình ban đầu; thêm, sửa, xóa màn hình và tạo cặp trang điều khiển/hiển thị thực hiện trực tiếp trên dashboard.
 
-Dashboard cung cấp link quản lý `/iot-page/{email}/media-manager-{id}`. Ai có link này đều có thể thêm, sửa và xóa màn hình, không cần đăng nhập. Mỗi màn hình có link điều khiển và link hiển thị; hai trang cũng không yêu cầu đăng nhập.
+Dashboard dùng chức năng chia sẻ có sẵn của ROSA. Bấm **Thêm màn hình** để mở form; danh sách chỉ chứa màn hình đã tạo. Trang điều khiển và hiển thị dùng được qua link, không cần đăng nhập. Nội dung hiện tại ở trang điều khiển cập nhật qua SSE, không cần đọc thủ công.
 
 - Prefix `frontdoor`, `backdoor`, `livingroom` dùng các field `frontdoor_media`, `backdoor_media`, `livingroom_media`. Để trống dùng `media`. Cho phép trùng Prefix; người nạp tự quản lý tên khi dùng nhiều template.
 - URL giữ nguyên khi sửa tên/Prefix. Trang điều khiển kiểm tra lại cấu hình trước khi gửi. Tắt/xóa trang chặn yêu cầu tải hoặc ghi tiếp theo; trang hiển thị đang mở cần đóng/tải lại để bỏ nội dung đã nhận.

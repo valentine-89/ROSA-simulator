@@ -1,14 +1,13 @@
 <!doctype html><html lang="vi" data-theme="modern-flat"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Điều khiển màn hình</title>
-<link rel="stylesheet" href="/dashboard-themes.css"><link rel="stylesheet" href="/sample_dashboards/media-manager/media.css?v=20261102">
-</head><body><main id="controller"><header><div><p class="eyebrow">MEDIA ONLY</p><h1 id="title">Điều khiển màn hình</h1><p id="field"></p></div><a id="display-link" target="_blank" rel="noopener">Mở hiển thị ↗</a></header>
+<link rel="stylesheet" href="/sample_dashboards/dashboard-themes.css"><link rel="stylesheet" href="/sample_dashboards/media-manager/media.css?v=20261102">
+</head><body><main id="controller"><header><div><h1 id="title">Điều khiển màn hình</h1><p id="field"></p></div><a id="display-link" target="_blank" rel="noopener">Mở hiển thị ↗</a></header>
 <p id="status" role="status">Đang tải màn hình…</p>
-<section class="panel"><h2>Nội dung đang lưu</h2><p id="current">Chưa có dữ liệu</p><button id="refresh" type="button">Đọc lại</button></section>
+<section class="panel"><h2>Đang hiển thị</h2><p id="current">Chưa có nội dung</p></section>
 <section class="panel"><form id="control-form"><div class="form-grid">
 <label>Loại nội dung<select id="kind"><option value="text">Văn bản</option><option value="image">Hình ảnh</option><option value="web">Trang web</option><option value="video">Video</option><option value="youtube">YouTube</option><option value="audio">Âm thanh</option><option value="data">Dữ liệu macro</option><option value="raw">Chuỗi media đầy đủ</option></select></label>
 <label>Kiểu hiển thị<select id="style"><option>black</option><option>white</option><option>warm</option><option>sunrise</option><option>tech</option><option>spotlight</option><option>ani1</option><option>ani2</option><option>ani3</option><option>ani4</option><option>ani5</option><option>ani6</option><option>ani7</option><option>ani8</option><option>ani9</option><option>ani10</option></select></label>
 <label class="full"><span id="content-label">Nội dung</span><textarea id="content" required placeholder="Chào mừng" rows="5"></textarea></label>
-</div><p id="signal-preview"></p><div class="actions"><button id="send" class="primary" type="submit" disabled>Gửi lên màn hình</button><button id="waiting" type="button" disabled>Dùng nội dung chờ</button></div></form></section>
-<p class="hint">Nội dung được ghi vào telemetry của Prefix này. Trình duyệt hiển thị nhận cập nhật trực tiếp; không cần thiết bị online.</p>
+</div><div class="actions"><button id="send" class="primary" type="submit" disabled>Gửi</button><button id="waiting" type="button" disabled>Nội dung chờ</button></div></form></section>
 </main><script id="media-page-meta" type="application/json">__ROSA_IOT_PAGE_META__</script><script id="media-page-context" type="application/json">__ROSA_IOT_PAGE_CONTEXT__</script>
 <script src="/sample_dashboards/media-manager/media-common.js?v=20261102"></script><script src="/sample_dashboards/media-manager/control.js?v=20261102"></script></body></html>

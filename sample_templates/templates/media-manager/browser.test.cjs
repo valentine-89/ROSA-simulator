@@ -8,7 +8,7 @@ const jsonSafe = value => JSON.stringify(value).replace(/</g, '\\u003c');
 const pageRow = id => f.db.prepare('SELECT * FROM system_pages WHERE page_id=?').get(id);
 function allowed(id) { const row = pageRow(id); if (!row) throw Error('PAGE_NOT_FOUND'); if (!row.enabled) throw Error('PAGE_DISABLED'); return publicApi.parsePublicPageApiConfig(row); }
 function filtered(fields) { return Object.fromEntries(fields.filter(k => Object.hasOwn(payload, k)).map(k => [k, payload[k]])); }
-function broadcast() { for (const s of streams) { const fields = s.pageId ? allowed(s.pageId).fields : s.fields; s.res.write('data: ' + JSON.stringify({ type: 'telemetry', payload: filtered(fields) }) + '\n\n'); } }
+function broadcast() { for (const s of streams) { try { const fields = s.pageId ? allowed(s.pageId).fields : s.fields; s.res.write('data: ' + JSON.stringify({ type: 'telemetry', payload: filtered(fields) }) + '\n\n'); } catch (_) { s.res.end(); streams.delete(s); } } }
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost'), parts = url.pathname.split('/').map(decodeURIComponent);
   function json(value, code = 200) { res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); }
@@ -30,7 +30,7 @@ const server = http.createServer(async (req, res) => {
           res.writeHead(200, { 'Content-Type': 'application/json', 'Content-Length': '1000' });
           res.write('{"ok":'); setTimeout(() => res.destroy(), 20); return;
         }
-        return json(rows);
+        return json(rows.length ? rows : [{ c1: 'ok' }]);
       }
       if (parts[4] === 'iotelemetry') {
         if (req.method === 'POST') {
@@ -88,16 +88,22 @@ const server = http.createServer(async (req, res) => {
   const base = 'http://127.0.0.1:' + server.address().port, output = path.join(root, 'output/media-manager'); fs.mkdirSync(output, { recursive: true });
   const browser = await chromium.launch({ headless: true, ...(process.platform === 'win32' ? { channel: 'chrome' } : {}) });
   try {
-    const context = await browser.newContext({ viewport: { width: 1366, height: 1000 } });
-    context.on('page', p => p.on('pageerror', e => errors.push(e.message)));
+    const context = await browser.newContext({ viewport: { width: 1366, height: 1000 } }); context.setDefaultTimeout(10000);
+    context.on('page', p => p.on('pageerror', e => { errors.push(e.message); console.error(e.message); }));
     const manager = await context.newPage(); await manager.goto(base);
-    await manager.waitForFunction(() => document.getElementById('status').textContent.includes('Đã tải'));
+    await manager.waitForFunction(() => document.getElementById('status').hidden);
+    assert.equal(await manager.locator('.screen-card').count(), 0);
+    assert.equal(await manager.locator('a[href*="/iot-page/"]').count(), 0);
+    assert.equal(await manager.locator('#manager-link, #theme').count(), 0);
+    assert.equal(f.pages().length, 0, 'opening the manager must not publish default pages');
     async function create(name, prefix, count) {
+      await manager.click('#add');
       await manager.fill('#name', name); await manager.fill('#prefix', prefix); await manager.click('#save');
       await manager.waitForFunction(n => document.getElementById('count').textContent === String(n), count);
     }
     await create('Cửa trước', 'frontdoor', 1); await create('Cửa sau', 'backdoor', 2); await create('Mặc định', '', 3); console.log('CRUD create passed');
-    const publicManager = await context.newPage(); await publicManager.goto(base + await manager.getAttribute('#manager-link', 'href'));
+    f.run('media-manager-publish', { manager_id: 'f'.repeat(32), title: 'Quản lý', sync_id: 'fixture-sync' });
+    const publicManager = await context.newPage(); await publicManager.goto(base + '/iot-page/IOfixture/media-manager-' + 'f'.repeat(32));
     await publicManager.waitForFunction(() => document.getElementById('count').textContent === '3');
     assert.equal(await publicManager.locator('#manager-link:visible').count(), 0);
     const rows = f.run('media-screens-list'), front = rows.find(r => r.prefix === 'frontdoor'), back = rows.find(r => r.prefix === 'backdoor'), blank = rows.find(r => r.prefix === '');
@@ -107,6 +113,10 @@ const server = http.createServer(async (req, res) => {
     await blankDisplay.goto(base + '/iot-page/IOfixture/' + blank.display_page_id);
     await control.goto(base + '/iot-page/IOfixture/' + front.control_page_id);
     await control.waitForFunction(() => !document.getElementById('send').disabled);
+    assert.equal(await control.locator('#refresh, #signal-preview, #controller > p.hint').count(), 0);
+    payload.frontdoor_media = 'text@ani6:Cập nhật từ nơi khác'; broadcast();
+    await control.waitForFunction(() => document.getElementById('current').textContent === 'Cập nhật từ nơi khác');
+    assert.equal(requests.filter(r => r.method === 'GET' && r.path === '/api/iot-page-telemetry/IOfixture/' + front.control_page_id).length, 0);
     await control.fill('#content', 'Xin chào cửa trước'); await control.click('#send');
     await frontDisplay.waitForFunction(() => document.getElementById('content-layer').textContent.includes('Xin chào cửa trước'));
     assert(!String(await backDisplay.textContent('#content-layer')).includes('Xin chào cửa trước'));
@@ -121,13 +131,17 @@ const server = http.createServer(async (req, res) => {
     const backControl = await context.newPage(); await backControl.goto(base + '/iot-page/IOfixture/' + back.control_page_id);
     await backControl.waitForFunction(() => !document.getElementById('send').disabled); await backControl.fill('#content', 'Nội dung cửa sau'); await backControl.click('#send');
     await backDisplay.waitForFunction(() => document.getElementById('content-layer').textContent.includes('Nội dung cửa sau'));
+    // The fixture uses HTTP/1.1: release this controller's SSE connection before
+    // opening another tab, leaving a connection available for writes.
+    await backControl.close();
     const blankControl = await context.newPage(); await blankControl.goto(base + '/iot-page/IOfixture/' + blank.control_page_id);
     await blankControl.waitForFunction(() => !document.getElementById('send').disabled); await blankControl.fill('#content', 'Màn hình mặc định'); await blankControl.click('#send');
     await blankDisplay.waitForFunction(() => document.getElementById('content-layer').textContent.includes('Màn hình mặc định'));
+    await blankControl.close();
     assert.equal(payload.media, 'text@black:Màn hình mặc định'); console.log('Three independent displays passed');
     await manager.locator('[data-screen-id="' + front.screen_id + '"]').getByRole('button', { name: 'Sửa', exact: true }).click();
     await manager.fill('#prefix', 'livingroom'); await manager.fill('#name', 'Phòng khách'); await manager.locator('summary').click(); await manager.fill('#macros', 'production-overview'); await manager.click('#save');
-    await manager.waitForFunction(() => document.getElementById('status').textContent.includes('Đã cập nhật'));
+    await manager.waitForFunction(() => !document.getElementById('screen-dialog').open && document.getElementById('status').hidden);
     await control.fill('#content', 'Stale must not send'); await control.click('#send');
     await control.waitForFunction(() => document.getElementById('status').textContent.includes('Prefix đã thay đổi'));
     assert.equal(payload.livingroom_media, undefined);
@@ -151,6 +165,7 @@ const server = http.createServer(async (req, res) => {
     assert.equal(f.run('media-screens-list').filter(r => r.prefix === 'network').length, 1);
     await manager.waitForFunction(() => document.getElementById('status').textContent.includes('Chưa xác nhận'));
     assert.equal(requests.filter(r => r.path.endsWith('/data')).length - savesBefore, 2);
+    await manager.click('#cancel');
     await manager.locator('[data-screen-id="' + front.screen_id + '"]').getByRole('button', { name: 'Xóa', exact: true }).click();
     await manager.click('#delete-confirm'); await manager.waitForFunction(() => document.getElementById('count').textContent === '3');
     await control.fill('#content', 'Deleted must not send'); await control.click('#send');
@@ -176,7 +191,7 @@ const server = http.createServer(async (req, res) => {
     const publicRequests = requests.filter(r => /iot-page-(telemetry|realtime|macro)/.test(r.path));
     assert(publicRequests.every(r => !r.path.includes('fixture-key') && !r.path.includes('fixture-sync')));
     assert.deepEqual(errors, []);
-    const report = { ok: true, checks: ['CRUD-pairs', 'anonymous-manager-link', 'three-real-SSE-displays', 'single-field-writes', 'blank-prefix', 'stable-links-after-edit', 'stale-controller', 'public-data-macro', 'lost-response-readback', 'delete', 'anonymous-controller', 'setup-bridge-preservation', 'legacy-renderer', 'desktop-mobile-no-overflow'], browserErrors: errors };
+    const report = { ok: true, checks: ['empty-SQL-ack-is-not-screen', 'no-default-pages-or-share-theme-controls', 'dialog-CRUD-pairs', 'anonymous-manager-link', 'controller-SSE-without-manual-GET', 'readable-current-content', 'three-real-SSE-displays', 'single-field-writes', 'blank-prefix', 'stable-links-after-edit', 'stale-controller', 'public-data-macro', 'lost-response-readback', 'delete', 'anonymous-controller', 'setup-bridge-preservation', 'legacy-renderer', 'desktop-mobile-no-overflow'], browserErrors: errors };
     fs.writeFileSync(path.join(output, 'browser-report.json'), JSON.stringify(report, null, 2)); console.log(JSON.stringify(report));
   } finally { await browser.close(); for (const s of streams) s.res.end(); server.closeAllConnections(); await new Promise(r => server.close(r)); f.db.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });
