@@ -1,6 +1,8 @@
 # Media Only · Quản lý màn hình
 
-Chọn **Hệ thống → Nạp trang mẫu → Media Only · Quản lý màn hình**, chọn database **Gộp (bổ sung)** rồi lưu setup. Email và SyncID hệ thống lấy từ tài khoản nạp template. Không cần thiết bị IoT; template cũng dùng được với nguồn thiết bị hiện có.
+Chọn **Hệ thống → Nạp trang mẫu → Media Only → Quản lý màn hình**, chọn database **Gộp (bổ sung)** rồi lưu setup. Email và SyncID hệ thống lấy từ tài khoản nạp template. Không cần thiết bị IoT; template cũng dùng được với nguồn thiết bị hiện có.
+
+Đây là một phiên bản dashboard của **Media Only**. Setup chỉ cấu hình ban đầu; thêm, sửa, xóa màn hình và tạo cặp trang điều khiển/hiển thị thực hiện trực tiếp trên dashboard.
 
 Dashboard cung cấp link quản lý `/iot-page/{email}/media-manager-{id}`. Ai có link này đều có thể thêm, sửa và xóa màn hình, không cần đăng nhập. Mỗi màn hình có link điều khiển và link hiển thị; hai trang cũng không yêu cầu đăng nhập.
 
