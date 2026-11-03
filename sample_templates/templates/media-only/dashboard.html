@@ -1638,8 +1638,16 @@
         renderText(parsed.payload);
       }
 
+      var currentPlaybackSignal = null;
       function applyMediaSignal(value) {
-        renderMedia(parseMediaSignal(value));
+        var parsed = parseMediaSignal(value);
+        var playbackSignal = /^(video|audio|youtube)$/.test(parsed.type)
+          ? JSON.stringify([parsed.type, parsed.style, parsed.payload]) : null;
+        // SSE snapshots can repeat the current value. Keep the player and its
+        // playback position until the requested media actually changes.
+        if (playbackSignal !== null && playbackSignal === currentPlaybackSignal) return;
+        renderMedia(parsed);
+        currentPlaybackSignal = playbackSignal;
       }
 
       function setConnectionState(mode) {
