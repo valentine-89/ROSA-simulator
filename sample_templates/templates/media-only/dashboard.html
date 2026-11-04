@@ -142,26 +142,11 @@
       --stage-overlay: rgba(4, 28, 42, 0.18);
       --stage-accent: #d9fbff;
     }
-
     .style-ani1 .backdrop::before {
-      inset: -15%;
-      background:
-        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.3), transparent 20%),
-        radial-gradient(circle at 70% 20%, rgba(180,255,246,0.35), transparent 18%),
-        radial-gradient(circle at 50% 70%, rgba(100,220,255,0.25), transparent 22%),
-        radial-gradient(circle at 80% 80%, rgba(150,255,255,0.28), transparent 16%);
-      filter: blur(20px);
-      animation: ocean-wave 8s ease-in-out infinite alternate;
+      background: radial-gradient(ellipse at 30% 0%, rgba(185,255,245,.22), transparent 62%);
     }
-
     .style-ani1 .backdrop::after {
-      background:
-        linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 30%, rgba(190,255,255,0.35) 50%, rgba(255,255,255,0.2) 70%, transparent 100%),
-        radial-gradient(circle at 25% 25%, rgba(255,255,255,0.15), transparent 15%),
-        radial-gradient(circle at 75% 75%, rgba(180,255,246,0.2), transparent 12%);
-      opacity: 0.9;
-      filter: blur(12px);
-      animation: bubble-rise 6s ease-in-out infinite, shimmer-flow 4s linear infinite;
+      background: radial-gradient(ellipse at 50% 49%, rgba(3,27,48,.27), transparent 64%);
     }
 
     .style-ani2 {
@@ -172,24 +157,12 @@
       --stage-accent: #ffd36d;
     }
 
-    .style-ani2 .backdrop::before {
-      background:
-        radial-gradient(circle at 12% 18%, rgba(255,215,109,0.25), transparent 9%),
-        radial-gradient(circle at 82% 24%, rgba(255,255,255,0.22), transparent 10%),
-        radial-gradient(circle at 30% 70%, rgba(255,179,71,0.2), transparent 10%),
-        radial-gradient(circle at 70% 78%, rgba(255,255,255,0.18), transparent 8%);
-      animation: pulse-celebrate 5.5s ease-in-out infinite;
-    }
-
+    .style-ani2 .backdrop::before,
     .style-ani2 .backdrop::after {
-      background-image:
-        radial-gradient(circle, rgba(255,255,255,0.95) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,220,125,0.9) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,174,94,0.85) 0 2px, transparent 3px);
-      background-size: 180px 180px, 220px 220px, 260px 260px;
-      background-position: 10% -10%, 80% -16%, 45% -22%;
-      opacity: 0.72;
-      animation: confetti-fall 8s linear infinite;
+      background: none;
+      filter: none;
+      animation: none;
+      transform: none;
     }
 
     .style-ani3 {
@@ -222,22 +195,11 @@
       --stage-overlay: rgba(2, 12, 24, 0.2);
       --stage-accent: #4be2ff;
     }
-
     .style-ani4 .backdrop::before {
-      background-image:
-        linear-gradient(rgba(75, 226, 255, 0.12) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(75, 226, 255, 0.1) 1px, transparent 1px);
-      background-size: 48px 48px;
-      opacity: 0.6;
-      animation: tech-grid-pan 7s linear infinite;
+      background: radial-gradient(ellipse at 50% 63%, rgba(16,128,171,.12), transparent 64%);
     }
-
     .style-ani4 .backdrop::after {
-      inset: -10%;
-      background:
-        linear-gradient(180deg, transparent 0%, rgba(106, 240, 255, 0.18) 45%, transparent 55%, transparent 100%);
-      opacity: 0.7;
-      animation: tech-scan 3.4s linear infinite;
+      background: radial-gradient(ellipse at 50% 45%, rgba(0,9,23,.27), transparent 58%);
     }
 
     .style-ani5 {
@@ -248,45 +210,27 @@
       --stage-accent: #ffe28a;
     }
 
-    .style-ani5 .backdrop::before {
-      background:
-        radial-gradient(circle at 50% 16%, rgba(255, 234, 168, 0.4), transparent 11%),
-        linear-gradient(90deg, transparent 44%, rgba(255,255,255,0.08) 50%, transparent 56%);
-      opacity: 0.92;
-      animation: spotlight-sweep 6s ease-in-out infinite alternate;
-      transform-origin: top center;
-    }
-
+    .style-ani5 .backdrop::before,
     .style-ani5 .backdrop::after {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.04), transparent 24%),
-        radial-gradient(circle at 50% 0%, rgba(255, 231, 171, 0.16), transparent 28%);
+      background: none;
+      filter: none;
+      animation: none;
+      transform: none;
     }
 
     .style-ani6 {
-      --stage-bg: linear-gradient(160deg, #2b0f54 0%, #7c41b7 42%, #ff8d63 100%);
+      --stage-bg: linear-gradient(160deg, #170f32 0%, #43245f 42%, #df9877 100%);
       --stage-fg: #fff8f2;
       --stage-subtle: rgba(255, 248, 242, 0.8);
       --stage-overlay: rgba(39, 12, 65, 0.2);
       --stage-accent: #ffd48d;
     }
 
-    .style-ani6 .backdrop::before {
-      inset: -12%;
-      background:
-        radial-gradient(circle at 22% 68%, rgba(255, 190, 122, 0.22), transparent 16%),
-        radial-gradient(circle at 80% 26%, rgba(255, 255, 255, 0.22), transparent 14%),
-        radial-gradient(circle at 48% 34%, rgba(255, 140, 109, 0.18), transparent 18%);
-      filter: blur(14px);
-      animation: sunrise-orbit 5.8s ease-in-out infinite alternate;
-    }
-
+    .style-ani6 .backdrop::before,
     .style-ani6 .backdrop::after {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.05), transparent 24%),
-        radial-gradient(circle at 50% 112%, rgba(255, 199, 115, 0.28), transparent 38%);
-      opacity: 0.86;
-      animation: sunrise-glow 2.8s ease-in-out infinite, sunrise-sweep 6.4s ease-in-out infinite alternate;
+      background: none;
+      filter: none;
+      animation: none;
     }
 
     .style-ani7 {
@@ -296,28 +240,16 @@
       --stage-overlay: rgba(6, 10, 22, 0.22);
       --stage-accent: #8fb8ff;
     }
-
     .style-ani7 .backdrop::before {
       background:
-        radial-gradient(circle at 18% 22%, rgba(255,255,255,0.92) 0 1px, transparent 2px),
-        radial-gradient(circle at 74% 18%, rgba(220,236,255,0.88) 0 1px, transparent 2px),
-        radial-gradient(circle at 30% 74%, rgba(255,255,255,0.84) 0 1px, transparent 2px),
-        radial-gradient(circle at 84% 68%, rgba(198,222,255,0.86) 0 1px, transparent 2px),
-        radial-gradient(circle at 58% 42%, rgba(255,255,255,0.8) 0 1px, transparent 2px),
-        radial-gradient(circle at 44% 16%, rgba(190,216,255,0.88) 0 1px, transparent 2px);
-      background-size: 220px 220px, 280px 280px, 320px 320px, 260px 260px, 340px 340px, 300px 300px;
-      opacity: 0.86;
-      animation: cosmic-drift 10s linear infinite, cosmic-twinkle 2.4s ease-in-out infinite alternate;
+        radial-gradient(circle at 18% 22%, rgba(213,236,255,.55) 0 1px, transparent 2px),
+        radial-gradient(circle at 74% 18%, rgba(220,236,255,.38) 0 1px, transparent 2px),
+        radial-gradient(circle at 30% 74%, rgba(234,221,255,.44) 0 1px, transparent 2px),
+        radial-gradient(circle at 84% 68%, rgba(198,222,255,.45) 0 1px, transparent 2px);
+      background-size: 217px 263px, 283px 229px, 311px 337px, 269px 193px;
     }
-
     .style-ani7 .backdrop::after {
-      inset: -12%;
-      background:
-        radial-gradient(circle at 50% 46%, rgba(132, 175, 255, 0.18), transparent 22%),
-        radial-gradient(circle at 68% 34%, rgba(255,255,255,0.12), transparent 10%),
-        radial-gradient(circle at 36% 64%, rgba(155, 198, 255, 0.16), transparent 14%);
-      filter: blur(18px);
-      animation: nebula-breathe 4.4s ease-in-out infinite;
+      background: radial-gradient(ellipse at 24% 72%, rgba(83,97,218,.18), transparent 50%), radial-gradient(ellipse at 76% 28%, rgba(149,72,183,.15), transparent 48%);
     }
 
     .style-ani8 {
@@ -328,23 +260,12 @@
       --stage-accent: #7dd3fc;
     }
 
-    .style-ani8 .backdrop::before {
-      inset: -8%;
-      background-image:
-        linear-gradient(108deg, transparent 0 44%, rgba(173, 228, 255, 0.28) 46%, transparent 48%),
-        linear-gradient(108deg, transparent 0 52%, rgba(255,255,255,0.18) 54%, transparent 56%),
-        linear-gradient(108deg, transparent 0 62%, rgba(125, 211, 252, 0.24) 64%, transparent 66%);
-      background-size: 180px 180px, 240px 240px, 320px 320px;
-      opacity: 0.8;
-      animation: rain-fall 3.4s linear infinite;
-    }
-
+    .style-ani8 .backdrop::before,
     .style-ani8 .backdrop::after {
-      background:
-        radial-gradient(circle at 20% 86%, rgba(255,255,255,0.08), transparent 7%),
-        radial-gradient(circle at 64% 90%, rgba(125,211,252,0.14), transparent 8%),
-        radial-gradient(circle at 84% 84%, rgba(255,255,255,0.08), transparent 6%);
-      animation: rain-ripple 4.6s ease-in-out infinite;
+      background: none;
+      filter: none;
+      animation: none;
+      transform: none;
     }
 
     .style-ani9 {
@@ -355,30 +276,12 @@
       --stage-accent: #ffd36d;
     }
 
-    .style-ani9 .backdrop::before {
-      background:
-        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.8), transparent 2px),
-        radial-gradient(circle at 70% 20%, rgba(255, 211, 109, 0.7), transparent 2px),
-        radial-gradient(circle at 50% 70%, rgba(255, 146, 102, 0.6), transparent 2px),
-        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.75), transparent 2px),
-        radial-gradient(circle at 10% 50%, rgba(255, 180, 120, 0.65), transparent 2px),
-        radial-gradient(circle at 90% 40%, rgba(255, 255, 255, 0.7), transparent 2px),
-        radial-gradient(circle at 30% 90%, rgba(255, 211, 109, 0.6), transparent 2px),
-        radial-gradient(circle at 60% 10%, rgba(255, 146, 102, 0.65), transparent 2px);
-      filter: blur(1px);
-      animation: star-twinkle 3s ease-in-out infinite alternate, star-orbit 15s linear infinite;
-    }
-
+    .style-ani9 .backdrop::before,
     .style-ani9 .backdrop::after {
-      background:
-        radial-gradient(circle at 15% 25%, rgba(255, 255, 255, 0.5), transparent 1px),
-        radial-gradient(circle at 85% 15%, rgba(255, 211, 109, 0.45), transparent 1px),
-        radial-gradient(circle at 45% 75%, rgba(255, 146, 102, 0.4), transparent 1px),
-        radial-gradient(circle at 65% 45%, rgba(255, 180, 120, 0.5), transparent 1px),
-        radial-gradient(circle at 25% 55%, rgba(255, 255, 255, 0.55), transparent 1px),
-        radial-gradient(circle at 75% 85%, rgba(255, 211, 109, 0.4), transparent 1px);
-      filter: blur(0.5px);
-      animation: star-twinkle 4s ease-in-out infinite alternate-reverse, star-orbit-reverse 20s linear infinite;
+      background: none;
+      filter: none;
+      animation: none;
+      transform: none;
     }
 
     .style-ani10 {
@@ -389,21 +292,12 @@
       --stage-accent: #a78bfa;
     }
 
-    .style-ani10 .backdrop::before {
-      inset: -8%;
-      background:
-        radial-gradient(circle at 50% 50%, transparent 0 14%, rgba(167,139,250,0.24) 15%, transparent 17%),
-        radial-gradient(circle at 50% 50%, transparent 0 24%, rgba(255,255,255,0.18) 25%, transparent 27%),
-        radial-gradient(circle at 50% 50%, transparent 0 36%, rgba(129,140,248,0.16) 37%, transparent 39%);
-      animation: pulse-rings 5.8s ease-out infinite;
-    }
-
+    .style-ani10 .backdrop::before,
     .style-ani10 .backdrop::after {
-      background:
-        radial-gradient(circle at 50% 50%, rgba(167,139,250,0.12), transparent 28%),
-        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08), transparent 12%);
-      filter: blur(12px);
-      animation: core-breathe 4.2s ease-in-out infinite;
+      background: none;
+      filter: none;
+      animation: none;
+      transform: none;
     }
 
     @keyframes pulse-celebrate {
@@ -974,92 +868,196 @@
       function renderSkylineEffect() {
         var surface = createFxCanvas();
         if (!surface) return;
-        var canvas = surface.canvas;
-        var ctx = surface.context;
-        var rafId = 0;
-        var disposed = false;
-        var width = 0;
-        var height = 0;
-        var dpr = 1;
-        var patterns = [];
+        var canvas = surface.canvas, ctx = surface.context;
+        var width = 1, height = 1, unit = 1, layers = [], cars = [];
+        var sky = document.createElement("canvas"), skyCtx = sky.getContext("2d");
+        var rafId = 0, resizeTimer = 0, disposed = false, lastTime = 0, lastPaint = 0;
+        var clock = performance.now() * 0.001, frameStep = 1000 / 30;
+        var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-        function buildSkylinePattern(baseColor, glowColor, seed, density) {
-          var patternCanvas = document.createElement("canvas");
-          patternCanvas.width = Math.max(640, Math.floor(width));
-          patternCanvas.height = Math.max(240, Math.floor(height));
-          var pctx = patternCanvas.getContext("2d");
-          var baseline = patternCanvas.height;
-          var rng = seed;
-          function nextRand() {
-            rng = (rng * 1664525 + 1013904223) % 4294967296;
-            return rng / 4294967296;
+        function generator(seed) {
+          return function () { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+        }
+
+        function buildSky() {
+          // The sky is rendered once at half backing resolution. The city
+          // textures retain full resolution for window/roof detail.
+          sky.width = Math.max(1, Math.ceil(width / 2));
+          sky.height = Math.max(1, Math.ceil(height / 2));
+          skyCtx.setTransform(0.5, 0, 0, 0.5, 0, 0);
+          var dusk = skyCtx.createLinearGradient(0, 0, 0, height);
+          dusk.addColorStop(0, "#170f32");
+          dusk.addColorStop(0.42, "#43245f");
+          dusk.addColorStop(0.72, "#9e527d");
+          dusk.addColorStop(0.94, "#df9877");
+          dusk.addColorStop(1, "#8e526c");
+          skyCtx.fillStyle = dusk; skyCtx.fillRect(0, 0, width, height);
+          var glow = skyCtx.createRadialGradient(width * 0.72, height * 0.68, 0, width * 0.72, height * 0.68, height * 0.42);
+          glow.addColorStop(0, "rgba(255,185,130,.23)"); glow.addColorStop(1, "rgba(255,185,130,0)");
+          skyCtx.fillStyle = glow; skyCtx.fillRect(0, 0, width, height);
+          var rand = generator(92);
+          for (var i = 0; i < 38; i += 1) {
+            skyCtx.fillStyle = "rgba(244,233,255," + (0.12 + rand() * 0.32) + ")";
+            var size = (0.5 + rand() * 0.65) * unit;
+            skyCtx.fillRect(rand() * width, rand() * height * 0.4, size, size);
           }
-          pctx.fillStyle = baseColor;
-          var x = 0;
-          while (x < patternCanvas.width + 80) {
-            var buildingWidth = 18 + nextRand() * density;
-            var buildingHeight = patternCanvas.height * (0.18 + nextRand() * 0.5);
-            pctx.fillRect(x, baseline - buildingHeight, buildingWidth, buildingHeight);
-            if (nextRand() > 0.42) {
-              pctx.fillStyle = glowColor;
-              var windowCols = Math.max(1, Math.floor(buildingWidth / 8));
-              var windowRows = Math.max(2, Math.floor(buildingHeight / 18));
-              for (var col = 0; col < windowCols; col += 1) {
-                for (var row = 0; row < windowRows; row += 1) {
-                  if (nextRand() > 0.6) continue;
-                  pctx.fillRect(x + 3 + col * 7, baseline - buildingHeight + 6 + row * 14, 3, 5);
-                }
-              }
-              pctx.fillStyle = baseColor;
+          var mx = width * 0.79, my = height * 0.19, mr = 20 * unit;
+          var halo = skyCtx.createRadialGradient(mx, my, mr * 0.8, mx, my, mr * 3.8);
+          halo.addColorStop(0, "rgba(243,215,226,.10)"); halo.addColorStop(1, "rgba(243,215,226,0)");
+          skyCtx.fillStyle = halo; skyCtx.fillRect(mx - mr * 4, my - mr * 4, mr * 8, mr * 8);
+          skyCtx.fillStyle = "rgba(247,225,225,.70)"; skyCtx.beginPath();
+          skyCtx.arc(mx, my, mr, 0, Math.PI * 2); skyCtx.fill();
+          skyCtx.fillStyle = "#0c1426"; skyCtx.fillRect(0, height * 0.95, width, height * 0.05);
+          skyCtx.fillStyle = "rgba(185,141,141,.18)"; skyCtx.fillRect(0, height * 0.951, width, unit);
+          skyCtx.fillStyle = "rgba(185,141,141,.11)"; skyCtx.fillRect(0, height * 0.979, width, unit);
+        }
+
+        function makeLayer(depth, seed) {
+          var random = generator(seed), tile = document.createElement("canvas");
+          var maxHeight = [0.35, 0.53, 0.62][depth] * height;
+          tile.width = Math.ceil(Math.max(width * 1.18, 660 * unit));
+          tile.height = Math.ceil(maxHeight + 32 * unit);
+          var c = tile.getContext("2d"), floor = tile.height;
+          var palette = [
+            ["#574267", "#44334f", "rgba(255,209,150,.25)"],
+            ["#292b48", "#1b233b", "rgba(255,215,150,.62)"],
+            ["#141d34", "#0c1528", "rgba(255,225,170,.83)"]
+          ][depth];
+          var x = -12 * unit;
+          while (x < tile.width) {
+            var bw = (depth === 0 ? 22 + random() * 42 : 36 + random() * 72) * unit;
+            var bh = (0.28 + random() * 0.72) * maxHeight;
+            var top = floor - bh, kind = Math.floor(random() * 6), roof = 0;
+            var facade = c.createLinearGradient(x, 0, x + bw, 0);
+            facade.addColorStop(0, palette[0]); facade.addColorStop(0.64, palette[1]); facade.addColorStop(1, palette[0]);
+            c.fillStyle = facade;
+            c.beginPath(); c.moveTo(x, floor); c.lineTo(x, top + 16 * unit);
+            if (kind === 0) {
+              c.lineTo(x, top); c.lineTo(x + bw, top);
+            } else if (kind === 1) {
+              roof = 15 * unit;
+              c.lineTo(x, top + roof); c.lineTo(x + bw * 0.17, top + roof);
+              c.lineTo(x + bw * 0.17, top); c.lineTo(x + bw * 0.83, top);
+              c.lineTo(x + bw * 0.83, top + roof); c.lineTo(x + bw, top + roof);
+            } else if (kind === 2) {
+              roof = 13 * unit; c.lineTo(x, top + roof); c.lineTo(x + bw, top);
+            } else if (kind === 3) {
+              roof = 18 * unit;
+              c.lineTo(x, top + roof); c.lineTo(x + bw * 0.27, top + roof);
+              c.lineTo(x + bw * 0.27, top + 7 * unit); c.lineTo(x + bw * 0.42, top + 7 * unit);
+              c.lineTo(x + bw * 0.5, top); c.lineTo(x + bw * 0.58, top + 7 * unit);
+              c.lineTo(x + bw * 0.73, top + 7 * unit); c.lineTo(x + bw * 0.73, top + roof); c.lineTo(x + bw, top + roof);
+            } else if (kind === 4) {
+              roof = 10 * unit;
+              c.lineTo(x, top + roof); c.lineTo(x + bw * 0.08, top + roof); c.lineTo(x + bw * 0.08, top);
+              c.lineTo(x + bw * 0.38, top); c.lineTo(x + bw * 0.38, top + roof); c.lineTo(x + bw, top + roof);
+            } else {
+              roof = 16 * unit;
+              c.lineTo(x, top + roof); c.quadraticCurveTo(x, top, x + bw * 0.5, top);
+              c.quadraticCurveTo(x + bw, top, x + bw, top + roof);
             }
-            x += buildingWidth + 2 + nextRand() * 6;
+            c.lineTo(x + bw, floor); c.closePath(); c.fill();
+            c.save(); c.clip();
+            // Different room occupancy and occasional continuous office floors
+            // make the windows less like a uniform dotted grid.
+            var wx = (depth === 0 ? 1.5 : 2.8) * unit;
+            var gapX = (depth === 0 ? 6 : 8) * unit;
+            var gapY = (depth === 0 ? 9 : 12) * unit;
+            var row = 0;
+            for (var y = top + roof + 9 * unit; y < floor - 5 * unit; y += gapY) {
+              var occupancy = 0.3 + random() * 0.55;
+              var officeFloor = kind === 5 && row % 5 === 0;
+              for (var col = x + 5 * unit; col < x + bw - 4 * unit; col += gapX) {
+                if (random() > occupancy && !officeFloor) continue;
+                c.fillStyle = random() < 0.13 && depth > 0 ? "rgba(159,192,216,.47)" : palette[2];
+                c.fillRect(col, y, officeFloor ? gapX * 0.7 : wx, (depth === 0 ? 2 : 4) * unit);
+              }
+              row += 1;
+            }
+            if (kind === 2 || kind === 5) {
+              c.fillStyle = "rgba(148,160,180,.10)";
+              for (var rib = x + 3 * unit; rib < x + bw; rib += 14 * unit) c.fillRect(rib, top, 1 * unit, bh);
+            }
+            c.restore();
+            c.fillStyle = depth ? "rgba(224,187,165,.15)" : "rgba(237,205,196,.12)";
+            c.fillRect(x + unit, top + roof, Math.max(unit, bw - 2 * unit), unit);
+            if ((kind === 1 || kind === 3) && depth > 0) {
+              c.fillStyle = palette[0]; c.fillRect(x + bw * 0.5, top - 17 * unit, 1.2 * unit, 18 * unit);
+              c.fillStyle = "rgba(232,124,130,.58)"; c.fillRect(x + bw * 0.5, top - 18 * unit, 1.7 * unit, 1.7 * unit);
+            }
+            x += bw + (3 + random() * (depth === 0 ? 5 : 15)) * unit;
           }
-          return patternCanvas;
+          return { canvas: tile, speed: [10, 25, 48][depth], baseline: [0.83, 0.93, 0.95][depth], opacity: [0.72, 0.93, 1][depth] };
         }
 
-        function resize() {
-          var bounds = fxLayer.getBoundingClientRect();
-          width = Math.max(1, bounds.width);
-          height = Math.max(1, bounds.height);
-          dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-          canvas.width = Math.round(width * dpr);
-          canvas.height = Math.round(height * dpr);
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          patterns = [
-            buildSkylinePattern("rgba(16, 24, 46, 0.88)", "rgba(255, 219, 126, 0.55)", 17, 34),
-            buildSkylinePattern("rgba(10, 16, 34, 0.94)", "rgba(255, 242, 186, 0.72)", 71, 44),
-            buildSkylinePattern("rgba(4, 7, 18, 0.98)", "rgba(255, 234, 160, 0.88)", 131, 54)
-          ];
-        }
-
-        function drawLayer(patternCanvas, speed, yOffset, alpha) {
-          var offset = -((performance.now() * speed) % patternCanvas.width);
-          ctx.globalAlpha = alpha;
-          for (var x = offset; x < width + patternCanvas.width; x += patternCanvas.width) {
-            ctx.drawImage(patternCanvas, x, height - patternCanvas.height + yOffset, patternCanvas.width, patternCanvas.height);
-          }
-        }
-
-        function frame() {
+        function rebuild() {
           if (disposed) return;
-          ctx.clearRect(0, 0, width, height);
-          var glow = ctx.createRadialGradient(width * 0.55, height * 0.18, 0, width * 0.55, height * 0.18, width * 0.38);
-          glow.addColorStop(0, "rgba(255, 220, 150, 0.34)");
-          glow.addColorStop(1, "rgba(255, 220, 150, 0)");
-          ctx.fillStyle = glow;
-          ctx.fillRect(0, 0, width, height);
-          drawLayer(patterns[0], 0.012, 34, 0.55);
-          drawLayer(patterns[1], 0.02, 18, 0.78);
-          drawLayer(patterns[2], 0.032, 0, 1);
+          var bounds = fxLayer.getBoundingClientRect();
+          var scale = Math.min(1, 1280 / Math.max(1, bounds.width), 720 / Math.max(1, bounds.height));
+          width = Math.max(1, Math.round(bounds.width * scale)); height = Math.max(1, Math.round(bounds.height * scale));
+          unit = height / 720;
+          canvas.width = width; canvas.height = height;
+          layers.forEach(function (layer) { layer.canvas.width = layer.canvas.height = 1; });
+          buildSky(); layers = [makeLayer(0, 17), makeLayer(1, 71), makeLayer(2, 131)];
+          cars = [];
+          var random = generator(43);
+          for (var i = 0; i < 12; i += 1) cars.push({ phase: random(), speed: 75 + random() * 90, lane: i % 2, length: 5 + random() * 5 });
+          if (!document.hidden) draw();
+        }
+
+        function draw() {
+          ctx.clearRect(0, 0, width, height); ctx.drawImage(sky, 0, 0, width, height);
+          for (var i = 0; i < layers.length; i += 1) {
+            var layer = layers[i], tile = layer.canvas;
+            var offset = -((clock * layer.speed * unit) % tile.width);
+            ctx.globalAlpha = layer.opacity;
+            for (var x = offset; x < width; x += tile.width) ctx.drawImage(tile, x, height * layer.baseline - tile.height);
+          }
           ctx.globalAlpha = 1;
+          for (var n = 0; n < cars.length; n += 1) {
+            var car = cars[n], direction = car.lane ? -1 : 1;
+            var travel = (car.phase * width + clock * car.speed * unit) % (width + 40 * unit);
+            var cx = car.lane ? width + 20 * unit - travel : travel - 20 * unit;
+            var cy = height * (car.lane ? 0.987 : 0.966);
+            ctx.fillStyle = car.lane ? "rgba(231,118,120,.13)" : "rgba(251,218,165,.12)";
+            ctx.fillRect(cx - direction * 15 * unit, cy, 17 * unit, 2.5 * unit);
+            ctx.fillStyle = car.lane ? "rgba(242,139,132,.72)" : "rgba(255,226,175,.82)";
+            ctx.fillRect(cx, cy, car.length * unit, 1.8 * unit);
+          }
+        }
+
+        function frame(now) {
+          rafId = 0;
+          if (disposed || document.hidden || motion.matches) return;
+          if (now - lastPaint >= frameStep) {
+            var dt = lastTime ? Math.min(0.08, (now - lastTime) / 1000) : 1 / 30;
+            lastPaint = now - (now - lastPaint) % frameStep; lastTime = now;
+            clock += dt; draw();
+          }
           rafId = requestAnimationFrame(frame);
         }
 
-        resize();
-        frame();
+        function state() {
+          if (rafId) cancelAnimationFrame(rafId);
+          rafId = 0; lastTime = 0; lastPaint = 0;
+          if (disposed || document.hidden) return;
+          draw(); if (!motion.matches) rafId = requestAnimationFrame(frame);
+        }
+
+        function resize() {
+          if (resizeTimer) clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(function () { resizeTimer = 0; rebuild(); }, 120);
+        }
+
+        rebuild(); state();
+        window.addEventListener("resize", resize); document.addEventListener("visibilitychange", state); motion.addListener(state);
         currentFxDisposable = function () {
           disposed = true;
           if (rafId) cancelAnimationFrame(rafId);
+          if (resizeTimer) clearTimeout(resizeTimer);
+          window.removeEventListener("resize", resize); document.removeEventListener("visibilitychange", state); motion.removeListener(state);
+          layers.forEach(function (layer) { layer.canvas.width = layer.canvas.height = 1; });
+          layers.length = 0; cars.length = 0; sky.width = sky.height = 1;
         };
       }
 
@@ -1251,139 +1249,793 @@
       }
 
 
-      function renderNoiseFlowEffect() {
+      function renderAni7Effect() {
         var surface = createFxCanvas();
         if (!surface) return;
-        var canvas = surface.canvas;
-        var ctx = surface.context;
-        var rafId = 0;
-        var disposed = false;
-        var width = 0;
-        var height = 0;
-        var dpr = 1;
-        var particles = [];
-        var particleCount = 900;
-        var hueBase = 210;
-
-        function fract(value) {
-          return value - Math.floor(value);
+        var canvas = surface.canvas, ctx = surface.context, width = 1, height = 1, unit = 1;
+        var time = 0, raf = 0, last = 0, previous = 0, disposed = false;
+        var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        var particles = [], groups = [], seed = 72219;
+        var colors = ["rgba(100,193,255,.41)", "rgba(113,165,255,.39)", "rgba(133,143,255,.38)", "rgba(158,132,255,.39)", "rgba(186,130,255,.38)", "rgba(206,139,253,.37)", "rgba(147,196,255,.40)", "rgba(119,220,249,.39)"];
+        function random() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+        function reset(p, initial) {
+          p.x = random(); p.y = random(); p.age = initial ? random() * 5 : 0; p.life = 7 + random() * 9;
+          p.speed = 38 + random() * 54; p.color = Math.floor(random() * 8); p.phase = random() * 6.283; p.vx = 1; p.vy = 0;
         }
-
-        function lerp(a, b, t) {
-          return a + (b - a) * t;
+        for (var i = 0; i < 440; i += 1) { var p = {}; reset(p, true); particles.push(p); }
+        for (var g = 0; g < 16; g += 1) groups.push([]);
+        function draw(dt) {
+          if (dt <= 0) return;
+          time += dt;
+          ctx.globalCompositeOperation = "destination-out"; ctx.fillStyle = "rgba(0,0,0," + (1 - Math.exp(-dt * 1.05)) + ")"; ctx.fillRect(0, 0, width, height);
+          ctx.globalCompositeOperation = "source-over";
+          for (var group = 0; group < groups.length; group += 1) groups[group].length = 0;
+          var cx = 0.5 + Math.sin(time * 0.075) * 0.13, cy = 0.48 + Math.cos(time * 0.061) * 0.1;
+          for (var index = 0; index < particles.length; index += 1) {
+            var p = particles[index], ox = p.x, oy = p.y;
+            var rx = (ox - cx) * 1.7, ry = oy - cy, curl = 0.26 / (rx * rx + ry * ry + 0.09);
+            var fx = 0.62 + Math.sin(oy * 5.4 + time * 0.17) * 0.66 + Math.cos(ox * 4.1 - time * 0.14) * 0.28 - ry * curl;
+            var fy = Math.sin(ox * 5.2 + time * 0.15) * 0.72 - Math.cos(oy * 4.1 - time * 0.19) * 0.27 + rx * curl;
+            var magnitude = Math.sqrt(fx * fx + fy * fy) || 1, smooth = Math.min(1, dt * 2.5);
+            p.vx += (fx / magnitude - p.vx) * smooth; p.vy += (fy / magnitude - p.vy) * smooth;
+            p.x += p.vx * p.speed * unit * dt / width; p.y += p.vy * p.speed * unit * dt / height; p.age += dt;
+            if (p.x < -0.04 || p.x > 1.04 || p.y < -0.04 || p.y > 1.04 || p.age > p.life) { reset(p, false); continue; }
+            var faint = p.age < 0.8 || p.life - p.age < 0.8 || (Math.abs(p.x - 0.5) < 0.24 && Math.abs(p.y - 0.5) < 0.16);
+            groups[p.color + (faint ? 8 : 0)].push(ox * width, oy * height, p.x * width, p.y * height);
+          }
+          for (var c = 0; c < groups.length; c += 1) {
+            var coordinates = groups[c];
+            ctx.strokeStyle = colors[c % 8]; ctx.globalAlpha = c >= 8 ? 0.3 : 1; ctx.lineWidth = (c % 3 === 0 ? 1.3 : 0.9) * unit;
+            ctx.beginPath();
+            for (var v = 0; v < coordinates.length; v += 4) { ctx.moveTo(coordinates[v], coordinates[v + 1]); ctx.lineTo(coordinates[v + 2], coordinates[v + 3]); }
+            ctx.stroke();
+          }
+          ctx.globalAlpha = 1;
         }
-
-        function smoothstep(t) {
-          return t * t * (3 - 2 * t);
-        }
-
-        function hash(x, y, z) {
-          return fract(Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453123);
-        }
-
-        function valueNoise(x, y, z) {
-          var xi = Math.floor(x);
-          var yi = Math.floor(y);
-          var zi = Math.floor(z);
-          var xf = x - xi;
-          var yf = y - yi;
-          var zf = z - zi;
-          var u = smoothstep(xf);
-          var v = smoothstep(yf);
-          var w = smoothstep(zf);
-
-          var x00 = lerp(hash(xi, yi, zi), hash(xi + 1, yi, zi), u);
-          var x10 = lerp(hash(xi, yi + 1, zi), hash(xi + 1, yi + 1, zi), u);
-          var x01 = lerp(hash(xi, yi, zi + 1), hash(xi + 1, yi, zi + 1), u);
-          var x11 = lerp(hash(xi, yi + 1, zi + 1), hash(xi + 1, yi + 1, zi + 1), u);
-
-          var y0 = lerp(x00, x10, v);
-          var y1 = lerp(x01, x11, v);
-          return lerp(y0, y1, w);
-        }
-
         function resize() {
+          if (disposed) return;
+          var b = fxLayer.getBoundingClientRect(), scale = Math.min(1, 1280 / Math.max(1, b.width), 720 / Math.max(1, b.height));
+          width = Math.max(1, Math.round(b.width * scale)); height = Math.max(1, Math.round(b.height * scale)); unit = Math.sqrt(width * height / 921600);
+          canvas.width = width; canvas.height = height;
+          if (!document.hidden) { for (var warm = 0; warm < 12; warm += 1) draw(1 / 30); }
+        }
+        function frame(now) { raf = 0; if (disposed || document.hidden || motion.matches) return; if (now - last >= 1000 / 30) { var dt = previous ? Math.min(0.08, (now - previous) / 1000) : 1 / 30; previous = now; last = now - (now - last) % (1000 / 30); draw(dt); } raf = requestAnimationFrame(frame); }
+        function state() { if (raf) cancelAnimationFrame(raf); raf = 0; previous = last = 0; if (disposed || document.hidden) return; if (!motion.matches) raf = requestAnimationFrame(frame); }
+        resize(); state(); window.addEventListener("resize", resize); document.addEventListener("visibilitychange", state); motion.addListener(state);
+        currentFxDisposable = function () { disposed = true; if (raf) cancelAnimationFrame(raf); window.removeEventListener("resize", resize); document.removeEventListener("visibilitychange", state); motion.removeListener(state); particles.length = 0; groups.length = 0; };
+      }
+
+      function renderAni1Effect() {
+        var surface = createFxCanvas();
+        if (!surface) return;
+        var canvas = surface.canvas, ctx = surface.context;
+        var width = 1, height = 1, unit = 1, time = 0, raf = 0, last = 0, previous = 0, disposed = false;
+        var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        var water = document.createElement("canvas"), beam = document.createElement("canvas"), bubble = document.createElement("canvas");
+        water.width = 640; water.height = 480; beam.width = 128; beam.height = 512; bubble.width = bubble.height = 64;
+        var wc = water.getContext("2d"), bc = beam.getContext("2d"), sc = bubble.getContext("2d");
+        var drops = [], dust = [], seed = 11231;
+        function random() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+        function node(x, y) {
+          return [x * 72 + Math.sin(y * 1.75 + x * 1.3) * 22 + Math.cos(x * 1.9) * 11,
+            y * 61 + Math.sin(x * 1.4 + y * 1.1) * 20 + Math.cos(y * 2.1) * 8];
+        }
+        // Caustics are cached as an irregular cell mesh, then refracted by
+        // two slowly crossing projections. No per-frame gradients or blur.
+        for (var y = -1; y < 10; y += 1) for (var x = -1; x < 11; x += 1) {
+          var points = [node(x, y), node(x + 1, y), node(x + 1, y + 1), node(x, y + 1)];
+          wc.beginPath();
+          wc.moveTo((points[3][0] + points[0][0]) / 2, (points[3][1] + points[0][1]) / 2);
+          for (var k = 0; k < 4; k += 1) {
+            var p = points[k], n = points[(k + 1) % 4];
+            wc.quadraticCurveTo(p[0], p[1], (p[0] + n[0]) / 2, (p[1] + n[1]) / 2);
+          }
+          wc.closePath();
+          wc.strokeStyle = "rgba(191,255,246,.10)"; wc.lineWidth = 7; wc.stroke();
+          wc.strokeStyle = "rgba(217,255,251," + (0.3 + random() * 0.35) + ")"; wc.lineWidth = 1.2 + random() * 1.5; wc.stroke();
+        }
+        var ray = bc.createLinearGradient(0, 0, 128, 0);
+        ray.addColorStop(0, "rgba(180,255,246,0)"); ray.addColorStop(0.4, "rgba(220,255,251,.36)");
+        ray.addColorStop(0.6, "rgba(235,255,251,.4)"); ray.addColorStop(1, "rgba(180,255,246,0)");
+        bc.fillStyle = ray; bc.beginPath(); bc.moveTo(51, 0); bc.lineTo(77, 0); bc.lineTo(128, 512); bc.lineTo(0, 512); bc.closePath(); bc.fill();
+        bc.globalCompositeOperation = "destination-in";
+        var rayFade = bc.createLinearGradient(0, 0, 0, 512);
+        rayFade.addColorStop(0, "rgba(0,0,0,.95)"); rayFade.addColorStop(0.72, "rgba(0,0,0,.3)"); rayFade.addColorStop(1, "rgba(0,0,0,0)");
+        bc.fillStyle = rayFade; bc.fillRect(0, 0, 128, 512);
+        var sphere = sc.createRadialGradient(27, 23, 1, 32, 32, 27);
+        sphere.addColorStop(0, "rgba(220,255,255,.02)"); sphere.addColorStop(0.67, "rgba(201,250,255,.01)");
+        sphere.addColorStop(0.87, "rgba(174,246,255,.22)"); sphere.addColorStop(0.95, "rgba(229,255,255,.58)"); sphere.addColorStop(1, "rgba(180,250,255,0)");
+        sc.fillStyle = sphere; sc.beginPath(); sc.arc(32, 32, 28, 0, Math.PI * 2); sc.fill();
+        sc.strokeStyle = "rgba(255,255,255,.75)"; sc.lineWidth = 1.9; sc.beginPath(); sc.arc(32, 32, 24, Math.PI * 1.04, Math.PI * 1.38); sc.stroke();
+        for (var i = 0; i < 38; i += 1) drops.push({ x: random(), y: random(), depth: random(), phase: random() * 6.283, speed: 16 + random() * 26 });
+        drops.sort(function (a, b) { return a.depth - b.depth; });
+        for (var d = 0; d < 44; d += 1) dust.push({ x: random(), y: random(), phase: random() * 6.283, size: random() });
+
+        function draw(dt) {
+          time += dt; ctx.clearRect(0, 0, width, height);
+          for (var layer = 0; layer < 2; layer += 1) {
+            ctx.save(); ctx.translate(width * 0.5, height * 0.5);
+            ctx.rotate(Math.sin(time * 0.14 + layer * 1.6) * 0.045 + layer * 0.3);
+            ctx.globalAlpha = layer ? 0.14 : 0.23;
+            var driftX = Math.sin(time * 0.22 + layer * 2) * width * 0.07;
+            var driftY = Math.cos(time * 0.17 + layer) * height * 0.07;
+            ctx.drawImage(water, -width * 0.69 + driftX, -height * 0.72 + driftY, width * 1.38, height * 1.44);
+            ctx.restore();
+          }
+          for (var r = 0; r < 6; r += 1) {
+            ctx.save(); ctx.translate(width * (0.05 + r * 0.18), -height * 0.07);
+            ctx.rotate(-0.14 + Math.sin(time * 0.28 + r * 0.9) * 0.11);
+            ctx.globalAlpha = 0.22 + Math.sin(time * 0.36 + r) * 0.06;
+            ctx.drawImage(beam, -width * 0.09, 0, width * 0.18, height * 1.3); ctx.restore();
+          }
+          for (var j = 0; j < dust.length; j += 1) {
+            var mote = dust[j]; mote.y -= dt * (3 + mote.size * 7) * unit / height;
+            if (mote.y < -0.02) mote.y = 1.02;
+            ctx.fillStyle = "rgba(208,255,252,.19)";
+            ctx.fillRect((mote.x + Math.sin(time * 0.33 + mote.phase) * 0.012) * width, mote.y * height, (0.7 + mote.size) * unit, (0.7 + mote.size) * unit);
+          }
+          for (var n = 0; n < drops.length; n += 1) {
+            var p = drops[n]; p.y -= dt * p.speed * (0.65 + p.depth) * unit / height;
+            if (p.y < -0.08) { p.y = 1.08; p.x = random(); }
+            var size = (8 + p.depth * 25) * unit, sway = Math.sin(time * (0.55 + p.depth * 0.6) + p.phase) * (0.008 + p.depth * 0.014);
+            ctx.globalAlpha = 0.25 + p.depth * 0.53;
+            ctx.drawImage(bubble, (p.x + sway) * width - size / 2, p.y * height - size / 2, size, size);
+          }
+          ctx.globalAlpha = 1;
+        }
+        function resize() {
+          if (disposed) return;
+          var b = fxLayer.getBoundingClientRect(), scale = Math.min(1, 1280 / Math.max(1, b.width), 720 / Math.max(1, b.height));
+          width = Math.max(1, Math.round(b.width * scale)); height = Math.max(1, Math.round(b.height * scale)); unit = Math.sqrt(width * height / 921600);
+          canvas.width = width; canvas.height = height; if (!document.hidden) draw(0);
+        }
+        function frame(now) {
+          raf = 0; if (disposed || document.hidden || motion.matches) return;
+          if (now - last >= 1000 / 30) { var dt = previous ? Math.min(0.08, (now - previous) / 1000) : 1 / 30; previous = now; last = now - (now - last) % (1000 / 30); draw(dt); }
+          raf = requestAnimationFrame(frame);
+        }
+        function state() { if (raf) cancelAnimationFrame(raf); raf = 0; previous = last = 0; if (disposed || document.hidden) return; draw(0); if (!motion.matches) raf = requestAnimationFrame(frame); }
+        resize(); state(); window.addEventListener("resize", resize); document.addEventListener("visibilitychange", state); motion.addListener(state);
+        currentFxDisposable = function () { disposed = true; if (raf) cancelAnimationFrame(raf); window.removeEventListener("resize", resize); document.removeEventListener("visibilitychange", state); motion.removeListener(state); water.width = water.height = beam.width = beam.height = bubble.width = bubble.height = 1; drops.length = dust.length = 0; };
+      }
+
+      function renderAni2Effect() {
+        var surface = createFxCanvas();
+        if (!surface) return;
+        var canvas = surface.canvas, ctx = surface.context;
+        var width = 1, height = 1, unit = 1, clock = 0, raf = 0;
+        var lastPaint = 0, lastTime = 0, disposed = false, caches = [];
+        var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        function rand(a, b) { return a + Math.random() * (b - a); }
+        function cache(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; caches.push(c); return c; }
+        var pieces = [], atlas = cache(256, 128), a = atlas.getContext("2d");
+        var colors = [["#fff8df", "#c88d3c"], ["#ffd47a", "#c58429"], ["#ffb6ad", "#d26c76"], ["#fff9f7", "#dca5cf"]];
+        for (var k = 0; k < 4; k += 1) {
+          for (var side = 0; side < 2; side += 1) {
+            a.save(); a.translate(k * 64 + 32, side * 64 + 32);
+            var metallic = a.createLinearGradient(-14, -23, 16, 20);
+            metallic.addColorStop(0, colors[k][side ? 1 : 0]);
+            metallic.addColorStop(0.47, colors[k][0]); metallic.addColorStop(1, colors[k][1]);
+            a.fillStyle = metallic;
+            a.beginPath(); a.moveTo(-12, -23); a.lineTo(11, -20); a.lineTo(14, 22); a.lineTo(-10, 25); a.closePath(); a.fill();
+            a.fillStyle = "rgba(255,255,255," + (side ? 0.09 : 0.42) + ")"; a.fillRect(-9, -20, 2, 40);
+            a.restore();
+          }
+        }
+        function reset(p, initial) {
+          p.depth = rand(0.2, 1); p.x = rand(-0.05, 1.05); p.y = initial ? rand(-0.1, 1.1) : rand(-0.18, -0.06);
+          p.size = 12 + p.depth * 22; p.speed = 35 + p.depth * 58; p.phase = rand(0, 6.28);
+          p.spin = rand(-2, 2); p.angle = rand(0, 6.28); p.roll = rand(0, 6.28); p.turn = rand(1.2, 3.5);
+          p.color = Math.floor(rand(0, 4)); p.ribbon = Math.random() < 0.15;
+        }
+        for (var i = 0; i < 86; i += 1) { var p = {}; reset(p, true); pieces.push(p); }
+        pieces.sort(function (a, b) { return a.depth - b.depth; });
+        function rebuild() {
+          // Atlas size is independent of display resolution.
+        }
+        function advance(dt) {
+          clock += dt;
+          var breeze = 24 * Math.sin(clock * 0.36) + 18;
+          for (var i = 0; i < pieces.length; i += 1) {
+            var p = pieces[i];
+            p.x += (breeze + Math.sin(clock * 1.3 + p.phase) * 26) * (0.45 + p.depth) * unit / width * dt;
+            p.y += p.speed * (0.85 + 0.18 * Math.sin(p.roll)) * unit / height * dt;
+            p.roll += p.turn * dt; p.angle += (p.spin + Math.sin(clock * 0.8 + p.phase) * 0.7) * dt;
+            if (p.y > 1.13 || p.x < -0.16 || p.x > 1.16) reset(p, false);
+          }
+        }
+        function draw() {
+          ctx.clearRect(0, 0, width, height);
+          for (var i = 0; i < pieces.length; i += 1) {
+            var p = pieces[i], face = Math.cos(p.roll), size = p.size * unit;
+            ctx.save(); ctx.translate(p.x * width, p.y * height); ctx.rotate(p.angle);
+            ctx.globalAlpha = 0.3 + p.depth * 0.65;
+            if (p.ribbon) {
+              ctx.scale(0.25 + Math.abs(face) * 0.75, 1);
+              ctx.strokeStyle = colors[p.color][face > 0 ? 0 : 1]; ctx.lineWidth = 3.5 * unit;
+              ctx.beginPath(); ctx.moveTo(-size * 0.12, -size);
+              ctx.bezierCurveTo(size * 0.5, -size * 0.45, -size * 0.55, size * 0.35, size * 0.12, size); ctx.stroke();
+            } else {
+              ctx.scale(0.12 + Math.abs(face) * 0.88, 0.84 + 0.16 * Math.sin(p.roll));
+              ctx.drawImage(atlas, p.color * 64, face > 0 ? 0 : 64, 64, 64, -size / 2, -size / 2, size, size);
+            }
+            ctx.restore();
+          }
+        }
+        function resize() {
+          if (disposed) return;
           var bounds = fxLayer.getBoundingClientRect();
-          width = Math.max(1, bounds.width);
-          height = Math.max(1, bounds.height);
-          dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-          canvas.width = Math.round(width * dpr);
-          canvas.height = Math.round(height * dpr);
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          particles = [];
-          for (var index = 0; index < particleCount; index += 1) {
-              particles.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                hue: 0,
-                life: 60 + Math.random() * 160
-              });
-            }
-            ctx.fillStyle = "rgba(3, 8, 18, 1)";
-            ctx.fillRect(0, 0, width, height);
+          var scale = Math.min(1, 1280 / Math.max(1, bounds.width), 720 / Math.max(1, bounds.height));
+          width = Math.max(1, Math.round(bounds.width * scale));
+          height = Math.max(1, Math.round(bounds.height * scale));
+          unit = Math.min(width / 1280, height / 720);
+          canvas.width = width; canvas.height = height; rebuild();
+          if (!document.hidden) draw();
+        }
+        function frame(now) {
+          raf = 0;
+          if (disposed || document.hidden || motion.matches) return;
+          if (now - lastPaint >= 1000 / 30) {
+            var dt = lastTime ? Math.min(0.08, (now - lastTime) / 1000) : 1 / 30;
+            lastTime = now; lastPaint = now - (now - lastPaint) % (1000 / 30);
+            advance(dt); draw();
           }
-
-          function respawn(particle) {
-            particle.x = Math.random() * width;
-            particle.y = Math.random() * height;
-            particle.life = 60 + Math.random() * 160;
-          }
-
-          function frame(time) {
-            if (disposed) return;
-            ctx.fillStyle = "rgba(4, 10, 22, 0.035)";
-            ctx.fillRect(0, 0, width, height);
-            for (var i = 0; i < particles.length; i += 1) {
-              var p = particles[i];
-              var noise = valueNoise(p.x * 0.0042, p.y * 0.0042, time * 0.00018);
-              var angle = noise * Math.PI * 6;
-              var speed = 0.9;
-              var nx = p.x + Math.cos(angle) * speed * 1.9;
-              var ny = p.y + Math.sin(angle) * speed * 1.9;
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(nx, ny);
-              p.hue = (hueBase + noise * 120 + i * 0.04) % 360;
-              ctx.strokeStyle = "hsla(" + p.hue + ", 90%, 72%, 0.11)";
-              ctx.lineWidth = 1;
-              ctx.stroke();
-              p.x = nx;
-              p.y = ny;
-              p.life -= 1;
-              if (p.x < -20 || p.x > width + 20 || p.y < -20 || p.y > height + 20 || p.life <= 0) {
-                respawn(p);
-              }
-            }
-            hueBase += 0.18;
-            rafId = requestAnimationFrame(frame);
-          }
-
-        resize();
-        frame(0);
+          raf = requestAnimationFrame(frame);
+        }
+        function state() {
+          if (raf) cancelAnimationFrame(raf);
+          raf = 0; lastTime = 0; lastPaint = 0;
+          if (disposed || document.hidden) return;
+          draw(); if (!motion.matches) raf = requestAnimationFrame(frame);
+        }
+        resize(); state();
+        window.addEventListener("resize", resize);
+        document.addEventListener("visibilitychange", state);
+        motion.addListener(state);
         currentFxDisposable = function () {
-          disposed = true;
-          if (rafId) cancelAnimationFrame(rafId);
+          disposed = true; if (raf) cancelAnimationFrame(raf);
+          window.removeEventListener("resize", resize);
+          document.removeEventListener("visibilitychange", state);
+          motion.removeListener(state);
+          caches.forEach(function (c) { c.width = c.height = 1; });
         };
       }
 
-        function renderStyleEffects(styleName) {
-        if (currentFxDisposable && typeof currentFxDisposable === "function") {
-          currentFxDisposable();
+      function renderAni4Effect() {
+        var surface = createFxCanvas();
+        if (!surface) return;
+        var canvas = surface.canvas, ctx = surface.context, width = 1, height = 1, unit = 1;
+        var time = 0, raf = 0, last = 0, previous = 0, disposed = false;
+        var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        var circuit = document.createElement("canvas"), glow = document.createElement("canvas"), scan = document.createElement("canvas");
+        circuit.width = 1280; circuit.height = 720; glow.width = glow.height = 48; scan.width = 1; scan.height = 128;
+        var cc = circuit.getContext("2d"), gc = glow.getContext("2d"), sc = scan.getContext("2d"), routes = [], seed = 93413;
+        function random() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+        for (var i = 0; i < 22; i += 1) {
+          var y = (0.04 + random() * 0.88) * 720, start = -60 + random() * 180, step = 160 + random() * 230;
+          var route = { points: [[start, y]], lengths: [], distance: 0, phase: random(), speed: 65 + random() * 70 };
+          for (var j = 0; j < 5; j += 1) {
+            var x = start + (j + 1) * step, nextY = Math.max(16, Math.min(704, y + (random() < 0.5 ? -1 : 1) * (30 + Math.floor(random() * 3) * 26)));
+            route.points.push([x, y], [x + 22, nextY]); y = nextY;
+          }
+          cc.beginPath(); cc.moveTo(route.points[0][0], route.points[0][1]);
+          for (var k = 1; k < route.points.length; k += 1) {
+            var a = route.points[k - 1], b = route.points[k], length = Math.sqrt((b[0] - a[0]) * (b[0] - a[0]) + (b[1] - a[1]) * (b[1] - a[1]));
+            route.lengths.push(length); route.distance += length; cc.lineTo(b[0], b[1]);
+          }
+          cc.strokeStyle = "rgba(74,202,230," + (0.06 + random() * 0.06) + ")"; cc.lineWidth = 1; cc.stroke();
+          for (var q = 1; q < route.points.length; q += 2) {
+            cc.fillStyle = "rgba(116,222,242,.19)"; cc.fillRect(route.points[q][0] - 1, route.points[q][1] - 1, 2, 2);
+          }
+          routes.push(route);
         }
+        var spot = gc.createRadialGradient(24, 24, 0, 24, 24, 23);
+        spot.addColorStop(0, "rgba(211,255,255,.95)"); spot.addColorStop(0.12, "rgba(110,241,255,.75)"); spot.addColorStop(0.4, "rgba(49,213,255,.13)"); spot.addColorStop(1, "rgba(49,213,255,0)");
+        gc.fillStyle = spot; gc.fillRect(0, 0, 48, 48);
+        var scanner = sc.createLinearGradient(0, 0, 0, 128);
+        scanner.addColorStop(0, "rgba(99,230,255,0)"); scanner.addColorStop(0.83, "rgba(99,230,255,.09)"); scanner.addColorStop(0.96, "rgba(154,246,255,.33)"); scanner.addColorStop(1, "rgba(99,230,255,0)");
+        sc.fillStyle = scanner; sc.fillRect(0, 0, 1, 128);
+
+        function draw(dt) {
+          time += dt; ctx.clearRect(0, 0, width, height);
+          ctx.drawImage(circuit, 0, 0, width, height);
+          var horizon = height * 0.47, center = width * (0.5 + Math.sin(time * 0.13) * 0.025);
+          ctx.strokeStyle = "rgba(76,205,237,.16)"; ctx.lineWidth = unit;
+          ctx.beginPath();
+          for (var col = -16; col <= 16; col += 1) { ctx.moveTo(center + col * width * 0.002, horizon); ctx.lineTo(center + col * width * 0.125, height * 1.1); }
+          ctx.stroke();
+          for (var row = 0; row < 18; row += 1) {
+            var z = (row / 18 + time * 0.105) % 1, y = horizon + (height * 1.08 - horizon) * z * z;
+            ctx.strokeStyle = "rgba(92,225,255," + (0.035 + z * 0.22) + ")"; ctx.lineWidth = (0.6 + z * 0.8) * unit;
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+          }
+          // The scanner moves across the whole field while data packets
+          // take bent paths at independent speeds and offsets.
+          var scanY = ((time * 0.105) % 1.35 - 0.2) * height;
+          ctx.globalAlpha = 0.7; ctx.drawImage(scan, 0, scanY, width, height * 0.19); ctx.globalAlpha = 1;
+          for (var i = 0; i < routes.length; i += 1) {
+            var route = routes[i], progress = (route.phase * route.distance + time * route.speed) % route.distance, segment = 0;
+            while (segment < route.lengths.length - 1 && progress > route.lengths[segment]) { progress -= route.lengths[segment]; segment += 1; }
+            var a = route.points[segment], b = route.points[segment + 1], ratio = progress / route.lengths[segment];
+            var px = (a[0] + (b[0] - a[0]) * ratio) / 1280 * width, py = (a[1] + (b[1] - a[1]) * ratio) / 720 * height;
+            var size = (i % 3 === 0 ? 17 : 12) * unit;
+            ctx.globalAlpha = 0.48 + (i % 4) * 0.12; ctx.drawImage(glow, px - size / 2, py - size / 2, size, size);
+            var dx = (b[0] - a[0]) / route.lengths[segment], dy = (b[1] - a[1]) / route.lengths[segment];
+            ctx.strokeStyle = "rgba(129,240,255,.58)"; ctx.lineWidth = 1.2 * unit; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px - dx * 12 * unit, py - dy * 12 * unit); ctx.stroke();
+          }
+          ctx.globalAlpha = 1;
+          for (var n = 0; n < 9; n += 1) {
+            var depth = (n / 9 + time * 0.105) % 1, lane = ((n * 7) % 13 - 6) * 0.16;
+            var x = center + lane * width * depth, yy = horizon + (height * 1.08 - horizon) * depth * depth;
+            ctx.globalAlpha = depth * 0.7; var pulseSize = (3 + depth * 9) * unit;
+            ctx.drawImage(glow, x - pulseSize, yy - pulseSize, pulseSize * 2, pulseSize * 2);
+          }
+          ctx.globalAlpha = 1;
+        }
+        function resize() { if (disposed) return; var b = fxLayer.getBoundingClientRect(), scale = Math.min(1, 1280 / Math.max(1, b.width), 720 / Math.max(1, b.height)); width = Math.max(1, Math.round(b.width * scale)); height = Math.max(1, Math.round(b.height * scale)); unit = Math.sqrt(width * height / 921600); canvas.width = width; canvas.height = height; if (!document.hidden) draw(0); }
+        function frame(now) { raf = 0; if (disposed || document.hidden || motion.matches) return; if (now - last >= 1000 / 30) { var dt = previous ? Math.min(0.08, (now - previous) / 1000) : 1 / 30; previous = now; last = now - (now - last) % (1000 / 30); draw(dt); } raf = requestAnimationFrame(frame); }
+        function state() { if (raf) cancelAnimationFrame(raf); raf = 0; previous = last = 0; if (disposed || document.hidden) return; draw(0); if (!motion.matches) raf = requestAnimationFrame(frame); }
+        resize(); state(); window.addEventListener("resize", resize); document.addEventListener("visibilitychange", state); motion.addListener(state);
+        currentFxDisposable = function () { disposed = true; if (raf) cancelAnimationFrame(raf); window.removeEventListener("resize", resize); document.removeEventListener("visibilitychange", state); motion.removeListener(state); circuit.width = circuit.height = glow.width = glow.height = scan.width = scan.height = 1; routes.length = 0; };
+      }
+
+      function renderAni5Effect() {
+        var surface = createFxCanvas();
+        if (!surface) return;
+        var canvas = surface.canvas, ctx = surface.context;
+        var width = 1, height = 1, unit = 1, clock = 0, raf = 0;
+        var lastPaint = 0, lastTime = 0, disposed = false, caches = [];
+        var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        function rand(a, b) { return a + Math.random() * (b - a); }
+        function cache(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; caches.push(c); return c; }
+        var beam = cache(256, 640), b = beam.getContext("2d"), floorGlow = cache(256, 128), f = floorGlow.getContext("2d");
+        // Overlapping cached triangles give the beam a soft edge without a blur filter.
+        for (var n = 15; n >= 1; n -= 1) {
+          var spread = 0.12 + n / 15 * 0.88;
+          var gradient = b.createLinearGradient(0, 0, 0, 640);
+          gradient.addColorStop(0, "rgba(255,245,209,.035)");
+          gradient.addColorStop(0.35, "rgba(255,227,157,.025)");
+          gradient.addColorStop(1, "rgba(255,222,139,.001)");
+          b.fillStyle = gradient; b.beginPath(); b.moveTo(128 - 2, 0); b.lineTo(128 + 2, 0);
+          b.lineTo(128 + 128 * spread, 640); b.lineTo(128 - 128 * spread, 640); b.closePath(); b.fill();
+        }
+        var glow = f.createRadialGradient(128, 64, 1, 128, 64, 126);
+        glow.addColorStop(0, "rgba(255,225,154,.36)"); glow.addColorStop(0.3, "rgba(255,217,138,.14)"); glow.addColorStop(1, "rgba(255,217,138,0)");
+        f.scale(1, 0.5); f.fillStyle = glow; f.fillRect(0, 0, 256, 256);
+        var dust = [];
+        for (var i = 0; i < 45; i += 1) dust.push({x:Math.random(), y:Math.random(), phase:rand(0,6.28), size:rand(0.7,2.2), speed:rand(4,15)});
+        function rebuild() {
+          // All beam gradients are baked in the small texture above.
+        }
+        function advance(dt) {
+          clock += dt;
+          for (var i = 0; i < dust.length; i += 1) {
+            var p = dust[i]; p.x += Math.sin(clock * 0.7 + p.phase) * 7 * unit / width * dt;
+            p.y -= p.speed * unit / height * dt;
+            if (p.y < -0.02) {p.y = 1.02; p.x = Math.random();}
+          }
+        }
+        function draw() {
+          ctx.clearRect(0, 0, width, height);
+          var angles = [-0.28 + Math.sin(clock * 0.29) * 0.30, Math.sin(clock * 0.23 + 2.1) * 0.38, 0.28 + Math.sin(clock * 0.26 + 4) * 0.30];
+          var origins = [0.18, 0.5, 0.82];
+          for (var j = 0; j < 3; j += 1) {
+            var angle = angles[j], origin = origins[j] * width, length = height * 1.16;
+            ctx.save(); ctx.translate(origin, -height * 0.055); ctx.rotate(angle);
+            ctx.globalAlpha = j === 1 ? 0.72 : 0.9;
+            ctx.drawImage(beam, -width * 0.12, 0, width * 0.24, length); ctx.restore();
+            var footX = origin - Math.sin(angle) * height * 0.9;
+            ctx.drawImage(floorGlow, footX - width * 0.15, height * 0.84, width * 0.3, height * 0.16);
+          }
+          ctx.strokeStyle = "rgba(255,224,158,.09)"; ctx.lineWidth = unit;
+          ctx.beginPath(); ctx.moveTo(0,height*.915);ctx.lineTo(width,height*.915);ctx.stroke();
+          for (var i = 0; i < dust.length; i += 1) {
+            var p = dust[i], brightness = 0.025;
+            for (var k = 0; k < 3; k += 1) {
+              var axis = origins[k] - Math.sin(angles[k]) * (p.y + 0.055) * height / width;
+              var distance = Math.abs(p.x-axis), radius = Math.max(0.025,p.y*0.12);
+              brightness = Math.max(brightness, Math.max(0,1-distance/radius)*0.55);
+            }
+            ctx.globalAlpha = brightness * (0.7 + Math.sin(clock + p.phase) * 0.2);
+            ctx.fillStyle = "#fff0c7"; ctx.beginPath();ctx.arc(p.x*width,p.y*height,p.size*unit,0,Math.PI*2);ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+        }
+        function resize() {
+          if (disposed) return;
+          var bounds = fxLayer.getBoundingClientRect();
+          var scale = Math.min(1, 1280 / Math.max(1, bounds.width), 720 / Math.max(1, bounds.height));
+          width = Math.max(1, Math.round(bounds.width * scale));
+          height = Math.max(1, Math.round(bounds.height * scale));
+          unit = Math.min(width / 1280, height / 720);
+          canvas.width = width; canvas.height = height; rebuild();
+          if (!document.hidden) draw();
+        }
+        function frame(now) {
+          raf = 0;
+          if (disposed || document.hidden || motion.matches) return;
+          if (now - lastPaint >= 1000 / 30) {
+            var dt = lastTime ? Math.min(0.08, (now - lastTime) / 1000) : 1 / 30;
+            lastTime = now; lastPaint = now - (now - lastPaint) % (1000 / 30);
+            advance(dt); draw();
+          }
+          raf = requestAnimationFrame(frame);
+        }
+        function state() {
+          if (raf) cancelAnimationFrame(raf);
+          raf = 0; lastTime = 0; lastPaint = 0;
+          if (disposed || document.hidden) return;
+          draw(); if (!motion.matches) raf = requestAnimationFrame(frame);
+        }
+        resize(); state();
+        window.addEventListener("resize", resize);
+        document.addEventListener("visibilitychange", state);
+        motion.addListener(state);
+        currentFxDisposable = function () {
+          disposed = true; if (raf) cancelAnimationFrame(raf);
+          window.removeEventListener("resize", resize);
+          document.removeEventListener("visibilitychange", state);
+          motion.removeListener(state);
+          caches.forEach(function (c) { c.width = c.height = 1; });
+        };
+      }
+
+      function renderAni8Effect() {
+        var surface = createFxCanvas();
+        if (!surface) return;
+        var canvas = surface.canvas, ctx = surface.context;
+        var width = 1, height = 1, unit = 1, clock = 0, raf = 0;
+        var lastPaint = 0, lastTime = 0, disposed = false, caches = [];
+        var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        function rand(a, b) { return a + Math.random() * (b - a); }
+        function cache(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; caches.push(c); return c; }
+        var drops = [], ripples = [], glass = [], lens = cache(48, 112), l = lens.getContext("2d");
+        var edge = l.createLinearGradient(6, 0, 36, 0);
+        edge.addColorStop(0,"rgba(184,232,255,0)");edge.addColorStop(.32,"rgba(198,237,255,.1)");edge.addColorStop(.58,"rgba(229,249,255,.32)");edge.addColorStop(1,"rgba(132,204,237,0)");
+        l.fillStyle=edge;l.beginPath();l.moveTo(24,5);l.bezierCurveTo(18,45,13,78,16,93);l.bezierCurveTo(19,106,34,100,32,90);l.bezierCurveTo(30,60,28,35,24,5);l.fill();
+        l.strokeStyle="rgba(236,251,255,.42)";l.lineWidth=1.1;l.beginPath();l.moveTo(20,83);l.quadraticCurveTo(17,96,24,98);l.stroke();
+        for(var i=0;i<150;i++)drops.push({x:rand(-.2,1.2),y:Math.random(),depth:Math.floor(rand(0,3)),speed:rand(.8,1.2),length:rand(.7,1.3)});
+        for(var j=0;j<18;j++)ripples.push({x:Math.random(),y:rand(.80,1.04),age:rand(0,2),life:rand(1.1,2),size:rand(.6,1.4)});
+        for(var k=0;k<9;k++)glass.push({x:Math.random(),y:rand(-.2,1.2),speed:rand(18,45),size:rand(.65,1.35),phase:rand(0,6.28)});
+        function rebuild() {
+          // Reprojection on resize preserves normalized drop/ripple positions.
+        }
+        function advance(dt) {
+          clock += dt;
+          var wind = -0.24 + Math.sin(clock * .27) * .13;
+          for(var i=0;i<drops.length;i++){
+            var p=drops[i],speed=(310+p.depth*160)*p.speed;
+            p.y+=speed*unit/height*dt;p.x+=wind*speed*unit/width*dt;
+            if(p.y>1.12||p.x<-.25){p.y=rand(-.16,-.02);p.x=rand(-.05,1.25);}
+          }
+          for(var j=0;j<ripples.length;j++){
+            var r=ripples[j];r.age+=dt;
+            if(r.age>r.life){r.age=0;r.x=Math.random();r.y=rand(.8,1.04);r.life=rand(1.1,2);}
+          }
+          for(var k=0;k<glass.length;k++){
+            var g=glass[k];g.y+=g.speed*(.8+Math.sin(clock*.8+g.phase)*.22)*unit/height*dt;
+            g.x+=Math.sin(clock*.5+g.phase)*1.2*unit/width*dt;
+            if(g.y>1.2){g.y=-.2;g.x=Math.random();}
+          }
+        }
+        function draw() {
+          ctx.clearRect(0, 0, width, height);
+          var wind = -0.24 + Math.sin(clock * .27) * .13;
+          for(var depth=0;depth<3;depth++){
+            ctx.strokeStyle=["rgba(143,197,225,.17)","rgba(178,222,244,.31)","rgba(220,245,255,.46)"][depth];
+            ctx.lineWidth=(.65+depth*.45)*unit;ctx.beginPath();
+            for(var i=0;i<drops.length;i++){
+              var p=drops[i];if(p.depth!==depth)continue;
+              var length=(13+depth*15)*p.length*unit,x=p.x*width,y=p.y*height;
+              ctx.moveTo(x,y);ctx.lineTo(x+wind*length,y+length);
+            }
+            ctx.stroke();
+          }
+          for(var j=0;j<ripples.length;j++){
+            var r=ripples[j],progress=r.age/r.life,radius=(5+progress*38)*r.size*unit;
+            ctx.strokeStyle="rgba(187,227,245,"+((1-progress)*.28)+")";ctx.lineWidth=.85*unit;ctx.beginPath();
+            ctx.ellipse(r.x*width,r.y*height,radius,radius*.17,0,0,Math.PI*2);ctx.stroke();
+          }
+          ctx.globalAlpha=.65;
+          for(var k=0;k<glass.length;k++){var g=glass[k];ctx.drawImage(lens,g.x*width-12*g.size*unit,g.y*height,24*g.size*unit,66*g.size*unit);}
+          ctx.globalAlpha=1;
+        }
+        function resize() {
+          if (disposed) return;
+          var bounds = fxLayer.getBoundingClientRect();
+          var scale = Math.min(1, 1280 / Math.max(1, bounds.width), 720 / Math.max(1, bounds.height));
+          width = Math.max(1, Math.round(bounds.width * scale));
+          height = Math.max(1, Math.round(bounds.height * scale));
+          unit = Math.min(width / 1280, height / 720);
+          canvas.width = width; canvas.height = height; rebuild();
+          if (!document.hidden) draw();
+        }
+        function frame(now) {
+          raf = 0;
+          if (disposed || document.hidden || motion.matches) return;
+          if (now - lastPaint >= 1000 / 30) {
+            var dt = lastTime ? Math.min(0.08, (now - lastTime) / 1000) : 1 / 30;
+            lastTime = now; lastPaint = now - (now - lastPaint) % (1000 / 30);
+            advance(dt); draw();
+          }
+          raf = requestAnimationFrame(frame);
+        }
+        function state() {
+          if (raf) cancelAnimationFrame(raf);
+          raf = 0; lastTime = 0; lastPaint = 0;
+          if (disposed || document.hidden) return;
+          draw(); if (!motion.matches) raf = requestAnimationFrame(frame);
+        }
+        resize(); state();
+        window.addEventListener("resize", resize);
+        document.addEventListener("visibilitychange", state);
+        motion.addListener(state);
+        currentFxDisposable = function () {
+          disposed = true; if (raf) cancelAnimationFrame(raf);
+          window.removeEventListener("resize", resize);
+          document.removeEventListener("visibilitychange", state);
+          motion.removeListener(state);
+          caches.forEach(function (c) { c.width = c.height = 1; });
+        };
+      }
+
+      function renderAni9Effect() {
+        var surface = createFxCanvas();
+        if (!surface) return;
+        var canvas = surface.canvas, ctx = surface.context;
+        var width = 1, height = 1, unit = 1, clock = 0, raf = 0;
+        var lastPaint = 0, lastTime = 0, disposed = false, caches = [];
+        var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        function rand(a, b) { return a + Math.random() * (b - a); }
+        function cache(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; caches.push(c); return c; }
+        var stars = [], flare = cache(96,32), f = flare.getContext("2d"), hues=[[255,239,211],[255,205,119],[255,172,153]];
+        for(var color=0;color<3;color++){
+          var rgb=hues[color].join(','),gradient=f.createRadialGradient(color*32+16,16,0,color*32+16,16,16);
+          gradient.addColorStop(0,'rgba('+rgb+',.95)');gradient.addColorStop(.13,'rgba('+rgb+',.65)');gradient.addColorStop(.35,'rgba('+rgb+',.17)');gradient.addColorStop(1,'rgba('+rgb+',0)');
+          f.fillStyle=gradient;f.fillRect(color*32,0,32,32);
+        }
+        for(var i=0;i<160;i++)stars.push({radius:Math.sqrt(Math.random())*.79+.04,angle:rand(0,6.28),speed:rand(.05,.14),depth:rand(.15,1),phase:rand(0,6.28),color:Math.floor(rand(0,3)),tilt:rand(-.25,.25)});
+        var comet={age:9,next:2.5,x:0,y:0};
+        function rebuild() {
+          // Tiny cached glows are reused at every star size.
+        }
+        function advance(dt) {
+          clock += dt;
+          for(var i=0;i<stars.length;i++){var p=stars[i];p.angle+=(p.speed*(.45+p.depth*.55))*dt;}
+          comet.age+=dt;
+          if(clock>comet.next){comet.age=0;comet.x=rand(.15,.7);comet.y=rand(.05,.3);comet.next=clock+rand(6,10);}
+        }
+        function draw() {
+          ctx.clearRect(0, 0, width, height);
+          var aspect=width/Math.max(1,height);
+          for(var i=0;i<stars.length;i++){
+            var p=stars[i],angle=p.angle,rx=p.radius*width,ry=p.radius*height*.79;
+            var x=width*.5+Math.cos(angle)*rx,y=height*.5+Math.sin(angle+p.tilt)*ry;
+            if(x< -20||x>width+20||y< -20||y>height+20)continue;
+            var twinkle=.66+.34*Math.sin(clock*(.8+p.depth)+p.phase),alpha=(.2+p.depth*.65)*twinkle;
+            // A faint tangent trail makes orbital motion readable without a field of rings.
+            if(p.depth>.63){
+              ctx.strokeStyle='rgba(255,223,175,'+(alpha*.19)+')';ctx.lineWidth=(.65+p.depth*.5)*unit;ctx.beginPath();
+              ctx.moveTo(x,y);ctx.lineTo(width*.5+Math.cos(angle-.035)*rx,height*.5+Math.sin(angle+p.tilt-.035)*ry);ctx.stroke();
+            }
+            var size=(7+p.depth*14)*unit;ctx.globalAlpha=alpha;
+            ctx.drawImage(flare,p.color*32,0,32,32,x-size*.5,y-size*.5,size,size);
+            if(p.depth>.82&&twinkle>.8){ctx.strokeStyle='rgba(255,241,216,'+(alpha*.55)+')';ctx.lineWidth=.65*unit;ctx.beginPath();ctx.moveTo(x-3*unit,y);ctx.lineTo(x+3*unit,y);ctx.moveTo(x,y-3*unit);ctx.lineTo(x,y+3*unit);ctx.stroke();}
+          }
+          ctx.globalAlpha=1;
+          if(comet.age<1.35){
+            var progress=comet.age/1.35,x=(comet.x+progress*.38)*width,y=(comet.y+progress*.2)*height;
+            var alpha=Math.sin(progress*Math.PI)*.65;
+            ctx.strokeStyle='rgba(255,230,183,'+alpha+')';ctx.lineWidth=1.4*unit;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-width*.07,y-height*.037);ctx.stroke();
+            ctx.globalAlpha=alpha;ctx.drawImage(flare,32,0,32,32,x-9*unit,y-9*unit,18*unit,18*unit);ctx.globalAlpha=1;
+          }
+        }
+        function resize() {
+          if (disposed) return;
+          var bounds = fxLayer.getBoundingClientRect();
+          var scale = Math.min(1, 1280 / Math.max(1, bounds.width), 720 / Math.max(1, bounds.height));
+          width = Math.max(1, Math.round(bounds.width * scale));
+          height = Math.max(1, Math.round(bounds.height * scale));
+          unit = Math.min(width / 1280, height / 720);
+          canvas.width = width; canvas.height = height; rebuild();
+          if (!document.hidden) draw();
+        }
+        function frame(now) {
+          raf = 0;
+          if (disposed || document.hidden || motion.matches) return;
+          if (now - lastPaint >= 1000 / 30) {
+            var dt = lastTime ? Math.min(0.08, (now - lastTime) / 1000) : 1 / 30;
+            lastTime = now; lastPaint = now - (now - lastPaint) % (1000 / 30);
+            advance(dt); draw();
+          }
+          raf = requestAnimationFrame(frame);
+        }
+        function state() {
+          if (raf) cancelAnimationFrame(raf);
+          raf = 0; lastTime = 0; lastPaint = 0;
+          if (disposed || document.hidden) return;
+          draw(); if (!motion.matches) raf = requestAnimationFrame(frame);
+        }
+        resize(); state();
+        window.addEventListener("resize", resize);
+        document.addEventListener("visibilitychange", state);
+        motion.addListener(state);
+        currentFxDisposable = function () {
+          disposed = true; if (raf) cancelAnimationFrame(raf);
+          window.removeEventListener("resize", resize);
+          document.removeEventListener("visibilitychange", state);
+          motion.removeListener(state);
+          caches.forEach(function (c) { c.width = c.height = 1; });
+        };
+      }
+
+      function renderAni10Effect() {
+        var surface = createFxCanvas();
+        if (!surface) return;
+        var canvas = surface.canvas, ctx = surface.context;
+        var width = 1, height = 1, unit = 1, clock = 0, raf = 0;
+        var lastPaint = 0, lastTime = 0, disposed = false, caches = [];
+        var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        function rand(a, b) { return a + Math.random() * (b - a); }
+        function cache(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; caches.push(c); return c; }
+        // A small height field gives overlapping waves real interference, without
+        // shaders, fullscreen blur, or per-pixel work at the display resolution.
+        var cols = 256, rows = 176, count = cols * rows;
+        var water = cache(cols, rows), painter = water.getContext("2d");
+        var pixels = painter.createImageData(cols, rows), rgba = pixels.data;
+        var heights = new Float32Array(count), previous = new Float32Array(count);
+        var damping = new Float32Array(count), reflection = new Uint8ClampedArray(count * 3);
+        var impacts = [], accumulator = 0, nextDrop = 0.5, impulse = [];
+        for (var oy = -7; oy <= 7; oy += 1) {
+          for (var ox = -7; ox <= 7; ox += 1) {
+            impulse.push({ offset: oy * cols + ox, weight: Math.exp(-(ox * ox + oy * oy) / 8) });
+          }
+        }
+        var lightR = new Int16Array(16384), lightG = new Int16Array(16384), lightB = new Int16Array(16384);
+        // Quantized normal lighting is computed once, not for every water pixel.
+        for (var lx = 0; lx < 128; lx += 1) {
+          for (var ly = 0; ly < 128; ly += 1) {
+            var dx = (lx - 64) / 160, dy = (ly - 64) / 160;
+            var slope = dx * -.55 + dy * -.83;
+            var shade = Math.max(-24, Math.min(38, slope * 65));
+            var shine = Math.max(0, 1 - Math.abs(slope - .12) * 3.6);
+            shine *= shine; shine *= shine;
+            shine *= Math.min(1, (dx * dx + dy * dy) * 95) * 72;
+            var index = lx * 128 + ly;
+            lightR[index] = shade * .8 + shine * .72;
+            lightG[index] = shade + shine * .87;
+            lightB[index] = shade * 1.12 + shine;
+          }
+        }
+        for (var y = 0; y < rows; y += 1) {
+          for (var x = 0; x < cols; x += 1) {
+            var at = y * cols + x, nx = x / cols, ny = y / rows;
+            var edge = Math.min(x, y, cols - 1 - x, rows - 1 - y);
+            damping[at] = 0.998 - Math.max(0, 1 - edge / 15) * 0.075;
+            // Broad reflected sky, baked once; waves refract it at runtime.
+            var light = Math.exp(-((nx - .35) * (nx - .35) * 5 + (ny - .23) * (ny - .23) * 8));
+            var streak = (Math.sin(nx * 17 + ny * 3) + Math.sin(nx * 29 - ny * 5)) * 1.5;
+            reflection[at * 3] = 12 + light * 25 + streak;
+            reflection[at * 3 + 1] = 23 + light * 43 + streak;
+            reflection[at * 3 + 2] = 39 + light * 58 + streak;
+            rgba[at * 4 + 3] = 255;
+          }
+        }
+        function impact(x, y, strength) {
+          impacts.push({ x: x, y: y, strength: strength, age: 0 });
+        }
+        function step() {
+          // Fixed 30 Hz simulation; one small step per displayed frame. Soft
+          // absorbing edges stop rectangular reflections from becoming visible.
+          for (var k = impacts.length - 1; k >= 0; k -= 1) {
+            var p = impacts[k]; p.age += 1 / 30;
+            if (p.age > .8) { impacts.splice(k, 1); continue; }
+            var force = Math.sin(p.age / .8 * Math.PI) * Math.sin(p.age * 18) * p.strength;
+            var center = p.y * cols + p.x;
+            for (var q = 0; q < impulse.length; q += 1) {
+              heights[center + impulse[q].offset] += force * impulse[q].weight;
+            }
+          }
+          for (var row = 1; row < rows - 1; row += 1) {
+            for (var column = 1; column < cols - 1; column += 1) {
+              var i = row * cols + column, h = heights[i];
+              previous[i] = (2 * h - previous[i] + .38 *
+                (heights[i - 1] + heights[i + 1] + heights[i - cols] + heights[i + cols] - 4 * h)) * damping[i];
+            }
+          }
+          var swap = previous; previous = heights; heights = swap;
+        }
+        // Start with several ages of waves, so the first frame is already water.
+        for (var warm = 0; warm < 100; warm += 1) {
+          if (warm === 0) impact(79, 59, .23);
+          if (warm === 38) impact(184, 116, .26);
+          if (warm === 76) impact(144, 42, .21);
+          step();
+        }
+        function rebuild() {
+          ctx.imageSmoothingEnabled = true;
+        }
+        function advance(dt) {
+          clock += dt;
+          if (clock >= nextDrop) {
+            impact(Math.floor(rand(cols * .16, cols * .84)), Math.floor(rand(rows * .18, rows * .82)), rand(.18, .28));
+            nextDrop = clock + rand(.95, 1.8);
+          }
+          accumulator += dt;
+          while (accumulator >= 1 / 30) { step(); accumulator -= 1 / 30; }
+        }
+        function draw() {
+          ctx.clearRect(0, 0, width, height);
+          for (var y = 1; y < rows - 1; y += 1) {
+            for (var x = 1; x < cols - 1; x += 1) {
+              var i = y * cols + x, dx = ((heights[i + 1] - heights[i - 1]) * 160 + 64) | 0;
+              var dy = ((heights[i + cols] - heights[i - cols]) * 160 + 64) | 0;
+              if (dx < 0) dx = 0; else if (dx > 127) dx = 127;
+              if (dy < 0) dy = 0; else if (dy > 127) dy = 127;
+              var lighting = dx * 128 + dy, source = i * 3, target = i * 4;
+              rgba[target] = reflection[source] + lightR[lighting];
+              rgba[target + 1] = reflection[source + 1] + lightG[lighting];
+              rgba[target + 2] = reflection[source + 2] + lightB[lighting];
+            }
+          }
+          painter.putImageData(pixels, 0, 0);
+          // Crop the static one-cell simulation border from the visible water.
+          ctx.drawImage(water, 1, 1, cols - 2, rows - 2, 0, 0, width, height);
+        }
+        function resize() {
+          if (disposed) return;
+          var bounds = fxLayer.getBoundingClientRect();
+          var scale = Math.min(1, 1280 / Math.max(1, bounds.width), 720 / Math.max(1, bounds.height));
+          width = Math.max(1, Math.round(bounds.width * scale));
+          height = Math.max(1, Math.round(bounds.height * scale));
+          unit = Math.min(width / 1280, height / 720);
+          canvas.width = width; canvas.height = height; rebuild();
+          if (!document.hidden) draw();
+        }
+        function frame(now) {
+          raf = 0;
+          if (disposed || document.hidden || motion.matches) return;
+          if (now - lastPaint >= 1000 / 30) {
+            var dt = lastTime ? Math.min(0.08, (now - lastTime) / 1000) : 1 / 30;
+            lastTime = now; lastPaint = now - (now - lastPaint) % (1000 / 30);
+            advance(dt); draw();
+          }
+          raf = requestAnimationFrame(frame);
+        }
+        function state() {
+          if (raf) cancelAnimationFrame(raf);
+          raf = 0; lastTime = 0; lastPaint = 0;
+          if (disposed || document.hidden) return;
+          draw(); if (!motion.matches) raf = requestAnimationFrame(frame);
+        }
+        resize(); state();
+        window.addEventListener("resize", resize);
+        document.addEventListener("visibilitychange", state);
+        motion.addListener(state);
+        currentFxDisposable = function () {
+          disposed = true; if (raf) cancelAnimationFrame(raf);
+          window.removeEventListener("resize", resize);
+          document.removeEventListener("visibilitychange", state);
+          motion.removeListener(state);
+          caches.forEach(function (c) { c.width = c.height = 1; });
+        };
+      }
+
+      function renderStyleEffects(styleName) {
+        if (currentFxDisposable) currentFxDisposable();
         currentFxDisposable = null;
-        if (fxLayer) {
-          fxLayer.innerHTML = "";
-        }
-        if (styleName === "ani6") {
-          renderSkylineEffect();
-          return;
-        }
-        if (styleName === "ani3") {
-          renderSakuraEffect();
-          return;
-        }
-        if (styleName === "ani7") {
-          renderNoiseFlowEffect();
+        if (fxLayer) fxLayer.innerHTML = "";
+        switch (styleName) {
+          case "ani1": renderAni1Effect(); break;
+          case "ani2": renderAni2Effect(); break;
+          case "ani3": renderSakuraEffect(); break;
+          case "ani4": renderAni4Effect(); break;
+          case "ani5": renderAni5Effect(); break;
+          case "ani6": renderSkylineEffect(); break;
+          case "ani7": renderAni7Effect(); break;
+          case "ani8": renderAni8Effect(); break;
+          case "ani9": renderAni9Effect(); break;
+          case "ani10": renderAni10Effect(); break;
         }
       }
 
@@ -1739,7 +2391,7 @@
       var currentPlaybackSignal = null;
       function applyMediaSignal(value) {
         var parsed = parseMediaSignal(value);
-        var playbackSignal = (/^(video|audio|youtube)$/.test(parsed.type) || (parsed.style === "ani3" && parsed.type !== "data"))
+        var playbackSignal = (/^(video|audio|youtube)$/.test(parsed.type) || (/^ani(?:[1-9]|10)$/.test(parsed.style) && parsed.type !== "data"))
           ? JSON.stringify([parsed.type, parsed.style, parsed.payload]) : null;
         // SSE snapshots can repeat the current value. Keep the player and its
         // playback position until the requested media actually changes.
