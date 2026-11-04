@@ -46,6 +46,11 @@ const server = http.createServer((req, res) => {
     res.setHeader('Content-Type', 'text/html');
     return res.end(standalone.replaceAll('<<sessionid>>', 'IOfixture@key').replaceAll('<<syncid>>', 'sync'));
   }
+  const asset = url.pathname.match(/\/media-only\/(effects\.(?:js|css))$/);
+  if (asset) {
+    res.setHeader('Content-Type', asset[1].endsWith('.js') ? 'text/javascript' : 'text/css');
+    return res.end(fs.readFileSync(path.join(__dirname, asset[1])));
+  }
   res.writeHead(404); res.end();
 });
 (async () => {

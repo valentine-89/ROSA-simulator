@@ -1,0 +1,19 @@
+/* Full-resolution text over a bounded, low-resolution decorative canvas. */
+.style-ani1{--stage-bg:radial-gradient(ellipse at 12% 100%,#174f61,transparent 65%),linear-gradient(135deg,#061c2b,#082e3a);--stage-fg:#edf8f6;--stage-accent:#93dacc}
+.style-ani2{--stage-bg:radial-gradient(ellipse at 95% 100%,#4b2830,transparent 68%),linear-gradient(135deg,#1d1824,#24161c);--stage-fg:#fff3df;--stage-accent:#dcb882}
+.style-ani3{--stage-bg:radial-gradient(ellipse at 100% 0,#ead0cf,transparent 65%),linear-gradient(145deg,#f8f2e9,#eee4df);--stage-fg:#452e39;--stage-accent:#9d4b62}
+.style-ani4{--stage-bg:radial-gradient(ellipse at 80% 100%,#153e53,transparent 65%),linear-gradient(150deg,#091727,#0c2333);--stage-fg:#eef7fd;--stage-accent:#75b8ce}
+.style-ani5{--stage-bg:radial-gradient(ellipse at 0 0,#343433,transparent 72%),linear-gradient(135deg,#161b1e,#222327);--stage-fg:#f6efdf;--stage-accent:#bda578}
+.style-ani6{--stage-bg:linear-gradient(180deg,#171f38 0%,#3c3b55 54%,#aa766c 87%,#ceaa8e 100%);--stage-fg:#fff5e9;--stage-accent:#efcba0}
+.style-ani7{--stage-bg:radial-gradient(ellipse at 5% 0,#252647,transparent 70%),linear-gradient(135deg,#10182d,#101d32);--stage-fg:#eef2ff;--stage-accent:#abbbe3}
+.style-ani8{--stage-bg:radial-gradient(ellipse at 95% 0,#2f4c5a,transparent 70%),linear-gradient(140deg,#102630,#1c3440);--stage-fg:#eef4f3;--stage-accent:#a7c8cc}
+.style-ani9{--stage-bg:radial-gradient(ellipse at 15% 100%,#245041,transparent 72%),linear-gradient(140deg,#0d2727,#102e2b);--stage-fg:#f3f3df;--stage-accent:#c6d29f}
+.style-ani10{--stage-bg:radial-gradient(ellipse at 0 100%,#d3c4b7,transparent 65%),linear-gradient(145deg,#f4f0e8,#e8e2d9);--stage-fg:#363c3e;--stage-accent:#aa624a}
+.stage[class*="style-ani"]{--stage-subtle:var(--stage-fg);--stage-overlay:rgba(10,18,24,.18)}
+.stage[class*="style-ani"] .fx-canvas{opacity:1}
+.stage[class*="style-ani"] .text-box{font-weight:650;letter-spacing:-.025em;line-height:1.14;text-shadow:0 2px 10px rgba(0,0,0,.16)}
+.stage.style-ani3 .text-box,.stage.style-ani10 .text-box{text-shadow:none;font-weight:600}
+.stage[class*="style-ani"] .data-box,.stage[class*="style-ani"] .data-table-shell{backdrop-filter:none;-webkit-backdrop-filter:none}
+.style-ani3 .data-box,.style-ani10 .data-box{background:rgba(255,255,255,.88)}
+.stage[class*="style-ani"] .content-layer{padding:clamp(24px,6vw,96px)}
+@media(prefers-reduced-motion:reduce){.audio-visualizer span{animation:none}}

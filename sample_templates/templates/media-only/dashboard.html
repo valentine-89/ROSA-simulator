@@ -135,414 +135,6 @@
       --stage-accent: #fde68a;
     }
 
-    .style-ani1 {
-      --stage-bg: linear-gradient(135deg, #05273b 0%, #0d5f85 45%, #37a9b8 100%);
-      --stage-fg: #f7feff;
-      --stage-subtle: rgba(247, 254, 255, 0.78);
-      --stage-overlay: rgba(4, 28, 42, 0.18);
-      --stage-accent: #d9fbff;
-    }
-
-    .style-ani1 .backdrop::before {
-      inset: -15%;
-      background:
-        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.3), transparent 20%),
-        radial-gradient(circle at 70% 20%, rgba(180,255,246,0.35), transparent 18%),
-        radial-gradient(circle at 50% 70%, rgba(100,220,255,0.25), transparent 22%),
-        radial-gradient(circle at 80% 80%, rgba(150,255,255,0.28), transparent 16%);
-      filter: blur(20px);
-      animation: ocean-wave 8s ease-in-out infinite alternate;
-    }
-
-    .style-ani1 .backdrop::after {
-      background:
-        linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 30%, rgba(190,255,255,0.35) 50%, rgba(255,255,255,0.2) 70%, transparent 100%),
-        radial-gradient(circle at 25% 25%, rgba(255,255,255,0.15), transparent 15%),
-        radial-gradient(circle at 75% 75%, rgba(180,255,246,0.2), transparent 12%);
-      opacity: 0.9;
-      filter: blur(12px);
-      animation: bubble-rise 6s ease-in-out infinite, shimmer-flow 4s linear infinite;
-    }
-
-    .style-ani2 {
-      --stage-bg: linear-gradient(150deg, #2f0c31 0%, #7a1f68 45%, #ff7a59 100%);
-      --stage-fg: #fff7fb;
-      --stage-subtle: rgba(255, 247, 251, 0.78);
-      --stage-overlay: rgba(45, 8, 31, 0.18);
-      --stage-accent: #ffd36d;
-    }
-
-    .style-ani2 .backdrop::before {
-      background:
-        radial-gradient(circle at 12% 18%, rgba(255,215,109,0.25), transparent 9%),
-        radial-gradient(circle at 82% 24%, rgba(255,255,255,0.22), transparent 10%),
-        radial-gradient(circle at 30% 70%, rgba(255,179,71,0.2), transparent 10%),
-        radial-gradient(circle at 70% 78%, rgba(255,255,255,0.18), transparent 8%);
-      animation: pulse-celebrate 5.5s ease-in-out infinite;
-    }
-
-    .style-ani2 .backdrop::after {
-      background-image:
-        radial-gradient(circle, rgba(255,255,255,0.95) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,220,125,0.9) 0 2px, transparent 3px),
-        radial-gradient(circle, rgba(255,174,94,0.85) 0 2px, transparent 3px);
-      background-size: 180px 180px, 220px 220px, 260px 260px;
-      background-position: 10% -10%, 80% -16%, 45% -22%;
-      opacity: 0.72;
-      animation: confetti-fall 8s linear infinite;
-    }
-
-    .style-ani3 {
-      --stage-bg: linear-gradient(155deg, #1f0f1c 0%, #5a224c 44%, #f18bb5 100%);
-      --stage-fg: #fff7fb;
-      --stage-subtle: rgba(255, 247, 251, 0.82);
-      --stage-overlay: rgba(28, 10, 24, 0.2);
-      --stage-accent: #ffd0e6;
-    }
-
-    .style-ani3 .backdrop::before {
-      inset: -10%;
-      background:
-        radial-gradient(circle at 18% 22%, rgba(255, 238, 247, 0.22), transparent 16%),
-        radial-gradient(circle at 78% 18%, rgba(255, 206, 228, 0.2), transparent 18%),
-        radial-gradient(circle at 50% 68%, rgba(255, 190, 223, 0.16), transparent 24%);
-      opacity: 0.92;
-      filter: blur(18px);
-      animation: sakura-breeze 7.4s ease-in-out infinite alternate;
-    }
-
-    .style-ani3 .backdrop::after {
-      background:
-        radial-gradient(circle at 22% 24%, rgba(255,255,255,0.14), transparent 18%),
-        radial-gradient(circle at 78% 32%, rgba(255, 220, 236, 0.16), transparent 16%),
-        radial-gradient(circle at 48% 76%, rgba(255, 190, 223, 0.14), transparent 22%),
-        linear-gradient(180deg, rgba(255,255,255,0.05), transparent 28%);
-      opacity: 0.76;
-      filter: blur(16px);
-    }
-
-    .style-ani4 {
-      --stage-bg: linear-gradient(180deg, #02111d 0%, #05263d 50%, #04101b 100%);
-      --stage-fg: #e9fbff;
-      --stage-subtle: rgba(233, 251, 255, 0.78);
-      --stage-overlay: rgba(2, 12, 24, 0.2);
-      --stage-accent: #4be2ff;
-    }
-
-    .style-ani4 .backdrop::before {
-      background-image:
-        linear-gradient(rgba(75, 226, 255, 0.12) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(75, 226, 255, 0.1) 1px, transparent 1px);
-      background-size: 48px 48px;
-      opacity: 0.6;
-      animation: tech-grid-pan 7s linear infinite;
-    }
-
-    .style-ani4 .backdrop::after {
-      inset: -10%;
-      background:
-        linear-gradient(180deg, transparent 0%, rgba(106, 240, 255, 0.18) 45%, transparent 55%, transparent 100%);
-      opacity: 0.7;
-      animation: tech-scan 3.4s linear infinite;
-    }
-
-    .style-ani5 {
-      --stage-bg: linear-gradient(180deg, #0a1120 0%, #05070e 100%);
-      --stage-fg: #fcfbf8;
-      --stage-subtle: rgba(252, 251, 248, 0.74);
-      --stage-overlay: rgba(4, 5, 10, 0.22);
-      --stage-accent: #ffe28a;
-    }
-
-    .style-ani5 .backdrop::before {
-      background:
-        radial-gradient(circle at 50% 16%, rgba(255, 234, 168, 0.4), transparent 11%),
-        linear-gradient(90deg, transparent 44%, rgba(255,255,255,0.08) 50%, transparent 56%);
-      opacity: 0.92;
-      animation: spotlight-sweep 6s ease-in-out infinite alternate;
-      transform-origin: top center;
-    }
-
-    .style-ani5 .backdrop::after {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.04), transparent 24%),
-        radial-gradient(circle at 50% 0%, rgba(255, 231, 171, 0.16), transparent 28%);
-    }
-
-    .style-ani6 {
-      --stage-bg: linear-gradient(160deg, #2b0f54 0%, #7c41b7 42%, #ff8d63 100%);
-      --stage-fg: #fff8f2;
-      --stage-subtle: rgba(255, 248, 242, 0.8);
-      --stage-overlay: rgba(39, 12, 65, 0.2);
-      --stage-accent: #ffd48d;
-    }
-
-    .style-ani6 .backdrop::before {
-      inset: -12%;
-      background:
-        radial-gradient(circle at 22% 68%, rgba(255, 190, 122, 0.22), transparent 16%),
-        radial-gradient(circle at 80% 26%, rgba(255, 255, 255, 0.22), transparent 14%),
-        radial-gradient(circle at 48% 34%, rgba(255, 140, 109, 0.18), transparent 18%);
-      filter: blur(14px);
-      animation: sunrise-orbit 5.8s ease-in-out infinite alternate;
-    }
-
-    .style-ani6 .backdrop::after {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.05), transparent 24%),
-        radial-gradient(circle at 50% 112%, rgba(255, 199, 115, 0.28), transparent 38%);
-      opacity: 0.86;
-      animation: sunrise-glow 2.8s ease-in-out infinite, sunrise-sweep 6.4s ease-in-out infinite alternate;
-    }
-
-    .style-ani7 {
-      --stage-bg: linear-gradient(180deg, #040816 0%, #101b38 48%, #050915 100%);
-      --stage-fg: #f5f8ff;
-      --stage-subtle: rgba(245, 248, 255, 0.78);
-      --stage-overlay: rgba(6, 10, 22, 0.22);
-      --stage-accent: #8fb8ff;
-    }
-
-    .style-ani7 .backdrop::before {
-      background:
-        radial-gradient(circle at 18% 22%, rgba(255,255,255,0.92) 0 1px, transparent 2px),
-        radial-gradient(circle at 74% 18%, rgba(220,236,255,0.88) 0 1px, transparent 2px),
-        radial-gradient(circle at 30% 74%, rgba(255,255,255,0.84) 0 1px, transparent 2px),
-        radial-gradient(circle at 84% 68%, rgba(198,222,255,0.86) 0 1px, transparent 2px),
-        radial-gradient(circle at 58% 42%, rgba(255,255,255,0.8) 0 1px, transparent 2px),
-        radial-gradient(circle at 44% 16%, rgba(190,216,255,0.88) 0 1px, transparent 2px);
-      background-size: 220px 220px, 280px 280px, 320px 320px, 260px 260px, 340px 340px, 300px 300px;
-      opacity: 0.86;
-      animation: cosmic-drift 10s linear infinite, cosmic-twinkle 2.4s ease-in-out infinite alternate;
-    }
-
-    .style-ani7 .backdrop::after {
-      inset: -12%;
-      background:
-        radial-gradient(circle at 50% 46%, rgba(132, 175, 255, 0.18), transparent 22%),
-        radial-gradient(circle at 68% 34%, rgba(255,255,255,0.12), transparent 10%),
-        radial-gradient(circle at 36% 64%, rgba(155, 198, 255, 0.16), transparent 14%);
-      filter: blur(18px);
-      animation: nebula-breathe 4.4s ease-in-out infinite;
-    }
-
-    .style-ani8 {
-      --stage-bg: linear-gradient(180deg, #08131e 0%, #10283a 52%, #09111a 100%);
-      --stage-fg: #eef9ff;
-      --stage-subtle: rgba(238, 249, 255, 0.78);
-      --stage-overlay: rgba(6, 14, 21, 0.22);
-      --stage-accent: #7dd3fc;
-    }
-
-    .style-ani8 .backdrop::before {
-      inset: -8%;
-      background-image:
-        linear-gradient(108deg, transparent 0 44%, rgba(173, 228, 255, 0.28) 46%, transparent 48%),
-        linear-gradient(108deg, transparent 0 52%, rgba(255,255,255,0.18) 54%, transparent 56%),
-        linear-gradient(108deg, transparent 0 62%, rgba(125, 211, 252, 0.24) 64%, transparent 66%);
-      background-size: 180px 180px, 240px 240px, 320px 320px;
-      opacity: 0.8;
-      animation: rain-fall 3.4s linear infinite;
-    }
-
-    .style-ani8 .backdrop::after {
-      background:
-        radial-gradient(circle at 20% 86%, rgba(255,255,255,0.08), transparent 7%),
-        radial-gradient(circle at 64% 90%, rgba(125,211,252,0.14), transparent 8%),
-        radial-gradient(circle at 84% 84%, rgba(255,255,255,0.08), transparent 6%);
-      animation: rain-ripple 4.6s ease-in-out infinite;
-    }
-
-    .style-ani9 {
-      --stage-bg: linear-gradient(150deg, #2c0531 0%, #6f1658 46%, #ff7b54 100%);
-      --stage-fg: #fff7fb;
-      --stage-subtle: rgba(255, 247, 251, 0.8);
-      --stage-overlay: rgba(38, 7, 34, 0.2);
-      --stage-accent: #ffd36d;
-    }
-
-    .style-ani9 .backdrop::before {
-      background:
-        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.8), transparent 2px),
-        radial-gradient(circle at 70% 20%, rgba(255, 211, 109, 0.7), transparent 2px),
-        radial-gradient(circle at 50% 70%, rgba(255, 146, 102, 0.6), transparent 2px),
-        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.75), transparent 2px),
-        radial-gradient(circle at 10% 50%, rgba(255, 180, 120, 0.65), transparent 2px),
-        radial-gradient(circle at 90% 40%, rgba(255, 255, 255, 0.7), transparent 2px),
-        radial-gradient(circle at 30% 90%, rgba(255, 211, 109, 0.6), transparent 2px),
-        radial-gradient(circle at 60% 10%, rgba(255, 146, 102, 0.65), transparent 2px);
-      filter: blur(1px);
-      animation: star-twinkle 3s ease-in-out infinite alternate, star-orbit 15s linear infinite;
-    }
-
-    .style-ani9 .backdrop::after {
-      background:
-        radial-gradient(circle at 15% 25%, rgba(255, 255, 255, 0.5), transparent 1px),
-        radial-gradient(circle at 85% 15%, rgba(255, 211, 109, 0.45), transparent 1px),
-        radial-gradient(circle at 45% 75%, rgba(255, 146, 102, 0.4), transparent 1px),
-        radial-gradient(circle at 65% 45%, rgba(255, 180, 120, 0.5), transparent 1px),
-        radial-gradient(circle at 25% 55%, rgba(255, 255, 255, 0.55), transparent 1px),
-        radial-gradient(circle at 75% 85%, rgba(255, 211, 109, 0.4), transparent 1px);
-      filter: blur(0.5px);
-      animation: star-twinkle 4s ease-in-out infinite alternate-reverse, star-orbit-reverse 20s linear infinite;
-    }
-
-    .style-ani10 {
-      --stage-bg: linear-gradient(180deg, #0c1022 0%, #162548 44%, #090d18 100%);
-      --stage-fg: #f6f7ff;
-      --stage-subtle: rgba(246, 247, 255, 0.78);
-      --stage-overlay: rgba(8, 11, 22, 0.22);
-      --stage-accent: #a78bfa;
-    }
-
-    .style-ani10 .backdrop::before {
-      inset: -8%;
-      background:
-        radial-gradient(circle at 50% 50%, transparent 0 14%, rgba(167,139,250,0.24) 15%, transparent 17%),
-        radial-gradient(circle at 50% 50%, transparent 0 24%, rgba(255,255,255,0.18) 25%, transparent 27%),
-        radial-gradient(circle at 50% 50%, transparent 0 36%, rgba(129,140,248,0.16) 37%, transparent 39%);
-      animation: pulse-rings 5.8s ease-out infinite;
-    }
-
-    .style-ani10 .backdrop::after {
-      background:
-        radial-gradient(circle at 50% 50%, rgba(167,139,250,0.12), transparent 28%),
-        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08), transparent 12%);
-      filter: blur(12px);
-      animation: core-breathe 4.2s ease-in-out infinite;
-    }
-
-    @keyframes pulse-celebrate {
-      0%, 100% { transform: scale(1); opacity: 0.72; }
-      50% { transform: scale(1.06); opacity: 1; }
-    }
-
-    @keyframes confetti-fall {
-      0% { transform: translateY(-12%) rotate(0deg); }
-      100% { transform: translateY(14%) rotate(6deg); }
-    }
-
-    @keyframes sakura-breeze {
-      0% {
-        transform: translate3d(-2%, 0, 0) scale(0.96);
-        opacity: 0.56;
-      }
-      100% {
-        transform: translate3d(2%, -2%, 0) scale(1.08);
-        opacity: 1;
-      }
-    }
-
-    @keyframes tech-grid-pan {
-      0% { transform: translate3d(0, 0, 0); }
-      100% { transform: translate3d(24px, 24px, 0); }
-    }
-
-    @keyframes tech-scan {
-      0% { transform: translateY(-55%); opacity: 0; }
-      20% { opacity: 0.65; }
-      100% { transform: translateY(120%); opacity: 0; }
-    }
-
-    @keyframes spotlight-sweep {
-      0% { transform: translateX(-10%) rotate(-4deg); }
-      100% { transform: translateX(10%) rotate(4deg); }
-    }
-
-    @keyframes sunrise-orbit {
-      0% { transform: translate3d(-10%, 8%, 0) scale(0.94); opacity: 0.66; }
-      100% { transform: translate3d(12%, -12%, 0) scale(1.18); opacity: 1; }
-    }
-
-    @keyframes sunrise-glow {
-      0%, 100% { opacity: 0.52; transform: scale(0.96); }
-      50% { opacity: 1; transform: scale(1.12); }
-    }
-
-    @keyframes sunrise-sweep {
-      0% { transform: translateX(-4%) translateY(0); }
-      100% { transform: translateX(4%) translateY(-2%); }
-    }
-
-    @keyframes cosmic-drift {
-      0% { transform: translate3d(-2%, 0, 0) scale(1); }
-      50% { transform: translate3d(2%, -2%, 0) scale(1.05); }
-      100% { transform: translate3d(-1.5%, 2%, 0) scale(1.02); }
-    }
-
-    @keyframes nebula-breathe {
-      0%, 100% { opacity: 0.54; transform: scale(0.94); }
-      50% { opacity: 1; transform: scale(1.12); }
-    }
-
-    @keyframes cosmic-twinkle {
-      0% { opacity: 0.42; }
-      100% { opacity: 1; }
-    }
-
-    @keyframes rain-fall {
-      0% { transform: translateY(-12%) translateX(-2%); }
-      100% { transform: translateY(16%) translateX(2%); }
-    }
-
-    @keyframes rain-ripple {
-      0%, 100% { opacity: 0.28; transform: scale(1); }
-      50% { opacity: 0.72; transform: scale(1.08); }
-    }
-
-    @keyframes sparkle-drift {
-      0% { transform: translateY(-2%) translateX(-2%); opacity: 0.75; }
-      100% { transform: translateY(4%) translateX(3%); opacity: 1; }
-    }
-
-    @keyframes ocean-wave {
-      0% { transform: translate3d(-5%, -3%, 0) scale(0.95); opacity: 0.7; }
-      50% { opacity: 0.9; }
-      100% { transform: translate3d(7%, 4%, 0) scale(1.1); opacity: 0.8; }
-    }
-
-    @keyframes bubble-rise {
-      0% { transform: translateY(10%) scale(0.8); opacity: 0.5; }
-      50% { opacity: 0.8; }
-      100% { transform: translateY(-10%) scale(1.2); opacity: 0.3; }
-    }
-
-    @keyframes shimmer-flow {
-      0% { transform: translateX(-20%) skewX(-5deg); }
-      100% { transform: translateX(20%) skewX(5deg); }
-    }
-
-    @keyframes glow-pulse {
-      0%, 100% { transform: scale(0.95); opacity: 0.7; }
-      50% { transform: scale(1.1); opacity: 1; }
-    }
-
-    @keyframes star-twinkle {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
-    }
-
-    @keyframes star-orbit {
-      0% { transform: rotate(0deg) translateX(50px) rotate(0deg); }
-      100% { transform: rotate(360deg) translateX(50px) rotate(-360deg); }
-    }
-
-    @keyframes star-orbit-reverse {
-      0% { transform: rotate(0deg) translateX(30px) rotate(0deg); }
-      100% { transform: rotate(-360deg) translateX(30px) rotate(360deg); }
-    }
-
-    @keyframes pulse-rings {
-      0% { opacity: 0.2; transform: scale(0.86); }
-      50% { opacity: 0.95; transform: scale(1); }
-      100% { opacity: 0.18; transform: scale(1.14); }
-    }
-
-    @keyframes core-breathe {
-      0%, 100% { opacity: 0.6; transform: scale(0.94); }
-      50% { opacity: 1; transform: scale(1.08); }
-    }
-
     .style-tech .backdrop::before {
       background-image:
         linear-gradient(rgba(56, 189, 248, 0.12) 1px, transparent 1px),
@@ -803,6 +395,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="/sample_dashboards/media-only/effects.css?v=20261105">
 </head>
   <body>
 
@@ -840,6 +433,7 @@
   <!-- AI-BRIDGE-EDITABLE SAMPLE SCRIPT: END -->
 
   <!-- AI-BRIDGE-LOCKED RUNTIME SCRIPT: START -->
+  <script src="/sample_dashboards/media-only/effects.js?v=20261105"></script>
   <script>
       (function () {
         var searchParams = new URLSearchParams(window.location.search);
@@ -964,328 +558,14 @@
         stage.classList.add("style-" + (styleRegistry[styleName] ? styleName : "black"));
       }
 
-      function createFxCanvas() {
-        if (!fxLayer) return null;
-        fxLayer.innerHTML = "";
-        var canvas = document.createElement("canvas");
-        canvas.className = "fx-canvas";
-        fxLayer.appendChild(canvas);
-        var context = canvas.getContext("2d");
-        if (!context) {
-          return null;
-        }
-        return { canvas: canvas, context: context };
-      }
-
-      function renderSkylineEffect() {
-        var surface = createFxCanvas();
-        if (!surface) return;
-        var canvas = surface.canvas;
-        var ctx = surface.context;
-        var rafId = 0;
-        var disposed = false;
-        var width = 0;
-        var height = 0;
-        var dpr = 1;
-        var patterns = [];
-
-        function buildSkylinePattern(baseColor, glowColor, seed, density) {
-          var patternCanvas = document.createElement("canvas");
-          patternCanvas.width = Math.max(640, Math.floor(width));
-          patternCanvas.height = Math.max(240, Math.floor(height));
-          var pctx = patternCanvas.getContext("2d");
-          var baseline = patternCanvas.height;
-          var rng = seed;
-          function nextRand() {
-            rng = (rng * 1664525 + 1013904223) % 4294967296;
-            return rng / 4294967296;
-          }
-          pctx.fillStyle = baseColor;
-          var x = 0;
-          while (x < patternCanvas.width + 80) {
-            var buildingWidth = 18 + nextRand() * density;
-            var buildingHeight = patternCanvas.height * (0.18 + nextRand() * 0.5);
-            pctx.fillRect(x, baseline - buildingHeight, buildingWidth, buildingHeight);
-            if (nextRand() > 0.42) {
-              pctx.fillStyle = glowColor;
-              var windowCols = Math.max(1, Math.floor(buildingWidth / 8));
-              var windowRows = Math.max(2, Math.floor(buildingHeight / 18));
-              for (var col = 0; col < windowCols; col += 1) {
-                for (var row = 0; row < windowRows; row += 1) {
-                  if (nextRand() > 0.6) continue;
-                  pctx.fillRect(x + 3 + col * 7, baseline - buildingHeight + 6 + row * 14, 3, 5);
-                }
-              }
-              pctx.fillStyle = baseColor;
-            }
-            x += buildingWidth + 2 + nextRand() * 6;
-          }
-          return patternCanvas;
-        }
-
-        function resize() {
-          var bounds = fxLayer.getBoundingClientRect();
-          width = Math.max(1, bounds.width);
-          height = Math.max(1, bounds.height);
-          dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-          canvas.width = Math.round(width * dpr);
-          canvas.height = Math.round(height * dpr);
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          patterns = [
-            buildSkylinePattern("rgba(16, 24, 46, 0.88)", "rgba(255, 219, 126, 0.55)", 17, 34),
-            buildSkylinePattern("rgba(10, 16, 34, 0.94)", "rgba(255, 242, 186, 0.72)", 71, 44),
-            buildSkylinePattern("rgba(4, 7, 18, 0.98)", "rgba(255, 234, 160, 0.88)", 131, 54)
-          ];
-        }
-
-        function drawLayer(patternCanvas, speed, yOffset, alpha) {
-          var offset = -((performance.now() * speed) % patternCanvas.width);
-          ctx.globalAlpha = alpha;
-          for (var x = offset; x < width + patternCanvas.width; x += patternCanvas.width) {
-            ctx.drawImage(patternCanvas, x, height - patternCanvas.height + yOffset, patternCanvas.width, patternCanvas.height);
-          }
-        }
-
-        function frame() {
-          if (disposed) return;
-          ctx.clearRect(0, 0, width, height);
-          var glow = ctx.createRadialGradient(width * 0.55, height * 0.18, 0, width * 0.55, height * 0.18, width * 0.38);
-          glow.addColorStop(0, "rgba(255, 220, 150, 0.34)");
-          glow.addColorStop(1, "rgba(255, 220, 150, 0)");
-          ctx.fillStyle = glow;
-          ctx.fillRect(0, 0, width, height);
-          drawLayer(patterns[0], 0.012, 34, 0.55);
-          drawLayer(patterns[1], 0.02, 18, 0.78);
-          drawLayer(patterns[2], 0.032, 0, 1);
-          ctx.globalAlpha = 1;
-          rafId = requestAnimationFrame(frame);
-        }
-
-        resize();
-        frame();
-        currentFxDisposable = function () {
-          disposed = true;
-          if (rafId) cancelAnimationFrame(rafId);
-        };
-      }
-
-      function renderSakuraEffect() {
-        var surface = createFxCanvas();
-        if (!surface) return;
-        var canvas = surface.canvas;
-        var ctx = surface.context;
-        var rafId = 0;
-        var disposed = false;
-        var width = 0;
-        var height = 0;
-        var dpr = 1;
-        var petals = [];
-        var petalCount = 34;
-
-        function resize() {
-          var bounds = fxLayer.getBoundingClientRect();
-          width = Math.max(1, bounds.width);
-          height = Math.max(1, bounds.height);
-          dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-          canvas.width = Math.round(width * dpr);
-          canvas.height = Math.round(height * dpr);
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          petals = [];
-          for (var i = 0; i < petalCount; i += 1) {
-            petals.push({
-              x: Math.random() * width,
-              y: (Math.random() * height * 1.3) - height * 0.2,
-              size: 10 + Math.random() * 12,
-              speedY: 0.35 + Math.random() * 1.1,
-              sway: 18 + Math.random() * 42,
-              rotation: Math.random() * Math.PI * 2,
-              rotationSpeed: (Math.random() - 0.5) * 0.03,
-              phase: Math.random() * Math.PI * 2,
-              tint: 330 + Math.random() * 20
-            });
-          }
-        }
-
-        function drawPetal(petal) {
-          ctx.save();
-          ctx.translate(petal.x, petal.y);
-          ctx.rotate(petal.rotation);
-          ctx.scale(1, 0.82);
-          var fill = ctx.createRadialGradient(-petal.size * 0.16, -petal.size * 0.1, 1, 0, 0, petal.size);
-          fill.addColorStop(0, "hsla(" + petal.tint + ", 90%, 96%, 0.96)");
-          fill.addColorStop(0.52, "hsla(" + petal.tint + ", 84%, 82%, 0.94)");
-          fill.addColorStop(1, "hsla(" + petal.tint + ", 68%, 70%, 0.88)");
-          ctx.fillStyle = fill;
-          ctx.beginPath();
-          ctx.moveTo(0, -petal.size);
-          ctx.bezierCurveTo(petal.size * 0.9, -petal.size * 0.7, petal.size * 0.95, petal.size * 0.28, 0, petal.size);
-          ctx.bezierCurveTo(-petal.size * 0.95, petal.size * 0.28, -petal.size * 0.9, -petal.size * 0.7, 0, -petal.size);
-          ctx.fill();
-          ctx.fillStyle = "rgba(255,255,255,0.34)";
-          ctx.fillRect(-1, -petal.size * 0.68, 2, petal.size * 1.18);
-          ctx.restore();
-        }
-
-        function frame(time) {
-          if (disposed) return;
-          ctx.clearRect(0, 0, width, height);
-          for (var i = 0; i < petals.length; i += 1) {
-            var petal = petals[i];
-            petal.y += petal.speedY;
-            petal.x += Math.sin((time * 0.0012) + petal.phase + (petal.y * 0.008)) * 0.9;
-            petal.rotation += petal.rotationSpeed;
-            drawPetal(petal);
-            if (petal.y > height + 24) {
-              petal.y = -24 - Math.random() * 60;
-              petal.x = Math.random() * width;
-            }
-            if (petal.x < -30) petal.x = width + 30;
-            if (petal.x > width + 30) petal.x = -30;
-          }
-          rafId = requestAnimationFrame(frame);
-        }
-
-        resize();
-        frame(0);
-        currentFxDisposable = function () {
-          disposed = true;
-          if (rafId) cancelAnimationFrame(rafId);
-        };
-      }
-
-      function renderNoiseFlowEffect() {
-        var surface = createFxCanvas();
-        if (!surface) return;
-        var canvas = surface.canvas;
-        var ctx = surface.context;
-        var rafId = 0;
-        var disposed = false;
-        var width = 0;
-        var height = 0;
-        var dpr = 1;
-        var particles = [];
-        var particleCount = 900;
-        var hueBase = 210;
-
-        function fract(value) {
-          return value - Math.floor(value);
-        }
-
-        function lerp(a, b, t) {
-          return a + (b - a) * t;
-        }
-
-        function smoothstep(t) {
-          return t * t * (3 - 2 * t);
-        }
-
-        function hash(x, y, z) {
-          return fract(Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453123);
-        }
-
-        function valueNoise(x, y, z) {
-          var xi = Math.floor(x);
-          var yi = Math.floor(y);
-          var zi = Math.floor(z);
-          var xf = x - xi;
-          var yf = y - yi;
-          var zf = z - zi;
-          var u = smoothstep(xf);
-          var v = smoothstep(yf);
-          var w = smoothstep(zf);
-
-          var x00 = lerp(hash(xi, yi, zi), hash(xi + 1, yi, zi), u);
-          var x10 = lerp(hash(xi, yi + 1, zi), hash(xi + 1, yi + 1, zi), u);
-          var x01 = lerp(hash(xi, yi, zi + 1), hash(xi + 1, yi, zi + 1), u);
-          var x11 = lerp(hash(xi, yi + 1, zi + 1), hash(xi + 1, yi + 1, zi + 1), u);
-
-          var y0 = lerp(x00, x10, v);
-          var y1 = lerp(x01, x11, v);
-          return lerp(y0, y1, w);
-        }
-
-        function resize() {
-          var bounds = fxLayer.getBoundingClientRect();
-          width = Math.max(1, bounds.width);
-          height = Math.max(1, bounds.height);
-          dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-          canvas.width = Math.round(width * dpr);
-          canvas.height = Math.round(height * dpr);
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          particles = [];
-          for (var index = 0; index < particleCount; index += 1) {
-              particles.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                hue: 0,
-                life: 60 + Math.random() * 160
-              });
-            }
-            ctx.fillStyle = "rgba(3, 8, 18, 1)";
-            ctx.fillRect(0, 0, width, height);
-          }
-
-          function respawn(particle) {
-            particle.x = Math.random() * width;
-            particle.y = Math.random() * height;
-            particle.life = 60 + Math.random() * 160;
-          }
-
-          function frame(time) {
-            if (disposed) return;
-            ctx.fillStyle = "rgba(4, 10, 22, 0.035)";
-            ctx.fillRect(0, 0, width, height);
-            for (var i = 0; i < particles.length; i += 1) {
-              var p = particles[i];
-              var noise = valueNoise(p.x * 0.0042, p.y * 0.0042, time * 0.00018);
-              var angle = noise * Math.PI * 6;
-              var speed = 0.9;
-              var nx = p.x + Math.cos(angle) * speed * 1.9;
-              var ny = p.y + Math.sin(angle) * speed * 1.9;
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(nx, ny);
-              p.hue = (hueBase + noise * 120 + i * 0.04) % 360;
-              ctx.strokeStyle = "hsla(" + p.hue + ", 90%, 72%, 0.11)";
-              ctx.lineWidth = 1;
-              ctx.stroke();
-              p.x = nx;
-              p.y = ny;
-              p.life -= 1;
-              if (p.x < -20 || p.x > width + 20 || p.y < -20 || p.y > height + 20 || p.life <= 0) {
-                respawn(p);
-              }
-            }
-            hueBase += 0.18;
-            rafId = requestAnimationFrame(frame);
-          }
-
-        resize();
-        frame(0);
-        currentFxDisposable = function () {
-          disposed = true;
-          if (rafId) cancelAnimationFrame(rafId);
-        };
-      }
-
-        function renderStyleEffects(styleName) {
-        if (currentFxDisposable && typeof currentFxDisposable === "function") {
-          currentFxDisposable();
-        }
+      function renderStyleEffects(styleName, mediaType) {
+        if (currentFxDisposable) currentFxDisposable();
         currentFxDisposable = null;
-        if (fxLayer) {
-          fxLayer.innerHTML = "";
-        }
-        if (styleName === "ani6") {
-          renderSkylineEffect();
-          return;
-        }
-        if (styleName === "ani3") {
-          renderSakuraEffect();
-          return;
-        }
-        if (styleName === "ani7") {
-          renderNoiseFlowEffect();
+        if (fxLayer) fxLayer.innerHTML = "";
+        if (/^ani(?:[1-9]|10)$/.test(styleName)) {
+          currentFxDisposable = window.MediaOnlyEffects.mount(fxLayer, styleName, {
+            static: /^(video|youtube|web)$/.test(mediaType)
+          });
         }
       }
 
@@ -1338,8 +618,9 @@
         var min = 10;
         var max = 80;
         var bounds = contentLayer ? contentLayer.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight };
-        var availableWidth = Math.min(Math.max(120, bounds.width - 12), 1500);
-        var availableHeight = Math.max(80, bounds.height - 12);
+        var spacing = window.getComputedStyle(contentLayer);
+        var availableWidth = Math.min(Math.max(120, bounds.width - parseFloat(spacing.paddingLeft) - parseFloat(spacing.paddingRight) - 12), 1500);
+        var availableHeight = Math.max(80, bounds.height - parseFloat(spacing.paddingTop) - parseFloat(spacing.paddingBottom) - 12);
         node.style.width = availableWidth + "px";
         node.style.maxWidth = availableWidth + "px";
         node.style.maxHeight = availableHeight + "px";
@@ -1355,7 +636,7 @@
         probe.style.maxWidth = availableWidth + "px";
         probe.style.maxHeight = "none";
         probe.style.overflow = "visible";
-        document.body.appendChild(probe);
+        contentLayer.appendChild(probe);
 
         var low = min;
         var high = max;
@@ -1371,7 +652,7 @@
           }
         }
 
-        document.body.removeChild(probe);
+        contentLayer.removeChild(probe);
         node.style.fontSize = best + "px";
       }
 
@@ -1603,7 +884,7 @@
         currentRenderToken += 1;
         var renderToken = currentRenderToken;
         applyStyle(parsed.style);
-        renderStyleEffects(parsed.style);
+        renderStyleEffects(parsed.style, parsed.type);
 
         if (parsed.type === "image") {
           renderImage(parsed.payload);
@@ -1641,10 +922,10 @@
       var currentPlaybackSignal = null;
       function applyMediaSignal(value) {
         var parsed = parseMediaSignal(value);
-        var playbackSignal = /^(video|audio|youtube)$/.test(parsed.type)
+        var playbackSignal = parsed.type !== "data"
           ? JSON.stringify([parsed.type, parsed.style, parsed.payload]) : null;
         // SSE snapshots can repeat the current value. Keep the player and its
-        // playback position until the requested media actually changes.
+        // playback position and animation phase until the content changes.
         if (playbackSignal !== null && playbackSignal === currentPlaybackSignal) return;
         renderMedia(parsed);
         currentPlaybackSignal = playbackSignal;
