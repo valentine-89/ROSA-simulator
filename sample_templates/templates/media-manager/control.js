@@ -7,11 +7,6 @@
   document.querySelectorAll('#refresh, #signal-preview, #controller > p.hint, #controller .eyebrow').forEach(function (item) { item.remove(); });
   el('current').previousElementSibling.textContent = 'Đang hiển thị';
   el('current').textContent = 'Chưa có nội dung'; el('send').textContent = 'Gửi'; el('waiting').textContent = 'Nội dung chờ';
-  var effectNames = ['Hải lưu', 'Dạ tiệc', 'Sakura', 'Kiến trúc', 'Ánh kim', 'Chân trời', 'Quỹ đạo', 'Mưa kính', 'Vườn đêm', 'Hình học'];
-  el('style').querySelectorAll('option').forEach(function (option) {
-    var value = option.value, match = value.match(/^ani([1-9]|10)$/);
-    if (match) { option.value = value; option.textContent = value + ' · ' + effectNames[Number(match[1]) - 1]; }
-  });
   function status(message, error) { el('status').textContent = message; el('status').dataset.error = String(!!error); el('status').hidden = !message; }
   function lock(value) { busy = value; ['send', 'waiting'].forEach(function (id) { el(id).disabled = value || !ready; }); }
   function signal() { return el('kind').value === 'raw' ? el('content').value.trim() : el('kind').value + '@' + el('style').value + ':' + el('content').value.trim(); }
