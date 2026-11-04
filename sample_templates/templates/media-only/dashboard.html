@@ -790,21 +790,21 @@
         ani10: true
       };
 
-      function cleanupCurrentMedia() {
+      function cleanupCurrentMedia(preserveEffects) {
         if (currentDisposable && typeof currentDisposable === "function") {
           currentDisposable();
         }
-        if (currentFxDisposable && typeof currentFxDisposable === "function") {
+        if (!preserveEffects && currentFxDisposable && typeof currentFxDisposable === "function") {
           currentFxDisposable();
         }
         currentDisposable = null;
-        currentFxDisposable = null;
+        if (!preserveEffects) currentFxDisposable = null;
         currentTextNode = null;
         while (fitBurstTimers.length) {
           clearTimeout(fitBurstTimers.pop());
         }
         contentLayer.innerHTML = "";
-        if (fxLayer) {
+        if (!preserveEffects && fxLayer) {
           fxLayer.innerHTML = "";
         }
       }
@@ -2349,11 +2349,16 @@
       }
 
       function renderMedia(parsed) {
-        cleanupCurrentMedia();
+        // Refresh macro data without resetting the approved ripple simulation.
+        // Content requests still abort and advance the render token as usual.
+        var preserveEffects = parsed.type === "data" && parsed.style === "ani10" &&
+          stage.classList.contains("style-ani10") && currentFxDisposable &&
+          fxLayer && fxLayer.querySelector(".fx-canvas");
+        cleanupCurrentMedia(!!preserveEffects);
         currentRenderToken += 1;
         var renderToken = currentRenderToken;
         applyStyle(parsed.style);
-        renderStyleEffects(parsed.style);
+        if (!preserveEffects) renderStyleEffects(parsed.style);
 
         if (parsed.type === "image") {
           renderImage(parsed.payload);
