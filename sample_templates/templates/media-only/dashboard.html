@@ -201,14 +201,9 @@
     }
 
     .style-ani3 .backdrop::before {
-      inset: -10%;
       background:
-        radial-gradient(circle at 18% 22%, rgba(255, 238, 247, 0.22), transparent 16%),
-        radial-gradient(circle at 78% 18%, rgba(255, 206, 228, 0.2), transparent 18%),
-        radial-gradient(circle at 50% 68%, rgba(255, 190, 223, 0.16), transparent 24%);
-      opacity: 0.92;
-      filter: blur(18px);
-      animation: sakura-breeze 7.4s ease-in-out infinite alternate;
+        radial-gradient(ellipse at 18% 22%, rgba(255, 238, 247, 0.14), transparent 42%),
+        radial-gradient(ellipse at 78% 18%, rgba(255, 206, 228, 0.12), transparent 46%);
     }
 
     .style-ani3 .backdrop::after {
@@ -217,8 +212,7 @@
         radial-gradient(circle at 78% 32%, rgba(255, 220, 236, 0.16), transparent 16%),
         radial-gradient(circle at 48% 76%, rgba(255, 190, 223, 0.14), transparent 22%),
         linear-gradient(180deg, rgba(255,255,255,0.05), transparent 28%);
-      opacity: 0.76;
-      filter: blur(16px);
+      opacity: 0.66;
     }
 
     .style-ani4 {
@@ -1072,86 +1066,190 @@
       function renderSakuraEffect() {
         var surface = createFxCanvas();
         if (!surface) return;
-        var canvas = surface.canvas;
-        var ctx = surface.context;
-        var rafId = 0;
-        var disposed = false;
-        var width = 0;
-        var height = 0;
-        var dpr = 1;
-        var petals = [];
-        var petalCount = 34;
+        var canvas = surface.canvas, ctx = surface.context;
+        var width = 1, height = 1, unit = 1, petals = [];
+        var rafId = 0, disposed = false, lastPaint = 0, lastTime = 0, clock = 0;
+        var wind = 38, windTarget = 85, nextGust = 3.5, frameStep = 1000 / 30;
+        var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        // Six cached faces: three irregular silhouettes, each with a lit front
+        // and a softer reverse. Only sprite transforms run in the frame loop.
+        var atlas = document.createElement("canvas");
+        atlas.width = 384; atlas.height = 256;
+        var paint = atlas.getContext("2d");
 
-        function resize() {
-          var bounds = fxLayer.getBoundingClientRect();
-          width = Math.max(1, bounds.width);
-          height = Math.max(1, bounds.height);
-          dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-          canvas.width = Math.round(width * dpr);
-          canvas.height = Math.round(height * dpr);
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          petals = [];
-          for (var i = 0; i < petalCount; i += 1) {
-            petals.push({
-              x: Math.random() * width,
-              y: (Math.random() * height * 1.3) - height * 0.2,
-              size: 10 + Math.random() * 12,
-              speedY: 0.35 + Math.random() * 1.1,
-              sway: 18 + Math.random() * 42,
-              rotation: Math.random() * Math.PI * 2,
-              rotationSpeed: (Math.random() - 0.5) * 0.03,
-              phase: Math.random() * Math.PI * 2,
-              tint: 330 + Math.random() * 20
-            });
+        function outline(c, shape) {
+          var spread = [1, 0.76, 0.96][shape], bend = [0, 9, -7][shape];
+          c.beginPath();
+          c.moveTo(bend + 3, 49);
+          c.bezierCurveTo(-8, 35, -30 * spread, 20, -34 * spread, -3);
+          c.bezierCurveTo(-39 * spread, -28, -24, -47, -5, -42);
+          c.lineTo(1, -36);
+          c.lineTo(7, -43);
+          c.bezierCurveTo(28, -45, 41 * spread, -23, 33 * spread, -1);
+          c.bezierCurveTo(28 * spread, 22, 13, 39, bend + 3, 49);
+          c.closePath();
+        }
+
+        function buildAtlas() {
+          for (var side = 0; side < 2; side += 1) {
+            for (var shape = 0; shape < 3; shape += 1) {
+              paint.save();
+              paint.translate(shape * 128 + 64, side * 128 + 58);
+              outline(paint, shape);
+              var fill = paint.createLinearGradient(-28, -38, 26, 48);
+              fill.addColorStop(0, side ? "#efc1d0" : "#fff5f7");
+              fill.addColorStop(0.38, side ? "#f4d1dc" : "#fbdce8");
+              fill.addColorStop(0.76, side ? "#df9bb7" : "#ed9fbe");
+              fill.addColorStop(1, side ? "#c97b9e" : "#ce628e");
+              paint.fillStyle = fill; paint.fill();
+              paint.strokeStyle = side ? "rgba(255,231,240,.35)" : "rgba(255,250,252,.64)";
+              paint.lineWidth = 0.8; paint.stroke();
+              paint.save(); paint.clip();
+              // A curved fold catches light as the projected petal turns.
+              var light = paint.createLinearGradient(-12, 0, 25, 8);
+              light.addColorStop(0, "rgba(255,247,251,0)");
+              light.addColorStop(0.56, side ? "rgba(255,247,251,.05)" : "rgba(255,247,251,.28)");
+              light.addColorStop(1, "rgba(179,71,115,.13)");
+              paint.fillStyle = light;
+              paint.beginPath(); paint.moveTo(2, 49);
+              paint.bezierCurveTo(17, 18, -11, -13, 12, -43);
+              paint.bezierCurveTo(25, -20, 37, 8, 2, 49); paint.fill();
+              for (var vein = -1; vein <= 1; vein += 1) {
+                paint.strokeStyle = "rgba(166,71,108," + (side ? 0.09 : 0.14) + ")";
+                paint.lineWidth = vein === 0 ? 0.8 : 0.55;
+                paint.beginPath(); paint.moveTo(1, 44);
+                paint.bezierCurveTo(vein * 7, 20, vein * 20 - 3, -7, vein * 24, -27);
+                paint.stroke();
+              }
+              paint.restore(); paint.restore();
+            }
           }
         }
 
-        function drawPetal(petal) {
-          ctx.save();
-          ctx.translate(petal.x, petal.y);
-          ctx.rotate(petal.rotation);
-          ctx.scale(1, 0.82);
-          var fill = ctx.createRadialGradient(-petal.size * 0.16, -petal.size * 0.1, 1, 0, 0, petal.size);
-          fill.addColorStop(0, "hsla(" + petal.tint + ", 90%, 96%, 0.96)");
-          fill.addColorStop(0.52, "hsla(" + petal.tint + ", 84%, 82%, 0.94)");
-          fill.addColorStop(1, "hsla(" + petal.tint + ", 68%, 70%, 0.88)");
-          ctx.fillStyle = fill;
-          ctx.beginPath();
-          ctx.moveTo(0, -petal.size);
-          ctx.bezierCurveTo(petal.size * 0.9, -petal.size * 0.7, petal.size * 0.95, petal.size * 0.28, 0, petal.size);
-          ctx.bezierCurveTo(-petal.size * 0.95, petal.size * 0.28, -petal.size * 0.9, -petal.size * 0.7, 0, -petal.size);
-          ctx.fill();
-          ctx.fillStyle = "rgba(255,255,255,0.34)";
-          ctx.fillRect(-1, -petal.size * 0.68, 2, petal.size * 1.18);
-          ctx.restore();
+        function resetPetal(p, index, initial) {
+          var layer = index < 20 ? 0 : index < 44 ? 1 : 2;
+          p.depth = [0.12, 0.42, 0.76][layer] + Math.random() * 0.22;
+          p.size = 20 + p.depth * 42;
+          p.fall = 22 + p.depth * 38 + Math.random() * 18;
+          p.drag = 1.3 + Math.random() * 1.4;
+          p.phase = Math.random() * Math.PI * 2;
+          p.flutter = 0.8 + Math.random() * 1.3;
+          p.angle = Math.random() * Math.PI * 2;
+          p.spin = (Math.random() < 0.5 ? -1 : 1) * (0.3 + Math.random() * 0.85);
+          p.roll = Math.random() * Math.PI * 2;
+          p.rollRate = 0.7 + p.depth * 0.8 + Math.random() * 0.8;
+          p.shape = Math.floor(Math.random() * 3);
+          p.opacity = 0.32 + p.depth * 0.62;
+          p.vx = wind * (0.45 + p.depth * 0.7) * unit;
+          p.vy = p.fall * unit;
+          if (initial) {
+            p.x = Math.random() * width;
+            p.y = Math.random() * height;
+          } else if (Math.abs(wind) > 45 && Math.random() < 0.55) {
+            p.x = wind > 0 ? -42 * unit : width + 42 * unit;
+            p.y = (Math.random() * 0.95 - 0.12) * height;
+          } else {
+            p.x = Math.random() * width;
+            p.y = -(45 + Math.random() * 65) * unit;
+          }
         }
 
-        function frame(time) {
-          if (disposed) return;
+        function draw() {
           ctx.clearRect(0, 0, width, height);
           for (var i = 0; i < petals.length; i += 1) {
-            var petal = petals[i];
-            petal.y += petal.speedY;
-            petal.x += Math.sin((time * 0.0012) + petal.phase + (petal.y * 0.008)) * 0.9;
-            petal.rotation += petal.rotationSpeed;
-            drawPetal(petal);
-            if (petal.y > height + 24) {
-              petal.y = -24 - Math.random() * 60;
-              petal.x = Math.random() * width;
+            var p = petals[i], face = Math.cos(p.roll), size = p.size * unit;
+            ctx.save(); ctx.translate(p.x, p.y);
+            ctx.rotate(p.angle + Math.atan2(p.vx, p.vy) * 0.18);
+            ctx.scale(0.12 + Math.abs(face) * 0.88, 0.9 + Math.sin(p.roll) * 0.1);
+            ctx.globalAlpha = p.opacity * (0.82 + Math.abs(face) * 0.18);
+            ctx.drawImage(atlas, p.shape * 128, face > 0 ? 0 : 128, 128, 128,
+              -size / 2, -size / 2, size, size);
+            ctx.restore();
+          }
+        }
+
+        function advance(dt) {
+          clock += dt;
+          if (clock > nextGust) {
+            windTarget = -95 + Math.random() * 240;
+            nextGust = clock + 3.2 + Math.random() * 4.2;
+          }
+          wind += (windTarget - wind) * Math.min(1, dt * 0.62);
+          for (var i = 0; i < petals.length; i += 1) {
+            var p = petals[i];
+            // A shared gust travels through the field; local flutter and
+            // inertia keep individual petals from moving in lockstep.
+            var gust = wind + Math.sin(clock * 0.75 - p.y / height * 2.8) * 19;
+            var flutter = Math.sin(clock * p.flutter + p.phase);
+            var curl = Math.sin(clock * 0.48 + p.y / height * 5 + p.phase) * 13;
+            var targetX = (gust * (0.45 + p.depth * 0.7) + flutter * 13 + curl) * unit;
+            var targetY = (p.fall + Math.cos(clock * p.flutter + p.phase) * 13 - Math.abs(gust) * 0.13) * unit;
+            var response = Math.min(1, p.drag * dt);
+            p.vx += (targetX - p.vx) * response;
+            p.vy += (targetY - p.vy) * response;
+            p.x += p.vx * dt; p.y += p.vy * dt;
+            p.angle += (p.spin + flutter * 0.55 + gust * 0.003) * dt;
+            p.roll += p.rollRate * (1 + Math.abs(gust) * 0.003) * dt;
+            var margin = 100 * unit;
+            if (p.y > height + margin || p.x < -margin || p.x > width + margin) resetPetal(p, i, false);
+          }
+        }
+
+        function resize() {
+          if (disposed) return;
+          var bounds = fxLayer.getBoundingClientRect();
+          var scale = Math.min(1, 1280 / Math.max(1, bounds.width), 720 / Math.max(1, bounds.height));
+          var oldWidth = width, oldHeight = height, oldUnit = unit;
+          width = Math.max(1, Math.round(bounds.width * scale));
+          height = Math.max(1, Math.round(bounds.height * scale));
+          unit = Math.min(width / 1280, height / 720);
+          canvas.width = width; canvas.height = height;
+          for (var i = 0; i < petals.length; i += 1) {
+            petals[i].x *= width / oldWidth; petals[i].y *= height / oldHeight;
+            petals[i].vx *= unit / oldUnit; petals[i].vy *= unit / oldUnit;
+          }
+          if (!petals.length) {
+            for (var j = 0; j < 56; j += 1) {
+              var petal = {}; resetPetal(petal, j, true); petals.push(petal);
             }
-            if (petal.x < -30) petal.x = width + 30;
-            if (petal.x > width + 30) petal.x = -30;
+          }
+          if (!document.hidden) draw();
+        }
+
+        function frame(now) {
+          rafId = 0;
+          if (disposed || document.hidden || motion.matches) return;
+          if (now - lastPaint >= frameStep) {
+            var dt = lastTime ? Math.min(0.08, (now - lastTime) / 1000) : 1 / 30;
+            lastPaint = now - (now - lastPaint) % frameStep; lastTime = now;
+            advance(dt); draw();
           }
           rafId = requestAnimationFrame(frame);
         }
 
-        resize();
-        frame(0);
+        function state() {
+          if (rafId) cancelAnimationFrame(rafId);
+          rafId = 0; lastTime = 0; lastPaint = 0;
+          if (disposed || document.hidden) return;
+          draw();
+          if (!motion.matches) rafId = requestAnimationFrame(frame);
+        }
+
+        buildAtlas(); resize(); state();
+        window.addEventListener("resize", resize);
+        document.addEventListener("visibilitychange", state);
+        motion.addListener(state);
         currentFxDisposable = function () {
           disposed = true;
           if (rafId) cancelAnimationFrame(rafId);
+          window.removeEventListener("resize", resize);
+          document.removeEventListener("visibilitychange", state);
+          motion.removeListener(state);
+          atlas.width = atlas.height = 1;
+          petals.length = 0;
         };
       }
+
 
       function renderNoiseFlowEffect() {
         var surface = createFxCanvas();
@@ -1641,7 +1739,7 @@
       var currentPlaybackSignal = null;
       function applyMediaSignal(value) {
         var parsed = parseMediaSignal(value);
-        var playbackSignal = /^(video|audio|youtube)$/.test(parsed.type)
+        var playbackSignal = (/^(video|audio|youtube)$/.test(parsed.type) || (parsed.style === "ani3" && parsed.type !== "data"))
           ? JSON.stringify([parsed.type, parsed.style, parsed.payload]) : null;
         // SSE snapshots can repeat the current value. Keep the player and its
         // playback position until the requested media actually changes.
